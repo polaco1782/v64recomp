@@ -1,0 +1,226 @@
+#ifndef RECOMP_H
+#define RECOMP_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct MipsContext {
+    uint64_t gpr[32];
+    uint64_t hi, lo;
+    uint32_t fpr[32], fcr31;
+    uint32_t pc; /* Last tracked call/FP location for diagnostics; not execution state. */
+} MipsContext;
+
+typedef struct Runtime Runtime;
+typedef struct RecompScheduler RecompScheduler;
+typedef struct RecompClock RecompClock;
+typedef struct RecompPlatform RecompPlatform;
+typedef struct RecompTasks RecompTasks;
+typedef struct RecompIO RecompIO;
+typedef void (*RecompFunction)(Runtime *, MipsContext *);
+/* Optional native loader for game-specific virtual memory. Return false for
+ * addresses it does not own; handled spans must resolve to contiguous RDRAM. */
+typedef bool (*RecompAddressResolver)(Runtime *, uint32_t, size_t, bool write, uint32_t *);
+
+typedef struct RecompFunctionEntry {
+    uint32_t address, size, section;
+    RecompFunction function;
+    const char *name;
+} RecompFunctionEntry;
+
+/* Native global page aliases installed through libultra, not CPU TLB opcodes. */
+typedef struct RecompPageMapping {
+    uint32_t virtual_base, page_size, physical[2];
+    bool installed;
+} RecompPageMapping;
+
+struct Runtime {
+    RecompPageMapping page_mappings[32];
+    uint8_t *rdram;
+    size_t rdram_size;
+    const RecompFunctionEntry *functions;
+    size_t function_count;
+    bool *section_loaded;
+    size_t section_count;
+    RecompScheduler *scheduler;
+    void (*destroy_scheduler)(Runtime *);
+    void (*checkpoint)(Runtime *, bool);
+    RecompClock *clock;
+    RecompPlatform *platform;
+    void (*destroy_clock)(Runtime *);
+    void (*destroy_platform)(Runtime *);
+    void (*poll_clock)(Runtime *);
+    void (*poll_platform)(Runtime *);
+    const uint8_t *rom; /* Verified canonical bytes, owned by the caller. */
+    size_t rom_size;
+    bool platform_initialized;
+    RecompTasks *tasks;
+    void (*destroy_tasks)(Runtime *);
+    void (*poll_tasks)(Runtime *);
+    RecompIO *io;
+    void (*destroy_io)(Runtime *);
+    void (*poll_io)(Runtime *);
+    const RecompFunctionEntry **function_index; /* Sorted once at init; original registry order is retained. */
+    RecompAddressResolver resolve_address;
+    void (*prepare_call)(Runtime *, uint32_t);
+    void *address_userdata;
+    bool interrupts_disabled; /* Native OS critical section; owner-thread scheduling only. */
+};
+
+bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t,
+                         const bool *, size_t);
+void recomp_runtime_destroy(Runtime *);
+RecompFunction recomp_lookup(Runtime *, uint32_t);
+typedef struct RecompFailureInfo {
+    const char *message;
+    uint32_t address;
+    size_t requested_bytes;
+    bool ram_range;
+    void *native_frames[64];
+    size_t native_frame_count;
+} RecompFailureInfo;
+typedef void (*RecompFailureHandler)(const RecompFailureInfo *, void *);
+/* Owner-thread observer for controlled runtime failures, before abort(). */
+void recomp_set_failure_handler(RecompFailureHandler, void *);
+#ifdef __cplusplus
+[[noreturn]] void recomp_fail(const char *, uint32_t);
+#else
+_Noreturn void recomp_fail(const char *, uint32_t);
+#endif
+
+/* Keep generated fallthrough diagnostics in one out-of-line runtime helper. */
+#ifdef __cplusplus
+[[noreturn]]
+#else
+_Noreturn
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline, cold))
+#endif
+void recomp_fellthrough(uint32_t);
+
+/* FR=0 floating-point helpers. Each operation restores the host environment
+ * before returning, including when guest rounding differs between threads. */
+enum MipsFpFormat { MIPS_FP_S, MIPS_FP_D, MIPS_FP_W, MIPS_FP_L };
+enum MipsFpOperation { MIPS_FP_ADD, MIPS_FP_SUB, MIPS_FP_MUL, MIPS_FP_DIV,
+                       MIPS_FP_SQRT, MIPS_FP_ABS, MIPS_FP_NEG, MIPS_FP_MOV };
+void mips_fp_binary(MipsContext *, unsigned, unsigned, unsigned,
+                    enum MipsFpFormat, enum MipsFpOperation);
+void mips_fp_unary(MipsContext *, unsigned, unsigned,
+                   enum MipsFpFormat, enum MipsFpOperation);
+void mips_fp_convert(MipsContext *, unsigned, unsigned,
+                     enum MipsFpFormat, enum MipsFpFormat, int);
+void mips_fp_compare(MipsContext *, unsigned, unsigned, enum MipsFpFormat, unsigned);
+void mips_fp_set_control(MipsContext *, uint32_t);
+
+uint64_t recomp_load(Runtime *, uint32_t, unsigned);
+void recomp_store(Runtime *, uint32_t, uint64_t, unsigned);
+void recomp_copy_to_ram(Runtime *, uint32_t, const uint8_t *, size_t);
+uint32_t recomp_ram_address(Runtime *, uint32_t, size_t);
+uint64_t recomp_load_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
+void recomp_store_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
+
+static inline void recomp_checkpoint(Runtime *rt) {
+    if (rt->checkpoint) rt->checkpoint(rt, false);
+}
+static inline void recomp_yield_checkpoint(Runtime *rt) {
+    if (rt->checkpoint) rt->checkpoint(rt, true);
+}
+
+/* Store GPRs as unsigned bit patterns, including sign-extended 32-bit results. */
+static inline uint64_t mips_s32(uint32_t x) {
+    return (uint64_t)x | ((x & UINT32_C(0x80000000)) ? UINT64_C(0xffffffff00000000) : 0);
+}
+static inline uint64_t mips_s16(uint16_t x) {
+    return (uint64_t)x | ((x & UINT16_C(0x8000)) ? UINT64_C(0xffffffffffff0000) : 0);
+}
+static inline uint64_t mips_s8(uint8_t x) {
+    return (uint64_t)x | ((x & UINT8_C(0x80)) ? UINT64_C(0xffffffffffffff00) : 0);
+}
+static inline void mips_set(MipsContext *ctx, unsigned reg, uint64_t value) {
+    if (reg) ctx->gpr[reg] = value;
+}
+static inline bool mips_signed_less(uint64_t x, uint64_t y) {
+    return (x ^ UINT64_C(0x8000000000000000)) < (y ^ UINT64_C(0x8000000000000000));
+}
+static inline uint64_t mips_sra32(uint64_t x, unsigned count) {
+    uint32_t value = (uint32_t)x;
+    count &= 31;
+    if (count) value = (value >> count) | ((value & UINT32_C(0x80000000)) ? UINT32_MAX << (32 - count) : 0);
+    return mips_s32(value);
+}
+static inline uint64_t mips_sra64(uint64_t value, unsigned count) {
+    count &= 63;
+    if (count) value = (value >> count) | ((value & UINT64_C(0x8000000000000000)) ? UINT64_MAX << (64 - count) : 0);
+    return value;
+}
+static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
+    uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a + b;
+    if (((a ^ result) & (b ^ result)) & UINT32_C(0x80000000)) recomp_fail("signed ADD overflow", 0);
+    return mips_s32(result);
+}
+static inline uint64_t mips_sub32(uint64_t x, uint64_t y) {
+    uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a - b;
+    if (((a ^ b) & (a ^ result)) & UINT32_C(0x80000000)) recomp_fail("signed SUB overflow", 0);
+    return mips_s32(result);
+}
+static inline int64_t mips_i32(uint64_t x) {
+    return (int64_t)(uint32_t)x - ((x & UINT64_C(0x80000000)) ? INT64_C(4294967296) : 0);
+}
+static inline void mips_mult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
+    uint64_t result = is_signed ? (uint64_t)(mips_i32(x) * mips_i32(y)) : (uint64_t)(uint32_t)x * (uint32_t)y;
+    ctx->lo = mips_s32((uint32_t)result);
+    ctx->hi = mips_s32((uint32_t)(result >> 32));
+}
+static inline void mips_div(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
+    int64_t a = mips_i32(x), b = mips_i32(y);
+    if (!(uint32_t)y) {
+        ctx->lo = mips_s32(is_signed && a < 0 ? 1 : UINT32_MAX);
+        ctx->hi = mips_s32((uint32_t)x);
+    } else if (is_signed) {
+        /* int64 intermediates also make INT32_MIN / -1 well-defined. */
+        ctx->lo = mips_s32((uint32_t)(a / b));
+        ctx->hi = mips_s32((uint32_t)(a % b));
+    } else {
+        ctx->lo = mips_s32((uint32_t)x / (uint32_t)y);
+        ctx->hi = mips_s32((uint32_t)x % (uint32_t)y);
+    }
+}
+
+static inline void mips_dmult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
+    /* Four 32-bit products preserve all 128 bits without compiler extensions. */
+    uint64_t x0=(uint32_t)x, x1=x>>32, y0=(uint32_t)y, y1=y>>32;
+    uint64_t low=x0*y0, middle=x1*y0+(low>>32), carry=middle>>32;
+    middle=(uint32_t)middle+x0*y1;
+    ctx->lo=(middle<<32)|(uint32_t)low;
+    ctx->hi=x1*y1+carry+(middle>>32);
+    if (is_signed) {
+        if (x>>63) ctx->hi-=y;
+        if (y>>63) ctx->hi-=x;
+    }
+}
+static inline void mips_ddiv(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
+    bool negative_x=is_signed && (x>>63), negative_y=is_signed && (y>>63);
+    if (!y) { ctx->lo=negative_x?1:UINT64_MAX; ctx->hi=x; return; }
+    uint64_t a=negative_x?UINT64_C(0)-x:x, b=negative_y?UINT64_C(0)-y:y;
+    uint64_t q=a/b, rem=a%b;
+    ctx->lo=negative_x!=negative_y?UINT64_C(0)-q:q;
+    ctx->hi=negative_x?UINT64_C(0)-rem:rem;
+}
+/* FR=0: the even raw FGR holds the low word, the odd FGR the high word. */
+static inline uint64_t mips_fpr_pair(const MipsContext *ctx, unsigned index) {
+    return ((uint64_t)ctx->fpr[index+1]<<32)|ctx->fpr[index];
+}
+static inline void mips_set_fpr_pair(MipsContext *ctx, unsigned index, uint64_t value) {
+    ctx->fpr[index]=(uint32_t)value; ctx->fpr[index+1]=(uint32_t)(value>>32);
+}
+
+#ifdef __cplusplus
+}
+#endif
+#endif

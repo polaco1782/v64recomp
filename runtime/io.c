@@ -1,0 +1,169 @@
+#define _POSIX_C_SOURCE 200809L
+#include "runtime.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+struct RecompIO {
+    RecompPad live[4], pending[4], result[4], query_result[4];
+    bool initialized, published;
+    uint32_t eeprom_size;
+    uint8_t eeprom[2048];
+    char *path;
+    RecompIOStats stats;
+};
+static RecompIO *io(Runtime *rt) {
+    if (!rt->io) recomp_fail("native controller/EEPROM services not initialized", 0);
+    return rt->io;
+}
+static uint32_t arg(MipsContext *ctx, unsigned n) { return (uint32_t)ctx->gpr[4+n]; }
+static void result(MipsContext *ctx, int32_t value) { mips_set(ctx, 2, mips_s32((uint32_t)value)); }
+
+static void poll_io(Runtime *rt) {
+    RecompIO *s = io(rt);
+    if (!s->stats.read_pending && !s->stats.query_pending) return;
+    if (!s->published) {
+        memcpy(s->stats.query_pending?s->query_result:s->result,s->pending,sizeof(s->result));
+        s->published = true;
+        if(s->stats.read_pending)s->stats.reads_completed++;else s->stats.queries_completed++;
+    }
+    if (recomp_event_post(rt, 5)) {
+        s->stats.si_events++; s->stats.read_pending = false; s->stats.query_pending = false;
+    }
+}
+
+bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
+    if (rt->io || !rt->scheduler || !config || config->connected_mask > 15
+            || (config->eeprom_size != 0 && config->eeprom_size != 512 && config->eeprom_size != 2048)
+            || (config->eeprom_path && (!config->eeprom_size || !*config->eeprom_path))) return false;
+    RecompIO *s = calloc(1, sizeof(*s)); if (!s) return false;
+    s->eeprom_size = config->eeprom_size; memset(s->eeprom, 0xff, sizeof(s->eeprom));
+    for (unsigned n=0;n<4;n++) s->live[n].connected = (config->connected_mask & (1u<<n)) != 0;
+    if (config->eeprom_path) {
+        s->path = strdup(config->eeprom_path);
+        if (!s->path) { free(s); return false; }
+        FILE *file = fopen(s->path, "rb");
+        if (file) {
+            bool valid = fread(s->eeprom, 1, s->eeprom_size, file) == s->eeprom_size
+                      && fgetc(file) == EOF && !ferror(file);
+            if (fclose(file)) valid = false;
+            if (!valid) { free(s->path); free(s); return false; }
+        } else if (errno != ENOENT) { free(s->path); free(s); return false; }
+    }
+    rt->io = s; rt->destroy_io = recomp_io_destroy; rt->poll_io = poll_io; return true;
+}
+void recomp_io_destroy(Runtime *rt) {
+    if (!rt->io) return;
+    free(rt->io->path); free(rt->io); rt->io = NULL; rt->destroy_io = NULL; rt->poll_io = NULL;
+}
+bool recomp_input_set(Runtime *rt, unsigned port, const RecompPad *pad) {
+    if (port >= 4 || !pad) return false;
+    io(rt)->live[port] = *pad; return true;
+}
+RecompIOStats recomp_io_stats(Runtime *rt) { return io(rt)->stats; }
+
+void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
+    RecompIO *s = io(rt);
+    if (s->initialized) { result(ctx, 0); return; }
+    uint32_t pattern = arg(ctx, 1), status = arg(ctx, 2); uint8_t mask = 0;
+    recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
+    recomp_ram_address(rt, pattern, 1); recomp_ram_address(rt, status, 16);
+    for (unsigned n=0;n<4;n++) {
+        bool connected = s->live[n].connected;
+        if (connected) mask |= (uint8_t)(1u<<n);
+        recomp_store(rt, status+n*4, connected ? 5 : 0, 2);
+        recomp_store(rt, status+n*4+2, 0, 1); /* No controller accessory. */
+        recomp_store(rt, status+n*4+3, connected ? 0 : 8, 1);
+    }
+    recomp_store(rt, pattern, mask, 1); s->initialized = true;
+    /* SDK initialization consumes its own SI notifications; none are left for the caller. */
+    result(ctx, 0);
+}
+void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
+    RecompIO *s = io(rt);
+    if (!s->initialized) recomp_fail("controller read before osContInit", ctx->pc);
+    recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
+    if (s->stats.read_pending || s->stats.query_pending) { result(ctx, -1); return; }
+    memcpy(s->pending, s->live, sizeof(s->pending)); s->published = false;
+    s->stats.read_pending = true; s->stats.reads_started++; result(ctx, 0);
+}
+void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
+    RecompIO *s = io(rt);
+    if (!s->initialized) recomp_fail("controller result before osContInit", ctx->pc);
+    uint32_t pads = arg(ctx, 0); recomp_ram_address(rt, pads, 24);
+    for (unsigned n=0;n<4;n++) {
+        const RecompPad *pad = &s->result[n];
+        recomp_store(rt, pads+n*6+4, pad->connected ? 0 : 8, 1);
+        if (pad->connected) {
+            recomp_store(rt, pads+n*6, pad->buttons, 2);
+            recomp_store(rt, pads+n*6+2, (uint8_t)pad->stick_x, 1);
+            recomp_store(rt, pads+n*6+3, (uint8_t)pad->stick_y, 1);
+        }
+    }
+}
+void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
+    RecompIO *s=io(rt);
+    if(!s->initialized)recomp_fail("controller query before osContInit",ctx->pc);
+    recomp_ram_address(rt,arg(ctx,0),RECOMP_QUEUE_BYTES);
+    if(s->stats.read_pending || s->stats.query_pending){result(ctx,-1);return;}
+    memcpy(s->pending,s->live,sizeof(s->pending));s->published=false;
+    s->stats.query_pending=true;s->stats.queries_started++;result(ctx,0);
+}
+void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
+    RecompIO *s=io(rt);
+    if(!s->initialized)recomp_fail("controller status before osContInit",ctx->pc);
+    uint32_t status=arg(ctx,0);recomp_ram_address(rt,status,16);
+    const RecompPad *pads=s->stats.queries_completed?s->query_result:s->live;
+    for(unsigned n=0;n<4;n++) {
+        recomp_store(rt,status+n*4,pads[n].connected?5:0,2);
+        recomp_store(rt,status+n*4+2,0,1); /* No accessory installed. */
+        recomp_store(rt,status+n*4+3,pads[n].connected?0:8,1);
+    }
+}
+void hook_os_eeprom_probe(Runtime *rt, MipsContext *ctx) {
+    RecompIO *s = io(rt); recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
+    result(ctx, s->eeprom_size == 2048 ? 2 : s->eeprom_size == 512 ? 1 : 0);
+}
+static bool persist(RecompIO *s, const uint8_t *bytes) {
+    if (!s->path) return true;
+    size_t length = strlen(s->path) + 16; char *temp = malloc(length); if (!temp) return false;
+    snprintf(temp, length, "%s.tmp.XXXXXX", s->path);
+    int fd = mkstemp(temp); bool okay = fd >= 0;
+    if (okay) {
+        size_t written = 0;
+        while (written < s->eeprom_size) {
+            ssize_t count = write(fd, bytes+written, s->eeprom_size-written);
+            if (count < 0 && errno == EINTR) continue;
+            if (count <= 0) { okay = false; break; }
+            written += (size_t)count;
+        }
+        if (okay && fsync(fd)) okay = false;
+        if (close(fd)) okay = false;
+        if (okay && rename(temp, s->path)) okay = false;
+    }
+    if (!okay && fd >= 0) unlink(temp);
+    free(temp); return okay;
+}
+static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data) {
+    RecompIO *s = io(rt); recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
+    if (!s->eeprom_size || s->stats.read_pending || s->stats.query_pending) { result(ctx, 8); return; }
+    uint32_t block = (uint8_t)arg(ctx, 1), address = arg(ctx, 2), count = arg(ctx, 3);
+    if (count % 8 || block*8 > s->eeprom_size || count > s->eeprom_size-block*8) { result(ctx, -1); return; }
+    if (!count) { result(ctx, 0); return; }
+    recomp_ram_address(rt, address, count);
+    if (write_data) {
+        uint8_t next[2048]; memcpy(next, s->eeprom, sizeof(next));
+        for (uint32_t n=0;n<count;n++) next[block*8+n] = (uint8_t)recomp_load(rt, address+n, 1);
+        if (!persist(s, next)) { s->stats.persistence_failures++; result(ctx, -1); return; }
+        memcpy(s->eeprom, next, sizeof(next)); s->stats.eeprom_writes++;
+    } else {
+        recomp_copy_to_ram(rt, address, s->eeprom+block*8, count); s->stats.eeprom_reads++;
+    }
+    /* These blocking SDK calls consume their internal SI/timer notifications. */
+    result(ctx, 0);
+}
+void hook_os_eeprom_long_read(Runtime *rt, MipsContext *ctx) { transfer_eeprom(rt, ctx, false); }
+void hook_os_eeprom_long_write(Runtime *rt, MipsContext *ctx) { transfer_eeprom(rt, ctx, true); }

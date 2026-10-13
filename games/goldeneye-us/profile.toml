@@ -1,0 +1,72 @@
+# GoldenEye US region, pinned to the exact ROM supplied for this project.
+# All addresses/fingerprints are checked against that ROM; no ELF/map is required.
+# This is an initial discovery profile, not a complete CPU inventory yet.
+hooks = [
+  {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "hook_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
+  {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "hook_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0x00e00008]},
+  {symbol = "initTLBPrepareContext", vram = 0x70001bb0, kind = "replace_function", handler = "hook_ge_prepare_context", expected_words = [0x24080002, 0x40883000, 0x24080000]},
+  {symbol = "osPiRawStartDma", vram = 0x7000cf90, kind = "replace_function", handler = "hook_ge_pi_raw_dma", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osPiGetStatus", vram = 0x7000d070, kind = "replace_function", handler = "hook_ge_pi_status", expected_words = [0x3c0ea460, 0x03e00008, 0x8dc20010]},
+  {symbol = "osInitialize", vram = 0x7000d080, kind = "replace_function", handler = "hook_ge_os_initialize", expected_words = [0x27bdffc0, 0xafbf001c, 0x240e0001]},
+  {symbol = "osWritebackDCacheAll", vram = 0x7000d320, kind = "replace_function", handler = "hook_os_writeback_dcache_all", expected_words = [0x3c088000, 0x240a2000, 0x010a4821]},
+  {symbol = "osInvalICache", vram = 0x7000d350, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x00000000, 0x240b4000]},
+  {symbol = "osUnmapTLB", vram = 0x7000d3d0, kind = "replace_function", handler = "hook_ge_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000]},
+  {symbol = "osCreateThread", vram = 0x7000d430, kind = "replace_function", handler = "hook_os_create_thread", expected_words = [0x27bdffd8, 0xafa40028, 0xafa5002c]},
+  {symbol = "osStartThread", vram = 0x7000d580, kind = "replace_function", handler = "hook_os_start_thread", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osVirtualToPhysical", vram = 0x7000e8b0, kind = "replace_function", handler = "hook_os_virtual_to_physical", expected_words = [0x27bdffe8, 0xafa40018, 0x8fae0018]},
+]
+
+[game]
+name = "GoldenEye 007 (US region, supplied ROM)"
+rom_sha1 = "a963ea5308a4dda41354bca7751446248302a099"
+rom_size = 0x1000000
+ram_size = 0x400000
+entry_symbol = "entry_point"
+rom = "../../local/goldeneye.us.z64"
+code_sections = [".boot", ".lib", ".inflate", ".game"]
+boot_sections = [".boot", ".lib"]
+
+[discovery]
+max_functions = 0x4000
+max_instructions_per_function = 0x8000
+regions = [
+  {name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0xbc},
+  {name = ".lib", vram = 0x700004bc, rom_offset = 0x10bc, size = 0x208d4},
+  {name = ".inflate", vram = 0x70200000, rom_offset = 0x33590, size = 0x15a0},
+  {name = ".game", vram = 0x7f000000, rom_offset = 0x34b30, size = 0xe2d50},
+]
+roots = [
+  {name = "init", vram = 0x70000510},
+  {name = "inflate_decompressfile", vram = 0x7020141c},
+  {name = "mainproc", vram = 0x7000089c},
+  {name = "game_text_start", vram = 0x7f000000},
+]
+transfers = [
+  {pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80000450]},
+  {pc = 0x70000500, expected_word = 0x00e00008, kind = "tail", targets = [0x7020141c]},
+]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0x100000
+bss_start = 0x8005d2e0
+bss_end = 0x8008e360
+main_entry = 0x7000089c
+main_thread = 0x8005d640
+counter_hz = 0x2cb4178
+vi_period_ticks = 0xbebc2
+compressed_data_offset = 0x21990
+compressed_data_size = 0x11c00
+data_address = 0x80020d90
+data_size = 0x3c550
+data_sha256 = "1348c78dda4bdeaec6a8abcf793fb4c501600f32af162ecb4f49f6b0c10507d8"
+
+[bootstrap.parameters]
+0x80000300 = 0x1
+0x80000304 = 0x0
+0x80000308 = 0xb0000000
+0x8000030c = 0x0
+0x80000310 = 0x17d6
+0x80000314 = 0x1
+0x80000318 = 0x400000

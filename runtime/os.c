@@ -1,0 +1,76 @@
+#include "runtime.h"
+
+static uint32_t argument(MipsContext *ctx, unsigned index) { return (uint32_t)ctx->gpr[4 + index]; }
+static int32_t signed_argument(MipsContext *ctx, unsigned index) { return (int32_t)mips_i32(ctx->gpr[4 + index]); }
+static void result(MipsContext *ctx, int32_t value) { mips_set(ctx, 2, mips_s32((uint32_t)value)); }
+
+void hook_os_disable_int(Runtime *rt, MipsContext *ctx) {
+    result(ctx, rt->interrupts_disabled ? 0 : 1);
+    rt->interrupts_disabled = true;
+}
+void hook_os_restore_int(Runtime *rt, MipsContext *ctx) {
+    rt->interrupts_disabled = !(argument(ctx, 0) & 1);
+    if (!rt->interrupts_disabled) recomp_checkpoint(rt);
+}
+
+void hook_os_virtual_to_physical(Runtime *rt, MipsContext *ctx) {
+    uint32_t address = argument(ctx, 0);
+    if (address >= UINT32_C(0x80000000) && address < UINT32_C(0xc0000000)) {
+        mips_set(ctx, 2, address & UINT32_C(0x1fffffff));
+        return;
+    }
+    uint32_t physical;
+    if (rt->resolve_address && rt->resolve_address(rt, address, 1, false, &physical)) {
+        mips_set(ctx, 2, recomp_ram_address(rt, physical, 1));
+        return;
+    }
+    for (unsigned i=0;i<32;i++) {
+        const RecompPageMapping *m=&rt->page_mappings[i];
+        if (m->installed && address>=m->virtual_base
+            && (uint64_t)address<(uint64_t)m->virtual_base+2*m->page_size) {
+            mips_set(ctx,2,recomp_ram_address(rt,address,1));
+            return;
+        }
+    }
+    recomp_fail("osVirtualToPhysical has no native page mapping", address);
+}
+
+void hook_os_create_thread(Runtime *rt, MipsContext *ctx) {
+    /* o32: arguments five and six occupy the caller's outgoing stack area. */
+    uint32_t sp = (uint32_t)ctx->gpr[29];
+    uint32_t stack = (uint32_t)recomp_load(rt, sp + 16, 4);
+    int32_t priority = (int32_t)mips_i32(recomp_load(rt, sp + 20, 4));
+    recomp_thread_create(rt, argument(ctx, 0), signed_argument(ctx, 1), argument(ctx, 2),
+                         argument(ctx, 3), stack, priority);
+}
+void hook_os_start_thread(Runtime *rt, MipsContext *ctx) { recomp_thread_start(rt, argument(ctx, 0)); }
+void hook_os_stop_thread(Runtime *rt, MipsContext *ctx) { recomp_thread_stop(rt, argument(ctx, 0)); }
+void hook_os_destroy_thread(Runtime *rt, MipsContext *ctx) { recomp_thread_destroy(rt, argument(ctx, 0)); }
+void hook_os_yield_thread(Runtime *rt, MipsContext *ctx) { (void)ctx; recomp_thread_yield(rt); }
+void hook_os_get_thread_pri(Runtime *rt, MipsContext *ctx) { result(ctx, recomp_thread_priority(rt, argument(ctx, 0))); }
+void hook_os_get_thread_id(Runtime *rt, MipsContext *ctx) { result(ctx, recomp_thread_id(rt, argument(ctx, 0))); }
+void hook_os_set_thread_pri(Runtime *rt, MipsContext *ctx) { recomp_thread_set_priority(rt, argument(ctx, 0), signed_argument(ctx, 1)); }
+void hook_os_create_mesg_queue(Runtime *rt, MipsContext *ctx) {
+    recomp_queue_create(rt, argument(ctx, 0), argument(ctx, 1), signed_argument(ctx, 2));
+}
+void hook_os_send_mesg(Runtime *rt, MipsContext *ctx) {
+    result(ctx, recomp_queue_send(rt, argument(ctx, 0), argument(ctx, 1), signed_argument(ctx, 2), false));
+}
+void hook_os_jam_mesg(Runtime *rt, MipsContext *ctx) {
+    result(ctx, recomp_queue_send(rt, argument(ctx, 0), argument(ctx, 1), signed_argument(ctx, 2), true));
+}
+void hook_os_recv_mesg(Runtime *rt, MipsContext *ctx) {
+    result(ctx, recomp_queue_recv(rt, argument(ctx, 0), argument(ctx, 1), signed_argument(ctx, 2)));
+}
+void hook_os_set_event_mesg(Runtime *rt, MipsContext *ctx) {
+    recomp_event_bind(rt, argument(ctx, 0), argument(ctx, 1), argument(ctx, 2));
+}
+void hook_os_writeback_dcache_all(Runtime *rt, MipsContext *ctx) {
+    /* CPU-generated code and native backends share coherent host RAM. */
+    (void)rt; (void)ctx;
+}
+void hook_os_cache_range(Runtime *rt, MipsContext *ctx) {
+    /* Validate the range while coherent native RAM supplies cache visibility. */
+    uint32_t bytes = (uint32_t)ctx->gpr[5];
+    if (bytes) recomp_ram_address(rt, argument(ctx, 0), bytes);
+}

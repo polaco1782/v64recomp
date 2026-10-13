@@ -1,0 +1,16 @@
+set(RECOMP_FULL_GENERATED "${CMAKE_SOURCE_DIR}/build/sm64-us/rom/full"
+    CACHE PATH "Generated complete SM64 CPU C directory")
+if(RECOMP_BUILD_RT64 AND EXISTS "${RECOMP_FULL_GENERATED}/functions.c")
+    add_executable(sm64_native_full_rt64 app.c "${RECOMP_FULL_GENERATED}/functions.c")
+    set_target_properties(sm64_native_full_rt64 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+    target_include_directories(sm64_native_full_rt64 PRIVATE "${RECOMP_FULL_GENERATED}")
+    target_compile_definitions(sm64_native_full_rt64 PRIVATE RECOMP_WITH_RT64)
+    target_compile_options(sm64_native_full_rt64 PRIVATE -O2 -g1 -fno-omit-frame-pointer
+        -Wall -Wextra -Werror -Wno-unused-label -fno-fast-math -frounding-math -ffp-contract=off)
+    target_link_options(sm64_native_full_rt64 PRIVATE -rdynamic)
+    target_link_libraries(sm64_native_full_rt64 PRIVATE recomp_renderer)
+    if(RECOMP_BUILD_AUDIO)
+        target_compile_definitions(sm64_native_full_rt64 PRIVATE RECOMP_WITH_AUDIO)
+        target_link_libraries(sm64_native_full_rt64 PRIVATE recomp_audio)
+    endif()
+endif()

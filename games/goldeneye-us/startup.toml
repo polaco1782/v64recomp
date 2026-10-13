@@ -1,0 +1,38 @@
+# Partial startup profile. Checked entries permit registry-based callbacks;
+# unvisited bytes and unsupported functions remain reported.
+extends = "services.toml"
+
+[discovery]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+fallthroughs = [
+  {pc = 0x7f057ea8, expected_word = 0x460a6300, target = 0x7f057eac, reason = "Original cosine wrapper adds its phase then falls into the sine implementation"},
+]
+
+# Read-only acceptance probes. The original getter instructions bind these
+# addresses to this ROM; no game state is patched by the native driver.
+[inspection]
+stage_address = 0x80048364
+stage_reader = 0x7f0bdf04
+stage_words = [0x3c028005, 0x03e00008, 0x8c428364]
+difficulty_address = 0x80048384
+difficulty_reader = 0x7f0bfc10
+difficulty_words = [0x3c028005, 0x03e00008, 0x8c428384]
+dam_stage = 0x21
+title_stage = 0x5a
+
+# Optional session-only override of the frontend unlock query. The switch
+# table identifies exactly the 23 normal Cheat Options; debug/button codes
+# keep their original behavior and no save-completion bits are changed.
+[cheats]
+entry = 0x7f009848
+entry_words = [0x248effff, 0x27bdffe8, 0x2dc1004a, 0x102000b8, 0xafbf0014, 0x000e7080, 0x3c018005, 0x002e0821, 0x8c2e18a0, 0x01c00008, 0x00000000]
+table_address = 0x800518a0
+table_count = 74
+table_sha256 = "064e37379802b1f1dc7fd423e4921ada5164b3c61b48cd2a03819c65b3728f32"
+unavailable_target = 0x7f009874
+unavailable_words = [0x100000b2, 0x00001025]
+allowed_ids = [2, 3, 10, 11, 12, 14, 15, 17, 18, 19, 20, 21, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34]
+levels_address = 0x80036fb4
+levels_reader = 0x7f09100c
+levels_words = [0x3c028003, 0x03e00008, 0x8c426fb4]

@@ -1,0 +1,99 @@
+# GoldenEye startup OS boundaries, verified against the pinned ROM.
+extends = "profile.toml"
+hooks = [
+  {symbol = "osContStartQuery", vram = 0x70014cc0, kind = "replace_function", handler = "hook_os_cont_start_query", expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020]},
+  {symbol = "osContGetQuery", vram = 0x70014d44, kind = "replace_function", handler = "hook_os_cont_get_query", expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020]},
+  {symbol = "osCreateMesgQueue", vram = 0x7000d6d0, kind = "replace_function", handler = "hook_os_create_mesg_queue", expected_words = [0x3c0e8002, 0x3c0f8002, 0x25ce7720]},
+  {symbol = "osStopThread", vram = 0x7000d740, kind = "replace_function", handler = "hook_os_stop_thread", expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038]},
+  {symbol = "osSetThreadPri", vram = 0x7000d800, kind = "replace_function", handler = "hook_os_set_thread_pri", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osGetCount", vram = 0x7000d8e0, kind = "replace_function", handler = "hook_os_get_count", expected_words = [0x40024800, 0x03e00008, 0x00000000]},
+  {symbol = "osCreateViManager", vram = 0x7000d8f0, kind = "replace_function", handler = "hook_os_create_vi_manager", expected_words = [0x3c0e8002, 0x8dce69a0, 0x27bdffd0]},
+  {symbol = "osSetEventMesg", vram = 0x7000dc50, kind = "replace_function", handler = "hook_os_set_event_mesg", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osViSetEvent", vram = 0x7000dcc0, kind = "replace_function", handler = "hook_os_vi_set_event", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osRecvMesg", vram = 0x7000ddd0, kind = "replace_function", handler = "hook_os_recv_mesg", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osSendMesg", vram = 0x7000df10, kind = "replace_function", handler = "hook_os_send_mesg", expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038]},
+  {symbol = "osViSetMode", vram = 0x7000e060, kind = "replace_function", handler = "hook_os_vi_set_mode", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osViRepeatLine", vram = 0x7000e260, kind = "replace_function", handler = "hook_ge_vi_repeat_line", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c00617c, 0xafb00018, 0x93ae002b, 0x00408025, 0x11c00007, 0x00000000, 0x3c0f8003, 0x8def8044, 0x95f80000, 0x37190040]},
+  {symbol = "osViBlack", vram = 0x7000e2d0, kind = "replace_function", handler = "hook_os_vi_black", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c00617c, 0xafb00018, 0x93ae002b, 0x00408025, 0x11c00007, 0x00000000, 0x3c0f8003, 0x8def8044, 0x95f80000, 0x37190020]},
+  {symbol = "osSpTaskYielded", vram = 0x7000e340, kind = "replace_function", handler = "hook_os_sp_task_yielded", expected_words = [0x27bdffe0, 0xafbf0014, 0x0c0063b4]},
+  {symbol = "osViSwapBuffer", vram = 0x7000e490, kind = "replace_function", handler = "hook_os_vi_swap_buffer", expected_words = [0x27bdffe0, 0xafbf0014, 0x0c00617c]},
+  {symbol = "osSpTaskLoad", vram = 0x7000e60c, kind = "replace_function", handler = "hook_os_sp_task_load", expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020]},
+  {symbol = "osSpTaskStartGo", vram = 0x7000e76c, kind = "replace_function", handler = "hook_os_sp_task_start_go", expected_words = [0x27bdffe8, 0xafbf0014, 0x0c0063f0]},
+  {symbol = "osSpTaskYield", vram = 0x7000e860, kind = "replace_function", handler = "hook_os_sp_task_yield", expected_words = [0x27bdffe8, 0xafbf0014, 0x0c0063b8]},
+  {symbol = "osAiSetFrequency", vram = 0x7000e930, kind = "replace_function", handler = "hook_os_ai_set_frequency", expected_words = [0x3c0e8003, 0x8dce804c, 0x44844000]},
+  {symbol = "osGetTime", vram = 0x7000ebb0, kind = "replace_function", handler = "hook_os_get_time", expected_words = [0x27bdffc8, 0xafbf001c, 0x0c00617c]},
+  {symbol = "osAiSetNextBuffer", vram = 0x7000ef00, kind = "replace_function", handler = "hook_os_ai_set_next_buffer", expected_words = [0x27bdffe0, 0x3c0f8002, 0x91ef76f0]},
+  {symbol = "osAiGetLength", vram = 0x7000efb0, kind = "replace_function", handler = "hook_os_ai_get_length", expected_words = [0x3c0ea450, 0x03e00008, 0x8dc20004]},
+  {symbol = "osPiStartDma", vram = 0x7000f6a0, kind = "replace_function", handler = "hook_os_pi_start_dma", expected_words = [0x27bdffd8, 0x3c0e8002, 0x8dce7790]},
+  {symbol = "osViSetSpecialFeatures", vram = 0x7000f7b0, kind = "replace_function", handler = "hook_os_vi_set_special_features", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osSetTimer", vram = 0x70010c50, kind = "replace_function", handler = "hook_os_set_timer", expected_words = [0x27bdffe0, 0xafa40020, 0x8fae0020]},
+  {symbol = "osCreatePiManager", vram = 0x700145b0, kind = "replace_function", handler = "hook_os_create_pi_manager", expected_words = [0x27bdffd0, 0x3c0e8002, 0x8dce7790]},
+  {symbol = "osContInit", vram = 0x70014900, kind = "replace_function", handler = "hook_os_cont_init", expected_words = [0x27bdff80, 0x3c0e8002, 0x8dce77b0]},
+  {symbol = "osContStartReadData", vram = 0x70014d70, kind = "replace_function", handler = "hook_os_cont_start_read", expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020]},
+  {symbol = "osContGetReadData", vram = 0x70014e34, kind = "replace_function", handler = "hook_os_cont_get_read", expected_words = [0x3c0f8006, 0x91ef7ce1, 0x3c0e8006]},
+  {symbol = "osEepromProbe", vram = 0x70014fd0, kind = "replace_function", handler = "hook_os_eeprom_probe", expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020]},
+  {symbol = "osEepromLongRead", vram = 0x70015820, kind = "replace_function", handler = "hook_os_eeprom_long_read", expected_words = [0x27bdffc0, 0xafa50044, 0x93ae0047]},
+  {symbol = "osEepromLongWrite", vram = 0x70015960, kind = "replace_function", handler = "hook_os_eeprom_long_write", expected_words = [0x27bdffc0, 0xafa50044, 0x93ae0047]},
+  {symbol = "osGetThreadPri", vram = 0x70018a30, kind = "replace_function", handler = "hook_os_get_thread_pri", expected_words = [0x14800003, 0x00000000, 0x3c048002]},
+  {symbol = "osJamMesg", vram = 0x7001b6b0, kind = "replace_function", handler = "hook_os_jam_mesg", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osPiGetCmdQueue", vram = 0x7001b800, kind = "replace_function", handler = "hook_os_pi_get_cmd_queue", expected_words = [0x3c0e8002, 0x8dce7790, 0x15c00003]},
+  {symbol = "osDestroyThread", vram = 0x7001bb60, kind = "replace_function", handler = "hook_os_destroy_thread", expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038]},
+  {symbol = "osPiRawReadIo", vram = 0x70017be0, kind = "replace_function", handler = "hook_os_pi_raw_read_io", expected_words = [0x3c0ea460, 0x8dc60010, 0x27bdfff8]},
+  {symbol = "__osGetTLBHi", vram = 0x7000e880, kind = "replace_function", handler = "hook_ge_tlb_hi", expected_words = [0x40840000, 0x00000000, 0x42000001]},
+  {symbol = "__osDisableInt", vram = 0x700185f0, kind = "replace_function", handler = "hook_os_disable_int", expected_words = [0x40086000, 0x2401fffe, 0x01014824]},
+  {symbol = "__osRestoreInt", vram = 0x70018610, kind = "replace_function", handler = "hook_os_restore_int", expected_words = [0x40086000, 0x01044025, 0x40886000]},
+  {symbol = "osSetIntMask", vram = 0x7000dd30, kind = "replace_function", handler = "hook_ge_int_mask", expected_words = [0x400c6000, 0x3182ff01, 0x3c088002]},
+  {symbol = "osInvalDCache", vram = 0x70010b20, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a0001f, 0x00000000, 0x240b2000]},
+  {symbol = "osWritebackDCache", vram = 0x70010bd0, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x00000000, 0x240b2000]},
+  {symbol = "osDpGetCounters", vram = 0x7000e3c0, kind = "replace_function", handler = "hook_ge_dp_counters", expected_words = [0x3c0ea410, 0x8dcf0010, 0x3c18a410]},
+  {symbol = "osDpSetStatus", vram = 0x7000e4e0, kind = "replace_function", handler = "hook_ge_dp_status", expected_words = [0x3c0ea410, 0x03e00008, 0xadc4000c]},
+  {symbol = "osViGetCurrentFramebuffer", vram = 0x7000e410, kind = "replace_function", handler = "hook_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0x0c00617c]},
+  {symbol = "osViGetNextFramebuffer", vram = 0x7000e450, kind = "replace_function", handler = "hook_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0x0c00617c]},
+  {symbol = "__osSetCompare", vram = 0x7001f8e0, kind = "replace_function", handler = "hook_ge_set_compare", expected_words = [0x40845800, 0x03e00008, 0x00000000]},
+]
+checkpoints = [
+  {pc = 0x7000071c, expected_word = 0x1000ffff, kind = "yield", reason = "Yield the original GoldenEye idle loop"},
+]
+
+[discovery]
+roots = [
+  {name = "idleproc", vram = 0x70000718},
+  {name = "rmonMain", vram = 0x7000cea0},
+  {name = "scheduler_thread", vram = 0x70000d00},
+  {name = "tlbRandomGetNext", vram = 0x70001b10},
+]
+
+[runtime]
+thread_tail = 0x80027720
+run_queue = 0x80027728
+active_queue = 0x8002772c
+running_thread = 0x80027730
+event_table = 0x80066a10
+
+[platform]
+clock_rate = 0x80026980
+final_rom = 0x800657e0
+vi_clock = 0x8002804c
+timer_list = 0x80027fd0
+current_time = 0x80068e10
+base_counter = 0x80068e18
+vi_intr_count = 0x80068e1c
+app_nmi_buffer = 0x8000031c
+
+[bootstrap]
+timer_sentinel = 0x80068df0
+idle_entry = 0x70000718
+idle_thread_id = 1
+idle_words = [0xafa40000, 0x1000ffff, 0x00000000]
+
+[pager]
+virtual_base = 0x7f000000
+rom_offset = 0x34b30
+virtual_pages = 128
+slots = 90
+management_table = 0x8005dbf0
+slot_table = 0x8005e3f0
+buffer_pointer = 0x8005e4a8
+random_state = 0x800230e0
+miss_count = 0x800230d0
+current_slot = 0x800230d4
