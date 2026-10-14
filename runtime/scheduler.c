@@ -1,18 +1,18 @@
-#define _DEFAULT_SOURCE 1
-#define MINICORO_IMPL
-#define MCO_USE_VMEM_ALLOCATOR
-#define MCO_NO_DEBUG
-#include "minicoro.h"
+#define _GNU_SOURCE 1
+#include <pthread.h>
 
 #include "runtime.h"
 #include <stdatomic.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct NativeQueue NativeQueue;
 typedef struct NativeThread {
     struct NativeThread *next;
     Runtime *runtime;
-    mco_coro *coroutine;
+    pthread_t native;
+    pthread_cond_t resume;
+    bool native_live, running, exiting;
     MipsContext context;
     RecompFunction entry;
     uint32_t object, key;
@@ -21,7 +21,6 @@ typedef struct NativeThread {
     NativeQueue *wait_queue;
     uint64_t order;
     unsigned checkpoints;
-    uintptr_t trace_ceiling;
 } NativeThread;
 
 struct NativeQueue {
@@ -41,12 +40,53 @@ struct RecompScheduler {
     uint32_t pending[PENDING_EVENTS];
     unsigned pending_first, pending_count;
     bool polling;
+    pthread_t owner;
+    pthread_mutex_t mutex;
+    pthread_cond_t returned;
+    void (*host_callback)(Runtime *, void *);
+    void *host_userdata;
 };
+
+static _Thread_local NativeThread *guest_thread;
 
 static RecompScheduler *scheduler(Runtime *rt) {
     if (!rt->scheduler) recomp_fail("scheduler not initialized", 0);
     return rt->scheduler;
 }
+void recomp_on_host(Runtime *rt, void (*callback)(Runtime *, void *), void *userdata) {
+    RecompScheduler *s = rt->scheduler;
+    if (!s || pthread_equal(pthread_self(), s->owner)) {
+        callback(rt, userdata);
+        return;
+    }
+    if (!guest_thread || guest_thread != s->current)
+        recomp_fail("host callback outside guest/owner thread", 0);
+    /* The execution token owns mutex throughout translated code. The host
+     * acquires it only while this thread is parked on its condition variable. */
+    s->host_callback = callback;
+    s->host_userdata = userdata;
+    pthread_cond_signal(&s->returned);
+    while (s->host_callback) pthread_cond_wait(&guest_thread->resume, &s->mutex);
+}
+
+static void report_guest_failure(Runtime *rt, void *opaque) {
+    (void)rt;
+    recomp_dispatch_failure(opaque);
+}
+static void guest_failure(const RecompFailureInfo *info, void *opaque) {
+    recomp_on_host(opaque, report_guest_failure, (void *)info);
+}
+
+static void join_thread(RecompScheduler *s, NativeThread *t) {
+    if (!t->native_live) return;
+    t->exiting = true;
+    pthread_cond_signal(&t->resume);
+    pthread_mutex_unlock(&s->mutex);
+    if (pthread_join(t->native, NULL)) recomp_fail("pthread join failed", t->object);
+    pthread_mutex_lock(&s->mutex);
+    t->native_live = false;
+}
+
 size_t recomp_thread_snapshots(Runtime *rt,RecompThreadSnapshot *out,size_t capacity) {
     if (!rt->scheduler || !out) return 0;
     size_t count=0;
@@ -179,13 +219,19 @@ static void suspend(Runtime *rt, RecompThreadState state) {
     t->state = state;
     t->order = ticket(s);
     sync_guest(rt);
-    if (mco_yield(t->coroutine) != MCO_SUCCESS) recomp_fail("coroutine yield failed", t->object);
+    t->running = false;
+    pthread_cond_signal(&s->returned);
+    while (!t->running && !t->exiting) pthread_cond_wait(&t->resume, &s->mutex);
+    if (t->exiting) {
+        pthread_mutex_unlock(&s->mutex);
+        pthread_exit(NULL);
+    }
 }
 
 static void preempt(Runtime *rt) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *candidate = best(s, RECOMP_READY, NULL, NULL);
-    if (!s->polling && s->current && candidate && candidate->priority > s->current->priority)
+    if (guest_thread && !s->polling && s->current && candidate && candidate->priority > s->current->priority)
         suspend(rt, RECOMP_READY);
 }
 
@@ -206,19 +252,29 @@ static void retire(NativeThread *t) {
     recomp_store(t->runtime, t->object + 0x10, RECOMP_OS_STOPPED, 2);
 }
 
-static void enter(mco_coro *coroutine) {
-    unsigned char trace_boundary=0;
-    NativeThread *t = mco_get_user_data(coroutine);
-    t->trace_ceiling=(uintptr_t)&trace_boundary;
-    recomp_set_trace_ceiling(t->trace_ceiling);
-    const RecompSchedulerConfig *config = &scheduler(t->runtime)->config;
-    bool stop = config->stop_before_entry == t->context.pc;
-    for (size_t i = 0; i < config->stop_before_count; i++)
-        if (config->stop_before_entries[i] == t->context.pc) stop = true;
-    if (stop)
-        suspend(t->runtime, RECOMP_STOPPED);
-    t->entry(t->runtime, &t->context);
-    retire(t);
+static void *enter(void *opaque) {
+    NativeThread *t = opaque;
+    RecompScheduler *s = scheduler(t->runtime);
+    guest_thread = t;
+    recomp_set_failure_handler(guest_failure, t->runtime);
+    char name[16];
+    snprintf(name, sizeof(name), "n64-%d", t->id);
+    pthread_setname_np(pthread_self(), name);
+    pthread_mutex_lock(&s->mutex);
+    while (!t->running && !t->exiting) pthread_cond_wait(&t->resume, &s->mutex);
+    if (!t->exiting) {
+        const RecompSchedulerConfig *config = &s->config;
+        bool stop = config->stop_before_entry == t->context.pc;
+        for (size_t i = 0; i < config->stop_before_count; i++)
+            if (config->stop_before_entries[i] == t->context.pc) stop = true;
+        if (stop) suspend(t->runtime, RECOMP_STOPPED);
+        t->entry(t->runtime, &t->context);
+        retire(t);
+    }
+    t->running = false;
+    pthread_cond_signal(&s->returned);
+    pthread_mutex_unlock(&s->mutex);
+    return NULL;
 }
 
 static void lock_pending(RecompScheduler *s) {
@@ -244,7 +300,8 @@ static void deliver_events(Runtime *rt) {
     }
 }
 
-static void poll(Runtime *rt) {
+static void poll_on_host(Runtime *rt, void *unused) {
+    (void)unused;
     RecompScheduler *s = scheduler(rt);
     if (s->polling) return;
     /* A timer/VI/DMA service finishes updating its records before guest code
@@ -260,11 +317,14 @@ static void poll(Runtime *rt) {
     s->polling = false;
 }
 
+static void poll(Runtime *rt) { recomp_on_host(rt, poll_on_host, NULL); }
+
 static void checkpoint(Runtime *rt, bool force_yield) {
     if (rt->interrupts_disabled) return;
     RecompScheduler *s = scheduler(rt);
-    poll(rt);
-    if (!s->current) return;
+    if (!guest_thread) { poll(rt); return; }
+    /* The host polls between dispatches. Avoid a kernel rendezvous at every
+     * backedge; the configured interval bounds service/preemption latency. */
     unsigned interval = s->config.checkpoint_interval ? s->config.checkpoint_interval : 64;
     if (force_yield || ++s->current->checkpoints >= interval) {
         s->current->checkpoints = 0;
@@ -289,6 +349,11 @@ bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
     }
     RecompScheduler *s = calloc(1, sizeof(*s));
     if (!s) return false;
+    s->owner = pthread_self();
+    if (pthread_mutex_init(&s->mutex, NULL)) { free(s); return false; }
+    if (pthread_cond_init(&s->returned, NULL)) {
+        pthread_mutex_destroy(&s->mutex); free(s); return false;
+    }
     s->config = *config;
     s->pending_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     rt->scheduler = s;
@@ -305,10 +370,12 @@ bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
 void recomp_scheduler_destroy(Runtime *rt) {
     RecompScheduler *s = rt->scheduler;
     if (!s) return;
-    if (s->current) recomp_fail("cannot destroy scheduler inside a guest coroutine", s->current->object);
+    if (s->current) recomp_fail("cannot destroy scheduler inside a guest thread", s->current->object);
+    pthread_mutex_lock(&s->mutex);
     for (NativeThread *t = s->threads; t;) {
         NativeThread *next = t->next;
-        if (t->coroutine && mco_destroy(t->coroutine) != MCO_SUCCESS) recomp_fail("coroutine destruction failed", t->object);
+        join_thread(s, t);
+        pthread_cond_destroy(&t->resume);
         free(t);
         t = next;
     }
@@ -317,6 +384,9 @@ void recomp_scheduler_destroy(Runtime *rt) {
         free(q);
         q = next;
     }
+    pthread_mutex_unlock(&s->mutex);
+    pthread_cond_destroy(&s->returned);
+    pthread_mutex_destroy(&s->mutex);
     free(s);
     rt->scheduler = NULL;
     rt->destroy_scheduler = NULL;
@@ -325,7 +395,9 @@ void recomp_scheduler_destroy(Runtime *rt) {
 
 RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
     RecompScheduler *s = scheduler(rt);
-    if (s->current || !max_resumes) recomp_fail("invalid or nested scheduler run", 0);
+    if (!pthread_equal(pthread_self(), s->owner) || s->current || !max_resumes)
+        recomp_fail("invalid or nested scheduler run", 0);
+    pthread_mutex_lock(&s->mutex);
     for (size_t count = 0; count < max_resumes; count++) {
         poll(rt);
         NativeThread *t = best(s, RECOMP_READY, NULL, NULL);
@@ -335,19 +407,23 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         s->current = t;
         t->state = RECOMP_RUNNING;
         sync_guest(rt);
-        recomp_set_trace_ceiling(t->trace_ceiling);
-        mco_result resumed=mco_resume(t->coroutine);
-        recomp_set_trace_ceiling(0);
-        if (resumed != MCO_SUCCESS) recomp_fail("coroutine resume failed", t->object);
-        s->current = NULL;
-        if (t->state == RECOMP_RUNNING) recomp_fail("coroutine returned without a state transition", t->object);
-        if (t->state == RECOMP_DEAD && t->coroutine) {
-            if (mco_destroy(t->coroutine) != MCO_SUCCESS) recomp_fail("coroutine destruction failed", t->object);
-            t->coroutine = NULL;
+        t->running = true;
+        pthread_cond_signal(&t->resume);
+        while (t->running) {
+            pthread_cond_wait(&s->returned, &s->mutex);
+            if (s->host_callback) {
+                s->host_callback(rt, s->host_userdata);
+                s->host_callback = NULL;
+                pthread_cond_signal(&t->resume);
+            }
         }
+        s->current = NULL;
+        if (t->state == RECOMP_RUNNING) recomp_fail("pthread returned without a state transition", t->object);
+        if (t->state == RECOMP_DEAD) join_thread(s, t);
         sync_guest(rt);
     }
     NativeThread *next = best(s, RECOMP_READY, NULL, NULL);
+    pthread_mutex_unlock(&s->mutex);
     if (next) return host_idle(s, next) ? RECOMP_RUN_WAITING : RECOMP_RUN_BUDGET;
     bool stopped = false;
     for (NativeThread *t = s->threads; t; t = t->next) {
@@ -371,8 +447,10 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
         if (t->key == key) {
             if (t->state != RECOMP_DEAD) recomp_fail("thread object is already active", object);
             *link = t->next;
-            if (t->coroutine && mco_destroy(t->coroutine) != MCO_SUCCESS)
-                recomp_fail("coroutine destruction failed", t->object);
+            if (!guest_thread) pthread_mutex_lock(&s->mutex);
+            join_thread(s, t);
+            if (!guest_thread) pthread_mutex_unlock(&s->mutex);
+            pthread_cond_destroy(&t->resume);
             free(t);
             break;
         }
@@ -389,11 +467,17 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     t->context.gpr[31] = mips_s32(UINT32_C(0xf0000000));
     t->context.fcr31 = UINT32_C(0x01000800);
     t->context.fpu_fr1 = s->config.fpu_fr1;
-    mco_desc description = mco_desc_init(enter, s->config.native_stack_size);
-    description.user_data = t;
-    if (mco_create(&t->coroutine, &description) != MCO_SUCCESS) {
-        free(t); recomp_fail("coroutine allocation failed", object);
+    if (pthread_cond_init(&t->resume, NULL)) { free(t); recomp_fail("pthread condition allocation failed", object); }
+    pthread_attr_t attributes;
+    if (pthread_attr_init(&attributes)) recomp_fail("pthread attribute allocation failed", object);
+    if (s->config.native_stack_size && pthread_attr_setstacksize(&attributes, s->config.native_stack_size))
+        recomp_fail("invalid pthread stack size", object);
+    int created = pthread_create(&t->native, &attributes, enter, t);
+    pthread_attr_destroy(&attributes);
+    if (created) {
+        pthread_cond_destroy(&t->resume); free(t); recomp_fail("pthread allocation failed", object);
     }
+    t->native_live = true;
     t->next = s->threads; s->threads = t;
     for (unsigned i = 0; i < bytes; i++) recomp_store(rt, object + i, 0, 1);
     recomp_store(rt, object + 0x14, (uint32_t)id, 4);
@@ -434,10 +518,10 @@ void recomp_thread_destroy(Runtime *rt, uint32_t object) {
         suspend(rt, RECOMP_DEAD);
         recomp_fail("destroyed thread was resumed", t->object);
     } else {
-        if (t->coroutine) {
-            if (mco_destroy(t->coroutine) != MCO_SUCCESS) recomp_fail("coroutine destruction failed", t->object);
-            t->coroutine = NULL;
-        }
+        RecompScheduler *s = scheduler(rt);
+        if (!guest_thread) pthread_mutex_lock(&s->mutex);
+        join_thread(s, t);
+        if (!guest_thread) pthread_mutex_unlock(&s->mutex);
         sync_guest(rt);
     }
 }

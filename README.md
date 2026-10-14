@@ -150,15 +150,22 @@ memory/string operations. Unrecognized ordinary routines keep their translated
 CPU code. Game-specific adapters handle custom behavior such as virtual-memory
 paging or graphics extensions.
 
-Guest threads run through a coroutine scheduler. Blocking OS operations can
-yield a thread and resume another according to the guest scheduler state.
+Guest threads use native pthreads with a scheduler-controlled execution token.
+Blocking OS operations park a thread and resume another according to guest
+priorities. One guest CPU thread runs at a time, preserving interrupt critical
+sections. Generated checkpoints provide safe scheduling and event boundaries.
 Native services preserve guest memory structures, calling conventions and
 completion events expected by the translated game.
+See [native threading](docs/threading.md) for scheduling and worker ownership.
 
 Graphics tasks pass to RT64 for Vulkan rendering. The translated game's audio
 code builds command lists; the shared native audio backend executes supported,
 verified ABI1 tasks to produce PCM in guest RAM. The native AI service supplies
-buffer timing and completion events, and SDL plays the samples. These task
+buffer timing and completion events, and SDL plays the samples. Audio synthesis,
+graphics display lists and presentation run on processing workers. Task workers
+use private RAM snapshots; the host commits changed bytes before publishing SP
+and DP events, and rejects conflicting guest writes to task output. SDL window
+and input operations stay on the main thread. These task
 backends implement supported graphics/audio behavior rather than translating
 RSP microcode through the CPU translator. See [audio](docs/audio.md).
 
@@ -200,6 +207,391 @@ needs investigation before its address is treated as executable code.
 Crash JSON covers failures routed through `recomp_fail`. Host faults outside
 those checks require a debugger or core dump. Early input/configuration errors
 and compiler failures may only produce terminal output or build logs.
+
+## MIPS → C → x86-64 in detail
+
+The input is VR4300 machine code, with fixed 4-byte instructions. The intermediate
+representation is C11 that explicitly models guest CPU state. GCC or Clang then
+optimizes that C and emits x86-64 machine code ahead of time. Rabbitizer supplies
+instruction decoding; [discovery](tools/discover.py),
+[validation and generation](tools/translate.py), and [lowering](tools/emit.py)
+are this project's own tools. The current floating-point backend requires Linux
+x86-64 SSE2, even though C is used between the two instruction sets.
+
+The generated C preserves the binary's operations and addresses. It does not
+recover the original source's types, local variables or structured loops. A
+guest function becomes a C function with this interface:
+
+```c
+void recomp_s0_80248c40(Runtime *runtime, MipsContext *ctx);
+```
+
+The name identifies section 0 and guest entry address `0x80248C40`. `runtime`
+provides memory and native services; `ctx` holds that guest thread's registers.
+The final executable contains compiled game functions, their address registry
+and the native runtime. The ROM still supplies assets and bytes needed by guest
+loading behavior. Loading a code section enables its already compiled functions;
+there is no runtime CPU translation or instruction-fetch/decode loop.
+
+### Static analysis: finding instructions and their owners
+
+Discovery uses a worklist of function entries and, within each function, a
+worklist of instruction addresses. The starting entries come from the ROM entry
+point, profile roots, checked inventories and native replacement boundaries.
+For each guest address, its configured region determines the ROM offset:
+
+```text
+rom_offset = region.rom_offset + (guest_address - region.vram)
+```
+
+The walker decodes a word, records it and queues successors. Previously expanded
+addresses are skipped, so a loop does not make discovery loop forever. The
+successors depend on the decoded instruction:
+
+| Instruction or transfer | Static treatment |
+| --- | --- |
+| Ordinary instruction | Visit `pc + 4`. |
+| Conditional branch | Include the delay slot at `pc + 4`, then explore the target and `pc + 8` continuation. |
+| `jal` | Add the encoded destination as a function entry; include the slot and continue the caller at `pc + 8`. |
+| `j` | Follow a local destination or recognize a transfer to another function. |
+| `jr $ra` | Include the slot and terminate this return path. |
+| Other `jr` / `jalr` | Require checked transfer information or the explicitly enabled registered-indirect-call policy. |
+| `break` | Terminate the path at a fatal trap. |
+| `syscall` / `eret` | Report the need for a native exception/OS boundary. |
+
+A relative branch target is `(pc + 4 + sign_extend(imm16) * 4) mod 2^32`.
+For `j` and `jal`, the target combines the high four bits of `pc + 4` with the
+instruction's 26-bit target field shifted left by two. These destinations can
+be computed from the ROM without executing the instruction.
+
+Discovery prunes elementary identities such as `beq r, r` being always taken
+and `bne r, r` being never taken. Emission also simplifies conditions proven
+from the zero register. There is no general register-value propagation,
+symbolic execution or automatic reconstruction of arbitrary function pointers.
+A value assembled by several instructions does not automatically become a
+checked indirect target.
+
+Checked jump/function tables bridge that gap: the profile records the transfer
+instruction's address and expected word, the table address and length, and a
+SHA-256 of its ROM bytes. Discovery verifies these before reading the selected
+table entries. Local computed jumps become a C `switch` over allowed guest
+addresses, with a failure for an unlisted target. Registered indirect calls
+instead resolve the register's value against the compiled function registry at
+runtime; they cannot execute an arbitrary RAM address.
+
+Finding another call target can change an earlier apparent local jump into a
+transfer to a separate function. Discovery therefore walks again with the
+expanded entry set before assigning instruction ownership. Functions that claim
+the same instruction are omitted pending review. Unmapped targets, invalid
+slots, unresolved transfers and discovery limits become explicit diagnostics.
+The metadata records visited instruction addresses, rather than assuming every
+byte between a function's first and last address was reached.
+
+A complete checked inventory adds reviewed code/data boundaries to this walk.
+Within a CPU-code range, successive checked entries define function spans;
+the tool retains otherwise unreachable words in those spans and verifies their
+bytes. This can preserve unused functions, alternate entries and padding that
+reachability alone would miss. SM64's measured inventory below retains 4,755
+words outside the initial walks. Mapping a ROM region alone provides none of
+that classification. Discovery also currently rejects overlapping region
+mappings; it does not infer overlay ownership automatically.
+
+Before writing C, a second analysis checks supported opcodes, floating-point
+register constraints, delay slots, transfer metadata and whether required
+callees are included in the selected output. Coverage records `ready`, `hooked`,
+`boundary` and `unsupported` functions. Ordinary selected functions with errors
+block generation. These checks establish the translation's explicit boundaries;
+runtime behavior still needs validation.
+
+### Lowering guest state and control flow into C
+
+[`MipsContext`](include/recomp.h) contains 32 64-bit general registers, HI/LO,
+floating-point register bits and FCR31. Guest `$sp` is an address in guest RAM;
+it is independent of the host's stack pointer. Guest stack loads/stores still
+use memory helpers, while nested translated calls also create host C frames.
+
+The helper layer preserves distinctions that ordinary C expressions can lose:
+
+- Register zero reads as a constant zero, and `mips_set(ctx, 0, value)` discards
+  the write. Tiny helpers are inline, so these decisions can disappear during
+  compilation.
+- `addiu`/`addu` wrap at 32 bits and sign-extend into a 64-bit register. The
+  unsigned suffix does not mean their results are zero-extended. `addi`/`add`
+  additionally detect signed overflow and report the guest trap.
+- Shifts mask the count to the guest width. Multiply/divide helpers produce
+  guest HI/LO results, including division corner cases.
+- Loads/stores use 32-bit guest addresses, enforce supported widths and
+  alignment, resolve aliases/pages, and preserve guest byte order. RDRAM uses
+  word-swapped storage for RT64; a byte at physical offset `p` is stored at
+  `rdram[p ^ 3]`.
+- Floating-point helpers operate on raw register bits and preserve the supported
+  rounding, exception and legacy MIPS NaN behavior. They do not substitute
+  unrestricted host floating-point arithmetic.
+
+Local branches use C conditions and `goto` labels. A branch condition must be
+tested **before** its delay slot changes any input registers. For example:
+
+```asm
+beq   $a0, $zero, target
+addiu $a0, $a0, 1          # delay slot: executes on either branch outcome
+```
+
+The following simplified fragment shows the emitter's ordering:
+
+```c
+if (ctx->gpr[4] == 0) {
+    mips_set(ctx, 4, mips_s32(ctx->gpr[4] + 1));
+    goto target;
+}
+mips_set(ctx, 4, mips_s32(ctx->gpr[4] + 1));
+goto continuation;
+```
+
+Only one copy of the slot executes on a path. A branch-likely instruction omits
+the untaken path's slot. Slot addresses remain independently reachable when
+another branch targets them. Backward local transfers include scheduler
+checkpoints; verified profile sites can request a yield.
+
+For `jal`, generated code writes the guest return address `pc + 8` into `$ra`,
+runs the slot, invokes the callee, then continues after the slot. For `jalr`, it
+captures the destination before updating the link register or executing the
+slot. Ordinary function calls use `recomp_lookup`, including calls whose MIPS
+destination is fixed. Unique verified native hooks use a direct C handler call
+with `recomp_prepare_direct_call` to retain loaded-section and preparation
+checks. Guest return addresses remain meaningful even though host C frames
+carry the usual return/resumption flow. `ctx->pc` tracks selected diagnostic
+locations; it is not an interpreter's instruction pointer.
+
+### A real MIPS → C → x86-64 example
+
+SM64 US function `func_80248c40` begins with these ROM instructions:
+
+```asm
+# Guest PC   ROM word
+# 80248C40   3C018033
+lui  $at, 0x8033
+# 80248C44   A020D600
+sb   $zero, -0x2A00($at)
+# 80248C48   03E00008
+jr   $ra
+# 80248C4C   00000000
+nop                         # return's delay slot
+```
+
+The first two instructions clear the byte at guest address `0x8032D600`.
+Their actual generated C is:
+
+```c
+/* 80248c40: lui $at, 0x8033 */
+mips_set(ctx, 1, UINT64_C(0xffffffff80330000));
+/* 80248c44: sb $zero, -0x2A00($at) */
+recomp_store(runtime, ctx->gpr[1] - 10752, UINT64_C(0), 1);
+```
+
+`lui` produces the sign-extended 32-bit value in `$at`. The store's address
+argument narrows to 32 bits; subtracting `0x2A00` produces `0x8032D600`.
+There is no host pointer embedded at that guest address.
+
+GCC 16.2.1 at `-O2` produced the following relevant x86-64 instructions in the
+compiled object. This excerpt omits the surrounding prologue, saved guest return
+address and return checks; unrelated instructions between these operations are
+also omitted:
+
+```asm
+# System V arguments at entry: rdi = runtime, rsi = ctx
+mov  ecx, 1                                      # store width
+xor  edx, edx                                    # value = 0
+mov  QWORD PTR [rsi+8], 0xffffffff80330000         # ctx->gpr[1]
+mov  esi, 0x8032d600                              # guest address
+call recomp_store                               # object relocation
+```
+
+The compiler inlines `mips_set`, folds the effective address into a constant,
+and arranges `runtime`, address, value and width in host argument registers.
+The five displayed instructions occupy 28 bytes versus 8 bytes for the two
+MIPS operations: 3.5× for this excerpt. The shared `recomp_store` body and the
+omitted function machinery are excluded from that local ratio. Instruction
+mapping is consequently many-to-many: the optimizer can merge several guest
+operations, eliminate dead operations or expand one operation into checks and
+helper calls.
+
+### Compiler intrinsics and their performance effect
+
+`USE_INTRISICS` is the existing build switch, with that exact spelling. It
+defaults to `1` in `include/recomp.h`; defining it as `0` selects the fallback.
+Intrinsics are compiler-recognized operations that lower to host instructions.
+They are distinct from ordinary inline C helpers, which the optimizer can also
+turn into efficient instructions.
+
+For signed 32-bit guest `ADD`/`SUB`, GCC/Clang overflow builtins express both the
+arithmetic result and its overflow condition:
+
+```c
+int32_t result;
+if (__builtin_add_overflow((int32_t)x, (int32_t)y, &result))
+    recomp_fail("signed ADD overflow", 0);
+return mips_s32(result);
+```
+
+On x86, this lets the compiler use an addition and its overflow flag, typically
+an `add` followed by `jo`, instead of explicitly calculating overflow with
+several XOR/AND operations. The fallback performs that portable bit calculation;
+the optimizer may recognize it too. There is no fixed speedup per builtin.
+Wrapping `ADDU`/`ADDIU` already use ordinary unsigned arithmetic and do not need
+an overflow intrinsic.
+
+The larger intrinsic path is in [`runtime/fpu.c`](runtime/fpu.c). Single-precision
+operations use `_mm_add_ss`, `_mm_mul_ss`, `_mm_div_ss` and related scalar SSE
+intrinsics; doubles use the SSE2 `_sd` counterparts. For example, the arithmetic
+core of guest `ADD.S` includes:
+
+```c
+__m128 vx = _mm_set_ss(x), vy = _mm_set_ss(y);
+z = _mm_cvtss_f32(_mm_add_ss(vx, vy));
+```
+
+That core lowers to scalar `addss` (or an equivalent encoding). It processes
+one guest value, even though XMM registers can hold vectors. It does not batch
+four guest instructions or reorder their exceptions. Register decoding, operand
+checks, result handling and FCR31 updates still surround the arithmetic.
+
+The runtime saves MXCSR, installs guest rounding, clears host exception flags,
+masks host traps and disables DAZ/FTZ. After the operation it collects exception
+flags and restores MXCSR and `errno`. This avoids the fallback's full
+`feholdexcept`/`fesetround`/`fetestexcept`/`fesetenv` sequence for binary
+arithmetic, square roots and comparisons, while leaving x87 state untouched.
+Conversions can call libm and retain full `fenv` isolation in both modes.
+Even the fallback can compile its ordinary arithmetic to SSE; much of the
+intrinsic path's gain comes from the smaller environment-management path.
+Both modes still require the current x86-64 backend and strict floating-point
+compiler flags. See [floating-point support](docs/fpu.md) for its limits.
+
+To compile both generated game code and runtime with the fallback, configure a
+separate build after generating SM64's C:
+
+```sh
+cmake -S . -B build/renderer-no-intrinsics -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DRECOMP_BUILD_RT64=ON \
+  -DCMAKE_C_FLAGS=-DUSE_INTRISICS=0
+cmake --build build/renderer-no-intrinsics --target sm64_native_full_rt64
+```
+
+### Measured code expansion
+
+Measured on **2026-10-14**, using SM64 US's complete generated output and its
+up-to-date GCC 16.2.1 Linux x86-64 renderer-build object. Generated game code uses
+effective `-O2`, `-g1`, `-fno-omit-frame-pointer`, `-fno-fast-math`,
+`-frounding-math` and `-ffp-contract=off`, with intrinsics enabled and no LTO.
+The output registers 4,373 translated functions and 52 native hooks.
+
+| Representation | Bytes | MiB | Relative to translated MIPS bytes |
+| --- | ---: | ---: | ---: |
+| MIPS instructions in translated functions | 1,203,360 | 1.15 | 1.00× |
+| Generated `functions.c` text | 37,720,792 | 35.97 | 31.35× |
+| Compiled `functions.c.o` executable `.text` | 5,466,168 | 5.21 | 4.54× |
+
+The MIPS denominator is 300,840 instruction words, including retained
+unreachable words inside checked function spans. The inventory's `code` total
+is 1,203,388 bytes; its 28 bytes of leading zero padding are excluded here.
+Native-replaced bodies, data and RSP microcode are also excluded. The C file
+includes comments, labels and registry definitions, so its ratio measures source
+text expansion, not executable instructions. It contains 963,269 lines.
+
+The x86 number counts the generated object's `.text`, including emitted helper
+calls, checks and function alignment. It excludes shared runtime/helper bodies,
+RT64, assets, registry data, unwind tables, debug information and the rest of
+the executable. The generated machine code averages **18.17 bytes per 4-byte
+MIPS word**; it is about 14.49% of the C source's byte size. Whole executable
+size or whole ROM size would answer a different question.
+
+To reproduce the measurement from an existing renderer build:
+
+```sh
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+base = Path('build/sm64-us/rom/full')
+report = json.loads((base / 'coverage.json').read_text())
+inventory = report['code_inventory']
+mips_bytes = inventory['cpu_words'] * 4
+c_bytes = (base / 'functions.c').stat().st_size
+print(f'MIPS: {mips_bytes:,} bytes')
+print(f'C: {c_bytes:,} bytes ({c_bytes / mips_bytes:.2f}x)')
+PY
+
+obj=build/renderer/games/sm64-us/CMakeFiles/sm64_native_full_rt64.dir/__/__/build/sm64-us/rom/full/functions.c.o
+ninja -C build/renderer -n "${obj#build/renderer/}"
+size -A "$obj"                   # use .text, not Total or object file size
+objdump -dr -Mintel --disassemble=recomp_s0_80248c40 "$obj"
+```
+
+The denominator formula above applies to this complete SM64 inventory and full
+generation. For partial builds, count only the instruction addresses belonging
+to selected `ready` functions. Regenerate and build first if the Ninja check
+reports pending compilation. Ratios vary with game, compiler, optimization,
+sanitizers, debug configuration and translator changes.
+
+### Where execution becomes faster
+
+Ahead-of-time compilation removes repeated CPU instruction decoding and opcode
+dispatch. The host compiler sees operations across whole C basic blocks and can
+fold constants, inline small helpers, eliminate redundant computations and use
+host registers. In the byte-store example it computes the guest address once
+at compile time. These benefits explain why larger native code can execute
+efficiently; a 4.54× byte expansion is neither a 4.54× slowdown nor a speedup
+measurement.
+
+Verified native OS/library replacements reduce work further: a thread/message
+operation or supported memory routine runs its native implementation instead of
+all the SDK's guest instructions. Direct calls to unique hooks remove registry
+lookup from those call sites while keeping preparation and loading checks.
+Ordinary translated calls and dynamic function pointers still pay lookup costs;
+memory and floating-point helpers still have semantic checks. No interpreter/JIT
+comparison or whole-game speedup percentage is established by these size data.
+
+A focused helper benchmark on **2026-10-14** measured the intrinsic path against
+the fallback on an AMD Ryzen 7 5700X with GCC 16.2.1:
+
+| Repeated guest operation | `USE_INTRISICS=0` | `USE_INTRISICS=1` | Helper throughput gain |
+| --- | ---: | ---: | ---: |
+| `ADD.S` | 138.16 ns/op | 18.79 ns/op | 7.35× |
+| `ADD.D` | 140.08 ns/op | 19.75 ns/op | 7.09× |
+
+Each measurement includes the full `mips_fp_binary` call, guest register
+reads/writes, operand/result checks and environment handling. Both executables
+compiled the same `runtime/fpu.c` and harness at `-O2`, with
+`-fno-omit-frame-pointer -fno-fast-math -frounding-math -ffp-contract=off`,
+without LTO or sanitizers; only `-DUSE_INTRISICS=0/1` differed. The harness
+provided an aborting `recomp_fail` implementation instead of linking the game.
+Processes were pinned to the same logical CPU, timings used `CLOCK_MONOTONIC`,
+and the table gives medians of five trials per mode with alternating mode order.
+
+Each trial warmed up for 10,000 calls, reset the accumulator, then timed
+2,000,000 dependent additions of `1.0` to guest FPR 0 using FPR 2 as the constant:
+
+```c
+/* ctx is zero-initialized: FR=0, round-to-nearest, exception enables clear.
+ * FPR 2 contains 1.0 in the selected format; FPR 0 starts at 0.0.
+ * Double registers use the 0/1 and 2/3 pairs. */
+for (unsigned i = 0; i < 2000000; ++i)
+    mips_fp_binary(&ctx, 0, 0, 2, format, MIPS_FP_ADD);
+```
+
+Both modes returned exactly `2,000,000.0` with FCR31 unchanged. This benchmark
+measures ordinary finite additions and includes loop/call overhead. It does not
+measure conversions, exceptional operands, game dispatch, memory, rendering or
+gameplay, and is not a full floating-point conformance test. It demonstrates the
+gain from this particular helper path; it does not establish a 7× game speedup.
+
+An end-to-end gain depends on how much frame time the optimized path originally
+consumed. If a path accounts for fraction `f` of elapsed time and becomes `s`
+times faster, the ideal total speedup is `1 / ((1 - f) + f / s)`. For example,
+a 5× improvement in a path occupying 10% of frame time yields only about 1.09×
+overall. GPU work, rendering workers, audio, synchronization and frame pacing
+can dominate or overlap CPU work. Establish a gameplay gain with the same ROM,
+input sequence, scene, renderer settings and build flags, measuring CPU time
+and frame-time distribution in addition to FPS; an FPS cap can hide CPU savings.
 
 ## Setup
 
@@ -302,7 +694,7 @@ cmake --build build/host
 - `runtime/` and `include/`: shared native services and interfaces.
 - `backends/`: shared RT64, audio and texture adapters.
 - `tools/`: shared ROM import, discovery, translation, builds and texture tools.
-- `third_party/`: RT64, minicoro and the audio DSP dependency.
+- `third_party/`: RT64 and the audio DSP dependency.
 - `local/`: ignored ROMs, saves, texture packs and driver caches.
 - `build/`: disposable generated code, compiled output and captures.
 

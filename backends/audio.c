@@ -14,6 +14,11 @@
 
 struct RecompAudio {
     Runtime *rt;
+    Runtime dsp_rt;
+    RecompWorker *worker;
+    uint8_t *before, *ram;
+    RecompTask pending;
+    bool busy, registered;
     struct hle_t hle;
     _Alignas(16) uint8_t dmem[4096];
     RecompAudioStats stats;
@@ -41,7 +46,7 @@ static void sample_range(unsigned address,unsigned bytes) {
 }
 static uint32_t ram_range(RecompAudio *a,uint32_t address,size_t bytes,unsigned alignment) {
     if(address%alignment)recomp_fail("audio RAM alignment",address);
-    return recomp_physical_address(a->rt,address,bytes);
+    return recomp_physical_address(&a->dsp_rt,address,bytes);
 }
 static uint32_t address(RecompAudio *a,uint32_t word) {
     unsigned segment=(word>>24)&63;
@@ -191,6 +196,7 @@ static bool ai_start(Runtime *rt,void *opaque,uint32_t guest,unsigned bytes,unsi
     }
     a->stats.frames+=bytes/4;a->stats.ai_buffers++;free(pcm);free(wav);return okay;
 }
+static void service_audio(Runtime *,void *,bool);
 RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
     if(!rt || !rt->platform || !config
        || config->prebuffer_ms>200
@@ -200,6 +206,7 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
     a->microcode=config->microcode;a->task_profile=config->task_profile;
     a->prebuffer_ms=config->prebuffer_ms?config->prebuffer_ms:80;
     a->stats.min_queued_bytes=UINT32_MAX;
+    a->dsp_rt=*rt;
     a->hle.dram=rt->rdram;a->hle.dmem=a->dmem;a->hle.user_defined=a;
     if(config->wav_path) {
         a->wav=fopen(config->wav_path,"wb+");
@@ -207,11 +214,24 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
     }
     RecompAiOutput output={.start=ai_start,.opaque=a};
     if(!recomp_ai_set_output(rt,&output)) { if(a->wav)fclose(a->wav);free(a);return NULL; }
+    a->before=malloc(rt->rdram_size);a->ram=malloc(rt->rdram_size);
+    a->worker=recomp_worker_create("n64-audio");
+    if(!a->before || !a->ram || !a->worker) {
+        recomp_audio_destroy(a);return NULL;
+    }
+    if(rt->tasks) {
+        a->registered=recomp_task_service_add(rt,service_audio,a);
+        if(!a->registered) { recomp_audio_destroy(a);return NULL; }
+    }
     return a;
 }
 void recomp_audio_destroy(RecompAudio *a) {
     if(!a)return;
-    owner(a);(void)recomp_ai_set_output(a->rt,NULL);
+    owner(a);service_audio(a->rt,a,true);
+    recomp_task_service_remove(a->rt,a);
+    recomp_worker_destroy(a->worker);
+    free(a->before);free(a->ram);
+    (void)recomp_ai_set_output(a->rt,NULL);
     if(a->device)SDL_CloseAudioDevice(a->device);
     if(a->sdl_audio)SDL_QuitSubSystem(SDL_INIT_AUDIO);
     if(a->wav && (!wav_header(a) || fclose(a->wav)))recomp_fail("audio WAV finalization failed",0);
@@ -229,12 +249,11 @@ void recomp_audio_set_output_enabled(RecompAudio *a,bool enabled) {
     }
     a->enabled=enabled;
 }
-void recomp_audio_execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
-    owner(a);
+static void execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     a->debug=(RecompAudioSnapshot){.list=list,.bytes=bytes};
     if(!bytes || bytes%8 || bytes>131072)recomp_fail("invalid audio command-list size",list);
     if (list%4) recomp_fail("audio command list alignment", list);
-    uint32_t physical=recomp_ram_address(a->rt,list,bytes);
+    uint32_t physical=recomp_ram_address(&a->dsp_rt,list,bytes);
     memcpy(a->dmem+TASK_DATA_PTR,&physical,4);memcpy(a->dmem+TASK_DATA_SIZE,&bytes,4);
     a->task_done=false;uint64_t start=timer_ns();
     if(a->microcode==RECOMP_AUDIO_ABI1_LINEAR)alist_process_audio_ge(&a->hle);
@@ -242,6 +261,25 @@ void recomp_audio_execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     a->stats.synth_ns+=timer_ns()-start;
     if(!a->task_done)recomp_fail("audio DSP task did not finish",list);
     a->stats.tasks++;
+}
+static void synthesize(void *opaque) {
+    RecompAudio *a=opaque;
+    execute_abi1(a,a->pending.words[12],a->pending.words[13]);
+}
+static void service_audio(Runtime *rt,void *opaque,bool wait) {
+    RecompAudio *a=opaque;
+    owner(a);
+    if(!a->busy || (!wait && !recomp_worker_ready(a->worker)))return;
+    a->busy=false;
+    recomp_worker_finish(a->worker);
+    recomp_worker_merge(rt,a->before,a->ram);
+    if(!recomp_task_complete(rt,a->pending.token,RECOMP_SP_DONE))
+        recomp_fail("invalid audio worker completion",a->pending.guest_address);
+}
+void recomp_audio_execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
+    owner(a);service_audio(a->rt,a,true);
+    a->dsp_rt=*a->rt;a->hle.dram=a->rt->rdram;
+    execute_abi1(a,list,bytes);
 }
 static bool microcode_matches(RecompAudio *a,uint32_t address,unsigned bytes,const char *hex) {
     uint8_t *data=malloc(bytes);if(!data)return false;
@@ -252,6 +290,10 @@ static bool microcode_matches(RecompAudio *a,uint32_t address,unsigned bytes,con
 }
 bool recomp_audio_submit(RecompAudio *a,const RecompTask *task) {
     owner(a);
+    if(!a->registered) {
+        a->registered=recomp_task_service_add(a->rt,service_audio,a);
+        if(!a->registered)return false;
+    }
     if(task->resumed || task->words[0]!=2 || (task->words[1]&~RECOMP_TASK_USER_FLAGS))return false;
     const RecompAudioTaskProfile *profile=a->task_profile;
     if(!profile)return false;
@@ -261,15 +303,21 @@ bool recomp_audio_submit(RecompAudio *a,const RecompTask *task) {
             if(!microcode_matches(a,task->words[2+i*2],profile->fingerprint_bytes[i],profile->sha256[i]))return false;
         a->microcode_checked=true;
     }
-    recomp_audio_execute_abi1(a,task->words[12],task->words[13]);
-    return recomp_task_complete(a->rt,task->token,RECOMP_SP_DONE);
+    if(a->busy)return false;
+    memcpy(a->before,a->rt->rdram,a->rt->rdram_size);
+    memcpy(a->ram,a->before,a->rt->rdram_size);
+    a->dsp_rt=*a->rt;a->dsp_rt.rdram=a->ram;a->hle.dram=a->ram;
+    a->pending=*task;a->busy=true;
+    if(!recomp_worker_submit(a->worker,synthesize,a)) { a->busy=false;return false; }
+    return true;
 }
 RecompAudioStats recomp_audio_stats(RecompAudio *a) {
-    owner(a);RecompAudioStats result=a->stats;result.queued_bytes=a->device?SDL_GetQueuedAudioSize(a->device):0;
+    owner(a);service_audio(a->rt,a,true);RecompAudioStats result=a->stats;result.queued_bytes=a->device?SDL_GetQueuedAudioSize(a->device):0;
     if(result.min_queued_bytes==UINT32_MAX)result.min_queued_bytes=0;
     return result;
 }
 RecompAudioSnapshot recomp_audio_snapshot(const RecompAudio *a) {
+    owner((RecompAudio *)a);service_audio(a->rt,(RecompAudio *)a,true);
     RecompAudioSnapshot out=a->debug;
     uint64_t first=out.command_index-out.history_count;
     for(size_t i=0;i<out.history_count;i++)out.history[i]=a->debug.history[(first+i)%RECOMP_AUDIO_HISTORY];

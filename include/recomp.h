@@ -81,7 +81,7 @@ struct Runtime {
     RecompAddressResolver resolve_address;
     void (*prepare_call)(Runtime *, uint32_t);
     void *address_userdata;
-    bool interrupts_disabled; /* Native OS critical section; owner-thread scheduling only. */
+    bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
     uint32_t interrupt_mask; /* Logical SDK CPU/RCP interrupt mask. */
 };
 
@@ -100,6 +100,8 @@ typedef struct RecompFailureInfo {
 typedef void (*RecompFailureHandler)(const RecompFailureInfo *, void *);
 /* Owner-thread observer for controlled runtime failures, before abort(). */
 void recomp_set_failure_handler(RecompFailureHandler, void *);
+/* Forward a captured worker failure to the current thread's observer. */
+void recomp_dispatch_failure(const RecompFailureInfo *);
 #ifdef __cplusplus
 [[noreturn]] void recomp_fail(const char *, uint32_t);
 #else

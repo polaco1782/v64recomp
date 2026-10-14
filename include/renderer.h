@@ -13,7 +13,9 @@ typedef struct RecompRendererStats {
     uint64_t rdp_triangles;
     uint64_t graphics_tasks_without_dp;
 } RecompRendererStats;
-/* Linux/X11 Vulkan adapter. All entry points and callbacks run on the owner thread. */
+/* Linux/X11 Vulkan adapter. Public entry points run on the host owner. Display
+ * lists and presentation run on a private worker; SDL input/window work stays
+ * on the owner. Stats/capture/destroy drain pending jobs. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
 /* Configure a game-specific microcode extension after RT64 recognizes a task. */
 void recomp_renderer_set_graphics_hook(RecompRenderer *, RecompGraphicsHook);

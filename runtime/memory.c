@@ -17,8 +17,7 @@ static _Thread_local uintptr_t trace_ceiling;
 void recomp_set_trace_ceiling(uintptr_t ceiling) { trace_ceiling=ceiling; }
 static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context,void *opaque) {
     RecompFailureInfo *info=opaque;
-    /* Minicoro switches to a separate C stack with a synthetic return address.
-     * Stop inside its entry frame rather than unwinding into that address. */
+    /* An optional stack boundary can limit diagnostic unwinding. */
     if(info->native_frame_count==64 || (trace_ceiling && _Unwind_GetCFA(context)>=trace_ceiling))
         return _URC_END_OF_STACK;
     uintptr_t address=(uintptr_t)_Unwind_GetIP(context);
@@ -28,6 +27,13 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context,void *opa
 }
 void recomp_set_failure_handler(RecompFailureHandler handler, void *userdata) {
     failure_handler=handler;failure_userdata=userdata;
+}
+void recomp_dispatch_failure(const RecompFailureInfo *info) {
+    if (!reporting_failure) {
+        reporting_failure=true;
+        if (failure_handler) failure_handler(info, failure_userdata);
+    }
+    abort();
 }
 _Noreturn void recomp_fail(const char *message, uint32_t address) {
     fprintf(stderr, "recomp: %s (0x%08x)\n", message, address);

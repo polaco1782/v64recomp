@@ -1,4 +1,4 @@
-# Retire the synthetic IPL coroutine after transferring to the first OS thread.
+# Retire the synthetic IPL thread after transferring to the first OS thread.
 hooks = [{symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "hook_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafbf001c, 0xafb20018, 0x0c020458, 0xafb10014, 0x96030010]}]
 # Exact US revision. Plain SDK services use the shared native catalog.
 [game]

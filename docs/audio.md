@@ -6,7 +6,10 @@ using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
 ADPCM, codebooks, envelopes, four-tap resampling, mixing, reverb-buffer operations,
 filtering and stereo interleave write PCM into guest RAM. One SP completion is
-posted after synthesis. No CPU or RSP instruction interpreter is linked.
+posted after synthesis. DSP tasks run on the persistent `n64-audio` pthread using
+a private RAM snapshot. The host merges task-modified bytes before publishing
+the SP event; unrelated guest writes are retained, and conflicting writes fail
+explicitly. No CPU or RSP instruction interpreter is linked.
 
 Games provide pinned task addresses and boot/text/data microcode hashes through
 `games/<game>/audio.h`. The shared adapter validates these fingerprints and each

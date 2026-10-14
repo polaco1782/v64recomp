@@ -25,6 +25,13 @@ static RecompPlatform *platform(Runtime *rt) {
 }
 static uint32_t arg(MipsContext *ctx, unsigned index) { return (uint32_t)ctx->gpr[4 + index]; }
 static void result(MipsContext *ctx, int32_t value) { mips_set(ctx, 2, mips_s32((uint32_t)value)); }
+static void output_ai(Runtime *rt, void *opaque) {
+    AiBuffer *buffer=opaque;
+    RecompPlatform *p=platform(rt);
+    if (p->ai_output.start && !p->ai_output.start(rt, p->ai_output.opaque, buffer->address,
+                                               buffer->length, p->ai.clock, buffer->dac_rate))
+        recomp_fail("native AI output failed", buffer->address);
+}
 
 static void start_ai(Runtime *rt, AiBuffer *buffer, uint64_t start, uint32_t fraction) {
     RecompPlatform *p = platform(rt);
@@ -33,9 +40,7 @@ static void start_ai(Runtime *rt, AiBuffer *buffer, uint64_t start, uint32_t fra
     if (ticks >= UINT64_MAX - start) recomp_fail("AI DMA schedule exhausted", buffer->address);
     buffer->start = start; buffer->start_fraction = fraction;
     buffer->end = start + ticks; buffer->end_fraction = (uint32_t)(units % p->ai.clock);
-    if (p->ai_output.start && !p->ai_output.start(rt, p->ai_output.opaque, buffer->address,
-                                               buffer->length, p->ai.clock, buffer->dac_rate))
-        recomp_fail("native AI output failed", buffer->address);
+    recomp_on_host(rt,output_ai,buffer);
 }
 
 static void poll_ai(Runtime *rt) {

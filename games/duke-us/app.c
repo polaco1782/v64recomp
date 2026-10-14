@@ -314,7 +314,7 @@ int main(int argc, char **argv) {
         read_input();
     }
 #endif
-    /* A synthetic host coroutine models IPL transfer until osStartThread. */
+    /* A synthetic host thread models IPL transfer until osStartThread. */
     recomp_thread_create(&rt, 0x803ff000, -1, BOOT_ENTRY, 0, 0x803fd000, 0);
     recomp_thread_start(&rt, 0x803ff000);
 #ifdef RECOMP_WITH_RT64

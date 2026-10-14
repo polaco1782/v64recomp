@@ -155,9 +155,9 @@ void hook_shadowman_start_thread(Runtime *rt, MipsContext *ctx) {
     if (!application_started) {
         application_started = true;
         /* IPL has no schedulable thread on hardware. Remove our host-only
-         * transfer coroutine when the original first thread is dispatched. */
+         * transfer thread when the original first thread is dispatched. */
         recomp_thread_stop(rt, 0);
-        recomp_fail("Shadow Man IPL coroutine resumed", ctx->pc);
+        recomp_fail("Shadow Man IPL thread resumed", ctx->pc);
     }
 }
 void hook_shadowman_initialize(Runtime *rt, MipsContext *ctx) {
@@ -313,7 +313,7 @@ int main(int argc, char **argv) {
         read_input();
     }
 #endif
-    /* A synthetic host coroutine models IPL transfer until osStartThread. */
+    /* A synthetic host thread models IPL transfer until osStartThread. */
     recomp_thread_create(&rt, 0x807ff000, -1, BOOT_ENTRY, 0, 0x807fe000, 0);
     recomp_thread_start(&rt, 0x807ff000);
 #ifdef RECOMP_WITH_RT64

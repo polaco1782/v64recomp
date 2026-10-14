@@ -13,7 +13,7 @@ def build_native(output: Path,cc: str,*,application: Path,executable_name: str,
     flags=[cc,'-std=c11',f'-O{optimization}','-g','-Wall','-Wextra','-Werror','-Wno-unused-label',
            '-fno-fast-math','-frounding-math','-ffp-contract=off',f'-fsanitize={sanitizer}',
            '-fno-sanitize-recover=all','-fno-omit-frame-pointer','-I',str(project/'include'),
-           '-I',str(project/'third_party/minicoro'),'-I',str(output)]
+           '-pthread','-I',str(output)]
     digest=hashlib.sha256(json.dumps(flags).encode())
     digest.update(subprocess.check_output([cc,'--version']))
     for path in (output/'functions.c',output/'generated.h',project/'include/recomp.h'):
@@ -25,7 +25,7 @@ def build_native(output: Path,cc: str,*,application: Path,executable_name: str,
         subprocess.run([*flags,'-c',str(output/'functions.c'),'-o',str(temporary)],check=True)
         temporary.replace(compiled)
     command=[*flags,str(compiled),
-             *(str(project/f'runtime/{name}.c') for name in ('memory','fpu','scheduler','os',
+             *(str(project/f'runtime/{name}.c') for name in ('memory','fpu','scheduler','worker','os',
                                                          'bootstrap','time','platform','tasks','io','video'))]
     if audio:
         sdl_flags=subprocess.check_output(['pkg-config','--cflags','--libs','sdl2'],text=True).split()

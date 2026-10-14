@@ -9,6 +9,11 @@ typedef struct TaskRecord {
     bool no_dp_sync;
 } TaskRecord;
 enum { COMPLETIONS=256 };
+typedef struct TaskService {
+    struct TaskService *next;
+    void (*service)(Runtime *, void *, bool);
+    void *userdata;
+} TaskService;
 struct RecompTasks {
     RecompTaskBackend backend;
     TaskRecord *records, *active;
@@ -22,6 +27,7 @@ struct RecompTasks {
     atomic_flag lock;
     struct { uint64_t token; RecompTaskCompletion kind; } pending[COMPLETIONS];
     unsigned first, count;
+    TaskService *services;
 };
 
 static RecompTasks *tasks(Runtime *rt) {
@@ -34,6 +40,25 @@ static TaskRecord *record(RecompTasks *t, uint64_t token) {
 }
 static void lock(RecompTasks *t) {
     while (atomic_flag_test_and_set_explicit(&t->lock,memory_order_acquire)) { }
+}
+bool recomp_task_service_add(Runtime *rt, void (*service)(Runtime *, void *, bool), void *userdata) {
+    if (!rt->tasks || !service) return false;
+    TaskService *s=malloc(sizeof(*s));if(!s)return false;
+    *s=(TaskService){.next=rt->tasks->services,.service=service,.userdata=userdata};
+    rt->tasks->services=s;return true;
+}
+void recomp_task_service_remove(Runtime *rt, void *userdata) {
+    if(!rt->tasks)return;
+    TaskService **link=&rt->tasks->services;
+    while(*link) {
+        TaskService *s=*link;
+        if(s->userdata==userdata) { *link=s->next;free(s);return; }
+        link=&s->next;
+    }
+}
+void recomp_task_services_flush(Runtime *rt) {
+    if(!rt->tasks)return;
+    for(TaskService *s=rt->tasks->services;s;s=s->next)s->service(rt,s->userdata,true);
 }
 bool recomp_task_post_completion(Runtime *rt, uint64_t token, RecompTaskCompletion kind) {
     RecompTasks *t=rt->tasks;
@@ -71,6 +96,7 @@ bool recomp_task_finish_without_dp(Runtime *rt, uint64_t token) {
 
 static void poll_tasks(Runtime *rt) {
     RecompTasks *t=tasks(rt);
+    for(TaskService *s=t->services;s;s=s->next)s->service(rt,s->userdata,false);
     for (unsigned i=0;i<COMPLETIONS;i++) {
         lock(t);
         bool present=t->count!=0;
@@ -121,6 +147,8 @@ bool recomp_tasks_init(Runtime *rt, const RecompTaskBackend *backend) {
 void recomp_tasks_destroy(Runtime *rt) {
     RecompTasks *t=rt->tasks;
     if (!t) return;
+    recomp_task_services_flush(rt);
+    while(t->services) { TaskService *next=t->services->next;free(t->services);t->services=next; }
     for (TaskRecord *r=t->records;r;) { TaskRecord *next=r->next; free(r); r=next; }
     free(t); rt->tasks=NULL; rt->destroy_tasks=NULL; rt->poll_tasks=NULL;
 }
@@ -173,6 +201,12 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     }
     t->loaded=task; t->has_loaded=true;
 }
+static void submit_on_host(Runtime *rt, void *opaque) {
+    TaskRecord *r=opaque;
+    RecompTasks *t=tasks(rt);
+    if (!t->backend.submit(rt,t->backend.userdata,&r->task))
+        recomp_fail("backend rejected SP task",r->task.guest_address);
+}
 void hook_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
     RecompTasks *t=tasks(rt); uint32_t object=(uint32_t)ctx->gpr[4];
     if (!t->has_loaded || t->active || recomp_ram_address(rt,object,64)!=recomp_ram_address(rt,t->loaded.guest_address,64))
@@ -188,10 +222,15 @@ void hook_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
     if (t->has_yielded_task && t->yielded_key==recomp_ram_address(rt,object,64)) t->has_yielded_task=false;
     r->next=t->records; t->records=r; t->active=r; t->has_loaded=false;
     t->stats.submissions++; t->stats.pending_records++;
-    if (!t->backend.submit(rt,t->backend.userdata,&r->task)) recomp_fail("backend rejected SP task",object);
+    recomp_on_host(rt,submit_on_host,r);
 }
-void hook_os_sp_task_yield(Runtime *rt, MipsContext *ctx) {
+static void yield_on_host(Runtime *rt, void *opaque) {
+    MipsContext *ctx=opaque;
     RecompTasks *t=tasks(rt);
+    /* Supported HLE tasks finish at a whole-list boundary. Drain the worker
+     * before deciding whether this request still needs a backend yield. */
+    recomp_task_services_flush(rt);
+    poll_tasks(rt);
     if (!t->active) {
         /* A VI notification can reach the game before the queued SP event.
          * Remember its late request so Yielded clears the guest DP-wait flag. */
@@ -205,6 +244,7 @@ void hook_os_sp_task_yield(Runtime *rt, MipsContext *ctx) {
     if (r->sp_posted) return; /* The owner's completion is already queued. */
     if (!t->backend.yield(rt,t->backend.userdata,r->task.token)) recomp_fail("backend rejected SP yield",ctx->pc);
 }
+void hook_os_sp_task_yield(Runtime *rt, MipsContext *ctx) { recomp_on_host(rt,yield_on_host,ctx); }
 void hook_os_sp_task_yielded(Runtime *rt, MipsContext *ctx) {
     RecompTasks *t=tasks(rt); uint32_t object=(uint32_t)ctx->gpr[4];
     if (recomp_ram_address(rt,object,64)!=t->last_key) recomp_fail("yield query does not match SP completion",object);

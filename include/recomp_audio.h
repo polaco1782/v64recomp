@@ -40,7 +40,9 @@ typedef struct RecompAudioSnapshot {
     RecompAudioCommand history[RECOMP_AUDIO_HISTORY];
 } RecompAudioSnapshot;
 RecompAudio *recomp_audio_create(Runtime *, const RecompAudioConfig *);
-/* Owner-thread API. Destroy before Runtime and before any caller invokes SDL_Quit. */
+/* Owner-thread API. Submit snapshots RAM for asynchronous DSP processing;
+ * output writes are committed before the SP event. Stats/snapshot/destroy drain
+ * pending synthesis. Destroy before Runtime and before any SDL_Quit call. */
 void recomp_audio_destroy(RecompAudio *);
 void recomp_audio_set_output_enabled(RecompAudio *, bool);
 bool recomp_audio_submit(RecompAudio *, const RecompTask *);

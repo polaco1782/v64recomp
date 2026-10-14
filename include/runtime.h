@@ -29,13 +29,26 @@ typedef struct RecompThreadSnapshot {
 } RecompThreadSnapshot;
 /* Read-only diagnostic snapshot; also safe before scheduler initialization. */
 size_t recomp_thread_snapshots(Runtime *, RecompThreadSnapshot *, size_t capacity);
-/* Scheduler-owned native stack boundary for safe failure-path unwinding. */
+/* Optional native stack boundary for diagnostic unwinding. */
 void recomp_set_trace_ceiling(uintptr_t);
+/* Execute an owner-thread callback while the calling guest pthread is parked.
+ * Owner callers execute directly. Callbacks must not block/yield guest threads. */
+void recomp_on_host(Runtime *, void (*callback)(Runtime *, void *), void *);
+/* Persistent, single-job processing worker. Jobs use private data; finish/check
+ * establish visibility and forward failures with the worker's native stack. */
+typedef struct RecompWorker RecompWorker;
+RecompWorker *recomp_worker_create(const char *name);
+bool recomp_worker_submit(RecompWorker *, void (*job)(void *), void *);
+bool recomp_worker_ready(RecompWorker *);
+void recomp_worker_finish(RecompWorker *);
+void recomp_worker_destroy(RecompWorker *);
+/* Merge only worker-modified RAM bytes; reject conflicting guest writes. */
+void recomp_worker_merge(Runtime *, const uint8_t *before, const uint8_t *after);
 
 typedef struct RecompSchedulerConfig {
     uint32_t thread_tail; /* Guest address of an eight-byte tail sentinel. */
     uint32_t run_queue, active_queue, running_thread, event_table; /* Optional guest globals. */
-    size_t native_stack_size; /* Zero uses minicoro's virtual-memory stack default. */
+    size_t native_stack_size; /* Zero uses the pthread stack default. */
     unsigned checkpoint_interval; /* Backedges per yield; zero selects 64. */
     uint32_t stop_before_entry; /* Debugger stop before a thread's first instruction. */
     const uint32_t *stop_before_entries;
@@ -44,7 +57,7 @@ typedef struct RecompSchedulerConfig {
     uint32_t idle_thread; /* Optional priority-zero idle thread: return to the host instead of spinning. */
 } RecompSchedulerConfig;
 
-/* All APIs except event_post and task_post_completion run on one owner host thread. Guest code must
+/* Runtime access is serialized between the owner and one guest pthread. Guest code must
  * reach checkpoints/hooks to yield; max_resumes is not an instruction budget.
  * Join backend workers before destroying the runtime. */
 bool recomp_scheduler_init(Runtime *, const RecompSchedulerConfig *);
@@ -67,7 +80,7 @@ int32_t recomp_queue_send(Runtime *, uint32_t object, uint32_t message, int32_t 
 int32_t recomp_queue_recv(Runtime *, uint32_t object, uint32_t destination, int32_t flag);
 int32_t recomp_queue_peek(Runtime *, uint32_t object, uint32_t *message);
 void recomp_event_bind(Runtime *, uint32_t event, uint32_t queue, uint32_t message);
-/* Only event_post may be called from backend worker threads. Returns false if
+/* event_post may be called from backend worker threads. Returns false if
  * the bounded pending FIFO is full or the event ID is invalid. Delivery runs
  * on the scheduler's owner thread, at a run/checkpoint boundary. */
 bool recomp_event_post(Runtime *, uint32_t event);
@@ -233,6 +246,11 @@ typedef struct RecompTaskStats {
 } RecompTaskStats;
 bool recomp_tasks_init(Runtime *, const RecompTaskBackend *);
 void recomp_tasks_destroy(Runtime *);
+/* Owner services commit private worker results before task events are emitted.
+ * wait=true drains a submitted job, including during shutdown/yield requests. */
+bool recomp_task_service_add(Runtime *, void (*service)(Runtime *, void *, bool), void *);
+void recomp_task_service_remove(Runtime *, void *);
+void recomp_task_services_flush(Runtime *);
 /* Callbacks run on the owner thread and must return without yielding. Copy the
  * descriptor for worker use. Only post_completion is safe from worker threads.
  * It reports FIFO admission; stale/duplicate receipts are rejected on polling. */

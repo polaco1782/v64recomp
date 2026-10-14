@@ -197,7 +197,7 @@ def reg(number: int) -> str:
 def add_immediate(value: str, immediate: int) -> str:
     if immediate == 0:
         return value
-    return f"{value} {'+' if immediate > 0 else '-'} {abs(immediate)}"
+    return f"{value} {'+' if immediate > 0 else '-'} {abs(immediate):#x}"
 
 
 def signed_constant(value: int, bits: int) -> str:
@@ -215,7 +215,7 @@ def memory_address(i: Instruction) -> str:
 
 def body(i: Instruction) -> str:
     op, a, b = i.opcode, reg(i.rs), reg(i.rt)
-    imm = str(i.immediate)
+    imm = f"{i.immediate:#x}"
     logical_imm = f"UINT64_C(0x{i.word & 0xffff:04x})"
     destination = i.rt
     expression = None

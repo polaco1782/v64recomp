@@ -13,10 +13,17 @@
 #include <cstring>
 #include <memory>
 #include <thread>
+#include <stdexcept>
 #include <vector>
 
 struct RecompRenderer {
     Runtime *rt;
+    RecompWorker *worker=nullptr;
+    std::vector<uint8_t> before;
+    RecompTask pending{};
+    bool busy=false, presenting=false, registered=false;
+    uint32_t code=0,data=0,list=0;
+    std::thread::id processing;
     RecompGraphicsHook graphics_hook=nullptr;
     std::thread::id owner=std::this_thread::get_id();
     std::unique_ptr<RT64::Application> app;
@@ -48,23 +55,70 @@ static uint64_t monotonic_ns() {
 static void interrupts() {
     RecompRenderer *s=active_renderer;
     if(!s)recomp_fail("RT64 interrupt without renderer",0);
-    s->check_owner();uint32_t bits=s->mi&0x21u;s->mi&=~bits;
+    if(s->processing!=std::this_thread::get_id())recomp_fail("RT64 interrupt outside processing thread",0);
+    uint32_t bits=s->mi&0x21u;s->mi&=~bits;
     if(!bits)return;
     if(!s->token)recomp_fail("RT64 interrupt without task token",0);
     if(bits&0x20) {
-        if(s->dp_seen || !recomp_task_complete(s->rt,s->token,RECOMP_DP_DONE))
+        if(s->dp_seen)
             recomp_fail("invalid RT64 DP receipt",0);
         s->dp_seen=true;s->stats.dp_callbacks++;
     }
     if(bits&1) {
-        if(s->sp_seen || !recomp_task_complete(s->rt,s->token,RECOMP_SP_DONE))
+        if(s->sp_seen)
             recomp_fail("invalid RT64 SP receipt",0);
         s->sp_seen=true;s->stats.sp_callbacks++;
     }
 }
 
+static void service_renderer(Runtime *rt,void *opaque,bool wait) {
+    RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
+    s->check_owner();
+    if(!s->busy || (!wait && !recomp_worker_ready(s->worker)))return;
+    s->busy=false;
+    recomp_worker_finish(s->worker);
+    if(s->presenting) { s->presenting=false;return; }
+    recomp_worker_merge(rt,s->before.data(),s->ram.data());
+    if(!s->sp_seen || !recomp_task_complete(rt,s->pending.token,RECOMP_SP_DONE))
+        recomp_fail("graphics worker missing SP receipt",s->pending.guest_address);
+    if(s->dp_seen) {
+        if(!recomp_task_complete(rt,s->pending.token,RECOMP_DP_DONE))
+            recomp_fail("invalid graphics worker DP receipt",s->pending.guest_address);
+    } else {
+        if(!recomp_task_finish_without_dp(rt,s->pending.token))
+            recomp_fail("invalid graphics worker split-list receipt",s->pending.guest_address);
+        s->stats.graphics_tasks_without_dp++;
+    }
+    s->token=0;s->stats.graphics_tasks++;
+}
+static void process_graphics(void *opaque) {
+    RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
+    s->processing=std::this_thread::get_id();
+    uint64_t start=monotonic_ns();
+    if(s->app->interpreter->UCode.textAddress!=s->code || s->app->interpreter->UCode.dataAddress!=s->data)
+        s->app->interpreter->gbiManager.deduceGBIInformation(s->ram.data(),s->code,s->data);
+    s->app->interpreter->loadUCodeGBI(s->code,s->data,true);
+    if(!s->app->interpreter->hleGBI)recomp_fail("RT64 did not recognize the graphics microcode",s->code);
+    if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->before.size(),&s->stats.rdp_triangles);
+    s->app->processDisplayLists(s->ram.data(),s->list,0,true);
+    s->wait_workers();
+    s->textureFiles.collect(*s->app->textureCache);
+    s->stats.submit_ns+=monotonic_ns()-start;
+}
+static void process_present(void *opaque) {
+    RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
+    s->processing=std::this_thread::get_id();
+    uint64_t start=monotonic_ns();
+    // SDL filter/window access stays on the host. The worker owns RT64 state.
+    s->app->screenApiProfiler.logAndRestart();
+    s->app->state->updateScreen(s->app->core.decodeVI(),false);
+    s->wait_workers();
+    s->stats.presentations++;s->stats.present_ns+=monotonic_ns()-start;
+}
+
 RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,const char *window_title) {
     if(active_renderer || !rt->rom || rt->rdram_size>8*1024*1024 || !data_path)return nullptr;
+    if(!XInitThreads())return nullptr;
     if(SDL_InitSubSystem(SDL_INIT_VIDEO|SDL_INIT_EVENTS)!=0) {
         std::fprintf(stderr,"RT64 requires an X11 desktop: %s\n",SDL_GetError());return nullptr;
     }
@@ -116,6 +170,13 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->app->appWindow->sdlWindow=s->window;
         s->app->appWindow->sdlCheckFilterInstallation();
         s->textureFiles.configure(*s->app->textureCache);
+        s->before.resize(rt->rdram_size);
+        s->worker=recomp_worker_create("n64-video");
+        if(s->worker && rt->tasks)s->registered=recomp_task_service_add(rt,service_renderer,s.get());
+        if(!s->worker || (rt->tasks && !s->registered)) {
+            recomp_worker_destroy(s->worker);s->worker=nullptr;
+            throw std::runtime_error("graphics worker initialization failed");
+        }
         return s.release();
     } catch(const std::exception &e) {
         std::fprintf(stderr,"RT64 setup: %s\n",e.what());active_renderer=nullptr;
@@ -124,11 +185,13 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     }
 }
 void recomp_renderer_set_graphics_hook(RecompRenderer *s,RecompGraphicsHook hook) {
-    s->check_owner();s->graphics_hook=hook;
+    s->check_owner();service_renderer(s->rt,s,true);s->graphics_hook=hook;
 }
 void recomp_renderer_destroy(RecompRenderer *s) {
     if(!s)return;
-    s->check_owner();
+    s->check_owner();service_renderer(s->rt,s,true);
+    recomp_task_service_remove(s->rt,s);
+    recomp_worker_destroy(s->worker);
     SDL_SetEventFilter(nullptr,nullptr);
     if(s->ready) { s->wait_workers();s->app->end(); }
     std::fprintf(stderr,"Textures: %llu PNGs written, %llu replacements used.\n",
@@ -139,49 +202,34 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     s->app.reset();if(window)SDL_DestroyWindow(window);SDL_Quit();delete s;
 }
 bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
-    uint64_t start=monotonic_ns();
-    s->check_owner();
+    s->check_owner();service_renderer(s->rt,s,true);
+    if(!s->registered) {
+        s->registered=recomp_task_service_add(s->rt,service_renderer,s);
+        if(!s->registered)return false;
+    }
     if(!s->ready || s->token || task->resumed || task->words[0]!=1
        || (task->words[1]&~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE | RECOMP_TASK_USER_FLAGS))
        || !task->words[4] || task->words[5]>0x2000
        || !task->words[6] || !task->words[7] || task->words[7]>0x2000
        || task->words[13]%8 || !task->words[13])return false;
-    s->wait_workers();s->sync_vi();
-    std::memcpy(s->ram.data(),s->rt->rdram,s->rt->rdram_size);
-    uint32_t code=recomp_ram_address(s->rt,task->words[4],task->words[5]?task->words[5]:0x1000);
-    uint32_t data=recomp_ram_address(s->rt,task->words[6],task->words[7]);
-    uint32_t list=recomp_ram_address(s->rt,task->words[12],task->words[13]);
-    s->token=task->token;s->sp_seen=s->dp_seen=false;
-    if(s->app->interpreter->UCode.textAddress!=code || s->app->interpreter->UCode.dataAddress!=data)
-        s->app->interpreter->gbiManager.deduceGBIInformation(s->ram.data(),code,data);
-    s->app->interpreter->loadUCodeGBI(code,data,true);
-    if(!s->app->interpreter->hleGBI)recomp_fail("RT64 did not recognize the graphics microcode",code);
-    if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->rt->rdram_size,&s->stats.rdp_triangles);
-    s->app->processDisplayLists(s->ram.data(),list,0,true);
-    s->wait_workers();
-    s->textureFiles.collect(*s->app->textureCache);
-    // fullSync renders/copies native framebuffers before its DP callback. The
-    // guest coroutine is still inside submit, so copying back cannot overwrite guest work.
-    std::memcpy(s->rt->rdram,s->ram.data(),s->rt->rdram_size);
-    // Split graphics lists can finish RSP execution without requesting a DP
-    // interrupt. RT64 keeps their draws until the later full-sync command.
-    bool complete=s->sp_seen;
-    if(complete && !s->dp_seen) {
-        complete=recomp_task_finish_without_dp(s->rt,task->token);
-        if(complete)s->stats.graphics_tasks_without_dp++;
-    }
-    s->token=0;
-    if(complete)s->stats.graphics_tasks++;
-    s->stats.submit_ns+=monotonic_ns()-start;
-    return complete;
+    s->sync_vi();
+    std::memcpy(s->before.data(),s->rt->rdram,s->rt->rdram_size);
+    std::memcpy(s->ram.data(),s->before.data(),s->rt->rdram_size);
+    s->code=recomp_ram_address(s->rt,task->words[4],task->words[5]?task->words[5]:0x1000);
+    s->data=recomp_ram_address(s->rt,task->words[6],task->words[7]);
+    s->list=recomp_ram_address(s->rt,task->words[12],task->words[13]);
+    s->pending=*task;s->token=task->token;s->sp_seen=s->dp_seen=false;
+    s->busy=recomp_worker_submit(s->worker,process_graphics,s);
+    return s->busy;
 }
 bool recomp_renderer_present(RecompRenderer *s) {
-    uint64_t start=monotonic_ns();
-    s->check_owner();s->sync_vi();SDL_PumpEvents();s->app->updateScreen();s->wait_workers();
-    s->stats.presentations++;s->stats.present_ns+=monotonic_ns()-start;return true;
+    s->check_owner();service_renderer(s->rt,s,true);
+    s->sync_vi();SDL_PumpEvents();s->app->appWindow->sdlCheckFilterInstallation();
+    s->presenting=true;s->busy=recomp_worker_submit(s->worker,process_present,s);
+    return s->busy;
 }
 bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
-    s->check_owner();SDL_Event event;
+    s->check_owner();service_renderer(s->rt,s,true);SDL_Event event;
     while(SDL_PollEvent(&event)) {
         if(event.type==SDL_QUIT)return false;
         if(event.type==SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode==SDL_SCANCODE_F5) {
@@ -220,7 +268,7 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
     return true;
 }
 bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
-    s->check_owner();s->wait_workers();
+    s->check_owner();service_renderer(s->rt,s,true);s->wait_workers();
     SDL_SysWMinfo info{};SDL_VERSION(&info.version);
     if(!SDL_GetWindowWMInfo(s->app->appWindow->sdlWindow,&info) || info.subsystem!=SDL_SYSWM_X11)return false;
     XWindowAttributes attrs{};Display *display=info.info.x11.display;Window window=info.info.x11.window;
@@ -240,7 +288,7 @@ bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
     bool okay=!std::ferror(file);if(std::fclose(file))okay=false;XDestroyImage(shot);return okay;
 }
 RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {
-    s->check_owner();s->stats.textures_dumped=s->textureFiles.pngsWritten;
+    s->check_owner();service_renderer(s->rt,s,true);s->stats.textures_dumped=s->textureFiles.pngsWritten;
     s->stats.textures_replaced=s->textureFiles.replacedCount();
     s->stats.replacement_files=s->textureFiles.replacementFiles;return s->stats;
 }
