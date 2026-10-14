@@ -1,0 +1,24 @@
+extends = "profile.toml"
+boundaries = [
+{symbol = "func_80002b24", vram = 0x80002b24, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x3c0a8001, 0x254aa420]},
+{symbol = "func_80002c0c", vram = 0x80002c0c, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x3c058000, 0x8ca568c0]},
+{symbol = "func_80002d64", vram = 0x80002d64, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x3c048000, 0xc000b55]},
+{symbol = "func_800035e0", vram = 0x800035e0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40846000, 0x0]},
+{symbol = "func_800035f0", vram = 0x800035f0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40026000, 0x3e00008]},
+{symbol = "func_80003f90", vram = 0x80003f90, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40085000, 0x310900ff]},
+{symbol = "func_80004230", vram = 0x80004230, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40085000, 0x2409001e]},
+{symbol = "func_80004fc0", vram = 0x80004fc0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40845800, 0x3e00008]},
+{symbol = "func_80005bc0", vram = 0x80005bc0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40085000, 0x2409001f]},
+{symbol = "func_80005c70", vram = 0x80005c70, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40026800, 0x3e00008]},
+]
+hooks = [{symbol = "CIC6105_RunBootTask", vram = 0x80001640, kind = "replace_function", handler = "hook_oot_cic_boot_task", expected_words = [0x27bdff60, 0xafbf0014]}, {symbol = "Overlay_Relocate", vram = 0x800cd130, kind = "replace_function", handler = "hook_oot_overlay_relocate", expected_words = [0x27bdfe70]}, {symbol = "osStartThread", vram = 0x80006240, kind = "replace_function", handler = "hook_oot_start_thread", expected_words = [0x27bdffd8]}]
+[discovery]
+max_functions = 32768
+roots = [{name = "CIC6105_RunBootTask", vram = 0x80001640}, {name = "Overlay_Relocate", vram = 0x800cd130}]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+
+fallthroughs = [{pc = 0x8006bffc, expected_word = 0x8fb30028, target = 0x8006c000, reason = "Shared function epilogue"}]
+
+# Scene_ExecuteCommands indexes this 26-entry command handler table.
+function_tables = [{pc = 0x80064680, expected_word = 0x0320f809, table_vram = 0x800f2030, count = 11, sha256 = "57ddf786b3289d74ad1d34d2ccac341c2d06d241db6b8f884d86b438d3782fac"}, {pc = 0x80831a60, expected_word = 0x0320f809, table_vram = 0x80851f58, count = 67, sha256 = "5f0734128eb061aa9b15150039482dc80117ff722d5fe8e76515399a113d59ec"}, {pc = 0x80081e20, expected_word = 0x0320f809, table_vram = 0x800f95c0, count = 26, indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25], sha256 = "9ba43e6d4b9b6d192195cc16aa5c5b059905fa57044ced153e77247bab9dd97c"}]

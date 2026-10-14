@@ -24,7 +24,9 @@ inspector. No controller accessory is exposed.
 
 `--mute` disables playback while retaining synthesis. `--wav PATH` records PCM,
 `--capture-every N` saves PPM frames, and `--input-script PATH` plays a ROM-bound
-controller replay. The checked replays navigate the menus and enter Chelsea:
+controller replay. `--performance` records per-second video, VI, audio production
+and playback-queue measurements in `boot-report.json.timing.jsonl`. The checked
+replays navigate the menus and enter Chelsea:
 
 ```sh
 .venv/bin/python games/nightmare-us/run_nightmare.py --render --frames 2160 \
@@ -69,3 +71,12 @@ Audio uses the verified standard ABI1 microcode and a 160 ms playback prebuffer.
 First-level startup, rendered movement and input have been observed. Full-game
 coverage, prolonged play, saves, audio continuity and regressions in the other
 games remain to be checked.
+
+The game loop services VI, AI, timers and RSP completions between its 60 Hz
+presentations. In a desktop comparison with the same controller replay, the old
+presentation-only polling recorded 24 audio underruns in 20 seconds; deadline
+service completed 3,600 presentations in 60.5 seconds with zero underruns or
+queue resets. Steady audio production matched the 44,095 Hz device rate and
+steady graphics submission reached about 60 tasks per second. A separate run
+with periodic screenshot readbacks had one underrun in 40 seconds; capture
+work can still interrupt timely audio service.

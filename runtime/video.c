@@ -6,7 +6,7 @@ bool recomp_vi_registers(Runtime *rt, RecompViRegisters *regs) {
     uint32_t mode=vi.mode;
     *regs=(RecompViRegisters){
         .status=vi.black || !vi.framebuffer ? vi.special_features&~3u : vi.special_features,
-        .origin=vi.framebuffer ? recomp_ram_address(rt,vi.framebuffer,1)+(uint32_t)recomp_load(rt,mode+40,4) : 0,
+        .origin=!vi.black && vi.framebuffer ? recomp_ram_address(rt,vi.framebuffer,1)+(uint32_t)recomp_load(rt,mode+40,4) : 0,
         .width=(uint32_t)recomp_load(rt,mode+8,4),
         .intr=(uint32_t)recomp_load(rt,mode+56,4),
         .burst=(uint32_t)recomp_load(rt,mode+12,4),
@@ -19,6 +19,8 @@ bool recomp_vi_registers(Runtime *rt, RecompViRegisters *regs) {
         .x_scale=(uint32_t)recomp_load(rt,mode+32,4),
         .y_scale=(uint32_t)recomp_load(rt,mode+44,4),
     };
-    if(vi.framebuffer)recomp_physical_address(rt,regs->origin,1);
+    regs->x_scale=(regs->x_scale&~0xfffu)|((uint32_t)((regs->x_scale&0xfff)*vi.x_factor)&0xfff);
+    regs->y_scale=(regs->y_scale&~0xfffu)|((uint32_t)((regs->y_scale&0xfff)*vi.y_factor)&0xfff);
+    if(!vi.black && vi.framebuffer)recomp_physical_address(rt,regs->origin,1);
     return true;
 }

@@ -1,7 +1,7 @@
 # Native audio
 
 Each game runs its translated sound code and reads tables, sequences and
-sample assets from its ROM. `backends/audio.c` executes ABI1 command operations
+sample assets from its ROM. `backends/audio.c` executes ABI1 and Zelda NEAD command operations
 using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
 ADPCM, codebooks, envelopes, four-tap resampling, mixing, reverb-buffer operations,
@@ -10,6 +10,12 @@ posted after synthesis. DSP tasks run on the persistent `n64-audio` pthread usin
 a private RAM snapshot. The host merges task-modified bytes before publishing
 the SP event; unrelated guest writes are retained, and conflicting writes fail
 explicitly. No CPU or RSP instruction interpreter is linked.
+
+Zelda FILTER setup copies coefficients into an RSP-local cache. Filter execution
+updates that cache and the 32-byte guest filter state, preserving the CPU-owned
+source table. This permits the game to prepare the following task's coefficients
+while synthesis runs. `nead_filter` checks source preservation, INIT history and
+cache reload behavior.
 
 Games provide pinned task addresses and boot/text/data microcode hashes through
 `games/<game>/audio.h`. The shared adapter validates these fingerprints and each
@@ -47,8 +53,12 @@ Interactive output uses wall time from startup. Deterministic gameplay checks
 synthesize during accelerated startup and enable capture/output when Mario becomes
 controllable. `--mute` preserves synthesis and timing. Window close finalizes an
 enabled WAV capture and audio statistics.
-The rendered app sleeps only for the portion of each 60 Hz interval remaining
-after guest work and presentation, keeping audio service on schedule.
+Rendered apps use absolute presentation deadlines. Ocarina of Time additionally
+runs bounded scheduler batches during the remaining interval, sleeping at most
+1 ms between batches. Its audio manager discards duplicate retrace messages;
+servicing VI/AI and worker completions during pacing prevents that coalescing
+from starving playback. Its launcher supports `--audio-trace PATH` for a CSV of
+host timestamps, admitted frames, sample rate, SDL queue bytes and underruns.
 
 Captured ROM scenarios can verify stereo output, bounded clipping and waveform
 changes following input. Desktop playback remains the check for audible quality

@@ -1,0 +1,3 @@
+extends = "profile.toml"
+boundaries = [{symbol = "boot_fault", vram = 0x80001ce8, kind = "unsupported_function", reason = "Fatal boot error calls into unloaded main code", expected_words = [0x27bdffe8, 0xafbf0014]}, {symbol = "mainproc", vram = 0x8000063c, kind = "unsupported_function", reason = "Bounded bootstrap stops before the idle thread", expected_words = [0x27bdffe0]}]
+hooks = [{symbol = "osStartThread", vram = 0x80006240, kind = "replace_function", handler = "hook_oot_start_thread", expected_words = [0x27bdffd8]}]

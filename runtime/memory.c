@@ -100,6 +100,7 @@ void recomp_runtime_destroy(Runtime *rt) {
 }
 
 RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
+    address = recomp_canonical_function_address(rt, address);
     RecompFunction result = NULL;
     size_t first = 0, end = rt->function_count;
     while (first < end) {

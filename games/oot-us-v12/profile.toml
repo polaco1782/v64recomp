@@ -1,0 +1,45 @@
+[game]
+name = "The Legend of Zelda: Ocarina of Time (US V1.2)"
+rom_sha1 = "41b3bdc48d98c48529219919015a1af22f5057c2"
+rom_size = 0x2000000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+rom = "../../local/oot.us.v12.z64"
+code_sections = [".boot"]
+boot_sections = [".boot"]
+
+[discovery]
+regions = [{name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0x6960}]
+transfers = [{pc = 0x8000042c, expected_word = 0x01400008, kind = "tail", targets = [0x80000498]}]
+roots = [{name = "mainproc", vram = 0x8000063c}]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0x6960
+bss_start = 0x80006d60
+bss_end = 0x8000b780
+system_entry = 0x80000498
+main_entry = 0x8000063c
+main_id = 1
+main_priority = 10
+main_object = 0x80006d80
+main_stack = 0x80007330
+counter_hz = 46875000
+cart_handle = 0x8000a4e0
+drive_handle = 0x80008f00
+thread_tail = 0x800068b0
+run_queue = 0x800068b8
+active_queue = 0x800068bc
+running_thread = 0x800068c0
+vi_clock = 0x800068d8
+clock_rate = 0x800068d0
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x91
+0x80000314 = 1
+0x80000318 = 0x800000

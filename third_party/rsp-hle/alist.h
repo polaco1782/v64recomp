@@ -129,7 +129,7 @@ void alist_filter(
         uint16_t dmem,
         uint16_t count,
         uint32_t address,
-        const uint32_t* lut_address);
+        int16_t* coefficients);
 
 void alist_polef(
         struct hle_t* hle,

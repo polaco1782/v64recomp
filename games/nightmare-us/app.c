@@ -15,6 +15,8 @@
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
 #define LOG_NIGHTMARE_CALLS 0
+/* --performance enables per-second timing and queue measurements. */
+#define LOG_NIGHTMARE_TIMING 0
 static bool bss_cleared, main_verified;
 static RecompThreadSnapshot initial_main;
 static const char *report_path;
@@ -29,6 +31,8 @@ static RecompAudio *audio;
 static unsigned graphics_tasks, presentations;
 static bool window_closed;
 static uint64_t wall_origin;
+static FILE *timing_log;
+static uint64_t timing_origin;
 static FILE *input_script;
 static bool next_input;
 static unsigned next_input_frame;
@@ -48,12 +52,44 @@ static uint64_t monotonic_ns(void) {
     if (clock_gettime(CLOCK_MONOTONIC, &ts)) recomp_fail("Nightmare Creatures host clock failed", 0);
     return (uint64_t)ts.tv_sec*UINT64_C(1000000000)+(uint64_t)ts.tv_nsec;
 }
-static void pace(uint64_t deadline) {
-    uint64_t now = monotonic_ns();
-    if (deadline > now) {
-        uint64_t delta = deadline-now;
-        struct timespec ts = {(time_t)(delta/1000000000), (long)(delta%1000000000)};
-        nanosleep(&ts, NULL);
+static void drain(Runtime *rt) {
+    for (unsigned batch=0; batch<128; batch++) {
+        RecompRunResult run = recomp_scheduler_run(rt, 8);
+        if (run != RECOMP_RUN_BUDGET) break;
+        RecompThreadSnapshot threads[32];
+        size_t count = recomp_thread_snapshots(rt, threads, 32);
+        bool work = false;
+        for (size_t i=0; i<count; i++)
+            if (threads[i].state == RECOMP_READY && threads[i].id != BOOT_MAIN_ID)
+                work = true;
+        if (!work) break;
+    }
+}
+static void pace(Runtime *rt, uint64_t deadline) {
+    for (;;) {
+        uint64_t now = monotonic_ns();
+        if (now >= deadline) return;
+        uint64_t wake = deadline;
+        uint64_t event = recomp_platform_next_deadline(rt);
+        uint64_t timer = recomp_clock_next_deadline(rt);
+        if (timer < event) event = timer;
+        if (event != UINT64_MAX) {
+            uint64_t ticks = recomp_count64(rt), hz = recomp_clock_frequency(rt);
+            if (event <= ticks) wake = now;
+            else if (event-ticks < hz) {
+                uint64_t ns = ((event-ticks)*UINT64_C(1000000000)+hz-1)/hz;
+                if (ns < deadline-now) wake = now+ns;
+            }
+        }
+        /* SI and asynchronous RSP workers also need service between VIs.
+         * Keep the owner's idle polling bounded to one millisecond. */
+        if (wake-now > UINT64_C(1000000)) wake = now+UINT64_C(1000000);
+        if (wake > now) {
+            uint64_t delta = wake-now;
+            struct timespec ts = {(time_t)(delta/1000000000), (long)(delta%1000000000)};
+            nanosleep(&ts, NULL);
+        }
+        drain(rt);
     }
 }
 #endif
@@ -247,6 +283,14 @@ int main(int argc, char **argv) {
     recomp_thread_start(&rt, 0x803ff000);
 #ifdef RECOMP_WITH_RT64
     uint64_t next_present = monotonic_ns();
+    timing_origin = next_present;
+    if (LOG_NIGHTMARE_TIMING || getenv("RECOMP_NIGHTMARE_PERFORMANCE")) {
+        char path[2048];
+        require(snprintf(path, sizeof(path), "%s.timing.jsonl", report_path) < (int)sizeof(path),
+                "Nightmare Creatures timing path too long", 0);
+        timing_log = fopen(path, "w");
+        require(timing_log != NULL, "Nightmare Creatures timing log cannot open", 0);
+    }
     while (!frames || presentations < frames) {
         RecompPad pad = {.connected=true};
         if (!recomp_renderer_input(renderer, &pad)) { window_closed = true; break; }
@@ -258,18 +302,22 @@ int main(int argc, char **argv) {
             pad = replay_pad;
         }
         require(recomp_input_set(&rt, 0, &pad), "Nightmare Creatures controller update failed", 0);
-        for (unsigned batch=0; batch<32; batch++) {
-            RecompRunResult run = recomp_scheduler_run(&rt, 32);
-            if (run != RECOMP_RUN_BUDGET) break;
-            RecompThreadSnapshot threads[32];
-            size_t count = recomp_thread_snapshots(&rt, threads, 32);
-            bool work = false;
-            for (size_t i=0; i<count; i++)
-                if (threads[i].state == RECOMP_READY && threads[i].id != BOOT_MAIN_ID) work = true;
-            if (!work) break;
-        }
+        drain(&rt);
         require(recomp_renderer_present(renderer), "Nightmare Creatures presentation failed", 0);
         presentations++;
+        if (timing_log && presentations%60 == 0) {
+            RecompAudioStats a = recomp_audio_stats(audio);
+            RecompViState vi = recomp_vi_state(&rt);
+            RecompAiState ai = recomp_ai_state(&rt);
+            fprintf(timing_log, "{\"elapsed_ns\":%" PRIu64 ",\"presentations\":%u,"
+                    "\"graphics_tasks\":%u,\"retraces\":%" PRIu64 ",\"vi_interval\":%u,"
+                    "\"audio_tasks\":%" PRIu64 ",\"audio_frames\":%" PRIu64 ",\"audio_hz\":%u,"
+                    "\"queued_bytes\":%u,\"underruns\":%" PRIu64 ",\"ai_queued\":%u}\n",
+                    monotonic_ns()-timing_origin, presentations, graphics_tasks, vi.retraces,
+                    vi.retrace_count, a.tasks, a.frames, a.frequency, a.queued_bytes,
+                    a.queue_underruns, ai.queued);
+            fflush(timing_log);
+        }
         if (capture_every && presentations%capture_every == 0 && graphics_tasks) {
             char capture[2048];
             require(snprintf(capture, sizeof(capture), "%s.frame-%06u.ppm", report_path, presentations) < (int)sizeof(capture),
@@ -277,7 +325,10 @@ int main(int argc, char **argv) {
             require(recomp_renderer_capture(renderer, capture), "Nightmare Creatures frame capture failed", 0);
         }
         next_present += 16666667;
-        pace(next_present);
+        uint64_t now = monotonic_ns();
+        if (now > next_present && now-next_present > UINT64_C(16666667))
+            next_present = now;
+        pace(&rt, next_present);
     }
     require(graphics_tasks || window_closed, "Nightmare Creatures did not render a graphics task", 0);
     if (graphics_tasks) {
@@ -342,6 +393,7 @@ int main(int argc, char **argv) {
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
     if (input_script) fclose(input_script);
+    if (timing_log) fclose(timing_log);
 #endif
     recomp_set_failure_handler(NULL, NULL);
     recomp_runtime_destroy(&rt);

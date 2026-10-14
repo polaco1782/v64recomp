@@ -117,6 +117,9 @@ typedef struct RecompPlatformConfig {
     uint32_t vi_clock; /* Optional guest osViClock, used by AI frequency setup. */
     uint32_t timer_list, current_time, base_counter, vi_intr_count;
     uint32_t app_nmi_buffer;
+    uint32_t cart_handle, drive_handle; /* Optional SDK OSPiHandle storage. */
+    uint32_t sram_size; /* Zero or 32 KiB; PI domain 2 cartridge SRAM. */
+    const char *sram_path; /* Optional save image, valid until platform destroy. */
     uint64_t vi_period_ticks;
     const RecompBootLoad *code_loads;
     size_t code_load_count;
@@ -126,6 +129,7 @@ typedef struct RecompViState {
     uint32_t mode, special_features, framebuffer, retrace_count;
     uint64_t retraces;
     uint32_t current_framebuffer; /* Pending swaps become current at a VI retrace. */
+    float x_factor, y_factor;
 } RecompViState;
 bool recomp_platform_init(Runtime *, const RecompPlatformConfig *);
 void recomp_platform_destroy(Runtime *);
@@ -196,12 +200,21 @@ void hook_os_eeprom_long_read(Runtime *, MipsContext *);
 void hook_os_eeprom_long_write(Runtime *, MipsContext *);
 
 void hook_os_initialize(Runtime *, MipsContext *);
+void hook_os_get_mem_size(Runtime *, MipsContext *);
+void hook_os_cart_rom_init(Runtime *, MipsContext *);
+void hook_os_drive_rom_init(Runtime *, MipsContext *);
+void hook_os_epi_read_io(Runtime *, MipsContext *);
+void hook_os_epi_start_dma(Runtime *, MipsContext *);
+void hook_leo_drive_exist(Runtime *, MipsContext *);
 void hook_os_get_count(Runtime *, MipsContext *);
 void hook_os_get_time(Runtime *, MipsContext *);
 void hook_os_set_time(Runtime *, MipsContext *);
 void hook_os_set_timer(Runtime *, MipsContext *);
+void hook_os_stop_timer(Runtime *, MipsContext *);
 void hook_os_create_vi_manager(Runtime *, MipsContext *);
 void hook_os_vi_set_mode(Runtime *, MipsContext *);
+void hook_os_vi_set_x_scale(Runtime *, MipsContext *);
+void hook_os_vi_set_y_scale(Runtime *, MipsContext *);
 void hook_os_vi_black(Runtime *, MipsContext *);
 void hook_os_vi_set_special_features(Runtime *, MipsContext *);
 void hook_os_vi_set_event(Runtime *, MipsContext *);
@@ -239,6 +252,7 @@ typedef struct RecompTaskBackend {
     void *userdata;
     bool (*submit)(Runtime *, void *, const RecompTask *);
     bool (*yield)(Runtime *, void *, uint64_t token);
+    uint32_t additional_task_types; /* Explicit backend opt-in, bit N for task type N. */
 } RecompTaskBackend;
 typedef struct RecompTaskStats {
     uint64_t submissions, sp_events, dp_events, yielded, rejected_completions;

@@ -1710,3 +1710,403 @@ handler = "hook_os_jam_mesg"
 body_size = 0x134
 sha256 = "ba48e1aaaa6fde889d21d46243c7efba21b5b31b69b99c39e635a0421c26ecc6"
 expected_words = [0x27bdffd0, 0xafb00010, 0x00808021, 0xafb50024, 0x00a0a821, 0xafb20018, 0x00c09021, 0xafbf0028]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osInitialize"
+handler = "hook_os_initialize"
+body_size = 0x2a8
+sha256 = "f0742125e9da61e4e6c9378878e84c175d88af542a3fe0ac539752450c5217b7"
+expected_words = [0x27bdffc8, 0xafbf001c, 0x240e0001, 0x3c018001, 0xafb00018, 0xafa00030, 0x0c000d7c, 0xac2e8fa0]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osCreateThread"
+handler = "hook_os_create_thread"
+body_size = 0x144
+sha256 = "ea9e4b6b686312a9a2da0a942f06e6a659124391c7cd6d83fca27bbc48cf0bcb"
+expected_words = [0x27bdffd8, 0xafa40028, 0xafa5002c, 0x8fae002c, 0x8faf0028, 0xafbf001c, 0xafa60030, 0xafa70034]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "__osDisableInt"
+handler = "hook_os_disable_int"
+body_size = 0x70
+sha256 = "45f4d70a55d9fcc715f5a12dcfff1d2f61500941d785587229b01775e463ee30"
+expected_words = [0x3c0a8000, 0x254a68e0, 0x8d4b0000, 0x316bff00, 0x40086000, 0x2401fffe, 0x01014824, 0x40896000]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osGetMemSize"
+handler = "hook_os_get_mem_size"
+body_size = 0x114
+sha256 = "a0058dbf5853be3c844138f4b9de40e4dedbe63867460f25c648aed0380847c0"
+expected_words = [0x27bdfff0, 0x3c0e0040, 0xafae0008, 0x8faf0008, 0x3c01a000, 0x3c19a000, 0x01e1c021, 0xafb8000c]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osCartRomInit"
+handler = "hook_os_cart_rom_init"
+body_size = 0x154
+sha256 = "71a8d5d3b8f0dd666cbb03984ab086cc4feffe5082900ce22269d91380a609d7"
+expected_words = [0x27bdffe0, 0xafbf001c, 0x0c0007d8, 0xafb00018, 0x3c0e8000, 0x8dce6a50, 0x3c108001, 0x2610a4e0]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osDriveRomInit"
+handler = "hook_os_drive_rom_init"
+body_size = 0x1d8
+sha256 = "5dbb809d88c82defc8bc9fbd6d30708282a1e6c7d7e8cfde587807663a106ba7"
+expected_words = [0x27bdffe0, 0xafbf001c, 0x0c0007d8, 0xafb00018, 0x3c0e8000, 0x8dce6800, 0x3c108001, 0x26108f00]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osEPiReadIo"
+handler = "hook_os_epi_read_io"
+body_size = 0x44
+sha256 = "3b01decc5626422d4f4ce7f69841af2d68f95c71f36fc056a8b852fead5816fc"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0xafa50024, 0x0c0007d8, 0xafa60028, 0x8fa40020, 0x8fa50024]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSendMesg"
+handler = "hook_os_send_mesg"
+body_size = 0x14c
+sha256 = "faabba35f0034b62feeb4ee3f7f5897e7651d4891c53df3ffd1926836ea65bd7"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafa5003c, 0xafa60040, 0xafb20020, 0xafb1001c, 0x0c0014d0]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osStopThread"
+handler = "hook_os_stop_thread"
+body_size = 0xc0
+sha256 = "f475b8915ddb1dbe2591e8844c31715b3128c897fd344a03d3cef4c30eeacca2"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafb20020, 0xafb1001c, 0x0c0014d0, 0xafb00018, 0x8fae0038]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osRecvMesg"
+handler = "hook_os_recv_mesg"
+body_size = 0x138
+sha256 = "e4c7a67059ed40ffe3aa70d58b4dacb698647b8db57e520433e13692c0046588"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018, 0x0c0014d0, 0xafb00014]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osViGetNextFramebuffer"
+handler = "hook_os_vi_get_next_framebuffer"
+body_size = 0x40
+sha256 = "7403756476ead8f74d6ca4ac4c662b94507fbb0ea7a18c55cbbb664b6996cd4d"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c0014d0, 0xafb00018, 0x3c0e8000, 0x8dce6a44, 0x00408025, 0x02002025]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osVirtualToPhysical"
+handler = "hook_os_virtual_to_physical"
+body_size = 0x7c
+sha256 = "9d9adb1554dbf86be8a4a734dd69d09e0cb847cccb2af5eb81d367481401721f"
+expected_words = [0x27bdffe8, 0xafa40018, 0x8fae0018, 0x3c018000, 0xafbf0014, 0x01c1082b, 0x14200007, 0x3c01a000]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osViBlack"
+handler = "hook_os_vi_black"
+body_size = 0x70
+sha256 = "1dc4685672717458d37eaa5abb810bac76ada4f822453457de5846333089cb4c"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c0014d0, 0xafb00018, 0x93ae002b, 0x00408025, 0x11c00007]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osGetThreadPri"
+handler = "hook_os_get_thread_pri"
+body_size = 0x18
+sha256 = "a5b1575b5a6b3aa20431bbca49536f08504cba183ae9937642c694255bb1b724"
+expected_words = [0x14800003, 0x00000000, 0x3c048000, 0x8c8468c0, 0x03e00008, 0x8c820014]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSetIntMask"
+handler = "hook_os_set_int_mask"
+body_size = 0xa0
+sha256 = "114b0266c5f480529329fc8be1627644929dfc47ee7b42d1ff47727b4162520a"
+expected_words = [0x400c6000, 0x3182ff01, 0x3c088000, 0x250868e0, 0x8d0b0000, 0x2401ffff, 0x01614026, 0x3108ff00]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osViSetMode"
+handler = "hook_os_vi_set_mode"
+body_size = 0x68
+sha256 = "6066745757a1361b9cbab0c0af054cf67e6361e7bb4bebbbc78bab39a9d89046"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c0014d0, 0xafb00018, 0x3c0f8000, 0x8def6a44, 0x8fae0028]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osCreateMesgQueue"
+handler = "hook_os_create_mesg_queue"
+body_size = 0x2c
+sha256 = "17e4e125e9c4f350503a7b312c261598fb9383324a88b5f5593107c747e3ead3"
+expected_words = [0x3c0e8000, 0x3c0f8000, 0x25ce68b0, 0x25ef68b0, 0xac8e0000, 0xac8f0004, 0xac800008, 0xac80000c]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osJamMesg"
+handler = "hook_os_jam_mesg"
+body_size = 0x150
+sha256 = "c85eadec88da63a5429d60c24d4a60234efff8af4d5bfff1253c3d411e920826"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018, 0x0c0014d0, 0xafb00014]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSetThreadPri"
+handler = "hook_os_set_thread_pri"
+body_size = 0xe0
+sha256 = "f20a84fca87ad21576f19a7a9eb6aca6d7d6de1f38940dcbf79635ddb8cec9f1"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0x0c0014d0, 0xafb00018, 0x8fae0028, 0x00408025]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osGetThreadPri"
+handler = "hook_os_get_thread_pri"
+body_size = 0x18
+sha256 = "c0f455f661be628332c040065e14a478ceb97c851b1f57804fab91384b4922c1"
+expected_words = [0x14800003, 0x00000000, 0x3c048000, 0x8c8468c0, 0x03e00008, 0x8c820004]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osViSwapBuffer"
+handler = "hook_os_vi_swap_buffer"
+body_size = 0x50
+sha256 = "4380934231cbb777c940fe594154c960214305d22537c483b23f4e209dcd944b"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c0014d0, 0xafa40020, 0x3c0f8000, 0x8def6a44, 0x8fae0020, 0xafa2001c]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osGetTime"
+handler = "hook_os_get_time"
+body_size = 0x84
+sha256 = "c5a63843af199ab49afa5e7b27308afa095a9e00dfe5b940d5dd9ad893b6d234"
+expected_words = [0x27bdffc8, 0xafbf001c, 0x0c0014d0, 0xafb00018, 0x0c0013d8, 0x00408025, 0xafa20034, 0x3c0f8001]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osPiGetCmdQueue"
+handler = "hook_os_pi_get_cmd_queue"
+body_size = 0x28
+sha256 = "218bf4179990bb24771f18d976597bb6ee7679eef94687d53b7103bd1bf47b5c"
+expected_words = [0x3c0e8000, 0x8dce68f0, 0x15c00003, 0x00000000, 0x03e00008, 0x00001025, 0x3c028000, 0x8c4268f8]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osYieldThread"
+handler = "hook_os_yield_thread"
+body_size = 0x4c
+sha256 = "5605f2dbf62626a33c7d516f631f254de952a94948f99409616b7ffa37a6c535"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c0014d0, 0xafb00018, 0x3c0f8000, 0x8def68c0, 0x240e0002, 0x3c048000]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSetTimer"
+handler = "hook_os_set_timer"
+body_size = 0xd4
+sha256 = "a3075b42357b14a7a408c1e6dbf0efa0a83f5b29a7d9e63e181b5cb31e5033d4"
+expected_words = [0x27bdffe0, 0xafa40020, 0x8fae0020, 0xafbf0014, 0xafa60028, 0xafa7002c, 0xadc00000, 0x8faf0020]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osStartThread"
+handler = "hook_os_start_thread"
+body_size = 0x150
+sha256 = "a1c12f3cce87fcda08fc11852451b2726f6975d06f81b1bac43c7d0777052f5a"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafb10018, 0x0c0014d0, 0xafb00014, 0x8fae0028, 0x24010001]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSpTaskLoad"
+handler = "hook_os_sp_task_load"
+body_size = 0x190
+sha256 = "52ad2e7d17c25a65d4e590d020b1155d336406e45662be627065ca699f30d1a9"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c033fb8, 0x8fa40020, 0xafa2001c, 0x8fae001c, 0x8dcf0004]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSpTaskStartGo"
+handler = "hook_os_sp_task_start_go"
+body_size = 0x40
+sha256 = "c8fd3122849513b4166a6c46384ebb6645bd715627cfc25f5e416c8582d0b319"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c034b0c, 0xafa40018, 0x10400005, 0x00000000, 0x0c034b0c, 0x00000000]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSpTaskYield"
+handler = "hook_os_sp_task_yield"
+body_size = 0x20
+sha256 = "f399d96b9313fb0e689a009790554c10798b20638b79fef958e297f58e5b5019"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c035848, 0x24040400, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osContStartQuery"
+handler = "hook_os_cont_start_query"
+body_size = 0x84
+sha256 = "6d0ab86e07091554a3063aaf7525494007c111b0a6bf2baf911f10befcefe4b7"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c03417c, 0xafa0001c, 0x3c0e8013, 0x91cec530, 0x11c0000c]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osContGetQuery"
+handler = "hook_os_cont_get_query"
+body_size = 0x28
+sha256 = "01acde6725ba9fa36654dd475602597afa8acc8c556cf67c17305cc222d1f669"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x8fa50020, 0x0c0341f4, 0x27a4001f, 0x8fbf0014, 0x27bd0020]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osSpTaskYielded"
+handler = "hook_os_sp_task_yielded"
+body_size = 0x80
+sha256 = "e1e6dee7ddcff6bd6523ca7bdfb89cc08727db3708edc9bbcd770b0668f8a215"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c035844, 0xafa40020, 0xafa2001c, 0x8fae001c, 0x31cf0100, 0x11e00004]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osViSetEvent"
+handler = "hook_os_vi_set_event"
+body_size = 0x6c
+sha256 = "7a701df21013616c1775de1f21906d4698e51c72b47697d625ab8247fd687070"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0x0c0014d0, 0xafb00018, 0x3c0f8000]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osContSetCh"
+handler = "hook_os_cont_set_ch"
+body_size = 0x64
+sha256 = "37219f056a8b05b92ef69940c29a5dc6f156da513f548726b9e9e1c98796b516"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c03417c, 0xafa0001c, 0x93ae0023, 0x29c10005, 0x14200005]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osPfsIsPlug"
+handler = "hook_os_pfs_is_plug"
+body_size = 0x1a0
+sha256 = "7eae1ab19ab1a4057094219e6ba445a6b9c627f4ab95a365167558d9157c16e0"
+expected_words = [0x27bdffc0, 0xafbf0014, 0x240e0003, 0xafa40040, 0xafa50044, 0xafa0003c, 0xa3a0001f, 0x0c03417c]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "osViGetCurrentFramebuffer"
+handler = "hook_os_vi_get_current_framebuffer"
+body_size = 0x40
+sha256 = "47b1bb2b1961e1b42a9fd0f52ab0d6537a422c121226f63221904fb3d5687dcc"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c0014d0, 0xafb00018, 0x3c0e8000, 0x8dce6a40, 0x00408025, 0x02002025]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osCreateViManager"
+handler = "hook_os_create_vi_manager"
+body_size = 0x180
+sha256 = "109ab80dcf49f3cc409f50a12c7ec6476136a540858868d217145ebe7040e1b3"
+expected_words = [0x27bdffd0, 0xafb00020, 0x3c108000, 0x26106a60, 0x8e0e0000, 0xafbf0024, 0xafa40030, 0x55c00054]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osCreatePiManager"
+handler = "hook_os_create_pi_manager"
+body_size = 0x170
+sha256 = "80c9631bccf0ee95f6a84734e738e616f63f5cab467365dbfb65d707af323eb0"
+expected_words = [0x27bdffd0, 0xafb00020, 0x3c108000, 0x261068f0, 0x8e0e0000, 0xafbf0024, 0xafa40030, 0xafa50034]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osSetEventMesg"
+handler = "hook_os_set_event_mesg"
+body_size = 0xb4
+sha256 = "767adb6fff3ebab8eced19c04e45b69ccf41cc22fb93ae387d2a379f7fbfc590"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0x0c0014d0, 0xafb00018, 0x8fae0028]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osEPiStartDma"
+handler = "hook_os_epi_start_dma"
+body_size = 0xd4
+sha256 = "c190378d559d6dfe8a20a2210fc73983f6a8e4bf3b5828d98f0c423402f52eaf"
+expected_words = [0x27bdffd8, 0x3c0e8000, 0x8dce68f0, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018]
+
+# Verified libleo device-presence probe (Ocarina of Time NTSC 1.2).
+[[signatures]]
+symbol = "LeoDriveExist"
+handler = "hook_leo_drive_exist"
+body_size = 0xc4
+sha256 = "d33522fb4de6f8dc10ac08a106aa996b6104e1358fd246459275ed38fea3f7df"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xc0007d8, 0x0, 0x3c03a460, 0x34630010, 0x8c620000, 0x3c06a460]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osViSetYScale"
+handler = "hook_os_vi_set_y_scale"
+body_size = 0x58
+sha256 = "73bff6f8bb206f945a4f9963687346eb4b0860281deadb5d633abcb3fa46ac12"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xe7ac0028, 0x0c0014d0, 0xafb00018, 0x3c0e8000, 0x8dce6a44, 0xc7a40028]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osViSetXScale"
+handler = "hook_os_vi_set_x_scale"
+body_size = 0x128
+sha256 = "fdabd9b233770aeda5299c023413282ad18fb08944a6ed1578aeb7077b5f9367"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xe7ac0028, 0xafb10018, 0x0c0014d0, 0xafb00014, 0x3c0e8000, 0x8dce6a44]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osViSetSpecialFeatures"
+handler = "hook_os_vi_set_special_features"
+body_size = 0x15c
+sha256 = "b142663a238afa4981ea95f90ed1aa978f16fb95ecd9819f623c7ee7abada3e3"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c0014d0, 0xafa40018, 0x8fa40018, 0x00402825, 0x3c038000, 0x308e0001]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osAiSetFrequency"
+handler = "hook_os_ai_set_frequency"
+body_size = 0x144
+sha256 = "90339d463653dc0a36e9dc2502bee5d250ca10ba2d955261f57f8fdeb30a6791"
+expected_words = [0x3c058000, 0x24a568d8, 0x8cae0000, 0x44844000, 0x3c014f80, 0x448e2000, 0x468042a0, 0x4810004]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osAiSetNextBuffer"
+handler = "hook_os_ai_set_next_buffer"
+body_size = 0x74
+sha256 = "2079e9edd945a3bcd7b7a5c6f4c5d86e110ee541aeae7d2cec529107a940d6ee"
+expected_words = [0x3c0e8010, 0x91ce1e50, 0x857821, 0x801825, 0x11c00002, 0x31f81fff, 0x2483e000, 0x17000005]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osContInit"
+handler = "hook_os_cont_init"
+body_size = 0x170
+sha256 = "719bdba3873b07e9ddefbfa78d8edbe6d0bb040df684db2ca3c9f3c9fa4e925a"
+expected_words = [0x27bdff90, 0x3c0e8010, 0x8dce62f0, 0xafbf0024, 0xafa40070, 0xafa50074, 0xafa60078, 0x11c00003]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osContStartReadData"
+handler = "hook_os_cont_start_read"
+body_size = 0x84
+sha256 = "398338b57b5bf5dfb8e6bb60e9cc98b82b3d3fa6f86029f2588415403f89a85d"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xc03417c, 0xafa40020, 0x3c0e8013, 0x91cec530, 0x24010001, 0x11c1000b]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osContGetReadData"
+handler = "hook_os_cont_get_read"
+body_size = 0x8c
+sha256 = "a71f95231d2f33b2a9fe793fef7db1976925ee46264880dabe2d77e0213ef241"
+expected_words = [0x3c058013, 0x24a5c531, 0x90ae0000, 0x3c028013, 0x27bdfff0, 0x2442c4f0, 0x19c0001a, 0x1825]
+
+# Verified NTSC 1.2 SDK body (Ocarina of Time).
+[[signatures]]
+symbol = "osStopTimer"
+handler = "hook_os_stop_timer"
+body_size = 0xe8
+sha256 = "fa08d709f123d558c6fde696af4277e943a4fa5d75684f9b22091020ace233fa"
+expected_words = [0x27bdffd0, 0xafa40030, 0x8fae0030, 0xafbf001c, 0xafb00018, 0x8dcf0000, 0x15e00003, 0x0]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from bisect import bisect_right
 from collections import Counter, deque
 import hashlib
 from pathlib import Path
@@ -45,8 +46,14 @@ def discover(rom: bytes, profile: dict) -> dict:
     if dynamic_calls and inventory is None and not partial_entries:
         raise RecompError('registered indirect calls require a checked code inventory or entry inventory')
 
+    ordered_sections = sorted(sections, key=lambda s: s['vram'])
+    section_starts = [s['vram'] for s in ordered_sections]
     def mapping(address):
-        return next((s for s in sections if s['vram'] <= address < s['vram'] + s['size']), None)
+        index = bisect_right(section_starts, address) - 1
+        if index < 0:
+            return None
+        section = ordered_sections[index]
+        return section if address < section['vram'] + section['size'] else None
 
     def read(address):
         section = mapping(address)

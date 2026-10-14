@@ -81,6 +81,9 @@ struct Runtime {
     RecompAddressResolver resolve_address;
     void (*prepare_call)(Runtime *, uint32_t);
     void *address_userdata;
+    /* Optional game loader: map relocated entries to their compiled addresses. */
+    uint32_t (*canonical_function_address)(Runtime *, uint32_t);
+    uint32_t (*relocated_address)(Runtime *, uint32_t section, uint32_t address);
     bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
     uint32_t interrupt_mask; /* Logical SDK CPU/RCP interrupt mask. */
 };
@@ -89,6 +92,12 @@ bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t,
                          const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
 RecompFunction recomp_lookup(Runtime *, uint32_t);
+static inline uint32_t recomp_relocated_address(Runtime *rt, uint32_t section, uint32_t address) {
+    return rt->relocated_address ? rt->relocated_address(rt, section, address) : address;
+}
+static inline uint32_t recomp_canonical_function_address(Runtime *rt, uint32_t address) {
+    return rt->canonical_function_address ? rt->canonical_function_address(rt, address) : address;
+}
 typedef struct RecompFailureInfo {
     const char *message;
     uint32_t address;

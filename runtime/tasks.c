@@ -130,7 +130,7 @@ static void poll_tasks(Runtime *rt) {
         if (r->sp_emitted && r->dp_done && !r->dp_emitted && recomp_event_post(rt,9)) {
             r->dp_emitted=true; t->stats.dp_events++;
         }
-        bool done=r->sp_emitted && (r->task.words[0]==2 || r->yielded || r->no_dp_sync || r->dp_emitted);
+        bool done=r->sp_emitted && (r->task.words[0]!=1 || r->yielded || r->no_dp_sync || r->dp_emitted);
         if (done) { *link=r->next; free(r); t->stats.pending_records--; }
         else link=&r->next;
     }
@@ -170,7 +170,9 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     RecompTask task={.guest_address=object};
     for (unsigned i=0;i<16;i++) task.words[i]=(uint32_t)recomp_load(rt,object+i*4,4);
     t->observed=task;t->has_observed=true;
-    if (task.words[0]!=1 && task.words[0]!=2) recomp_fail("unsupported SP task type",object);
+    if (task.words[0]!=1 && task.words[0]!=2
+            && (task.words[0]>=32 || !(t->backend.additional_task_types & (UINT32_C(1)<<task.words[0]))))
+        recomp_fail("unsupported SP task type",object);
     uint32_t flags = RECOMP_TASK_YIELDED | RECOMP_TASK_DP_WAIT | RECOMP_TASK_USER_FLAGS;
     if (task.words[0] == 1) flags |= RECOMP_TASK_LOADABLE;
     if (task.words[1]&~flags) recomp_fail("unsupported SP task flags",object);

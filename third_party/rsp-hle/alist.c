@@ -798,14 +798,17 @@ void alist_filter(
         uint16_t dmem,
         uint16_t count,
         uint32_t address,
-        const uint32_t* lut_address)
+        int16_t* coefficients)
 {
     int x;
     int16_t outbuff[0x3c0];
     int16_t *outp = outbuff;
 
-    int16_t* const lutt6 = (int16_t*)(hle->dram + lut_address[0]);
-    int16_t* const lutt5 = (int16_t*)(hle->dram + lut_address[1]);
+    /* The Zelda RSP loads the source table into DMEM (0x1cf8..0x1d00).
+     * It averages that local copy and writes only the 32-byte filter state
+     * back to RDRAM (0x1e20..0x1e28). The CPU owns the source table. */
+    int16_t* const lutt6 = coefficients;
+    int16_t* const lutt5 = (int16_t*)(hle->dram + address + 16);
 
     int16_t* in1 = (int16_t*)(hle->dram + address);
     int16_t* in2 = (int16_t*)(hle->alist_buffer + dmem);

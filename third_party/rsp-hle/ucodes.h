@@ -128,6 +128,7 @@ struct alist_nead_t {
     /* filter audio command state */
     uint16_t filter_count;
     uint32_t filter_lut_address[2];
+    int16_t filter_lut[8]; /* RSP-local coefficients, loaded by FILTER setup. */
 };
 
 void alist_process_nead_mk  (struct hle_t* hle);

@@ -8,6 +8,7 @@ typedef struct RecompAudio RecompAudio;
 typedef enum RecompAudioMicrocode {
     RECOMP_AUDIO_ABI1=0,
     RECOMP_AUDIO_ABI1_LINEAR=1,
+    RECOMP_AUDIO_NEAD_OOT=2,
 } RecompAudioMicrocode;
 typedef struct RecompAudioTaskProfile {
     uint32_t descriptor[6]; /* Expected boot/code/data addresses and task sizes. */
@@ -21,10 +22,11 @@ typedef struct RecompAudioConfig {
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile; /* Game-owned static recognition data; required for submit. */
     unsigned prebuffer_ms; /* Zero uses 80 ms; a game may request up to 200 ms. */
+    const char *trace_path; /* Optional CSV of AI admission and playback queue timing. */
 } RecompAudioConfig;
 typedef struct RecompAudioStats {
     uint64_t tasks, commands, ai_buffers, frames, nonzero_samples, clipped_samples, synth_ns;
-    uint64_t opcodes[16], playback_frames, queue_resets, queue_underruns;
+    uint64_t opcodes[32], playback_frames, queue_resets, queue_underruns;
     uint32_t frequency, peak, queued_bytes, min_queued_bytes, max_queued_bytes, prebuffer_frames;
     bool device_open, playback_running;
     char driver[32];

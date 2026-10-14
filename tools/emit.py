@@ -115,9 +115,21 @@ def target(instruction: Instruction) -> int:
     return (instruction.pc + 4 + instruction.immediate * 4) & 0xffffffff
 
 
+class FunctionRegistry(dict):
+    """Cache unique cross-section targets for large sets of game overlays."""
+    def __init__(self, functions: list[dict]):
+        super().__init__(((f['section'], f['vram']), f) for f in functions)
+        self.unique = {}
+        for f in functions:
+            address = f['vram']
+            self.unique[address] = None if address in self.unique else f
+
+
 def resolve_function(registry: dict, section: int, address: int) -> dict | None:
     if (section, address) in registry:
         return registry[(section, address)]
+    if isinstance(registry, FunctionRegistry):
+        return registry.unique.get(address)
     matches = [f for (s, a), f in registry.items() if a == address]
     return matches[0] if len(matches) == 1 else None
 
@@ -194,7 +206,9 @@ def reg(number: int) -> str:
     return f"ctx->gpr[{number}]" if number else "UINT64_C(0)"
 
 
-def add_immediate(value: str, immediate: int) -> str:
+def add_immediate(value: str, immediate: int | str) -> str:
+    if isinstance(immediate, str):
+        return f'{value} + (uint64_t)(int64_t)({immediate})'
     if immediate == 0:
         return value
     return f"{value} {'+' if immediate > 0 else '-'} {abs(immediate):#x}"
@@ -207,16 +221,18 @@ def signed_constant(value: int, bits: int) -> str:
     return f"UINT64_C(0x{value & 0xffffffffffffffff:x})"
 
 
-def memory_address(i: Instruction) -> str:
+def memory_address(i: Instruction, immediate: str | None = None) -> str:
+    if immediate is not None:
+        return add_immediate(reg(i.rs), immediate)
     if i.rs == 0:
         return f"UINT32_C(0x{i.immediate & 0xffffffff:x})"
     return add_immediate(reg(i.rs), i.immediate)
 
 
-def body(i: Instruction) -> str:
+def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     op, a, b = i.opcode, reg(i.rs), reg(i.rt)
-    imm = f"{i.immediate:#x}"
-    logical_imm = f"UINT64_C(0x{i.word & 0xffff:04x})"
+    imm = relocated_immediate or f"{i.immediate:#x}"
+    logical_imm = f'((uint16_t)({imm}))' if relocated_immediate else f"UINT64_C(0x{i.word & 0xffff:04x})"
     destination = i.rt
     expression = None
     if op == 'nop': return ";"
@@ -240,13 +256,13 @@ def body(i: Instruction) -> str:
             mode = {'cvt': -1, 'round': 0, 'trunc': 1, 'ceil': 2, 'floor': 3}[parts[0]]
             return f'mips_fp_convert(ctx, {i.shift}, {i.rd}, {fmt}, MIPS_FP_{parts[1].upper()}, {mode});'
     if op in ('lwc1', 'swc1', 'ldc1', 'sdc1'):
-        address = memory_address(i)
+        address = memory_address(i, relocated_immediate)
         if op == 'lwc1': return f'ctx->fpr[{i.rt}] = (uint32_t)recomp_load(runtime, {address}, 4);'
         if op == 'swc1': return f'recomp_store(runtime, {address}, ctx->fpr[{i.rt}], 4);'
         if op == 'ldc1': return f'mips_set_fpr_pair(ctx, {i.rt}, recomp_load(runtime, {address}, 8));'
         return f'recomp_store(runtime, {address}, mips_fpr_pair(ctx, {i.rt}), 8);'
     if op in ('lwl', 'lwr', 'ldl', 'ldr', 'swl', 'swr', 'sdl', 'sdr'):
-        address = memory_address(i)
+        address = memory_address(i, relocated_immediate)
         width = 4 if op[1] == 'w' else 8
         left = 'true' if op.endswith('l') else 'false'
         if op.startswith('s'):
@@ -254,10 +270,10 @@ def body(i: Instruction) -> str:
         expression = f'recomp_load_merge(runtime, {address}, {b}, {width}, {left})'
         if width == 4: expression = f'mips_s32({expression})'
         return f'mips_set(ctx, {i.rt}, {expression});'
-    if op == 'lui': expression = signed_constant((i.word & 0xffff) << 16, 32)
+    if op == 'lui': expression = f'mips_s32((uint32_t){logical_imm} << 16)' if relocated_immediate else signed_constant((i.word & 0xffff) << 16, 32)
     elif op in ('addiu', 'addi', 'daddiu'):
-        expression = (f"mips_s32({add_immediate(a, i.immediate)})" if op == 'addiu'
-                      else f"mips_add32({a}, {imm})" if op == 'addi' else add_immediate(a, i.immediate))
+        expression = (f"mips_s32({add_immediate(a, relocated_immediate or i.immediate)})" if op == 'addiu'
+                      else f"mips_add32({a}, {imm})" if op == 'addi' else add_immediate(a, relocated_immediate or i.immediate))
     elif op in ('addu', 'add', 'subu', 'sub', 'daddu', 'dsubu'):
         destination = i.rd
         sign = '+' if op in ('addu', 'add', 'daddu') else '-'
@@ -299,7 +315,7 @@ def body(i: Instruction) -> str:
         return f"mips_{'dmult' if op.startswith('dmult') else 'ddiv'}(ctx, {a}, {b}, {'false' if op.endswith('u') else 'true'});"
     elif op in ('lb', 'lbu', 'lh', 'lhu', 'lw', 'lwu', 'ld', 'sb', 'sh', 'sw', 'sd'):
         width = {'b': 1, 'h': 2, 'w': 4, 'd': 8}[op[1]]
-        address = memory_address(i)
+        address = memory_address(i, relocated_immediate)
         if op.startswith('s'): return f"recomp_store(runtime, {address}, {b}, {width});"
         expression = f"recomp_load(runtime, {address}, {width})"
         if op in ('lb', 'lh', 'lw'): expression = f"mips_s{width * 8}({expression})"
@@ -366,7 +382,10 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         direct_hooks = direct_hook_targets(registry, hooks)
 
     def emit_body(instruction: Instruction, indent: str = '    ') -> list[str]:
-        statement = body(instruction)
+        relocated = instruction.pc in function.get('relocation_pcs', [])
+        immediate = (f'(int16_t)recomp_load(runtime, recomp_relocated_address(runtime, '
+                     f'{function["section"]}, UINT32_C(0x{instruction.pc:08x})), 4)') if relocated else None
+        statement = body(instruction, immediate)
         if LOG_EMISSION and LOG_EMISSION_VERBOSE and ('recomp_load' in statement or 'recomp_store' in statement):
             log_emission('Memory %s s%s 0x%08x: %s -> %s',
                          function['name'], function['section'], instruction.pc, instruction.assembly, statement,
@@ -466,11 +485,14 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if i.opcode in ('jr', 'jalr'):
             lines.append(f"        uint32_t destination = (uint32_t){reg(i.rs)};")
         if i.opcode in ('jal', 'jalr'):
-            lines.append(f"        mips_set(ctx, {31 if i.opcode == 'jal' else i.rd}, {signed_constant(i.pc + 8, 32)});")
+            ra = (f'mips_s32(recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc+8:08x})))'
+                  if function.get('relocatable') else signed_constant(i.pc + 8, 32))
+            lines.append(f"        mips_set(ctx, {31 if i.opcode == 'jal' else i.rd}, {ra});")
         lines.extend(emit_body(slot, '        '))
         checked = transfers.get(i.pc)
         if i.opcode == 'jr' and checked:
-            lines.append('        switch (destination) {')
+            destination = 'recomp_canonical_function_address(runtime, destination)' if function.get('relocatable') else 'destination'
+            lines.append(f'        switch ({destination}) {{')
             for address in checked['targets']:
                 lines.append(f'        case UINT32_C(0x{address:08x}):')
                 if checked['kind'] == 'jump':
@@ -490,7 +512,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         elif i.opcode in ('jal', 'jalr'):
             dest = 'destination' if i.opcode == 'jalr' else f"UINT32_C(0x{target(i):08x})"
             if checked and not checked.get('registered_targets'):
-                lines.append('        switch (destination) {')
+                destination = 'recomp_canonical_function_address(runtime, destination)' if function.get('relocatable') else 'destination'
+                lines.append(f'        switch ({destination}) {{')
                 for address in checked['targets']:
                     log_call(address, 'Checked indirect call target')
                     lines.extend([f'        case UINT32_C(0x{address:08x}):', call_location('            '),

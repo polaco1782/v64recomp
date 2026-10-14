@@ -1,5 +1,9 @@
 #include "runtime.h"
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <stdio.h>
+#include <errno.h>
 
 typedef struct AiBuffer {
     uint32_t address, length, dac_rate, start_fraction, end_fraction;
@@ -17,6 +21,7 @@ struct RecompPlatform {
     uint32_t vi_queue, vi_message, pi_queue, mode_ctrl;
     uint64_t next_vi, retrace_phase;
     uint32_t *code_received;
+    uint8_t *sram;
 };
 
 static RecompPlatform *platform(Runtime *rt) {
@@ -115,10 +120,30 @@ static void poll_platform(Runtime *rt) {
             uint32_t offset = (uint32_t)recomp_load(rt, mb + 12, 4);
             uint32_t size = (uint32_t)recomp_load(rt, mb + 16, 4);
             uint32_t queue = (uint32_t)recomp_load(rt, mb + 4, 4);
-            if (recomp_load(rt, mb, 2) != 11 || !size || !rom_range(rt, &offset, size))
-                recomp_fail("unsupported/corrupt queued PI transfer", mb);
-            recomp_copy_to_ram(rt, address, rt->rom + offset, size);
-            code_loaded(rt, address, offset, size);
+            uint32_t type = (uint32_t)recomp_load(rt, mb, 2);
+            uint32_t handle = type==15 || type==16 ? (uint32_t)recomp_load(rt,mb+20,4) : 0;
+            uint32_t base = handle ? (uint32_t)recomp_load(rt,handle+12,4) : UINT32_C(0xb0000000);
+            if ((base&UINT32_C(0x1fff0000))==UINT32_C(0x08000000) && p->sram) {
+                offset=((base|offset)&UINT32_C(0x1fffffff))-UINT32_C(0x08000000);
+                if (!size || offset>p->config.sram_size || size>p->config.sram_size-offset)
+                    recomp_fail("SRAM DMA outside cartridge save",mb);
+                if(type==15)recomp_copy_to_ram(rt,address,p->sram+offset,size);
+                else if(type==16) {
+                    for(uint32_t b=0;b<size;b++)p->sram[offset+b]=(uint8_t)recomp_load(rt,address+b,1);
+                    if(p->config.sram_path) {
+                        FILE *save=fopen(p->config.sram_path,"wb");
+                        if(!save)recomp_fail("cannot open SRAM save",mb);
+                        bool written=fwrite(p->sram,1,p->config.sram_size,save)==p->config.sram_size;
+                        if(fclose(save) || !written)recomp_fail("cannot write SRAM save",mb);
+                    }
+                } else recomp_fail("unsupported SRAM DMA direction",mb);
+            } else {
+                if ((type != 11 && type != 15) || base!=UINT32_C(0xb0000000)
+                        || !size || !rom_range(rt, &offset, size))
+                    recomp_fail("unsupported/corrupt queued PI transfer", mb);
+                recomp_copy_to_ram(rt, address, rt->rom + offset, size);
+                code_loaded(rt, address, offset, size);
+            }
             if (queue) (void)recomp_queue_send(rt, queue, mb, RECOMP_MESG_NOBLOCK, false);
         }
     }
@@ -145,7 +170,8 @@ static void poll_platform(Runtime *rt) {
 
 bool recomp_platform_init(Runtime *rt, const RecompPlatformConfig *config) {
     if (rt->platform || !rt->clock || !rt->scheduler || !rt->rom || !config || !config->vi_period_ticks
-            || (config->code_load_count && !config->code_loads)) return false;
+            || (config->code_load_count && !config->code_loads)
+            || (config->sram_size && config->sram_size!=32768)) return false;
     uint32_t addresses[] = {config->clock_rate, config->final_rom, config->timer_list,
         config->current_time, config->base_counter, config->vi_intr_count, config->app_nmi_buffer, config->vi_clock};
     const unsigned sizes[] = {8,4,4,8,4,4,64,4};
@@ -173,6 +199,20 @@ bool recomp_platform_init(Runtime *rt, const RecompPlatformConfig *config) {
     p->config = *config;
     p->code_received = calloc(config->code_load_count ? config->code_load_count : 1, sizeof(uint32_t));
     if (!p->code_received) { free(p); return false; }
+    if(config->sram_size) {
+        p->sram=malloc(config->sram_size);
+        if(!p->sram) { free(p->code_received);free(p);return false; }
+        memset(p->sram,0xff,config->sram_size);
+        if(config->sram_path) {
+            FILE *save=fopen(config->sram_path,"rb");
+            bool valid=true;
+            if(save) {
+                valid=fread(p->sram,1,config->sram_size,save)==config->sram_size && fgetc(save)==EOF;
+                if(fclose(save))valid=false;
+            } else valid=errno==ENOENT;
+            if(!valid) { free(p->sram);free(p->code_received);free(p);return false; }
+        }
+    }
     p->vi.retrace_count = 1;
     rt->platform = p; rt->destroy_platform = recomp_platform_destroy; rt->poll_platform = poll_platform;
     return true;
@@ -180,7 +220,7 @@ bool recomp_platform_init(Runtime *rt, const RecompPlatformConfig *config) {
 
 void recomp_platform_destroy(Runtime *rt) {
     if (!rt->platform) return;
-    free(rt->platform->code_received); free(rt->platform);
+    free(rt->platform->sram);free(rt->platform->code_received); free(rt->platform);
     rt->platform = NULL; rt->destroy_platform = NULL; rt->poll_platform = NULL;
     rt->platform_initialized = false;
 }
@@ -236,7 +276,6 @@ void hook_os_ai_set_frequency(Runtime *rt, MipsContext *ctx) {
     RecompPlatform *p = platform(rt);
     if (!p->initialized) recomp_fail("AI frequency before OS initialization", ctx->pc);
     poll_ai(rt);
-    if (p->ai.queued) recomp_fail("AI frequency changes during DMA require explicit support", ctx->pc);
     uint32_t frequency = arg(ctx, 0), clock = p->ai.clock;
     if (!frequency) recomp_fail("unsupported zero AI frequency", ctx->pc);
     if (frequency > clock) { result(ctx, -1); return; }
@@ -260,6 +299,8 @@ void hook_os_ai_set_frequency(Runtime *rt, MipsContext *ctx) {
     /* Future AI DMA support must model the hardware's 14-bit DAC register for
      * unusually low rates. This startup subset rejects that unsupported case. */
     if (dac > 16384) recomp_fail("unsupported AI divisor above hardware range", ctx->pc);
+    if (p->ai.queued && dac != p->ai.dac_rate)
+        recomp_fail("AI frequency changes during DMA require explicit support", ctx->pc);
     p->ai.dac_rate = dac; p->ai.bit_rate = bit_rate; p->ai.frequency = clock / dac;
     p->ai.enabled = true; result(ctx, (int32_t)p->ai.frequency);
 }
@@ -284,6 +325,51 @@ void hook_os_initialize(Runtime *rt, MipsContext *ctx) {
     /* Exceptions/TLB/cache operations are replaced at the OS boundary. No
      * emulated exception vector or privileged CPU state is installed. */
 }
+void hook_os_get_mem_size(Runtime *rt, MipsContext *ctx) {
+    result(ctx, (int32_t)rt->rdram_size);
+}
+void hook_leo_drive_exist(Runtime *rt, MipsContext *ctx) {
+    (void)rt; result(ctx, 0); /* No 64DD device is attached to the native platform. */
+}
+static void rom_handle(Runtime *rt, MipsContext *ctx, uint32_t handle, bool drive) {
+    if (!handle) recomp_fail("SDK ROM handle storage not configured", ctx->pc);
+    if (!recomp_load(rt, handle + 12, 4)) {
+        recomp_ram_address(rt, handle, 0x74);
+        recomp_store(rt, handle + 4, drive ? 1 : 0, 1);
+        recomp_store(rt, handle + 5, rt->rom[3], 1);
+        recomp_store(rt, handle + 6, rt->rom[1] & 15, 1);
+        recomp_store(rt, handle + 7, rt->rom[1] >> 4, 1);
+        recomp_store(rt, handle + 8, rt->rom[2], 1);
+        recomp_store(rt, handle + 12, drive ? 0xa6000000 : 0xb0000000, 4);
+    }
+    result(ctx, (int32_t)handle);
+}
+void hook_os_cart_rom_init(Runtime *rt, MipsContext *ctx) {
+    rom_handle(rt, ctx, platform(rt)->config.cart_handle, false);
+}
+void hook_os_drive_rom_init(Runtime *rt, MipsContext *ctx) {
+    rom_handle(rt, ctx, platform(rt)->config.drive_handle, true);
+}
+void hook_os_epi_read_io(Runtime *rt, MipsContext *ctx) {
+    uint32_t handle=arg(ctx, 0), offset=arg(ctx, 1);
+    if (recomp_load(rt, handle+12, 4) != UINT32_C(0xb0000000)
+            || offset % 4 || !rom_range(rt, &offset, 4)) { result(ctx, -1); return; }
+    uint32_t value=0;
+    for (unsigned i=0; i<4; i++) value=(value<<8)|rt->rom[offset+i];
+    recomp_store(rt, arg(ctx, 2), value, 4); result(ctx, 0);
+}
+void hook_os_epi_start_dma(Runtime *rt, MipsContext *ctx) {
+    RecompPlatform *p=platform(rt);
+    uint32_t handle=arg(ctx, 0), mb=arg(ctx, 1);
+    uint32_t base=(uint32_t)recomp_load(rt,handle+12,4), direction=arg(ctx,2);
+    bool sram=(base&UINT32_C(0x1fff0000))==UINT32_C(0x08000000) && p->sram;
+    if (!p->pi_created || direction>1 || (direction && !sram)
+            || (!sram && base!=UINT32_C(0xb0000000))) { result(ctx, -1); return; }
+    recomp_ram_address(rt, mb, 24);
+    recomp_store(rt, mb, 15+direction, 2); recomp_store(rt, mb+20, handle, 4);
+    result(ctx, recomp_queue_send(rt, p->pi_queue, mb, RECOMP_MESG_NOBLOCK,
+                                 recomp_load(rt, mb+2, 1) == 1));
+}
 void hook_os_create_vi_manager(Runtime *rt, MipsContext *ctx) {
     (void)ctx;
     RecompPlatform *p = platform(rt);
@@ -297,9 +383,17 @@ void hook_os_vi_set_mode(Runtime *rt, MipsContext *ctx) {
     RecompPlatform *p = platform(rt);
     recomp_ram_address(rt, arg(ctx, 0), 80);
     p->vi.mode = arg(ctx, 0);
+    p->vi.x_factor = p->vi.y_factor = 1.0f;
     p->mode_ctrl = (uint32_t)recomp_load(rt, p->vi.mode + 4, 4);
     p->vi.special_features = p->mode_ctrl;
 }
+static float vi_scale(MipsContext *ctx) {
+    float value; memcpy(&value, &ctx->fpr[12], sizeof(value));
+    if (!isfinite(value) || value<0 || value>16) recomp_fail("invalid VI scale factor", ctx->pc);
+    return value;
+}
+void hook_os_vi_set_x_scale(Runtime *rt, MipsContext *ctx) { platform(rt)->vi.x_factor=vi_scale(ctx); }
+void hook_os_vi_set_y_scale(Runtime *rt, MipsContext *ctx) { platform(rt)->vi.y_factor=vi_scale(ctx); }
 void hook_os_vi_black(Runtime *rt, MipsContext *ctx) { platform(rt)->vi.black = (uint8_t)arg(ctx, 0) != 0; }
 void hook_os_vi_set_special_features(Runtime *rt, MipsContext *ctx) {
     RecompPlatform *p = platform(rt);
@@ -317,7 +411,7 @@ void hook_os_vi_set_event(Runtime *rt, MipsContext *ctx) {
     p->vi.retrace_count = (uint16_t)arg(ctx, 2); p->retrace_phase = 0;
 }
 void hook_os_vi_swap_buffer(Runtime *rt, MipsContext *ctx) {
-    recomp_ram_address(rt, arg(ctx, 0), 1);
+    /* The SDK records the pending pointer even while VI output is black. */
     platform(rt)->vi.framebuffer = arg(ctx, 0);
 }
 void hook_os_vi_get_current_framebuffer(Runtime *rt, MipsContext *ctx) {

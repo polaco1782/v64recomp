@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <inttypes.h>
 
 struct RecompAudio {
     Runtime *rt;
@@ -24,6 +25,7 @@ struct RecompAudio {
     RecompAudioStats stats;
     RecompAudioSnapshot debug;
     FILE *wav;
+    FILE *trace;
     SDL_AudioDeviceID device;
     SDL_threadID owner;
     bool playback, enabled, microcode_checked, task_done, sdl_audio;
@@ -59,16 +61,86 @@ void HleWarnMessage(void *opaque,const char *message,...) {
     (void)opaque;va_list args;va_start(args,message);fputs("audio HLE: ",stderr);vfprintf(stderr,message,args);fputc('\n',stderr);va_end(args);
     recomp_fail("unsupported audio HLE operation",0);
 }
+int HleForwardTask(void *opaque) {
+    (void)opaque;
+    recomp_fail("unsupported forwarded audio microcode",0);
+}
 void rsp_break(struct hle_t *hle,unsigned flags) {
     RecompAudio *a=hle->user_defined;
     if(flags!=SP_STATUS_TASKDONE || a->task_done)recomp_fail("invalid audio task completion",flags);
     a->task_done=true;
+}
+static void validate_nead(RecompAudio *a,uint32_t w1,uint32_t w2,uint32_t pc) {
+    struct alist_nead_t *s=&a->hle.alist_nead;
+    unsigned op=w1>>24, flags=(w1>>16)&255, count=s->count;
+    unsigned lo=w1&65535, left=w2>>16, right=w2&65535, addr=w2&0xffffff;
+    if(op>=24 || op==0 || op==3 || op==23)recomp_fail("unknown Zelda audio command",pc);
+    a->stats.commands++;a->stats.opcodes[op]++;
+    switch(op) {
+    case 1:
+        if(flags&~7u || (count && a->book_coefficients<16))recomp_fail("invalid Zelda ADPCM setup",pc);
+        dmem_range(s->in,(align(count,32)/32)*((flags&4)?5:9));
+        sample_range(s->out,align(count,32)+32);ram_range(a,addr,32,2);
+        if(flags&2)ram_range(a,s->loop,32,2);
+        break;
+    case 2:dmem_range(lo,w2&4095);break;
+    case 4:case 12:
+        sample_range(left,(w1>>12)&0xff0);sample_range(right,(w1>>12)&0xff0);break;
+    case 5:case 6: {
+        unsigned n=op==5?align(count,16):count;
+        if(op==5 && (flags&~1u || s->in<8))recomp_fail("invalid Zelda resample setup",pc);
+        sample_range(s->out,n);
+        unsigned samples=n/2, history=op==5?8:0;
+        uint64_t span=((samples*(uint64_t)lo*2+65535)/65536+4)*2;
+        if(span>4096)recomp_fail("Zelda resample span",pc);
+        sample_range(s->in-history,(unsigned)span+history);
+        if(op==5)ram_range(a,addr,10,2);
+        break;
+    }
+    case 7:
+        if(flags>1) { if(lo>0x780)recomp_fail("Zelda filter count",pc);ram_range(a,addr,16,2); }
+        else {
+            if(s->filter_count>0x780 || s->filter_count%16)recomp_fail("Zelda filter setup",pc);
+            sample_range(lo,s->filter_count);ram_range(a,addr,32,2);
+            ram_range(a,s->filter_lut_address[0],16,2);
+        }
+        break;
+    case 8:dmem_range(lo,0);dmem_range(left,0);break;
+    case 9:dmem_range(lo,128);dmem_range(left,flags*128);break;
+    case 10:dmem_range(lo,align(right,4));dmem_range(left,align(right,4));break;
+    case 11:
+        if(lo>sizeof(s->table) || lo%32)recomp_fail("Zelda ADPCM book size",pc);
+        ram_range(a,addr,lo,2);a->book_coefficients=lo/2;break;
+    case 13: {
+        unsigned n=(w1>>12)&0xff0;
+        sample_range(lo,n*2);sample_range(left,n);sample_range(right,n);break;
+    }
+    case 14:sample_range(left,w1&4095);break;
+    case 15:ram_range(a,addr,32,2);break;
+    case 16: {
+        unsigned n=(flags?flags:1)*align(right?right:32,32);
+        dmem_range(lo,n);dmem_range(left,n);break;
+    }
+    case 17:sample_range(left,lo*4);sample_range(right,lo*2);break;
+    case 18:case 22:break;
+    case 19: {
+        unsigned bytes=align((w1>>8)&255,8)*2;
+        sample_range((w1>>12)&0xff0,bytes);
+        sample_range((w2>>20)&0xff0,bytes);sample_range((w2>>12)&0xff0,bytes);
+        sample_range((w2>>4)&0xff0,bytes);sample_range((w2<<4)&0xff0,bytes);break;
+    }
+    case 20:case 21: {
+        unsigned bytes=align((w1>>12)&0xfff,8);
+        dmem_range((w1&4095)&~3u,bytes);ram_range(a,addr&~7u,bytes,8);break;
+    }
+    }
 }
 void HleValidateCommand(void *opaque,uint32_t w1,uint32_t w2,uint32_t pc) {
     RecompAudio *a=opaque;struct alist_audio_t *s=&a->hle.alist_audio;
     a->debug.history[a->debug.command_index%RECOMP_AUDIO_HISTORY]=(RecompAudioCommand){pc,w1,w2};
     a->debug.command_index++;
     if(a->debug.history_count<RECOMP_AUDIO_HISTORY)a->debug.history_count++;
+    if(a->microcode==RECOMP_AUDIO_NEAD_OOT) { validate_nead(a,w1,w2,pc);return; }
     unsigned op=w1>>24,flags=(w1>>16)&255,count=s->count;
     if(op>15)recomp_fail("unknown ABI1 audio command",pc);
     a->stats.commands++;a->stats.opcodes[op]++;
@@ -194,13 +266,17 @@ static bool ai_start(Runtime *rt,void *opaque,uint32_t guest,unsigned bytes,unsi
             }
         }
     }
-    a->stats.frames+=bytes/4;a->stats.ai_buffers++;free(pcm);free(wav);return okay;
+    a->stats.frames+=bytes/4;a->stats.ai_buffers++;
+    if(a->trace)fprintf(a->trace,"%" PRIu64 ",%u,%u,%u,%" PRIu64 "\n",
+        timer_ns(),bytes/4,rate,a->device?SDL_GetQueuedAudioSize(a->device):0,a->stats.queue_underruns);
+    free(pcm);free(wav);return okay;
 }
 static void service_audio(Runtime *,void *,bool);
 RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
     if(!rt || !rt->platform || !config
        || config->prebuffer_ms>200
-       || (config->microcode!=RECOMP_AUDIO_ABI1 && config->microcode!=RECOMP_AUDIO_ABI1_LINEAR))return NULL;
+       || (config->microcode!=RECOMP_AUDIO_ABI1 && config->microcode!=RECOMP_AUDIO_ABI1_LINEAR
+           && config->microcode!=RECOMP_AUDIO_NEAD_OOT))return NULL;
     RecompAudio *a=calloc(1,sizeof(*a));if(!a)return NULL;
     a->rt=rt;a->owner=SDL_ThreadID();a->playback=config->playback;a->enabled=config->output_enabled;
     a->microcode=config->microcode;a->task_profile=config->task_profile;
@@ -212,8 +288,13 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
         a->wav=fopen(config->wav_path,"wb+");
         if(!a->wav || !wav_header(a) || fseek(a->wav,44,SEEK_SET)) { if(a->wav)fclose(a->wav);free(a);return NULL; }
     }
+    if(config->trace_path) {
+        a->trace=fopen(config->trace_path,"w");
+        if(!a->trace) { if(a->wav)fclose(a->wav);free(a);return NULL; }
+        fputs("host_ns,frames,rate,queued_bytes,underruns\n",a->trace);
+    }
     RecompAiOutput output={.start=ai_start,.opaque=a};
-    if(!recomp_ai_set_output(rt,&output)) { if(a->wav)fclose(a->wav);free(a);return NULL; }
+    if(!recomp_ai_set_output(rt,&output)) { if(a->trace)fclose(a->trace);if(a->wav)fclose(a->wav);free(a);return NULL; }
     a->before=malloc(rt->rdram_size);a->ram=malloc(rt->rdram_size);
     a->worker=recomp_worker_create("n64-audio");
     if(!a->before || !a->ram || !a->worker) {
@@ -235,6 +316,7 @@ void recomp_audio_destroy(RecompAudio *a) {
     if(a->device)SDL_CloseAudioDevice(a->device);
     if(a->sdl_audio)SDL_QuitSubSystem(SDL_INIT_AUDIO);
     if(a->wav && (!wav_header(a) || fclose(a->wav)))recomp_fail("audio WAV finalization failed",0);
+    if(a->trace && fclose(a->trace))recomp_fail("audio trace finalization failed",0);
     free(a);
 }
 void recomp_audio_set_output_enabled(RecompAudio *a,bool enabled) {
@@ -256,7 +338,8 @@ static void execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     uint32_t physical=recomp_ram_address(&a->dsp_rt,list,bytes);
     memcpy(a->dmem+TASK_DATA_PTR,&physical,4);memcpy(a->dmem+TASK_DATA_SIZE,&bytes,4);
     a->task_done=false;uint64_t start=timer_ns();
-    if(a->microcode==RECOMP_AUDIO_ABI1_LINEAR)alist_process_audio_ge(&a->hle);
+    if(a->microcode==RECOMP_AUDIO_NEAD_OOT)alist_process_nead_oot(&a->hle);
+    else if(a->microcode==RECOMP_AUDIO_ABI1_LINEAR)alist_process_audio_ge(&a->hle);
     else alist_process_audio(&a->hle);
     a->stats.synth_ns+=timer_ns()-start;
     if(!a->task_done)recomp_fail("audio DSP task did not finish",list);

@@ -186,3 +186,7 @@ void hook_os_set_timer(Runtime *rt, MipsContext *ctx) {
                       (uint32_t)recomp_load(rt, sp + 24, 4), (uint32_t)recomp_load(rt, sp + 28, 4));
     mips_set(ctx, 2, 0);
 }
+void hook_os_stop_timer(Runtime *rt, MipsContext *ctx) {
+    bool stopped=recomp_timer_stop(rt,(uint32_t)ctx->gpr[4]);
+    mips_set(ctx,2,stopped?0:mips_s32(UINT32_MAX));
+}

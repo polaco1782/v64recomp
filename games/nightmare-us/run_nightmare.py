@@ -66,6 +66,7 @@ def main() -> int:
     parser.add_argument('--frames', type=int, default=360, help='presentation limit; zero runs until the window closes')
     parser.add_argument('--jobs', type=int, default=4)
     parser.add_argument('--mute', action='store_true')
+    parser.add_argument('--performance', action='store_true', help='record timing and audio queue depth during rendering')
     parser.add_argument('--wav', type=Path)
     parser.add_argument('--input-script', type=Path, help='ROM-bound controller replay JSON')
     parser.add_argument('--capture-every', type=int, default=0, help='capture every N presentations during rendered checks')
@@ -78,8 +79,8 @@ def main() -> int:
         parser.error('frames must be a nonnegative 32-bit count and jobs must be positive')
     if args.render and args.sanitize_address:
         parser.error('--sanitize-address applies to native headless checks')
-    if (args.input_script or args.mute or args.wav or args.capture_every) and not args.render:
-        parser.error('controller replay, mute and WAV require --render')
+    if (args.input_script or args.mute or args.wav or args.capture_every or args.performance) and not args.render:
+        parser.error('controller replay, mute, WAV, captures and timing require --render')
     if args.render: args.startup = True
     profile = load_profile(PROJECT / 'games/nightmare-us' / ('startup.toml' if args.startup or args.report_only else 'boot.toml'))
     game = profile['game']
@@ -116,6 +117,8 @@ def main() -> int:
         env['SDL_VIDEODRIVER'] = 'x11'
         env['MESA_SHADER_CACHE_DIR'] = str(PROJECT/'local/rt64/mesa-cache')
         env.pop('RECOMP_AUDIO_MUTE', None)
+        env.pop('RECOMP_NIGHTMARE_PERFORMANCE', None)
+        if args.performance: env['RECOMP_NIGHTMARE_PERFORMANCE'] = '1'
         env.pop('RECOMP_NIGHTMARE_WAV', None)
         env.pop('RECOMP_NIGHTMARE_INPUT', None)
         env['RECOMP_NIGHTMARE_CAPTURE_EVERY'] = str(args.capture_every)

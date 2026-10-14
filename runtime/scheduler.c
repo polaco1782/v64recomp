@@ -601,6 +601,12 @@ int32_t recomp_queue_send(Runtime *rt, uint32_t object, uint32_t message, int32_
 }
 
 int32_t recomp_queue_recv(Runtime *rt, uint32_t object, uint32_t destination, int32_t flag) {
+    /* libultra checks validCount before touching the ring or thread lists.
+     * Zelda polls a zero-initialized queue for its unused disk audio medium. */
+    if (object && !flag) {
+        recomp_ram_address(rt, object, RECOMP_QUEUE_BYTES);
+        if (!recomp_load(rt, object + 8, 4)) return -1;
+    }
     NativeQueue *q = queue(rt, object);
     if (destination) {
         if (destination % 4) recomp_fail("unaligned message destination", destination);

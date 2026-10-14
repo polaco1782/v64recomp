@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 from common import RecompError, load_metadata, load_profile, load_rom, validate_hook_prefix, write_json
-from emit import analyze, cname, decode_function, direct_hook_targets, emit_function, instruction_addresses, log_emission, resolve_function, target
+from emit import FunctionRegistry, analyze, cname, decode_function, direct_hook_targets, emit_function, instruction_addresses, log_emission, resolve_function, target
 from native_hooks import resolve_native_hooks
 
 
@@ -32,7 +32,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         raise RecompError('game fpu_fr must be zero or one')
     log_emission('Start %s: %d functions, %d sections; output %s',
                  'coverage analysis' if report_only else 'translation', len(functions), len(metadata['sections']), output)
-    registry = {(f['section'], f['vram']): f for f in functions}
+    registry = FunctionRegistry(functions)
     hooks = {}
     for hook in profile.get('hooks', []):
         if hook.get('kind') != 'replace_function':
@@ -67,13 +67,20 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
                      f['name'], f['section'], f['vram'], boundary['reason'])
     selected = list(functions)
     if names:
+        by_name = {}
+        for f in functions:
+            for name in set([f['name'], *f['aliases']]):
+                by_name.setdefault(name, []).append(f)
         selected = []
+        seen = set()
         for name in names:
-            matches = [f for f in functions if name in [f['name'], *f['aliases']]]
+            matches = by_name.get(name, [])
             if len(matches) != 1:
                 raise RecompError(f"selected function missing or ambiguous: {name}")
-            if matches[0] not in selected:
+            key = (matches[0]['section'], matches[0]['vram'])
+            if key not in seen:
                 selected.append(matches[0])
+                seen.add(key)
     selected_keys = {(f['section'], f['vram']) for f in selected}
     log_emission('Selected %d functions; decoding and checking %d functions', len(selected), len(functions))
     results, decoded, counts = [], {}, Counter()

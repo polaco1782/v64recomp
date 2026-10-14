@@ -31,7 +31,7 @@ def build_native(output: Path,cc: str,*,application: Path,executable_name: str,
         sdl_flags=subprocess.check_output(['pkg-config','--cflags','--libs','sdl2'],text=True).split()
         command.extend(['-DRECOMP_WITH_AUDIO','-fno-strict-aliasing','-I',str(project/'third_party/rsp-hle'),
                         str(project/'backends/audio.c'),
-                        *(str(project/f'third_party/rsp-hle/{name}.c') for name in ('alist','alist_audio','audio','memory')),
+                        *(str(project/f'third_party/rsp-hle/{name}.c') for name in ('alist','alist_audio','alist_nead','audio','memory')),
                         *sdl_flags])
     command.extend([str(application),*(str(p) for p in extra_sources),
                     '-lcrypto','-lm','-o',str(binary)])

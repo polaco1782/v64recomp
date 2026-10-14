@@ -1,4 +1,4 @@
-# Native ROM conversion: SM64, GoldenEye, Shadow Man, Quake 64, Duke Nukem 64 and Nightmare Creatures
+# Native ROM conversion: SM64, GoldenEye, Shadow Man, Quake 64, Duke Nukem 64, Nightmare Creatures and Ocarina of Time
 
 Game profiles, applications, launchers and game-specific diagnostics live under `games/`.
 The original emulator is separate. SM64 is the accepted gameplay baseline;
@@ -10,6 +10,18 @@ Nightmare Creatures US is the sixth target, isolated under `games/nightmare-us/`
 It reaches title, character selection and playable Chelsea with native graphics,
 audio and controller input. Full-game validation and cross-game regressions are
 deferred until after this initial bring-up.
+
+Ocarina of Time US V1.2 is the seventh target, under `games/oot-us-v12/`.
+Its pinned ROM supplies the initial image, Yaz0 main code and 469 relocatable
+overlays. Original startup, animated title, file select, name entry and the
+new-game opening run with RT64 and Zelda NEAD audio. JPEG SP tasks are skipped
+by request, with completion posted and a count in the run report. Callback
+candidate scanning automates data-pointer and materialized-address discovery;
+the inventory remains partial. A title/menu audio check passed with zero
+underruns after servicing native events during presentation pacing. A subsequent
+two-minute opening run passed the scene-transition filter ownership fix, with
+one queue underrun and no resets. Full-game
+progression, longer playback listening and cross-game regressions remain open.
 
 For future game additions, ordinary OS/library calls belong in the shared
 native hook catalog. Reuse known entries; add verified SDK variants and missing

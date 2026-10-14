@@ -12,11 +12,13 @@ Quake 64 US reaches the main menu and playable first level with movement and
 shotgun firing; full-game validation remains in progress. Duke Nukem 64 US
 reaches its menus and first level with RT64 graphics and ABI1 audio. Nightmare
 Creatures US reaches its menus and playable Chelsea with RT64 graphics and ABI1
-audio. See
+audio. Ocarina of Time US V1.2 reaches its title, file select and new-game
+opening with relocatable overlays, RT64 graphics and Zelda NEAD audio. See
 [SM64](games/sm64-us/README.md), [GoldenEye](games/goldeneye-us/README.md),
 [Shadow Man](games/shadowman-us/README.md), [Quake 64](games/quake-us/README.md),
 [Duke Nukem 64](games/duke-us/README.md),
-[Nightmare Creatures](games/nightmare-us/README.md)
+[Nightmare Creatures](games/nightmare-us/README.md),
+[Ocarina of Time](games/oot-us-v12/README.md)
 and [the roadmap](PLAN.md).
 
 ## How recompilation works
@@ -98,6 +100,11 @@ code, function pointers, computed addresses and data that decodes as valid MIPS
 instructions can leave ambiguities. Discovery reports unresolved transfers,
 conflicting instruction ownership and unvisited ranges for review.
 
+[Ocarina of Time's callback analyzer](games/oot-us-v12/analyze_callbacks.py)
+uses shared pointer and address-materialization scans to propose missing roots.
+Proposals retain their source sites and fingerprints for review, followed by
+another discovery pass to validate ownership and indirect transfers.
+
 A complete inventory, such as
 [SM64's code-inventory.json](games/sm64-us/code-inventory.json), additionally
 classifies every byte of the configured regions as CPU code, data, native OS
@@ -160,7 +167,7 @@ See [native threading](docs/threading.md) for scheduling and worker ownership.
 
 Graphics tasks pass to RT64 for Vulkan rendering. The translated game's audio
 code builds command lists; the shared native audio backend executes supported,
-verified ABI1 tasks to produce PCM in guest RAM. The native AI service supplies
+verified ABI1 and Zelda NEAD tasks to produce PCM in guest RAM. The native AI service supplies
 buffer timing and completion events, and SDL plays the samples. Audio synthesis,
 graphics display lists and presentation run on processing workers. Task workers
 use private RAM snapshots; the host commits changed bytes before publishing SP
