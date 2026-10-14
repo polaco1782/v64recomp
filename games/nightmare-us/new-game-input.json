@@ -1,0 +1,162 @@
+{
+  "format_version": 1,
+  "rom_sha1": "bea6c21b3ef5950bdf8cdb255955da6c4746eea8",
+  "events": [
+    {
+      "frame": 0,
+      "buttons": 0
+    },
+    {
+      "frame": 300,
+      "buttons": 4096
+    },
+    {
+      "frame": 310,
+      "buttons": 0
+    },
+    {
+      "frame": 360,
+      "buttons": 32768
+    },
+    {
+      "frame": 370,
+      "buttons": 0
+    },
+    {
+      "frame": 420,
+      "buttons": 4096
+    },
+    {
+      "frame": 430,
+      "buttons": 0
+    },
+    {
+      "frame": 480,
+      "buttons": 32768
+    },
+    {
+      "frame": 490,
+      "buttons": 0
+    },
+    {
+      "frame": 540,
+      "buttons": 4096
+    },
+    {
+      "frame": 550,
+      "buttons": 0
+    },
+    {
+      "frame": 600,
+      "buttons": 32768
+    },
+    {
+      "frame": 610,
+      "buttons": 0
+    },
+    {
+      "frame": 660,
+      "buttons": 4096
+    },
+    {
+      "frame": 670,
+      "buttons": 0
+    },
+    {
+      "frame": 720,
+      "buttons": 32768
+    },
+    {
+      "frame": 730,
+      "buttons": 0
+    },
+    {
+      "frame": 780,
+      "buttons": 4096
+    },
+    {
+      "frame": 790,
+      "buttons": 0
+    },
+    {
+      "frame": 840,
+      "buttons": 32768
+    },
+    {
+      "frame": 850,
+      "buttons": 0
+    },
+    {
+      "frame": 900,
+      "buttons": 4096
+    },
+    {
+      "frame": 910,
+      "buttons": 0
+    },
+    {
+      "frame": 960,
+      "buttons": 32768
+    },
+    {
+      "frame": 970,
+      "buttons": 0
+    },
+    {
+      "frame": 1020,
+      "buttons": 4096
+    },
+    {
+      "frame": 1030,
+      "buttons": 0
+    },
+    {
+      "frame": 1080,
+      "buttons": 32768
+    },
+    {
+      "frame": 1090,
+      "buttons": 0
+    },
+    {
+      "frame": 1140,
+      "buttons": 4096
+    },
+    {
+      "frame": 1150,
+      "buttons": 0
+    },
+    {
+      "frame": 1200,
+      "buttons": 32768
+    },
+    {
+      "frame": 1210,
+      "buttons": 0
+    },
+    {
+      "frame": 1260,
+      "buttons": 32768
+    },
+    {
+      "frame": 1270,
+      "buttons": 0
+    },
+    {
+      "frame": 1380,
+      "buttons": 32768
+    },
+    {
+      "frame": 1390,
+      "buttons": 0
+    },
+    {
+      "frame": 1500,
+      "buttons": 32768
+    },
+    {
+      "frame": 1510,
+      "buttons": 0
+    }
+  ]
+}

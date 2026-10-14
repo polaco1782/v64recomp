@@ -65,6 +65,7 @@ def main() -> int:
     parser.add_argument('--build-only', action='store_true')
     parser.add_argument('--startup', action='store_true', help='execute the original application through its first RSP task')
     parser.add_argument('--render', action='store_true', help='run original startup with RT64, audio and live controls')
+    parser.add_argument('--debug', action='store_true', help='build RT64 with full debug symbols in build/debug (requires --render)')
     parser.add_argument('--frames', type=int, default=360, help='presentation limit; zero runs until the window closes')
     parser.add_argument('--jobs', type=int, default=4)
     parser.add_argument('--mute', action='store_true')
@@ -74,6 +75,8 @@ def main() -> int:
     parser.add_argument('--sanitize-address', action='store_true')
     parser.add_argument('--cc', default='clang')
     args = parser.parse_args()
+    if args.debug and not args.render:
+        parser.error('--debug requires --render')
     if args.frames < 0 or args.frames > 0xffffffff or args.jobs <= 0 or not 0 <= args.capture_every <= 0xffffffff:
         parser.error('frames must be a nonnegative 32-bit count and jobs must be positive')
     if args.render and args.sanitize_address:
@@ -99,7 +102,7 @@ def main() -> int:
         print(f"Coverage: {output/'coverage.json'}", flush=True)
         return 0
     write_config(profile, metadata, output, args.startup)
-    binary = build_renderer(output, args.jobs, 'shadowman_native_rt64', 'RECOMP_SHADOWMAN_RENDER_GENERATED') if args.render else build_native(output, args.cc, application=PROJECT/'games/shadowman-us/app.c',
+    binary = build_renderer(output, args.jobs, 'shadowman_native_rt64', 'RECOMP_SHADOWMAN_RENDER_GENERATED', debug=args.debug) if args.render else build_native(output, args.cc, application=PROJECT/'games/shadowman-us/app.c',
                           executable_name='shadowman_native_startup' if args.startup else 'shadowman_native_boot',
                           sanitize_address=args.sanitize_address, audio=False,
                           extra_sources=(PROJECT/'games/shadowman-us/pager.c',))

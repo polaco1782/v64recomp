@@ -10,10 +10,13 @@ in progress. Shadow Man US runs original startup, graphics, audio and its
 Controller Pak screen; title/gameplay work remains in progress.
 Quake 64 US reaches the main menu and playable first level with movement and
 shotgun firing; full-game validation remains in progress. Duke Nukem 64 US
-reaches its menus and first level with RT64 graphics and ABI1 audio. See
+reaches its menus and first level with RT64 graphics and ABI1 audio. Nightmare
+Creatures US reaches its menus and playable Chelsea with RT64 graphics and ABI1
+audio. See
 [SM64](games/sm64-us/README.md), [GoldenEye](games/goldeneye-us/README.md),
 [Shadow Man](games/shadowman-us/README.md), [Quake 64](games/quake-us/README.md),
-[Duke Nukem 64](games/duke-us/README.md)
+[Duke Nukem 64](games/duke-us/README.md),
+[Nightmare Creatures](games/nightmare-us/README.md)
 and [the roadmap](PLAN.md).
 
 ## How recompilation works
@@ -224,6 +227,8 @@ Import each supported ROM once. ROMs, saves and texture packs stay in `local/`.
   --rom '/path/to/Quake 64 (U) [!].z64'
 .venv/bin/python games/duke-us/run_duke.py \
   --rom '/path/to/Duke Nukem 64 (U) [!].z64'
+.venv/bin/python games/nightmare-us/run_nightmare.py \
+  --rom '/path/to/Nightmare Creatures (U) [!].z64' --render --frames 0
 ```
 
 ## Build and run
@@ -237,17 +242,20 @@ runtime and RT64. Build output stays in `build/`; the RT64 source tree stays cle
 .venv/bin/python games/shadowman-us/run_shadowman.py --render --build-only
 .venv/bin/python games/quake-us/run_quake.py --render --build-only
 .venv/bin/python games/duke-us/run_duke.py --render --build-only
+.venv/bin/python games/nightmare-us/run_nightmare.py --render --build-only
 
 .venv/bin/python games/sm64-us/run_sm64.py --render
 .venv/bin/python games/goldeneye-us/run_goldeneye.py --render
 .venv/bin/python games/shadowman-us/run_shadowman.py --render --frames 0
 .venv/bin/python games/quake-us/run_quake.py --render --frames 0
 .venv/bin/python games/duke-us/run_duke.py --render --frames 0
+.venv/bin/python games/nightmare-us/run_nightmare.py --render --frames 0
 ```
 
 The executables are `build/renderer/sm64_native_full_rt64` and
 `build/renderer/goldeneye_native_rt64`, `build/renderer/shadowman_native_rt64`
-and `build/renderer/quake_native_rt64`, `build/renderer/duke_native_rt64`.
+and `build/renderer/quake_native_rt64`, `build/renderer/duke_native_rt64`,
+`build/renderer/nightmare_native_rt64`.
 Add `--jobs N` to control build parallelism. SM64 and GoldenEye accept
 `--cheat-menu` for their session-only debug/unlock menus.
 Press **F1** while rendering to toggle RT64's ImGui debug inspector. It provides

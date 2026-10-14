@@ -158,6 +158,8 @@ typedef struct RecompIOConfig {
     uint8_t connected_mask;
     uint32_t eeprom_size; /* 0, 512 or 2048 bytes. */
     const char *eeprom_path; /* NULL keeps an in-memory device. Copied at init. */
+    /* SI completion delay; zero completes at the next scheduler poll. */
+    uint64_t si_transfer_ticks;
 } RecompIOConfig;
 typedef struct RecompIOStats {
     uint64_t reads_started, reads_completed, si_events;

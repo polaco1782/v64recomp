@@ -197,6 +197,7 @@ def main() -> int:
     parser.add_argument('--sanitize-address', action='store_true')
     parser.add_argument('--startup', action='store_true', help='run main-thread startup through the first graphics task')
     parser.add_argument('--render', action='store_true', help='render original startup in an RT64 desktop window (implies --startup)')
+    parser.add_argument('--debug', action='store_true', help='build RT64 with full debug symbols in build/debug (requires --render)')
     parser.add_argument('--frames', type=int, help='frames to present (0 for live play, 1..36000 for a bounded check; default 360, or 0 with --cheat-menu)')
     parser.add_argument('--cheat-menu',action='store_true',help='unlock all Solo missions and all 23 regular Cheat Options for this rendered session')
     parser.add_argument('--input-script',type=Path,help='controller event JSON for a repeatable rendered check')
@@ -214,6 +215,8 @@ def main() -> int:
     parser.add_argument('--no-texture-replacements',action='store_true',help='render only original textures')
 
     args = parser.parse_args()
+    if args.debug and not args.render:
+        parser.error('--debug requires --render')
     if args.dump_grid is not None:
         from remake_textures import main as remake_textures
         dump=args.dump_textures or textures/'dump'
@@ -285,7 +288,7 @@ def main() -> int:
     write_boot_config(profile, metadata, output)
     print(f"GoldenEye startup conversion: {report['summary']}; {report['instruction_count']} instruction words", flush=True)
     application=project/'games/goldeneye-us'/('startup.c' if args.startup else 'boot.c')
-    binary = build_renderer(output,args.jobs,'goldeneye_native_rt64','RECOMP_GOLDENEYE_GENERATED') if args.render else build_native(output, args.cc, sanitize_address=args.sanitize_address,
+    binary = build_renderer(output,args.jobs,'goldeneye_native_rt64','RECOMP_GOLDENEYE_GENERATED', debug=args.debug) if args.render else build_native(output, args.cc, sanitize_address=args.sanitize_address,
                           optimization='0' if args.startup else '2',
                           executable_name='goldeneye_native_startup' if args.startup else 'goldeneye_native_boot',
                           application=application,audio=args.startup,

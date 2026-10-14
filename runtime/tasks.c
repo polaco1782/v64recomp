@@ -155,7 +155,12 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     buffer(rt,task.words[8],task.words[9],false,object);
     buffer(rt,task.words[12],task.words[13],true,object);
     buffer(rt,task.words[14],task.words[15],false,object);
-    if (task.words[3]>4096 || task.words[5]>4096) recomp_fail("SP microcode exceeds IMEM",object);
+    /* Graphics ucode_size describes the linked source image, including code
+     * overlays loaded by the bootstrap. It can exceed the 4 KiB IMEM bank.
+     * RT64 recognizes these images with a bounded 8 KiB source range. */
+    uint32_t code_limit = task.words[0] == 1 ? 8192 : 4096;
+    if (task.words[3]>4096 || task.words[5]>code_limit)
+        recomp_fail("SP microcode source exceeds backend bounds",object);
     if (task.words[10]) recomp_ram_address(rt,task.words[10],1);
     if (task.words[11]) recomp_ram_address(rt,task.words[11],8);
     task.resumed=(task.words[1]&1)!=0;

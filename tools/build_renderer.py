@@ -6,13 +6,14 @@ import sys
 from common import RecompError
 
 
-def build_renderer(output: Path, jobs: int, target: str, generated_option: str) -> Path:
+def build_renderer(output: Path, jobs: int, target: str, generated_option: str, *, debug: bool = False) -> Path:
     project = Path(__file__).resolve().parents[1]
-    build = project / 'build/renderer'
+    build = project / ('build/debug' if debug else 'build/renderer')
     subprocess.run([
         'cmake', '-S', str(project), '-B', str(build), '-G', 'Ninja',
         '-DRECOMP_BUILD_RT64=ON', '-DRECOMP_BUILD_AUDIO=ON',
-        '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_C_COMPILER=/usr/bin/gcc',
+        f'-DCMAKE_BUILD_TYPE={"Debug" if debug else "Release"}',
+        '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DCMAKE_C_COMPILER=/usr/bin/gcc',
         '-DCMAKE_CXX_COMPILER=/usr/bin/g++', '-DCMAKE_ASM_COMPILER=/usr/bin/gcc',
         f'-D{generated_option}={output}',
     ], check=True)

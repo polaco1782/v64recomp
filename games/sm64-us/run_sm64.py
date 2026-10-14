@@ -47,6 +47,7 @@ def main() -> int:
     parser.add_argument('--report-only',action='store_true')
     parser.add_argument('--build-only',action='store_true')
     parser.add_argument('--render',action='store_true',help='build/run the complete CPU inventory with RT64 and SDL audio')
+    parser.add_argument('--debug', action='store_true', help='build RT64 with full debug symbols in build/debug (requires --render)')
     parser.add_argument('--cheat-menu',action='store_true',help='enable the original SELECT STAGE debug menu; press Start on the title screen (requires --render and live input)')
     parser.add_argument('--verify-suite',action='store_true')
     parser.add_argument('--sanitize-address',action='store_true')
@@ -64,6 +65,8 @@ def main() -> int:
     parser.add_argument('--texture-replacements',type=Path,default=textures/'replacements',help='directory of hash-named replacement PNGs; F5 reloads and toggles originals/replacements during play')
     parser.add_argument('--no-texture-replacements',action='store_true',help='render only original textures')
     args=parser.parse_args();mode=args.mode or ('live' if args.render else 'idle')
+    if args.debug and not args.render:
+        parser.error('--debug requires --render')
     if args.dump_grid is not None:
         from remake_textures import main as remake_textures
         dump=args.dump_textures or textures/'dump'
@@ -85,7 +88,7 @@ def main() -> int:
     output=(args.output or project/'build/sm64-us/rom'/('full-sanitized' if args.sanitize_address else 'full')).resolve()
     profile,identity,report=prepare_full(output,args.report_only)
     if args.report_only:return 0
-    binary=build_renderer(output,args.jobs,'sm64_native_full_rt64','RECOMP_FULL_GENERATED') if args.render else build_native(output,args.cc,sanitize_address=args.sanitize_address,
+    binary=build_renderer(output,args.jobs,'sm64_native_full_rt64','RECOMP_FULL_GENERATED', debug=args.debug) if args.render else build_native(output,args.cc,sanitize_address=args.sanitize_address,
                               executable_name='sm64_native_full',application=project/'games/sm64-us/app.c')
     print(f'Native full-profile executable: {binary}',flush=True)
     if args.build_only:return 0

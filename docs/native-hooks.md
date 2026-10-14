@@ -62,3 +62,10 @@ without searching the address registry. Return-address updates, delay slots and
 call-site tracking keep their existing behavior. Dynamic indirect calls and
 addresses shared by multiple sections still use `recomp_lookup`.
 
+
+Controller transfers can opt into a completion delay through
+`RecompIOConfig.si_transfer_ticks`. Nightmare Creatures uses this to prevent its
+continuous high-priority input thread from starving ordinary game logic; zero
+retains completion at the next scheduler poll. Both reads and queries snapshot
+input when started and publish results and the SI event after the configured
+counter deadline.

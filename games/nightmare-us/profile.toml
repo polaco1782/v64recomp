@@ -1,0 +1,45 @@
+# Retire the synthetic IPL coroutine after transferring to the first OS thread.
+hooks = [{symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "hook_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafbf001c, 0xafb20018, 0x0c020458, 0xafb10014, 0x96030010]}]
+# Exact US revision. Plain SDK services use the shared native catalog.
+[game]
+name = "Nightmare Creatures (US)"
+rom_sha1 = "bea6c21b3ef5950bdf8cdb255955da6c4746eea8"
+rom_size = 0x1000000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+rom = "../../local/nightmare.us.z64"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[discovery]
+regions = [{name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0xa46f0}]
+roots = [{name = "mainproc", vram = 0x8006eb90}]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0xa46f0
+bss_start = 0x800a4af0
+bss_end = 0x80136720
+system_entry = 0x8006eb30
+main_entry = 0x8006eb90
+main_id = 1
+main_priority = 10
+main_object = 0x800bf090
+main_stack = 0x800bfa40
+counter_hz = 46875000
+thread_tail = 0x800a36a0
+run_queue = 0x800a36a8
+active_queue = 0x800a36ac
+running_thread = 0x800a36b0
+vi_clock = 0x800a3678
+clock_rate = 0x800a3670
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x800000

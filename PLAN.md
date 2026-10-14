@@ -1,4 +1,4 @@
-# Native ROM conversion: SM64, GoldenEye, Shadow Man, Quake 64 and Duke Nukem 64
+# Native ROM conversion: SM64, GoldenEye, Shadow Man, Quake 64, Duke Nukem 64 and Nightmare Creatures
 
 Game profiles, applications, launchers and game-specific diagnostics live under `games/`.
 The original emulator is separate. SM64 is the accepted gameplay baseline;
@@ -6,6 +6,10 @@ GoldenEye is the second ROM target.
 Shadow Man US is the third target, isolated under `games/shadowman-us/`.
 Quake 64 US is the fourth target, isolated under `games/quake-us/`.
 Duke Nukem 64 US is the fifth target, isolated under `games/duke-us/`.
+Nightmare Creatures US is the sixth target, isolated under `games/nightmare-us/`.
+It reaches title, character selection and playable Chelsea with native graphics,
+audio and controller input. Full-game validation and cross-game regressions are
+deferred until after this initial bring-up.
 
 For future game additions, ordinary OS/library calls belong in the shared
 native hook catalog. Reuse known entries; add verified SDK variants and missing

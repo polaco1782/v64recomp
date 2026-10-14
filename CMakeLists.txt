@@ -47,8 +47,15 @@ if(RECOMP_BUILD_RT64)
     target_include_directories(recomp_renderer SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
 endif()
 
+# Keep generated game code inspectable in Debug builds, including local variables.
+set(RECOMP_GAME_OPTIMIZATION
+    "$<$<CONFIG:Debug>:-O0;-g3>"
+    "$<$<NOT:$<CONFIG:Debug>>:-O2;-g1>")
+
 add_subdirectory(games/sm64-us)
 add_subdirectory(games/goldeneye-us)
 add_subdirectory(games/shadowman-us)
 add_subdirectory(games/quake-us)
 add_subdirectory(games/duke-us)
+
+add_subdirectory(games/nightmare-us)

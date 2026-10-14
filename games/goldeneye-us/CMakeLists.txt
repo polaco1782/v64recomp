@@ -9,7 +9,7 @@ if(RECOMP_BUILD_RT64 AND RECOMP_BUILD_AUDIO
     target_include_directories(goldeneye_native_rt64 SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
     target_compile_definitions(goldeneye_native_rt64 PRIVATE RECOMP_WITH_RT64
         HLSL_CPU FFX_GCC IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
-    target_compile_options(goldeneye_native_rt64 PRIVATE -O2 -g1 -fno-omit-frame-pointer
+    target_compile_options(goldeneye_native_rt64 PRIVATE ${RECOMP_GAME_OPTIMIZATION} -fno-omit-frame-pointer
         -Wall -Wextra -Werror -Wno-unused-label -fno-fast-math -frounding-math -ffp-contract=off)
     target_link_options(goldeneye_native_rt64 PRIVATE -rdynamic)
     target_link_libraries(goldeneye_native_rt64 PRIVATE recomp_renderer recomp_audio)

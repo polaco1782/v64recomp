@@ -13,6 +13,7 @@ struct RecompIO {
     bool initialized, published;
     uint8_t max_channels;
     uint32_t eeprom_size;
+    uint64_t si_transfer_ticks, si_deadline;
     uint8_t eeprom[2048];
     char *path;
     RecompIOStats stats;
@@ -27,6 +28,7 @@ static void result(MipsContext *ctx, int32_t value) { mips_set(ctx, 2, mips_s32(
 static void poll_io(Runtime *rt) {
     RecompIO *s = io(rt);
     if (!s->stats.read_pending && !s->stats.query_pending) return;
+    if (s->si_transfer_ticks && recomp_count64(rt) < s->si_deadline) return;
     if (!s->published) {
         memcpy(s->stats.query_pending?s->query_result:s->result,s->pending,sizeof(s->result));
         s->published = true;
@@ -43,6 +45,7 @@ bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
             || (config->eeprom_path && (!config->eeprom_size || !*config->eeprom_path))) return false;
     RecompIO *s = calloc(1, sizeof(*s)); if (!s) return false;
     s->max_channels = 4;
+    s->si_transfer_ticks = config->si_transfer_ticks;
     s->eeprom_size = config->eeprom_size; memset(s->eeprom, 0xff, sizeof(s->eeprom));
     for (unsigned n=0;n<4;n++) s->live[n].connected = (config->connected_mask & (1u<<n)) != 0;
     if (config->eeprom_path) {
@@ -125,6 +128,11 @@ void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
     recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
     if (s->stats.read_pending || s->stats.query_pending) { result(ctx, -1); return; }
     memcpy(s->pending, s->live, sizeof(s->pending)); s->published = false;
+    if (s->si_transfer_ticks) {
+        uint64_t now = recomp_count64(rt);
+        if (s->si_transfer_ticks > UINT64_MAX-now) recomp_fail("SI schedule exhausted", ctx->pc);
+        s->si_deadline = now+s->si_transfer_ticks;
+    }
     s->stats.read_pending = true; s->stats.reads_started++; result(ctx, 0);
 }
 void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
@@ -148,6 +156,11 @@ void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
     recomp_ram_address(rt,arg(ctx,0),RECOMP_QUEUE_BYTES);
     if(s->stats.read_pending || s->stats.query_pending){result(ctx,-1);return;}
     memcpy(s->pending,s->live,sizeof(s->pending));s->published=false;
+    if (s->si_transfer_ticks) {
+        uint64_t now = recomp_count64(rt);
+        if (s->si_transfer_ticks > UINT64_MAX-now) recomp_fail("SI schedule exhausted", ctx->pc);
+        s->si_deadline = now+s->si_transfer_ticks;
+    }
     s->stats.query_pending=true;s->stats.queries_started++;result(ctx,0);
 }
 void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
