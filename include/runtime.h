@@ -111,6 +111,7 @@ typedef struct RecompViState {
     bool manager_created, black;
     uint32_t mode, special_features, framebuffer, retrace_count;
     uint64_t retraces;
+    uint32_t current_framebuffer; /* Pending swaps become current at a VI retrace. */
 } RecompViState;
 bool recomp_platform_init(Runtime *, const RecompPlatformConfig *);
 void recomp_platform_destroy(Runtime *);
@@ -186,6 +187,15 @@ void hook_os_vi_black(Runtime *, MipsContext *);
 void hook_os_vi_set_special_features(Runtime *, MipsContext *);
 void hook_os_vi_set_event(Runtime *, MipsContext *);
 void hook_os_vi_swap_buffer(Runtime *, MipsContext *);
+void hook_os_vi_get_current_framebuffer(Runtime *, MipsContext *);
+void hook_os_vi_get_next_framebuffer(Runtime *, MipsContext *);
+void hook_os_set_int_mask(Runtime *, MipsContext *);
+void hook_os_pfs_init_pak(Runtime *, MipsContext *);
+void hook_os_pfs_is_plug(Runtime *, MipsContext *);
+void hook_os_cont_set_ch(Runtime *, MipsContext *);
+void hook_os_motor_init(Runtime *, MipsContext *);
+void hook_os_motor_start(Runtime *, MipsContext *);
+void hook_os_motor_stop(Runtime *, MipsContext *);
 void hook_os_create_pi_manager(Runtime *, MipsContext *);
 void hook_os_pi_start_dma(Runtime *, MipsContext *);
 void hook_os_pi_raw_read_io(Runtime *, MipsContext *);
@@ -199,7 +209,8 @@ void hook_os_strlen(Runtime *, MipsContext *);
 void hook_os_strchr(Runtime *, MipsContext *);
 
 typedef enum RecompTaskCompletion { RECOMP_SP_DONE, RECOMP_SP_YIELDED, RECOMP_DP_DONE } RecompTaskCompletion;
-enum { RECOMP_TASK_YIELDED = 1, RECOMP_TASK_DP_WAIT = 2, RECOMP_TASK_LOADABLE = 4 };
+enum { RECOMP_TASK_YIELDED = 1, RECOMP_TASK_DP_WAIT = 2, RECOMP_TASK_LOADABLE = 4,
+       RECOMP_TASK_USER_FLAGS = 0xf0 }; /* SDK OS_TASK_USR0..USR3: application metadata. */
 typedef struct RecompTask {
     uint64_t token;
     uint32_t guest_address, words[16]; /* OSTask snapshot, guest pointers retained. */
@@ -222,6 +233,9 @@ void recomp_tasks_destroy(Runtime *);
 bool recomp_task_post_completion(Runtime *, uint64_t, RecompTaskCompletion);
 /* Owner-thread completion additionally validates the token and rejects duplicates. */
 bool recomp_task_complete(Runtime *, uint64_t, RecompTaskCompletion);
+/* Owner-thread backend notice after a real SP receipt: this graphics list
+ * ended without issuing a DP full sync. Retires its record without a DP event. */
+bool recomp_task_finish_without_dp(Runtime *, uint64_t);
 RecompTaskStats recomp_task_stats(Runtime *);
 bool recomp_task_snapshot(Runtime *, RecompTask *);
 void hook_os_sp_task_load(Runtime *, MipsContext *);

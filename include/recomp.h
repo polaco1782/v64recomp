@@ -72,6 +72,7 @@ struct Runtime {
     void (*prepare_call)(Runtime *, uint32_t);
     void *address_userdata;
     bool interrupts_disabled; /* Native OS critical section; owner-thread scheduling only. */
+    uint32_t interrupt_mask; /* Logical SDK CPU/RCP interrupt mask. */
 };
 
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t,
@@ -94,6 +95,13 @@ void recomp_set_failure_handler(RecompFailureHandler, void *);
 #else
 _Noreturn void recomp_fail(const char *, uint32_t);
 #endif
+
+/* Generated calls to unique verified hooks already know the native target. */
+static inline void recomp_prepare_direct_call(Runtime *rt, uint32_t address, uint32_t section) {
+    if (section >= rt->section_count || !rt->section_loaded[section])
+        recomp_fail("unregistered or unloaded function", address);
+    if (rt->prepare_call) rt->prepare_call(rt, address);
+}
 
 /* Keep generated fallthrough diagnostics in one out-of-line runtime helper. */
 #ifdef __cplusplus

@@ -11,6 +11,7 @@ typedef struct RecompRendererStats {
     uint64_t submit_ns, present_ns;
     uint64_t textures_dumped, textures_replaced, replacement_files;
     uint64_t rdp_triangles;
+    uint64_t graphics_tasks_without_dp;
 } RecompRendererStats;
 /* Linux/X11 Vulkan adapter. All entry points and callbacks run on the owner thread. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);

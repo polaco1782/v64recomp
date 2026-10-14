@@ -1,6 +1,7 @@
 """A small two-pass C emitter. Unsupported instructions are reported explicitly."""
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 import struct
 import sys
@@ -9,13 +10,15 @@ import rabbitizer
 
 from common import RecompError
 
-# Set to True to trace translation and emission, including native OS/HW hooks.
+# Set to True to log translation progress, issues, and native OS/HW hooks.
 # Messages go to stderr; False keeps the emitter silent.
 LOG_EMISSION = True
+# Per-function/instruction traces (calls, checkpoints, memory) are noisy; opt in here.
+LOG_EMISSION_VERBOSE = False
 
 
-def log_emission(message: str, *args: object) -> None:
-    if LOG_EMISSION:
+def log_emission(message: str, *args: object, verbose: bool = False) -> None:
+    if LOG_EMISSION and (not verbose or LOG_EMISSION_VERBOSE):
         print('[emit] ' + (message % args if args else message), file=sys.stderr, flush=True)
 
 
@@ -294,11 +297,20 @@ def condition(i: Instruction) -> str:
     raise RecompError(f"no branch condition for {i.opcode}")
 
 
+def direct_hook_targets(registry: dict, hooks: dict[tuple[int, int], str]) -> dict[int, tuple[int, str]]:
+    # A shared guest address must retain runtime loaded-section resolution.
+    counts = Counter(address for _, address in registry)
+    return {address: (section, handler) for (section, address), handler in hooks.items()
+            if counts[address] == 1}
+
+
 def emit_function(function: dict, instructions: list[Instruction], registry: dict,
                   yield_sites: set[int] | None = None,
-                  hooks: dict[tuple[int, int], str] | None = None) -> str:
+                  hooks: dict[tuple[int, int], str] | None = None,
+                  direct_hooks: dict[int, tuple[int, str]] | None = None) -> str:
     log_emission('Emit %s s%s 0x%08x -> %s (%d instructions)',
-                 function['name'], function['section'], function['vram'], cname(function), len(instructions))
+                 function['name'], function['section'], function['vram'], cname(function), len(instructions),
+                 verbose=True)
     safe_name = function['name'].replace('*/', '* /').replace('\n', ' ')
     lines = [f"/* {safe_name} at 0x{function['vram']:08x} */",
              f"void {cname(function)}(Runtime *runtime, MipsContext *ctx) {{",
@@ -308,12 +320,15 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
     yield_sites = yield_sites or set()
     hooks = hooks or {}
+    if direct_hooks is None:
+        direct_hooks = direct_hook_targets(registry, hooks)
 
     def emit_body(instruction: Instruction, indent: str = '    ') -> list[str]:
         statement = body(instruction)
-        #if LOG_EMISSION and ('recomp_load' in statement or 'recomp_store' in statement):
-        #    log_emission('Memory %s s%s 0x%08x: %s -> %s',
-        #                 function['name'], function['section'], instruction.pc, instruction.assembly, statement)
+        if LOG_EMISSION and LOG_EMISSION_VERBOSE and ('recomp_load' in statement or 'recomp_store' in statement):
+            log_emission('Memory %s s%s 0x%08x: %s -> %s',
+                         function['name'], function['section'], instruction.pc, instruction.assembly, statement,
+                         verbose=True)
         # These helpers report guest traps through ctx->pc. Ordinary arithmetic
         # and memory operations do not consume it; memory errors report the address.
         location = ([f"{indent}ctx->pc = UINT32_C(0x{instruction.pc:08x});"]
@@ -329,18 +344,27 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         return f'{indent}recomp_fellthrough(UINT32_C(0x{address:08x}));'
 
     def log_call(address: int, kind: str) -> None:
-        if not LOG_EMISSION:
+        if not LOG_EMISSION or not LOG_EMISSION_VERBOSE:
             return
         callee = resolve_function(registry, function['section'], address)
         if callee is None:
             log_emission('%s %s s%s 0x%08x -> 0x%08x (resolved by recomp_lookup at runtime)',
-                         kind, function['name'], function['section'], i.pc, address)
+                         kind, function['name'], function['section'], i.pc, address, verbose=True)
             return
         handler = hooks.get((callee['section'], callee['vram']))
-        log_emission('%s %s s%s 0x%08x -> %s s%s 0x%08x -> %s (%s via recomp_lookup)',
+        log_emission('%s %s s%s 0x%08x -> %s s%s 0x%08x -> %s (%s; %s)',
                      kind, function['name'], function['section'], i.pc,
                      callee['name'], callee['section'], address, handler or cname(callee),
-                     'native hook' if handler else 'generated function')
+                     'native hook' if handler else 'generated function',
+                     'direct native call' if address in direct_hooks else 'via recomp_lookup', verbose=True)
+
+    def emit_call(address: int, indent: str = '        ') -> list[str]:
+        hook = direct_hooks.get(address)
+        if hook is not None:
+            section, handler = hook
+            return [f"{indent}recomp_prepare_direct_call(runtime, UINT32_C(0x{address:08x}), {section});",
+                    f"{indent}{handler}(runtime, ctx);"]
+        return [f"{indent}recomp_lookup(runtime, UINT32_C(0x{address:08x}))(runtime, ctx);"]
 
     def transfer(address: int, indent: str = '        ') -> list[str]:
         if address in addresses:
@@ -348,14 +372,11 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             if address <= i.pc:
                 call = 'recomp_yield_checkpoint' if i.pc in yield_sites else 'recomp_checkpoint'
                 log_emission('Checkpoint %s s%s 0x%08x -> 0x%08x: %s',
-                             function['name'], function['section'], i.pc, address, call)
+                             function['name'], function['section'], i.pc, address, call, verbose=True)
                 checkpoint.append(f"{indent}{call}(runtime);")
             return [*checkpoint, f"{indent}goto L_{address:08x};"]
-        callee = resolve_function(registry, function['section'], address)
         log_call(address, 'Tail/branch call')
-        # The address registry also enforces loaded-section identity on direct calls.
-        return [f"{indent}recomp_lookup(runtime, UINT32_C(0x{callee['vram']:08x}))(runtime, ctx);",
-                f"{indent}return;"]
+        return [*emit_call(address, indent), f"{indent}return;"]
 
     for index, i in enumerate(instructions):
         lines.extend([f"L_{i.pc:08x}: ;", f"    /* {i.pc:08x}: {i.assembly} */"])
@@ -364,7 +385,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             if 'instruction_addresses' in function:
                 checked_fallthrough=next((t for t in function.get('fallthrough_transfers',[]) if t['pc']==i.pc),None)
                 if checked_fallthrough:
-                    lines.extend([f"    recomp_lookup(runtime, UINT32_C(0x{checked_fallthrough['target']:08x}))(runtime, ctx);", '    return;'])
+                    lines.extend([*emit_call(checked_fallthrough['target'], '    '), '    return;'])
                 else:
                     lines.append(f"    goto L_{i.pc + 4:08x};" if i.pc + 4 in addresses
                                  else fallthrough(i.pc))
@@ -390,12 +411,12 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 else:
                     log_call(address, 'Checked indirect tail target')
                     lines.extend([call_location('            '),
-                                  '            recomp_lookup(runtime, destination)(runtime, ctx);', '            return;'])
+                                  *emit_call(address, '            '), '            return;'])
             lines.extend(['        default: recomp_fail("unlisted indirect jump target", destination);', '        }'])
         elif i.opcode == 'jr':
             if i.rs != 31:
                 log_emission('Indirect tail %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
-                             function['name'], function['section'], i.pc, i.assembly)
+                             function['name'], function['section'], i.pc, i.assembly, verbose=True)
             lines.extend(['        if (destination != return_address) {',
                           call_location('            '),
                           '            recomp_lookup(runtime, destination)(runtime, ctx);', '        }', '        return;'])
@@ -405,14 +426,18 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 lines.append('        switch (destination) {')
                 for address in checked['targets']:
                     log_call(address, 'Checked indirect call target')
-                    lines.append(f'        case UINT32_C(0x{address:08x}): break;')
+                    lines.extend([f'        case UINT32_C(0x{address:08x}):', call_location('            '),
+                                  *emit_call(address, '            '), '            break;'])
                 lines.extend(['        default: recomp_fail("unlisted indirect call target", destination);', '        }'])
-            elif i.opcode == 'jalr':
-                log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
-                             function['name'], function['section'], i.pc, i.assembly)
             else:
-                log_call(target(i), 'Direct call')
-            lines.extend([call_location('        '), f"        recomp_lookup(runtime, {dest})(runtime, ctx);"])
+                if i.opcode == 'jalr':
+                    log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
+                                 function['name'], function['section'], i.pc, i.assembly, verbose=True)
+                    call = [f"        recomp_lookup(runtime, {dest})(runtime, ctx);"]
+                else:
+                    log_call(target(i), 'Direct call')
+                    call = emit_call(target(i))
+                lines.extend([call_location('        '), *call])
             lines.append(f"        goto L_{i.pc + 8:08x};" if i.pc + 8 in addresses
                          else fallthrough(i.pc, '        '))
         elif i.opcode == 'j': lines.extend(transfer(target(i)))

@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 from common import RecompError, load_metadata, load_profile, load_rom, validate_hook_prefix, write_json
-from emit import analyze, cname, decode_function, emit_function, instruction_addresses, log_emission, resolve_function, target
+from emit import analyze, cname, decode_function, direct_hook_targets, emit_function, instruction_addresses, log_emission, resolve_function, target
 from native_hooks import resolve_native_hooks
 
 
@@ -157,6 +157,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
     source = ['/* Generated from validated MIPS bytes; do not edit. */', '#include "generated.h"', '']
     log_emission('Memory lowering uses recomp_load/store helpers (RDRAM); direct MMIO is unsupported. '
                  'OS/HW services use the verified native hooks.')
+    direct_hooks = direct_hook_targets(registry, hooks)
     for f in selected:
         key = (f['section'], f['vram'])
         symbol = hooks.get(key, cname(f))
@@ -170,7 +171,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         elif key in hooks:
             log_emission('Bind native hook %s s%s 0x%08x -> %s', f['name'], f['section'], f['vram'], symbol)
         else:
-            source.append(emit_function(f, decoded[key], registry, yield_sites.get(key), hooks))
+            source.append(emit_function(f, decoded[key], registry, yield_sites.get(key), hooks, direct_hooks))
     source.append('const RecompFunctionEntry recomp_functions[] = {')
     for f in selected:
         symbol = hooks.get((f['section'], f['vram']), cname(f))

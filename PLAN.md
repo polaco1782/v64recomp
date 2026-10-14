@@ -1,9 +1,15 @@
-# Native ROM conversion: SM64, GoldenEye and Shadow Man
+# Native ROM conversion: SM64, GoldenEye, Shadow Man and Quake 64
 
 Game profiles, applications, launchers and game-specific diagnostics live under `games/`.
 The original emulator is separate. SM64 is the accepted gameplay baseline;
 GoldenEye is the second ROM target.
 Shadow Man US is the third target, isolated under `games/shadowman-us/`.
+Quake 64 US is the fourth target, isolated under `games/quake-us/`.
+
+For future game additions, ordinary OS/library calls belong in the shared
+native hook catalog. Reuse known entries; add verified SDK variants and missing
+shared services there. Reserve game-profile hooks for game-specific behavior.
+See [the contribution rules](docs/native-hooks.md).
 
 The ROM-only inventory classifies all 1,385,456 bytes in the three mapped sections:
 1,203,388 bytes of ordinary CPU text, 21,860 bytes of native OS/library implementation,
@@ -66,3 +72,19 @@ Shadow Man milestones (see [setup and status](games/shadowman-us/README.md)):
    callbacks and zero audio underruns in a bounded desktop run. Controller Pak
    storage and broader title/gameplay validation remain to be completed.
 4. Complete the CPU inventory and validate gameplay, progression and saves.
+
+Quake 64 milestones (see [setup and status](games/quake-us/README.md)):
+
+1. Completed: pin the supplied US ROM and validate original BSS clearing and
+   first-thread creation in translated C. UBSan and ASan/UBSan bootstrap checks pass.
+2. Completed: checked callback roots and switch tables, shared SDK recognition
+   and native startup through the first original ABI1 audio task. The partial
+   conversion has 1,404 translated functions and 55 catalog bindings, with no
+   game-profile OS overrides.
+3. Completed bounded checks: RT64/SDL startup, title/menu progression and first
+   level gameplay with forward movement, turning and shotgun firing. Original
+   split graphics lists complete with real SP receipts and DP only on full sync.
+   Desktop pixels and nonzero PCM are captured. SM64's rendered regression passes.
+4. Complete the CPU inventory and validate prolonged gameplay, progression and
+   Controller Pak saves. One audio underrun occurred in the final gameplay check;
+   audio continuity remains under validation.

@@ -6,6 +6,7 @@ typedef struct TaskRecord {
     struct TaskRecord *next;
     RecompTask task;
     bool yield_requested, sp_done, dp_done, yielded, sp_posted, dp_posted, sp_emitted, dp_emitted;
+    bool no_dp_sync;
 } TaskRecord;
 enum { COMPLETIONS=256 };
 struct RecompTasks {
@@ -49,7 +50,7 @@ bool recomp_task_post_completion(Runtime *rt, uint64_t token, RecompTaskCompleti
 
 static bool valid(TaskRecord *r, RecompTaskCompletion kind) {
     if (!r) return false;
-    if (kind==RECOMP_DP_DONE) return r->task.words[0]==1 && !r->dp_done && !r->yielded;
+    if (kind==RECOMP_DP_DONE) return r->task.words[0]==1 && !r->dp_done && !r->yielded && !r->no_dp_sync;
     return !r->sp_done && (kind==RECOMP_SP_DONE
            || (kind==RECOMP_SP_YIELDED && r->yield_requested && r->task.words[0]==1 && !r->dp_done && !r->dp_posted));
 }
@@ -58,6 +59,13 @@ bool recomp_task_complete(Runtime *rt, uint64_t token, RecompTaskCompletion kind
     if (!valid(r,kind) || (kind==RECOMP_DP_DONE?r->dp_posted:r->sp_posted)) return false;
     if (!recomp_task_post_completion(rt,token,kind)) return false;
     if (kind==RECOMP_DP_DONE) r->dp_posted=true; else r->sp_posted=true;
+    return true;
+}
+bool recomp_task_finish_without_dp(Runtime *rt, uint64_t token) {
+    TaskRecord *r=record(tasks(rt),token);
+    if (!r || r->task.words[0]!=1 || !r->sp_posted || r->dp_posted || r->yielded || r->no_dp_sync)
+        return false;
+    r->no_dp_sync=true;
     return true;
 }
 
@@ -96,7 +104,7 @@ static void poll_tasks(Runtime *rt) {
         if (r->sp_emitted && r->dp_done && !r->dp_emitted && recomp_event_post(rt,9)) {
             r->dp_emitted=true; t->stats.dp_events++;
         }
-        bool done=r->sp_emitted && (r->task.words[0]==2 || r->yielded || r->dp_emitted);
+        bool done=r->sp_emitted && (r->task.words[0]==2 || r->yielded || r->no_dp_sync || r->dp_emitted);
         if (done) { *link=r->next; free(r); t->stats.pending_records--; }
         else link=&r->next;
     }
@@ -135,7 +143,7 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     for (unsigned i=0;i<16;i++) task.words[i]=(uint32_t)recomp_load(rt,object+i*4,4);
     t->observed=task;t->has_observed=true;
     if (task.words[0]!=1 && task.words[0]!=2) recomp_fail("unsupported SP task type",object);
-    uint32_t flags = RECOMP_TASK_YIELDED | RECOMP_TASK_DP_WAIT;
+    uint32_t flags = RECOMP_TASK_YIELDED | RECOMP_TASK_DP_WAIT | RECOMP_TASK_USER_FLAGS;
     if (task.words[0] == 1) flags |= RECOMP_TASK_LOADABLE;
     if (task.words[1]&~flags) recomp_fail("unsupported SP task flags",object);
     buffer(rt,task.words[2],task.words[3],true,object);

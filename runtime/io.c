@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "runtime.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -10,6 +11,7 @@
 struct RecompIO {
     RecompPad live[4], pending[4], result[4], query_result[4];
     bool initialized, published;
+    uint8_t max_channels;
     uint32_t eeprom_size;
     uint8_t eeprom[2048];
     char *path;
@@ -40,6 +42,7 @@ bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
             || (config->eeprom_size != 0 && config->eeprom_size != 512 && config->eeprom_size != 2048)
             || (config->eeprom_path && (!config->eeprom_size || !*config->eeprom_path))) return false;
     RecompIO *s = calloc(1, sizeof(*s)); if (!s) return false;
+    s->max_channels = 4;
     s->eeprom_size = config->eeprom_size; memset(s->eeprom, 0xff, sizeof(s->eeprom));
     for (unsigned n=0;n<4;n++) s->live[n].connected = (config->connected_mask & (1u<<n)) != 0;
     if (config->eeprom_path) {
@@ -64,6 +67,40 @@ bool recomp_input_set(Runtime *rt, unsigned port, const RecompPad *pad) {
     io(rt)->live[port] = *pad; return true;
 }
 RecompIOStats recomp_io_stats(Runtime *rt) { return io(rt)->stats; }
+
+void hook_os_pfs_init_pak(Runtime *rt, MipsContext *ctx) {
+    (void)io(rt);
+    /* RecompIO exposes controllers without a Controller Pak. */
+    result(ctx, 2); /* PFS_ERR_NOPACK */
+}
+void hook_os_pfs_is_plug(Runtime *rt, MipsContext *ctx) {
+    (void)io(rt);
+    recomp_store(rt, arg(ctx, 1), 0, 1); /* No port has an accessory. */
+    result(ctx, 0);
+}
+void hook_os_cont_set_ch(Runtime *rt, MipsContext *ctx) {
+    unsigned channels = (uint8_t)arg(ctx, 0);
+    io(rt)->max_channels = channels > 4 ? 4 : (uint8_t)channels;
+    result(ctx, 0);
+}
+void hook_os_motor_init(Runtime *rt, MipsContext *ctx) {
+    (void)io(rt);
+    uint32_t pfs=arg(ctx,1), channel=arg(ctx,2);
+    if(channel>=4) { result(ctx,5); return; } /* PFS_ERR_INVALID */
+    recomp_ram_address(rt,pfs,0x68);
+    recomp_store(rt,pfs,0,4);
+    recomp_store(rt,pfs+4,arg(ctx,0),4);
+    recomp_store(rt,pfs+8,channel,4);
+    recomp_store(rt,pfs+0x65,0x80,1);
+    result(ctx,2); /* PFS_ERR_NOPACK: no Rumble Pak is configured. */
+}
+void hook_os_motor_start(Runtime *rt, MipsContext *ctx) {
+    (void)io(rt);
+    result(ctx,5); /* PFS_ERR_INVALID: osMotorInit could not initialize a Pak. */
+}
+void hook_os_motor_stop(Runtime *rt, MipsContext *ctx) {
+    hook_os_motor_start(rt,ctx);
+}
 
 void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
     RecompIO *s = io(rt);
@@ -93,8 +130,9 @@ void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
 void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
     RecompIO *s = io(rt);
     if (!s->initialized) recomp_fail("controller result before osContInit", ctx->pc);
-    uint32_t pads = arg(ctx, 0); recomp_ram_address(rt, pads, 24);
-    for (unsigned n=0;n<4;n++) {
+    uint32_t pads = arg(ctx, 0);
+    if (s->max_channels) recomp_ram_address(rt, pads, s->max_channels * 6);
+    for (unsigned n=0;n<s->max_channels;n++) {
         const RecompPad *pad = &s->result[n];
         recomp_store(rt, pads+n*6+4, pad->connected ? 0 : 8, 1);
         if (pad->connected) {
@@ -115,9 +153,10 @@ void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
 void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
     RecompIO *s=io(rt);
     if(!s->initialized)recomp_fail("controller status before osContInit",ctx->pc);
-    uint32_t status=arg(ctx,0);recomp_ram_address(rt,status,16);
+    uint32_t status=arg(ctx,0);
+    if(s->max_channels)recomp_ram_address(rt,status,s->max_channels*4);
     const RecompPad *pads=s->stats.queries_completed?s->query_result:s->live;
-    for(unsigned n=0;n<4;n++) {
+    for(unsigned n=0;n<s->max_channels;n++) {
         recomp_store(rt,status+n*4,pads[n].connected?5:0,2);
         recomp_store(rt,status+n*4+2,0,1); /* No accessory installed. */
         recomp_store(rt,status+n*4+3,pads[n].connected?0:8,1);

@@ -1,0 +1,47 @@
+# Exact US revision 0 ROM. Shared catalog recognizes identical SDK bodies.
+# Plain OS/library routines are supplied by the shared catalog.
+
+[game]
+name = "Quake 64 (US)"
+rom_sha1 = "25a7fe0342490d3c23328040bb34f8748995537a"
+rom_size = 0xc00000
+ram_size = 0x400000
+entry_symbol = "entry_point"
+rom = "../../local/quake.us.z64"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[discovery]
+regions = [{name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0x77080}]
+transfers = [{pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80048f20]}]
+roots = [{name = "mainproc", vram = 0x80048f7c}]
+
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0x77080
+bss_start = 0x80077480
+bss_end = 0x800debc0
+system_entry = 0x80048f20
+main_entry = 0x80048f7c
+main_id = 1
+main_priority = 10
+main_object = 0x800d7a18
+main_stack = 0x800cca00
+counter_hz = 46875000
+# Diagnostics from the original main loop, entity indexer and player spawn code.
+gameplay_loop_entry = 0x8003b420
+entity_array_pointer = 0x8008e20c
+entity_stride = 0x2d0
+origin_offset = 0x54
+health_offset = 0x1c0
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x400000

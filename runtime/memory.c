@@ -55,7 +55,7 @@ static int compare_entries(const void *a, const void *b) {
 bool recomp_runtime_init(Runtime *rt, size_t ram_size,
                          const RecompFunctionEntry *functions, size_t count,
                          const bool *loaded, size_t sections) {
-    *rt = (Runtime){0};
+    *rt = (Runtime){.interrupt_mask = UINT32_C(0x003fff01)};
     if (!ram_size || ram_size % 4 || ram_size > UINT32_C(0x20000000) || !sections
             || (count && !functions) || count > SIZE_MAX / sizeof(*rt->function_index)) return false;
     rt->rdram = calloc(1, ram_size);
@@ -303,6 +303,8 @@ void hook_os_memcpy(Runtime *rt, MipsContext *ctx) {
     uint32_t dest = (uint32_t)ctx->gpr[4];
     copy_guest(rt, dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], false);
     mips_set(ctx, 2, mips_s32(dest));
+
+    printf("hook_os_memcpy called: dest=0x%08x, src=0x%08x, bytes=%u\n", dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
 }
 void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
     uint32_t src = (uint32_t)ctx->gpr[4], dest = (uint32_t)ctx->gpr[5], bytes = (uint32_t)ctx->gpr[6];

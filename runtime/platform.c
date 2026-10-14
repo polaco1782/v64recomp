@@ -123,6 +123,7 @@ static void poll_platform(Runtime *rt) {
         recomp_fail("VI schedule exhausted", 0);
     p->next_vi += due * p->config.vi_period_ticks;
     p->vi.retraces += due;
+    p->vi.current_framebuffer = p->vi.framebuffer;
     uint64_t count = p->vi.retrace_count ? p->vi.retrace_count : 1;
     uint64_t deliveries = due / count + (due % count + p->retrace_phase) / count;
     p->retrace_phase = (due % count + p->retrace_phase) % count;
@@ -302,6 +303,12 @@ void hook_os_vi_set_event(Runtime *rt, MipsContext *ctx) {
 void hook_os_vi_swap_buffer(Runtime *rt, MipsContext *ctx) {
     recomp_ram_address(rt, arg(ctx, 0), 1);
     platform(rt)->vi.framebuffer = arg(ctx, 0);
+}
+void hook_os_vi_get_current_framebuffer(Runtime *rt, MipsContext *ctx) {
+    result(ctx, (int32_t)platform(rt)->vi.current_framebuffer);
+}
+void hook_os_vi_get_next_framebuffer(Runtime *rt, MipsContext *ctx) {
+    result(ctx, (int32_t)platform(rt)->vi.framebuffer);
 }
 void hook_os_create_pi_manager(Runtime *rt, MipsContext *ctx) {
     RecompPlatform *p = platform(rt);

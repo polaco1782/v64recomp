@@ -142,7 +142,7 @@ bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
     uint64_t start=monotonic_ns();
     s->check_owner();
     if(!s->ready || s->token || task->resumed || task->words[0]!=1
-       || (task->words[1]&~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE))
+       || (task->words[1]&~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE | RECOMP_TASK_USER_FLAGS))
        || !task->words[4] || task->words[5]>0x2000
        || !task->words[6] || !task->words[7] || task->words[7]>0x2000
        || task->words[13]%8 || !task->words[13])return false;
@@ -163,7 +163,14 @@ bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
     // fullSync renders/copies native framebuffers before its DP callback. The
     // guest coroutine is still inside submit, so copying back cannot overwrite guest work.
     std::memcpy(s->rt->rdram,s->ram.data(),s->rt->rdram_size);
-    bool complete=s->sp_seen && s->dp_seen;s->token=0;
+    // Split graphics lists can finish RSP execution without requesting a DP
+    // interrupt. RT64 keeps their draws until the later full-sync command.
+    bool complete=s->sp_seen;
+    if(complete && !s->dp_seen) {
+        complete=recomp_task_finish_without_dp(s->rt,task->token);
+        if(complete)s->stats.graphics_tasks_without_dp++;
+    }
+    s->token=0;
     if(complete)s->stats.graphics_tasks++;
     s->stats.submit_ns+=monotonic_ns()-start;
     return complete;

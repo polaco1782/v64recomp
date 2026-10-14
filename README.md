@@ -7,9 +7,12 @@ input, saves and audio; RT64 supplies Vulkan graphics.
 Super Mario 64 US is the working gameplay baseline. GoldenEye US reaches the
 menus and playable Dam; its CPU inventory and broader gameplay validation remain
 in progress. Shadow Man US runs original startup, graphics, audio and its
-Controller Pak screen; title/gameplay work remains in progress. See
+Controller Pak screen; title/gameplay work remains in progress.
+Quake 64 US reaches the main menu and playable first level with movement and
+shotgun firing; full-game validation remains in progress. See
 [SM64](games/sm64-us/README.md), [GoldenEye](games/goldeneye-us/README.md),
-[Shadow Man](games/shadowman-us/README.md) and [the roadmap](PLAN.md).
+[Shadow Man](games/shadowman-us/README.md), [Quake 64](games/quake-us/README.md)
+and [the roadmap](PLAN.md).
 
 ## Setup
 
@@ -33,6 +36,8 @@ Import each supported ROM once. ROMs, saves and texture packs stay in `local/`.
   --rom '/path/to/007 - GoldenEye.v64' --report-only
 .venv/bin/python games/shadowman-us/run_shadowman.py \
   --rom '/path/to/Shadow Man (U) [!].z64'
+.venv/bin/python games/quake-us/run_quake.py \
+  --rom '/path/to/Quake 64 (U) [!].z64'
 ```
 
 ## Build and run
@@ -44,14 +49,17 @@ runtime and RT64. Build output stays in `build/`; the RT64 source tree stays cle
 .venv/bin/python games/sm64-us/run_sm64.py --render --build-only
 .venv/bin/python games/goldeneye-us/run_goldeneye.py --render --build-only
 .venv/bin/python games/shadowman-us/run_shadowman.py --render --build-only
+.venv/bin/python games/quake-us/run_quake.py --render --build-only
 
 .venv/bin/python games/sm64-us/run_sm64.py --render
 .venv/bin/python games/goldeneye-us/run_goldeneye.py --render
 .venv/bin/python games/shadowman-us/run_shadowman.py --render --frames 0
+.venv/bin/python games/quake-us/run_quake.py --render --frames 0
 ```
 
 The executables are `build/renderer/sm64_native_full_rt64` and
-`build/renderer/goldeneye_native_rt64`, plus `build/renderer/shadowman_native_rt64`.
+`build/renderer/goldeneye_native_rt64`, `build/renderer/shadowman_native_rt64`
+and `build/renderer/quake_native_rt64`.
 Add `--jobs N` to control build parallelism. SM64 and GoldenEye accept
 `--cheat-menu` for their session-only debug/unlock menus.
 Press **F1** while rendering to toggle RT64's ImGui debug inspector. It provides
@@ -83,4 +91,9 @@ cmake --build build/host
 [Audio](docs/audio.md), [floating point](docs/fpu.md) and
 [texture workflow](docs/textures.md) document the shared services.
 Common OS, memory and string routines use a [shared native hook catalog](docs/native-hooks.md)
-automatically, with explicit game-profile overrides for unusual variants.
+automatically, with explicit game-profile overrides for custom behavior.
+
+When adding a game, reuse the shared native hook catalog for plain OS/library
+calls. Add newly verified SDK variants and any missing ordinary services to the
+shared catalog/runtime; game-profile hooks are reserved for game-specific
+customization. See the [hook contribution rules](docs/native-hooks.md).

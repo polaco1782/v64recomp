@@ -252,7 +252,7 @@ static bool microcode_matches(RecompAudio *a,uint32_t address,unsigned bytes,con
 }
 bool recomp_audio_submit(RecompAudio *a,const RecompTask *task) {
     owner(a);
-    if(task->resumed || task->words[0]!=2 || task->words[1])return false;
+    if(task->resumed || task->words[0]!=2 || (task->words[1]&~RECOMP_TASK_USER_FLAGS))return false;
     const RecompAudioTaskProfile *profile=a->task_profile;
     if(!profile)return false;
     for(unsigned i=0;i<6;i++)if(task->words[2+i]!=profile->descriptor[i])return false;

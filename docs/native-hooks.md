@@ -7,7 +7,8 @@ body must match its SHA-256 before it is bound to a shared native handler.
 Addresses are discovered from the ROM and are not stored in the catalog.
 
 The catalog covers standard OS services for threads, queues, events, clocks,
-timers, VI/PI/AI, controller input, EEPROM, RSP tasks, cache operations and
+timers, VI/PI/AI, framebuffer queries, controller input/channel selection,
+EEPROM, Controller/Rumble Pak absence, RSP tasks, cache operations and
 address translation. It also contains `memcpy`, `memset`, `bcopy`, `bzero`,
 `bcmp`, `strlen` and `strchr`. Verified compiler/link variants share the same
 native service; adding a variant does not require a game-specific binding.
@@ -16,8 +17,15 @@ used. Neither that source tree nor a matching ELF/map is a build dependency.
 Recognition is deliberately specific to known compiler/SDK bodies. A changed
 instruction or delay slot prevents automatic replacement.
 
-Game TOML `hooks` entries take precedence at their explicit address. They remain
-the place for unrecognized SDK versions and special game or hardware behavior.
+For every new game, reuse the shared catalog for ordinary OS and library calls.
+Do not duplicate recognized calls in the game's TOML. If a plain call uses an
+unrecognized SDK/compiler variant, verify its behavior and complete ROM body,
+then add its fingerprint to `tools/native_hooks.toml` with the shared handler.
+If the shared handler is missing, implement it in the shared runtime and add
+the catalog entry there as well. Keep this rule for future game additions.
+
+Game TOML `hooks` entries take precedence at their explicit address. Reserve
+them for game-specific customization and special game or hardware behavior.
 For example, GoldenEye and Shadow Man retain their custom cache/TLB and startup
 adapters. Existing fingerprints still validate those overrides.
 An unknown routine without an explicit override keeps its translated CPU code.
@@ -42,4 +50,11 @@ word-swapped RDRAM layout, preserve each verified routine's return behavior,
 and support unaligned bytes, zero-length operations and overlapping `bcopy`.
 Aligned blocks use host memory operations. Custom pagers keep separate reads
 and writes so faults or evictions cannot invalidate a saved host pointer.
+
+Generated fixed-address calls and explicitly listed indirect targets call verified
+native handlers directly when the guest address has a unique registry entry.
+They retain loaded-section checks and the optional `prepare_call` callback,
+without searching the address registry. Return-address updates, delay slots and
+call-site tracking keep their existing behavior. Dynamic indirect calls and
+addresses shared by multiple sections still use `recomp_lookup`.
 

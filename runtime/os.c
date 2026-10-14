@@ -12,6 +12,13 @@ void hook_os_restore_int(Runtime *rt, MipsContext *ctx) {
     rt->interrupts_disabled = !(argument(ctx, 0) & 1);
     if (!rt->interrupts_disabled) recomp_checkpoint(rt);
 }
+void hook_os_set_int_mask(Runtime *rt, MipsContext *ctx) {
+    uint32_t previous = (rt->interrupt_mask & ~1u) | (rt->interrupts_disabled ? 0u : 1u);
+    rt->interrupt_mask = argument(ctx, 0);
+    rt->interrupts_disabled = !(rt->interrupt_mask & 1);
+    result(ctx, (int32_t)previous);
+    if (!rt->interrupts_disabled) recomp_checkpoint(rt);
+}
 
 void hook_os_virtual_to_physical(Runtime *rt, MipsContext *ctx) {
     uint32_t address = argument(ctx, 0);

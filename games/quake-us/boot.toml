@@ -1,0 +1,4 @@
+extends = "profile.toml"
+boundaries = [
+  {symbol = "mainproc", vram = 0x80048f7c, kind = "unsupported_function", reason = "Bounded bootstrap stops before the first application thread", expected_words = [0x27bdffe0, 0xafbf001c, 0xafa40020]},
+]
