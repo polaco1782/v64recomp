@@ -94,6 +94,10 @@ static NativeThread *best(RecompScheduler *s, RecompThreadState state, NativeQue
     return result;
 }
 
+static bool host_idle(RecompScheduler *s, const NativeThread *t) {
+    return t && s->config.idle_thread && t->object == s->config.idle_thread && t->priority == 0;
+}
+
 static void save_context(Runtime *rt, NativeThread *t) {
     static const unsigned registers[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,28,29,30,31};
     for (unsigned i = 0; i < sizeof(registers) / sizeof(registers[0]); i++)
@@ -274,6 +278,10 @@ bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
     if (rt->scheduler || !config || !config->thread_tail || config->thread_tail % 4) return false;
     if (config->stop_before_count && !config->stop_before_entries) return false;
     recomp_ram_address(rt, config->thread_tail, 8);
+    if (config->idle_thread) {
+        if (config->idle_thread % 4) return false;
+        recomp_ram_address(rt, config->idle_thread, config->fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES);
+    }
     uint32_t globals[] = {config->run_queue, config->active_queue, config->running_thread, config->event_table};
     for (unsigned i = 0; i < sizeof(globals) / sizeof(globals[0]); i++) {
         if (globals[i] % 4) return false;
@@ -321,7 +329,9 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
     for (size_t count = 0; count < max_resumes; count++) {
         poll(rt);
         NativeThread *t = best(s, RECOMP_READY, NULL, NULL);
-        if (!t) break;
+        /* Poll first so timers and backend receipts can wake real work even
+         * when the only runnable guest was the idle thread on entry. */
+        if (!t || host_idle(s, t)) break;
         s->current = t;
         t->state = RECOMP_RUNNING;
         sync_guest(rt);
@@ -337,7 +347,8 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         }
         sync_guest(rt);
     }
-    if (best(s, RECOMP_READY, NULL, NULL)) return RECOMP_RUN_BUDGET;
+    NativeThread *next = best(s, RECOMP_READY, NULL, NULL);
+    if (next) return host_idle(s, next) ? RECOMP_RUN_WAITING : RECOMP_RUN_BUDGET;
     bool stopped = false;
     for (NativeThread *t = s->threads; t; t = t->next) {
         if (t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV) return RECOMP_RUN_WAITING;

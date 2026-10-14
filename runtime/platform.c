@@ -184,6 +184,17 @@ RecompAiState recomp_ai_state(Runtime *rt) {
     if (platform(rt)->initialized) poll_ai(rt);
     return platform(rt)->ai;
 }
+uint64_t recomp_platform_next_deadline(Runtime *rt) {
+    const RecompPlatform *p = platform(rt);
+    uint64_t next = p->vi.manager_created ? p->next_vi : UINT64_MAX;
+    if (p->ai.queued) {
+        const AiBuffer *head = &p->ai_buffers[0];
+        /* poll_ai completes fractional endpoints on the following tick. */
+        uint64_t end = head->end + (head->end_fraction != 0);
+        if (end < next) next = end;
+    }
+    return next;
+}
 bool recomp_ai_set_output(Runtime *rt, const RecompAiOutput *output) {
     if (!rt->platform) return false;
     /* Detaching is always permitted so a sink can be destroyed before Runtime.

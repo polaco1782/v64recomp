@@ -28,6 +28,10 @@ Game TOML `hooks` entries take precedence at their explicit address. Reserve
 them for game-specific customization and special game or hardware behavior.
 For example, GoldenEye and Shadow Man retain their custom cache/TLB and startup
 adapters. Existing fingerprints still validate those overrides.
+Audio managers that inline `osAiGetLength` can read the 32-bit AI length
+register through `recomp_load`; its physical, KSEG0 and KSEG1 addresses use the
+same polled native DMA state as the SDK hook. Other direct hardware accesses
+remain unsupported.
 An unknown routine without an explicit override keeps its translated CPU code.
 To disable automatic recognition, a profile can set:
 

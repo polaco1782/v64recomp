@@ -1,10 +1,11 @@
-# Native ROM conversion: SM64, GoldenEye, Shadow Man and Quake 64
+# Native ROM conversion: SM64, GoldenEye, Shadow Man, Quake 64 and Duke Nukem 64
 
 Game profiles, applications, launchers and game-specific diagnostics live under `games/`.
 The original emulator is separate. SM64 is the accepted gameplay baseline;
 GoldenEye is the second ROM target.
 Shadow Man US is the third target, isolated under `games/shadowman-us/`.
 Quake 64 US is the fourth target, isolated under `games/quake-us/`.
+Duke Nukem 64 US is the fifth target, isolated under `games/duke-us/`.
 
 For future game additions, ordinary OS/library calls belong in the shared
 native hook catalog. Reuse known entries; add verified SDK variants and missing
@@ -88,3 +89,17 @@ Quake 64 milestones (see [setup and status](games/quake-us/README.md)):
 4. Complete the CPU inventory and validate prolonged gameplay, progression and
    Controller Pak saves. One audio underrun occurred in the final gameplay check;
    audio continuity remains under validation.
+
+Duke Nukem 64 milestones (see [setup and status](games/duke-us/README.md)):
+
+1. Completed: pin the US ROM, map its initialized image, and validate original
+   BSS clearing, first-thread creation and the first ABI1 task with UBSan.
+2. Completed: 743 translated functions, 55 shared catalog bindings, checked
+   callback entries and local switch tables. The game uses 8 MiB backing for
+   original sprite-sort reads above the base RAM bank; game code stays translated.
+3. Completed bounded check: optimized RT64/SDL startup, menus and the first
+   level with movement, turning and pistol firing. The 2,700-presentation desktop
+   run captured visible gameplay and nonzero PCM with matching graphics callbacks
+   and zero audio queue underruns/resets.
+4. Next: regression checks, broader gameplay/progression, Controller Pak saves
+   and a complete CPU inventory. Other games were not retested for this addition.

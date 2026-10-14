@@ -41,6 +41,7 @@ typedef struct RecompSchedulerConfig {
     const uint32_t *stop_before_entries;
     size_t stop_before_count; /* Additional checked demo/debugger boundaries. */
     bool fpu_fr1; /* SDK uses 0x230-byte threads with 32 independent 64-bit FPRs. */
+    uint32_t idle_thread; /* Optional priority-zero idle thread: return to the host instead of spinning. */
 } RecompSchedulerConfig;
 
 /* All APIs except event_post and task_post_completion run on one owner host thread. Guest code must
@@ -129,6 +130,9 @@ typedef struct RecompAiState {
     uint64_t submissions, completed, rejected, events;
 } RecompAiState;
 RecompAiState recomp_ai_state(Runtime *);
+/* Next VI or AI completion in counter ticks, or UINT64_MAX when inactive.
+ * Query after running the scheduler; this does not itself deliver events. */
+uint64_t recomp_platform_next_deadline(Runtime *);
 typedef struct RecompAiOutput {
     /* Owner thread, once when each accepted DMA becomes the FIFO head.
      * Copy PCM before returning; this callback must not yield guest threads. */

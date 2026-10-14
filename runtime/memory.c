@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Opt in when diagnosing native memory-copy calls. */
+#define LOG_NATIVE_MEMORY_CALLS 0
+
 static _Thread_local RecompFailureHandler failure_handler;
 static _Thread_local void *failure_userdata;
 static _Thread_local bool reporting_failure, failed_ram_range;
@@ -173,6 +176,12 @@ void hook_os_unmap_tlb_all(Runtime *rt, MipsContext *ctx) { (void)ctx; recomp_un
 uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
     if (!(bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8)) recomp_fail("invalid load width", address);
     if (address % bytes) fail_ram("unaligned load", address,bytes);
+    /* Some audio managers inline osAiGetLength. Use the same native DMA
+     * state as the SDK hook for this read-only register, including polling
+     * completed buffers. Other hardware accesses still fail below. */
+    if (bytes == 4 && (address == UINT32_C(0xa4500004)
+            || address == UINT32_C(0x84500004) || address == UINT32_C(0x04500004)))
+        return recomp_ai_state(rt).length;
     uint32_t p = recomp_ram_address(rt, address, bytes);
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     /* RDRAM is word-swapped: aligned guest words already have native byte
@@ -304,7 +313,9 @@ void hook_os_memcpy(Runtime *rt, MipsContext *ctx) {
     copy_guest(rt, dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], false);
     mips_set(ctx, 2, mips_s32(dest));
 
-    printf("hook_os_memcpy called: dest=0x%08x, src=0x%08x, bytes=%u\n", dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
+    if (LOG_NATIVE_MEMORY_CALLS)
+        fprintf(stderr, "hook_os_memcpy called: dest=0x%08x, src=0x%08x, bytes=%u\n",
+                dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
 }
 void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
     uint32_t src = (uint32_t)ctx->gpr[4], dest = (uint32_t)ctx->gpr[5], bytes = (uint32_t)ctx->gpr[6];

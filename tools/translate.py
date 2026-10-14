@@ -155,7 +155,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         raise RecompError('unsupported execution boundaries prevent full generation')
     header = ['#ifndef GENERATED_RECOMP_H', '#define GENERATED_RECOMP_H', '#include "recomp.h"', '']
     source = ['/* Generated from validated MIPS bytes; do not edit. */', '#include "generated.h"', '']
-    log_emission('Memory lowering uses recomp_load/store helpers (RDRAM); direct MMIO is unsupported. '
+    log_emission('Memory lowering uses recomp_load/store helpers (RDRAM and supported native registers). '
                  'OS/HW services use the verified native hooks.')
     direct_hooks = direct_hook_targets(registry, hooks)
     for f in selected:

@@ -1,0 +1,55 @@
+# Exact US revision 0 ROM. Ordinary SDK calls use the shared native catalog.
+[game]
+name = "Duke Nukem 64 (US)"
+rom_sha1 = "98d6778004becc672eba0a5e887f6e3f3d1b5c15"
+rom_size = 0x800000
+# Expansion Pak backing also covers the original sorter's speculative reads
+# above the base 4 MiB bank (for example 0x8051e65c during rooftop gameplay).
+ram_size = 0x800000
+entry_symbol = "entry_point"
+rom = "../../local/duke.us.z64"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[discovery]
+regions = [{name = ".main", vram = 0x8004b400, rom_offset = 0x1000, size = 0xbf880}]
+transfers = [{pc = 0x8004b430, expected_word = 0x01400008, kind = "tail", targets = [0x8004b450]}]
+roots = [{name = "mainproc", vram = 0x8004b4b4}]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x8004b400
+initial_load_size = 0xbf880
+bss_start = 0x8010ac80
+bss_end = 0x802ae7b0
+system_entry = 0x8004b450
+main_entry = 0x8004b4b4
+main_id = 1
+main_priority = 10
+main_object = 0x8010ec88
+main_stack = 0x80112e38
+# Thread 3 polls time in the original frame-wait loop. These identify a
+# cooperative host scheduling boundary; the original calculation still runs.
+game_thread_id = 3
+frame_poll_call = 0x8004c030
+# The original startup measures consecutive retraces here for its frame clock.
+frame_vi_period = 0x801c4408
+frame_calibration_end = 0x8004d804
+game_state = 0x800d36c8
+counter_hz = 46875000
+thread_tail = 0x801021f0
+run_queue = 0x801021f8
+active_queue = 0x801021fc
+running_thread = 0x80102200
+vi_clock = 0x801013a8
+clock_rate = 0x801013a0
+final_rom = 0x802aaca0
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x800000
