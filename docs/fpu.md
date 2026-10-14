@@ -26,13 +26,21 @@ The condition bit is captured before executing a branch's delay slot. Likely
 branches annul their untaken slots. Diagnostics identify a faulting slot's address.
 
 This first arithmetic backend requires **Linux x86-64 SSE2**, IEEE binary32/64,
-`-fno-fast-math -frounding-math -ffp-contract=off`, and libm. Every arithmetic
-operation saves the host floating-point environment, masks host traps, selects
-guest rounding, disables host DAZ/FTZ, collects exceptions, and restores the
-saved environment and errno before returning. Coroutines can therefore keep different
-guest rounding modes without changing host callbacks or other guest threads.
-Tests verify rounding, sticky flags and restoration of MXCSR and host exceptions
-with both GCC and Clang builds. Other hosts need a validated backend.
+`-fno-fast-math -frounding-math -ffp-contract=off`, and libm. With
+`USE_INTRISICS=1` (the default in `include/recomp.h`), binary arithmetic, square
+roots and comparisons use scalar SSE/SSE2 intrinsics. These operations save
+MXCSR, mask host SSE traps, select guest rounding, disable DAZ/FTZ, collect
+exceptions, and restore MXCSR and errno before returning. The x87 environment
+remains untouched. These are individual guest operations, preserving their
+exception order and register dependencies.
+
+Conversions retain full `fenv` isolation because they can call libm. Setting
+`USE_INTRISICS=0` selects the C/libm and `fenv` implementation for all operations.
+Coroutines can therefore keep different guest rounding modes without changing
+host callbacks or other guest threads. Tests compare both modes across rounding,
+sticky flags, NaNs, subnormals, guest traps, FR=0/1 registers, and restoration of
+MXCSR, x87 state and errno with GCC and Clang at `-O0`, `-O2` and `-O3`.
+Other hosts need a validated backend.
 
 VR4300 NaNs use the legacy convention: the highest fraction bit is set for a
 signaling NaN. Computational signaling NaNs set Invalid; quiet NaNs and denormal

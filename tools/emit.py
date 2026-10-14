@@ -194,18 +194,37 @@ def reg(number: int) -> str:
     return f"ctx->gpr[{number}]" if number else "UINT64_C(0)"
 
 
+def add_immediate(value: str, immediate: int) -> str:
+    if immediate == 0:
+        return value
+    return f"{value} {'+' if immediate > 0 else '-'} {abs(immediate)}"
+
+
+def signed_constant(value: int, bits: int) -> str:
+    value &= (1 << bits) - 1
+    if value & (1 << (bits - 1)):
+        value -= 1 << bits
+    return f"UINT64_C(0x{value & 0xffffffffffffffff:x})"
+
+
+def memory_address(i: Instruction) -> str:
+    if i.rs == 0:
+        return f"UINT32_C(0x{i.immediate & 0xffffffff:x})"
+    return add_immediate(reg(i.rs), i.immediate)
+
+
 def body(i: Instruction) -> str:
     op, a, b = i.opcode, reg(i.rs), reg(i.rt)
-    imm = f"mips_s16(UINT16_C(0x{i.word & 0xffff:04x}))"
+    imm = str(i.immediate)
     logical_imm = f"UINT64_C(0x{i.word & 0xffff:04x})"
     destination = i.rt
     expression = None
     if op == 'nop': return ";"
     if op == 'break': return f'recomp_fail("MIPS BREAK {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
-    if op == 'mtc1': return f'ctx->fpr[{i.rd}] = (uint32_t){b};'
+    if op == 'mtc1': return f'ctx->fpr[{i.rd}] = {b};'
     if op == 'mfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fpr[{i.rd}]));'
     if op == 'cfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fcr31));'
-    if op == 'ctc1': return f'mips_fp_set_control(ctx, (uint32_t){b});'
+    if op == 'ctc1': return f'mips_fp_set_control(ctx, {b});'
     parts = op.split('.')
     if op == 'dmtc1': return f'mips_set_fpr_pair(ctx, {i.rd}, {b});'
     if op == 'dmfc1': return f'mips_set(ctx, {i.rt}, mips_fpr_pair(ctx, {i.rd}));'
@@ -221,28 +240,30 @@ def body(i: Instruction) -> str:
             mode = {'cvt': -1, 'round': 0, 'trunc': 1, 'ceil': 2, 'floor': 3}[parts[0]]
             return f'mips_fp_convert(ctx, {i.shift}, {i.rd}, {fmt}, MIPS_FP_{parts[1].upper()}, {mode});'
     if op in ('lwc1', 'swc1', 'ldc1', 'sdc1'):
-        address = f'(uint32_t)({a} + {imm})'
+        address = memory_address(i)
         if op == 'lwc1': return f'ctx->fpr[{i.rt}] = (uint32_t)recomp_load(runtime, {address}, 4);'
         if op == 'swc1': return f'recomp_store(runtime, {address}, ctx->fpr[{i.rt}], 4);'
         if op == 'ldc1': return f'mips_set_fpr_pair(ctx, {i.rt}, recomp_load(runtime, {address}, 8));'
         return f'recomp_store(runtime, {address}, mips_fpr_pair(ctx, {i.rt}), 8);'
     if op in ('lwl', 'lwr', 'ldl', 'ldr', 'swl', 'swr', 'sdl', 'sdr'):
-        address = f'(uint32_t)({a} + {imm})'
+        address = memory_address(i)
         width = 4 if op[1] == 'w' else 8
         left = 'true' if op.endswith('l') else 'false'
         if op.startswith('s'):
             return f'recomp_store_merge(runtime, {address}, {b}, {width}, {left});'
         expression = f'recomp_load_merge(runtime, {address}, {b}, {width}, {left})'
-        if width == 4: expression = f'mips_s32((uint32_t){expression})'
+        if width == 4: expression = f'mips_s32({expression})'
         return f'mips_set(ctx, {i.rt}, {expression});'
-    if op == 'lui': expression = f"mips_s32(UINT32_C(0x{(i.word & 0xffff) << 16:08x}))"
+    if op == 'lui': expression = signed_constant((i.word & 0xffff) << 16, 32)
     elif op in ('addiu', 'addi', 'daddiu'):
-        expression = (f"mips_s32((uint32_t){a} + (uint32_t){imm})" if op == 'addiu'
-                      else f"mips_add32({a}, {imm})" if op == 'addi' else f"{a} + {imm}")
+        expression = (f"mips_s32({add_immediate(a, i.immediate)})" if op == 'addiu'
+                      else f"mips_add32({a}, {imm})" if op == 'addi' else add_immediate(a, i.immediate))
     elif op in ('addu', 'add', 'subu', 'sub', 'daddu', 'dsubu'):
         destination = i.rd
         sign = '+' if op in ('addu', 'add', 'daddu') else '-'
-        expression = (f"mips_s32((uint32_t){a} {sign} (uint32_t){b})" if op in ('addu', 'subu')
+        # Unsigned 64-bit arithmetic followed by narrowing has the same low
+        # 32 bits as narrowing both operands before the wrapping operation.
+        expression = (f"mips_s32({a} {sign} {b})" if op in ('addu', 'subu')
                       else f"mips_{'add' if op == 'add' else 'sub'}32({a}, {b})" if op in ('add', 'sub')
                       else f"{a} {sign} {b}")
     elif op in ('and', 'or', 'xor', 'nor', 'andi', 'ori', 'xori'):
@@ -255,16 +276,20 @@ def body(i: Instruction) -> str:
         immediate = op.startswith('slti')
         destination = i.rt if immediate else i.rd
         rhs = imm if immediate else b
-        expression = f"{a} < {rhs}" if op.endswith('u') else f"mips_signed_less({a}, {rhs})"
+        if op == 'sltiu' and i.immediate < 0:
+            rhs = signed_constant(i.immediate, 16)
+        expression = ('UINT64_C(0)' if op == 'sltiu' and i.immediate == 0
+                      else f"{a} < {rhs}" if op.endswith('u') else f"mips_signed_less({a}, {rhs})")
     elif op in ('sll', 'srl', 'sra', 'sllv', 'srlv', 'srav', 'dsll', 'dsrl', 'dsra',
                 'dsll32', 'dsrl32', 'dsra32', 'dsllv', 'dsrlv', 'dsrav'):
         destination = i.rd
         wide = op.startswith('d')
-        count = f"(unsigned)({a} & {63 if wide else 31})" if op.endswith('v') else str(i.shift + (32 if op.endswith('32') else 0))
+        count = f"({a} & {63 if wide else 31})" if op.endswith('v') else str(i.shift + (32 if op.endswith('32') else 0))
         if 'sra' in op: expression = f"mips_sra{64 if wide else 32}({b}, {count})"
         else:
             operation = '<<' if 'sll' in op else '>>'
-            expression = f"{b} {operation} {count}" if wide else f"mips_s32((uint32_t){b} {operation} {count})"
+            operand = f"(uint32_t){b}" if not wide and operation == '>>' else b
+            expression = f"{b} {operation} {count}" if wide else f"mips_s32({operand} {operation} {count})"
     elif op in ('mfhi', 'mflo'):
         destination, expression = i.rd, f"ctx->{'hi' if op == 'mfhi' else 'lo'}"
     elif op in ('mthi', 'mtlo'): return f"ctx->{'hi' if op == 'mthi' else 'lo'} = {a};"
@@ -274,13 +299,28 @@ def body(i: Instruction) -> str:
         return f"mips_{'dmult' if op.startswith('dmult') else 'ddiv'}(ctx, {a}, {b}, {'false' if op.endswith('u') else 'true'});"
     elif op in ('lb', 'lbu', 'lh', 'lhu', 'lw', 'lwu', 'ld', 'sb', 'sh', 'sw', 'sd'):
         width = {'b': 1, 'h': 2, 'w': 4, 'd': 8}[op[1]]
-        address = f"(uint32_t)({a} + {imm})"
+        address = memory_address(i)
         if op.startswith('s'): return f"recomp_store(runtime, {address}, {b}, {width});"
         expression = f"recomp_load(runtime, {address}, {width})"
-        if op in ('lb', 'lh', 'lw'): expression = f"mips_s{width * 8}((uint{width * 8}_t){expression})"
+        if op in ('lb', 'lh', 'lw'): expression = f"mips_s{width * 8}({expression})"
     if expression is None:
         raise RecompError(f"no straight-line emitter for {op}")
     return f"mips_set(ctx, {destination}, {expression});"
+
+
+def constant_condition(i: Instruction) -> bool | None:
+    """Resolve only outcomes proven by register identity or the zero register."""
+    op = i.opcode.rstrip('l')
+    if op == 'b' or op == 'beq' and i.rs == i.rt:
+        return True
+    if op == 'bne' and i.rs == i.rt:
+        return False
+    if i.rs == 0:
+        if op in ('bgez', 'blez'):
+            return True
+        if op in ('bltz', 'bgtz'):
+            return False
+    return None
 
 
 def condition(i: Instruction) -> str:
@@ -318,6 +358,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
              "    (void)return_address; (void)runtime; (void)ctx;"]
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
+    fallthrough_transfers = {t['pc']: t for t in function.get('fallthrough_transfers', [])}
+    used_labels = set()
     yield_sites = yield_sites or set()
     hooks = hooks or {}
     if direct_hooks is None:
@@ -342,6 +384,10 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
 
     def fallthrough(address: int, indent: str = '    ') -> str:
         return f'{indent}recomp_fellthrough(UINT32_C(0x{address:08x}));'
+
+    def jump(address: int, indent: str = '    ') -> str:
+        used_labels.add(f'L_{address:08x}: ;')
+        return f'{indent}goto L_{address:08x};'
 
     def log_call(address: int, kind: str) -> None:
         if not LOG_EMISSION or not LOG_EMISSION_VERBOSE:
@@ -374,7 +420,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 log_emission('Checkpoint %s s%s 0x%08x -> 0x%08x: %s',
                              function['name'], function['section'], i.pc, address, call, verbose=True)
                 checkpoint.append(f"{indent}{call}(runtime);")
-            return [*checkpoint, f"{indent}goto L_{address:08x};"]
+            return [*checkpoint, jump(address, indent)]
         log_call(address, 'Tail/branch call')
         return [*emit_call(address, indent), f"{indent}return;"]
 
@@ -383,24 +429,45 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if not i.delay:
             lines.extend(emit_body(i))
             if 'instruction_addresses' in function:
-                checked_fallthrough=next((t for t in function.get('fallthrough_transfers',[]) if t['pc']==i.pc),None)
+                checked_fallthrough = fallthrough_transfers.get(i.pc)
                 if checked_fallthrough:
                     lines.extend([*emit_call(checked_fallthrough['target'], '    '), '    return;'])
                 else:
-                    lines.append(f"    goto L_{i.pc + 4:08x};" if i.pc + 4 in addresses
-                                 else fallthrough(i.pc))
+                    # Fall through only when the next emitted instruction is
+                    # the guest successor. Sparse/reordered bodies can need a jump.
+                    if i.pc + 4 in addresses:
+                        if index + 1 == len(instructions) or instructions[index + 1].pc != i.pc + 4:
+                            lines.append(jump(i.pc + 4))
+                    else:
+                        lines.append(fallthrough(i.pc))
             continue
         slot = instructions[index + 1]
         lines.append('    {')
+        if i.opcode not in ('j', 'jal', 'jr', 'jalr'):
+            known = constant_condition(i)
+            if known is True:
+                lines.extend(emit_body(slot, '        '))
+                lines.extend(transfer(target(i)))
+                lines.append('    }')
+                continue
+            # Test before the delay slot can change branch inputs. Each path
+            # executes the slot once; branch-likely annuls it when not taken.
+            if known is None:
+                lines.append(f"        if ({condition(i)}) {{")
+                lines.extend(emit_body(slot, '            '))
+                lines.extend(transfer(target(i), '            '))
+                lines.append('        }')
+            if not i.likely:
+                lines.extend(emit_body(slot, '        '))
+            lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
+                         else fallthrough(i.pc, '        '))
+            lines.append('    }')
+            continue
         if i.opcode in ('jr', 'jalr'):
             lines.append(f"        uint32_t destination = (uint32_t){reg(i.rs)};")
-        elif i.opcode not in ('j', 'jal'):
-            lines.append(f"        bool taken = {condition(i)};")
         if i.opcode in ('jal', 'jalr'):
-            lines.append(f"        mips_set(ctx, {31 if i.opcode == 'jal' else i.rd}, mips_s32(UINT32_C(0x{i.pc + 8:08x})));")
-        if i.likely: lines.append('        if (taken) {')
-        lines.extend(emit_body(slot, '            ' if i.likely else '        '))
-        if i.likely: lines.append('        }')
+            lines.append(f"        mips_set(ctx, {31 if i.opcode == 'jal' else i.rd}, {signed_constant(i.pc + 8, 32)});")
+        lines.extend(emit_body(slot, '        '))
         checked = transfers.get(i.pc)
         if i.opcode == 'jr' and checked:
             lines.append('        switch (destination) {')
@@ -438,16 +505,12 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))
                 lines.extend([call_location('        '), *call])
-            lines.append(f"        goto L_{i.pc + 8:08x};" if i.pc + 8 in addresses
+            lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
                          else fallthrough(i.pc, '        '))
         elif i.opcode == 'j': lines.extend(transfer(target(i)))
-        else:
-            lines.append('        if (taken) {')
-            lines.extend(transfer(target(i), '            '))
-            lines.append('        }')
-            lines.append(f"        goto L_{i.pc + 8:08x};" if i.pc + 8 in addresses
-                         else fallthrough(i.pc, '        '))
         lines.append('    }')
     last_pc = instructions[-1].pc if instructions else function['vram']
     lines.extend([fallthrough(last_pc), '}'])
-    return '\n'.join(lines)
+    # Only control-flow destinations need labels. Delay slots remain separately
+    # addressable, and call/branch continuations still jump over their inline copy.
+    return '\n'.join(line for line in lines if not line.startswith('L_') or line in used_labels)

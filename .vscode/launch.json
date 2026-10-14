@@ -1,0 +1,324 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug: Super Mario 64",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/sm64_native_full_rt64",
+            "args": [
+                "${workspaceFolder}/local/sm64.us.z64",
+                "${workspaceFolder}/build/sm64-us/rom/full",
+                "${workspaceFolder}/local/saves/sm64-us.eeprom",
+                "0",
+                "live"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "SDL_VIDEODRIVER",
+                    "value": "x11"
+                },
+                {
+                    "name": "MESA_SHADER_CACHE_DIR",
+                    "value": "${workspaceFolder}/local/rt64/mesa-cache"
+                },
+                {
+                    "name": "RECOMP_AUDIO_MUTE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_CAPTURE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_AUDIO_PLAYBACK",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_TEXTURE_DUMP",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_TEXTURE_REPLACEMENTS",
+                    "value": "${workspaceFolder}/local/textures/sm64-us/replacements"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug: Super Mario 64"
+        },
+        {
+            "name": "Debug: GoldenEye 007",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/goldeneye_native_rt64",
+            "args": [
+                "${workspaceFolder}/local/goldeneye.us.z64",
+                "${workspaceFolder}/build/goldeneye-us/rom/startup/startup-data.bin",
+                "${workspaceFolder}/build/goldeneye-us/rom/startup/boot-report.json",
+                "0"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "SDL_VIDEODRIVER",
+                    "value": "x11"
+                },
+                {
+                    "name": "MESA_SHADER_CACHE_DIR",
+                    "value": "${workspaceFolder}/local/rt64/mesa-cache"
+                },
+                {
+                    "name": "RECOMP_AUDIO_MUTE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_GOLDENEYE_SAVE",
+                    "value": "${workspaceFolder}/local/saves/goldeneye-us.eeprom"
+                },
+                {
+                    "name": "RECOMP_GOLDENEYE_INPUT",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_GOLDENEYE_WAV",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_TEXTURE_DUMP",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_TEXTURE_REPLACEMENTS",
+                    "value": "${workspaceFolder}/local/textures/goldeneye-us/replacements"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug: GoldenEye 007"
+        },
+        {
+            "name": "Debug: Shadow Man",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/shadowman_native_rt64",
+            "args": [
+                "${workspaceFolder}/local/shadowman.us.z64",
+                "${workspaceFolder}/build/shadowman-us/rom/startup/boot-report.json",
+                "0",
+                "${workspaceFolder}/local/rt64"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "SDL_VIDEODRIVER",
+                    "value": "x11"
+                },
+                {
+                    "name": "MESA_SHADER_CACHE_DIR",
+                    "value": "${workspaceFolder}/local/rt64/mesa-cache"
+                },
+                {
+                    "name": "RECOMP_AUDIO_MUTE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_SHADOWMAN_INPUT",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_SHADOWMAN_WAV",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_SHADOWMAN_CAPTURE_EVERY",
+                    "value": "0"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug: Shadow Man"
+        },
+        {
+            "name": "Debug: Quake 64",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/quake_native_rt64",
+            "args": [
+                "${workspaceFolder}/local/quake.us.z64",
+                "${workspaceFolder}/build/quake-us/rom/startup/boot-report.json",
+                "0",
+                "${workspaceFolder}/local/rt64"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "SDL_VIDEODRIVER",
+                    "value": "x11"
+                },
+                {
+                    "name": "MESA_SHADER_CACHE_DIR",
+                    "value": "${workspaceFolder}/local/rt64/mesa-cache"
+                },
+                {
+                    "name": "RECOMP_AUDIO_MUTE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_QUAKE_INPUT",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_QUAKE_WAV",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_QUAKE_CAPTURE_EVERY",
+                    "value": "0"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug: Quake 64"
+        },
+        {
+            "name": "Debug: Duke Nukem 64",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/duke_native_rt64",
+            "args": [
+                "${workspaceFolder}/local/duke.us.z64",
+                "${workspaceFolder}/build/duke-us/rom/startup/boot-report.json",
+                "0",
+                "${workspaceFolder}/local/rt64"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "SDL_VIDEODRIVER",
+                    "value": "x11"
+                },
+                {
+                    "name": "MESA_SHADER_CACHE_DIR",
+                    "value": "${workspaceFolder}/local/rt64/mesa-cache"
+                },
+                {
+                    "name": "RECOMP_AUDIO_MUTE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_DUKE_INPUT",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_DUKE_WAV",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_DUKE_CAPTURE_EVERY",
+                    "value": "0"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug: Duke Nukem 64"
+        },
+        {
+            "name": "Debug: Nightmare Creatures",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/nightmare_native_rt64",
+            "args": [
+                "${workspaceFolder}/local/nightmare.us.z64",
+                "${workspaceFolder}/build/nightmare-us/rom/startup/boot-report.json",
+                "0",
+                "${workspaceFolder}/local/rt64"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "SDL_VIDEODRIVER",
+                    "value": "x11"
+                },
+                {
+                    "name": "MESA_SHADER_CACHE_DIR",
+                    "value": "${workspaceFolder}/local/rt64/mesa-cache"
+                },
+                {
+                    "name": "RECOMP_AUDIO_MUTE",
+                    "value": "0"
+                },
+                {
+                    "name": "RECOMP_NIGHTMARE_INPUT",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_NIGHTMARE_WAV",
+                    "value": ""
+                },
+                {
+                    "name": "RECOMP_NIGHTMARE_CAPTURE_EVERY",
+                    "value": "0"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug: Nightmare Creatures"
+        }
+    ]
+}

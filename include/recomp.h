@@ -5,6 +5,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* Set to 0 to disable optional intrinsics; compiler -D overrides this default. */
+#ifndef USE_INTRISICS
+#define USE_INTRISICS 1
+#endif
+
+/* Sign-extend to the 64-bit GPR bit pattern; each argument is evaluated once. */
+#define mips_s32(x) ((uint64_t)(int64_t)(int32_t)(x))
+#define mips_s16(x) ((uint64_t)(int64_t)(int16_t)(x))
+#define mips_s8(x) ((uint64_t)(int64_t)(int8_t)(x))
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -144,16 +154,6 @@ static inline void recomp_yield_checkpoint(Runtime *rt) {
     if (rt->checkpoint) rt->checkpoint(rt, true);
 }
 
-/* Store GPRs as unsigned bit patterns, including sign-extended 32-bit results. */
-static inline uint64_t mips_s32(uint32_t x) {
-    return (uint64_t)x | ((x & UINT32_C(0x80000000)) ? UINT64_C(0xffffffff00000000) : 0);
-}
-static inline uint64_t mips_s16(uint16_t x) {
-    return (uint64_t)x | ((x & UINT16_C(0x8000)) ? UINT64_C(0xffffffffffff0000) : 0);
-}
-static inline uint64_t mips_s8(uint8_t x) {
-    return (uint64_t)x | ((x & UINT8_C(0x80)) ? UINT64_C(0xffffffffffffff00) : 0);
-}
 static inline void mips_set(MipsContext *ctx, unsigned reg, uint64_t value) {
     if (reg) ctx->gpr[reg] = value;
 }
@@ -172,13 +172,25 @@ static inline uint64_t mips_sra64(uint64_t value, unsigned count) {
     return value;
 }
 static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
+#if USE_INTRISICS && (defined(__GNUC__) || defined(__clang__))
+    int32_t result;
+    if (__builtin_add_overflow((int32_t)x, (int32_t)y, &result))
+        recomp_fail("signed ADD overflow", 0);
+#else
     uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a + b;
     if (((a ^ result) & (b ^ result)) & UINT32_C(0x80000000)) recomp_fail("signed ADD overflow", 0);
+#endif
     return mips_s32(result);
 }
 static inline uint64_t mips_sub32(uint64_t x, uint64_t y) {
+#if USE_INTRISICS && (defined(__GNUC__) || defined(__clang__))
+    int32_t result;
+    if (__builtin_sub_overflow((int32_t)x, (int32_t)y, &result))
+        recomp_fail("signed SUB overflow", 0);
+#else
     uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a - b;
     if (((a ^ b) & (a ^ result)) & UINT32_C(0x80000000)) recomp_fail("signed SUB overflow", 0);
+#endif
     return mips_s32(result);
 }
 static inline int64_t mips_i32(uint64_t x) {

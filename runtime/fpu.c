@@ -12,7 +12,7 @@
 #error "This floating-point backend currently requires Linux x86-64 SSE2"
 #endif
 #if defined(__SSE2__)
-#include <xmmintrin.h>
+#include <emmintrin.h>
 #endif
 #if defined(__clang__)
 #pragma STDC FENV_ACCESS ON
@@ -25,12 +25,34 @@ _Static_assert(FLT_RADIX == 2 && FLT_MANT_DIG == 24 && FLT_MAX_EXP == 128
 
 enum { FP_I = 1, FP_U = 2, FP_O = 4, FP_Z = 8, FP_V = 16, FP_E = 32 };
 static const int rounding[] = { FE_TONEAREST, FE_TOWARDZERO, FE_UPWARD, FE_DOWNWARD };
-typedef struct FpEnvironment { fenv_t saved; int saved_errno; } FpEnvironment;
+typedef struct FpEnvironment {
+    fenv_t saved;
+    int saved_errno;
+#if USE_INTRISICS
+    unsigned saved_mxcsr;
+    bool sse_only;
+#endif
+} FpEnvironment;
 
-static FpEnvironment begin(MipsContext *ctx, int mode) {
+static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
     FpEnvironment env;
     env.saved_errno = errno;
-    if (feholdexcept(&env.saved) || fesetround(rounding[mode < 0 ? ctx->fcr31 & 3 : (unsigned)mode]))
+    unsigned rm = mode < 0 ? ctx->fcr31 & 3 : (unsigned)mode;
+#if USE_INTRISICS
+    env.sse_only = sse_only;
+    if (sse_only) {
+        static const unsigned mxcsr_rounding[] = { 0x0000, 0x6000, 0x4000, 0x2000 };
+        env.saved_mxcsr = _mm_getcsr();
+        /* Clear flags, DAZ/FTZ and rounding, then mask all host SSE traps.
+         * Explicit scalar intrinsics keep these operations out of the x87 FPU. */
+        _mm_setcsr((env.saved_mxcsr & ~UINT32_C(0xe07f))
+                   | UINT32_C(0x1f80) | mxcsr_rounding[rm]);
+        return env;
+    }
+#else
+    (void)sse_only;
+#endif
+    if (feholdexcept(&env.saved) || fesetround(rounding[rm]))
         recomp_fail("host floating-point environment unavailable", ctx->pc);
 #if defined(__SSE2__)
     /* Host DAZ/FTZ would corrupt guest subnormals and underflow detection.
@@ -41,6 +63,16 @@ static FpEnvironment begin(MipsContext *ctx, int mode) {
 }
 
 static unsigned end(MipsContext *ctx, const FpEnvironment *env) {
+#if USE_INTRISICS
+    if (env->sse_only) {
+        unsigned flags = _mm_getcsr();
+        _mm_setcsr(env->saved_mxcsr);
+        errno = env->saved_errno;
+        return ((flags & 0x20) ? FP_I : 0) | ((flags & 0x10) ? FP_U : 0)
+             | ((flags & 0x08) ? FP_O : 0) | ((flags & 0x04) ? FP_Z : 0)
+             | ((flags & 0x01) ? FP_V : 0);
+    }
+#endif
     int flags = fetestexcept(FE_ALL_EXCEPT);
     if (fesetenv(&env->saved)) recomp_fail("cannot restore host floating-point environment", ctx->pc);
     errno = env->saved_errno;
@@ -129,9 +161,19 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft,
     uint64_t a = read_bits(ctx, fs, fmt), b = read_bits(ctx, ft, fmt), bits;
     unsigned flags = operand_flags(a, fmt) | operand_flags(b, fmt);
     if (flags) { finish(ctx, flags); write_bits(ctx, fd, fmt, quiet_nan(fmt)); return; }
-    FpEnvironment env = begin(ctx, -1);
+    FpEnvironment env = begin(ctx, -1, true);
     if (fmt == MIPS_FP_S) {
         volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b), z;
+#if USE_INTRISICS
+        __m128 vx = _mm_set_ss(x), vy = _mm_set_ss(y);
+        switch (op) {
+        case MIPS_FP_ADD: z = _mm_cvtss_f32(_mm_add_ss(vx, vy)); break;
+        case MIPS_FP_SUB: z = _mm_cvtss_f32(_mm_sub_ss(vx, vy)); break;
+        case MIPS_FP_MUL: z = _mm_cvtss_f32(_mm_mul_ss(vx, vy)); break;
+        case MIPS_FP_DIV: z = _mm_cvtss_f32(_mm_div_ss(vx, vy)); break;
+        default: recomp_fail("invalid native FP binary operation", ctx->pc);
+        }
+#else
         switch (op) {
         case MIPS_FP_ADD: z = x + y; break;
         case MIPS_FP_SUB: z = x - y; break;
@@ -139,9 +181,20 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft,
         case MIPS_FP_DIV: z = x / y; break;
         default: recomp_fail("invalid native FP binary operation", ctx->pc);
         }
+#endif
         bits = float_bits(z);
     } else {
         volatile double x = as_double(a), y = as_double(b), z;
+#if USE_INTRISICS
+        __m128d vx = _mm_set_sd(x), vy = _mm_set_sd(y);
+        switch (op) {
+        case MIPS_FP_ADD: z = _mm_cvtsd_f64(_mm_add_sd(vx, vy)); break;
+        case MIPS_FP_SUB: z = _mm_cvtsd_f64(_mm_sub_sd(vx, vy)); break;
+        case MIPS_FP_MUL: z = _mm_cvtsd_f64(_mm_mul_sd(vx, vy)); break;
+        case MIPS_FP_DIV: z = _mm_cvtsd_f64(_mm_div_sd(vx, vy)); break;
+        default: recomp_fail("invalid native FP binary operation", ctx->pc);
+        }
+#else
         switch (op) {
         case MIPS_FP_ADD: z = x + y; break;
         case MIPS_FP_SUB: z = x - y; break;
@@ -149,6 +202,7 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft,
         case MIPS_FP_DIV: z = x / y; break;
         default: recomp_fail("invalid native FP binary operation", ctx->pc);
         }
+#endif
         bits = double_bits(z);
     }
     flags = end(ctx, &env);
@@ -162,9 +216,21 @@ void mips_fp_unary(MipsContext *ctx, unsigned fd, unsigned fs,
     unsigned flags = operand_flags(bits, fmt);
     if (flags) { finish(ctx, flags); write_bits(ctx, fd, fmt, quiet_nan(fmt)); return; }
     if (op == MIPS_FP_SQRT) {
-        FpEnvironment env = begin(ctx, -1);
+        FpEnvironment env = begin(ctx, -1, true);
+#if USE_INTRISICS
+        if (fmt == MIPS_FP_S) {
+            volatile float x = as_float((uint32_t)bits);
+            volatile float y = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(x)));
+            bits = float_bits(y);
+        } else {
+            volatile double x = as_double(bits);
+            volatile double y = _mm_cvtsd_f64(_mm_sqrt_sd(_mm_setzero_pd(), _mm_set_sd(x)));
+            bits = double_bits(y);
+        }
+#else
         if (fmt == MIPS_FP_S) { volatile float x = as_float((uint32_t)bits), y = sqrtf(x); bits = float_bits(y); }
         else { volatile double x = as_double(bits), y = sqrt(x); bits = double_bits(y); }
+#endif
         flags = end(ctx, &env);
     } else if (op == MIPS_FP_ABS) bits &= ~sign_mask(fmt);
     else if (op == MIPS_FP_NEG) bits ^= sign_mask(fmt);
@@ -181,7 +247,8 @@ void mips_fp_convert(MipsContext *ctx, unsigned fd, unsigned fs,
         if (to == MIPS_FP_W || to == MIPS_FP_L) finish(ctx, FP_E);
         finish(ctx, flags); write_bits(ctx, fd, to, quiet_nan(to)); return;
     }
-    FpEnvironment env = begin(ctx, mode);
+    /* Conversions can call libm, so retain complete host fenv isolation. */
+    FpEnvironment env = begin(ctx, mode, false);
     if (from == MIPS_FP_L) {
         /* Decode two's complement without out-of-range signed casts. Convert
          * directly to the requested precision: an intermediate double would
@@ -222,9 +289,23 @@ void mips_fp_compare(MipsContext *ctx, unsigned fs, unsigned ft, enum MipsFpForm
     bool unordered = nan_bits(a, fmt) || nan_bits(b, fmt), equal = false, less = false;
     unsigned flags = unordered && ((predicate & 8) || signaling(a, fmt) || signaling(b, fmt)) ? FP_V : 0;
     if (!unordered) {
-        FpEnvironment env = begin(ctx, -1); /* Comparisons support denormals, independent of host DAZ. */
+        FpEnvironment env = begin(ctx, -1, true); /* Comparisons support denormals, independent of host DAZ. */
+#if USE_INTRISICS
+        if (fmt == MIPS_FP_S) {
+            volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b);
+            __m128 vx = _mm_set_ss(x), vy = _mm_set_ss(y);
+            equal = _mm_ucomieq_ss(vx, vy);
+            less = _mm_ucomilt_ss(vx, vy);
+        } else {
+            volatile double x = as_double(a), y = as_double(b);
+            __m128d vx = _mm_set_sd(x), vy = _mm_set_sd(y);
+            equal = _mm_ucomieq_sd(vx, vy);
+            less = _mm_ucomilt_sd(vx, vy);
+        }
+#else
         if (fmt == MIPS_FP_S) { volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b); equal = x == y; less = x < y; }
         else { volatile double x = as_double(a), y = as_double(b); equal = x == y; less = x < y; }
+#endif
         (void)end(ctx, &env);
     }
     finish(ctx, flags);

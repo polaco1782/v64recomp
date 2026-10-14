@@ -146,7 +146,7 @@ void RecompTextureFiles::collect(RT64::TextureCache &cache) {
         // picks up pairs, so it never reads an image still being written.
         std::filesystem::rename(temporary, png);
         json data{{"hash", RT64::ReplacementDatabase::hashToString(item.hash)},
-                  {"hash_version", RT64::TMEMHasher::CurrentHashVersion}, {"width", texture.width},
+                  {"hash_version", uint32_t(RT64::TMEMHasher::CurrentHashVersion)}, {"width", texture.width},
                   {"height", texture.height}, {"tile", tile}, {"tlut", texture.tlut}};
         bool transparent = false;
         for (size_t p = 3; p < pixels.size(); p += 4) transparent |= pixels[p] < 255;

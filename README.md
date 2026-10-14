@@ -266,6 +266,28 @@ Rendering defaults include 4x resolution, 4x MSAA, widescreen expansion to the
 window's aspect ratio and texture LOD scaling. The bundled RT64 revision lacks
 the ray-tracing renderer implementation, so ray tracing is unavailable.
 
+### Debug in VS Code
+
+Open this checkout's root in VS Code with the Microsoft C/C++ extension and GDB
+installed. In **Run and Debug**, select **Debug: <game>**, set a breakpoint, and
+press **F5**. Each of the six games has a matching build task that regenerates
+its CPU sources and builds its executable in `build/debug` before launching
+with live controls and no frame limit. The first build also compiles RT64.
+
+Debug builds include full symbols and disable optimization for game code.
+Breakpoints work in `games/`, `runtime/`, `backends/`, and the translated
+`build/<game>-us/rom/full/functions.c` (SM64) or
+`build/<game>-us/rom/startup/functions.c` (other games). Generated sources are
+rewritten by the build task; put persistent changes in the translator or native
+code. Debug builds can run slower than the normal builds.
+
+The same build is available from the command line; all game launchers accept
+`--debug` with `--render`:
+
+```sh
+.venv/bin/python games/sm64-us/run_sm64.py --render --debug --build-only
+```
+
 To build just the shared runtime and audio:
 
 ```sh
