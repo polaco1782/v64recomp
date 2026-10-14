@@ -67,7 +67,7 @@ static NativeThread *thread(Runtime *rt, uint32_t object) {
         if (!s->current) recomp_fail("no current guest thread", 0);
         return s->current;
     }
-    uint32_t key = recomp_ram_address(rt, object, RECOMP_THREAD_BYTES);
+    uint32_t key = recomp_ram_address(rt, object, s->config.fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES);
     for (NativeThread *t = s->threads; t; t = t->next)
         if (t->key == key) return t;
     recomp_fail("unknown guest thread", object);
@@ -102,8 +102,13 @@ static void save_context(Runtime *rt, NativeThread *t) {
     recomp_store(rt, t->object + 0x110, t->context.hi, 8);
     recomp_store(rt, t->object + 0x11c, t->context.pc, 4);
     recomp_store(rt, t->object + 0x12c, t->context.fcr31, 4);
-    for (unsigned i = 0; i < 32; i++)
-        recomp_store(rt, t->object + 0x130 + (i ^ 1) * 4, t->context.fpr[i], 4);
+    if (t->context.fpu_fr1) {
+        for (unsigned i = 0; i < 32; i++)
+            recomp_store(rt, t->object + 0x130 + i * 8, mips_fpr_pair(&t->context, i), 8);
+    } else {
+        for (unsigned i = 0; i < 32; i++)
+            recomp_store(rt, t->object + 0x130 + (i ^ 1) * 4, t->context.fpr[i], 4);
+    }
 }
 
 static void sync_list(Runtime *rt, RecompThreadState state, NativeQueue *q, uint32_t head) {
@@ -346,7 +351,8 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     RecompScheduler *s = scheduler(rt);
     if (!object || object % 8 || stack % 8 || priority < 0 || priority > 255)
         recomp_fail("invalid thread object/stack/priority", object);
-    uint32_t key = recomp_ram_address(rt, object, RECOMP_THREAD_BYTES);
+    unsigned bytes = s->config.fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES;
+    uint32_t key = recomp_ram_address(rt, object, bytes);
     recomp_ram_address(rt, stack - 16, 16);
     NativeThread **link = &s->threads;
     while (*link) {
@@ -371,15 +377,16 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     t->context.gpr[29] = mips_s32(stack - 16);
     t->context.gpr[31] = mips_s32(UINT32_C(0xf0000000));
     t->context.fcr31 = UINT32_C(0x01000800);
+    t->context.fpu_fr1 = s->config.fpu_fr1;
     mco_desc description = mco_desc_init(enter, s->config.native_stack_size);
     description.user_data = t;
     if (mco_create(&t->coroutine, &description) != MCO_SUCCESS) {
         free(t); recomp_fail("coroutine allocation failed", object);
     }
     t->next = s->threads; s->threads = t;
-    for (unsigned i = 0; i < RECOMP_THREAD_BYTES; i++) recomp_store(rt, object + i, 0, 1);
+    for (unsigned i = 0; i < bytes; i++) recomp_store(rt, object + i, 0, 1);
     recomp_store(rt, object + 0x14, (uint32_t)id, 4);
-    recomp_store(rt, object + 0x118, 0xff03, 4);
+    recomp_store(rt, object + 0x118, s->config.fpu_fr1 ? 0x0400ff03 : 0xff03, 4);
     recomp_store(rt, object + 0x128, 0x3f, 4);
     sync_guest(rt);
 }

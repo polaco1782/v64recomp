@@ -1,0 +1,5 @@
+extends = "profile.toml"
+
+[discovery]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true

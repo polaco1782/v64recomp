@@ -140,6 +140,11 @@ static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool wr
 uint32_t recomp_ram_address(Runtime *rt, uint32_t address, size_t bytes) {
     return ram_address(rt, address, bytes, false);
 }
+uint32_t recomp_physical_address(Runtime *rt, uint32_t address, size_t bytes) {
+    if (address >= rt->rdram_size || bytes > rt->rdram_size-address)
+        fail_ram("physical RAM address out of range", address, bytes);
+    return address;
+}
 
 void recomp_map_pages(Runtime *rt, unsigned index, uint32_t mask, uint32_t address,
                       uint32_t even, uint32_t odd) {
@@ -206,6 +211,137 @@ void recomp_store(Runtime *rt, uint32_t address, uint64_t value, unsigned bytes)
 void recomp_copy_to_ram(Runtime *rt, uint32_t address, const uint8_t *source, size_t bytes) {
     uint32_t p = ram_address(rt, address, bytes, true);
     for (size_t i = 0; i < bytes; i++) rt->rdram[(p + i) ^ 3] = source[i];
+}
+
+static bool direct_address(uint32_t address) {
+    return address >= UINT32_C(0x80000000) && address < UINT32_C(0xc0000000);
+}
+
+/* A custom pager can yield or evict a previously resolved source when resolving
+ * the destination. Keep its reads/writes separate, like generated guest code.
+ * Fixed mappings can use blocks, bounded by the smallest libultra page (4 KiB). */
+static bool paged_address(Runtime *rt, uint32_t address) {
+    return rt->resolve_address && !direct_address(address);
+}
+
+static size_t memory_span(uint32_t address, size_t bytes, bool backward) {
+    size_t span = direct_address(address) ? bytes
+        : backward ? (address & 0xfff) + 1 : 0x1000 - (address & 0xfff);
+    return span < bytes ? span : bytes;
+}
+
+static void copy_guest(Runtime *rt, uint32_t dest, uint32_t src, uint32_t bytes, bool backward) {
+    if (!bytes) return;
+    if ((uint64_t)dest + bytes > UINT64_C(0x100000000)
+            || (uint64_t)src + bytes > UINT64_C(0x100000000))
+        fail_ram("memory copy span overflows", dest, bytes);
+    if (paged_address(rt, dest) || paged_address(rt, src)) {
+        for (uint32_t n = 0; n < bytes; n++) {
+            uint32_t i = backward ? bytes - 1 - n : n;
+            uint64_t value = recomp_load(rt, src + i, 1);
+            recomp_store(rt, dest + i, value, 1);
+        }
+        return;
+    }
+    while (bytes) {
+        uint32_t d = backward ? dest + bytes - 1 : dest;
+        uint32_t s = backward ? src + bytes - 1 : src;
+        size_t span = memory_span(d, bytes, backward);
+        size_t source_span = memory_span(s, bytes, backward);
+        if (span > source_span) span = source_span;
+        if (backward) { d -= (uint32_t)span - 1; s -= (uint32_t)span - 1; }
+        uint32_t p = ram_address(rt, d, span, true), q = ram_address(rt, s, span, false);
+        /* Whole words have identical storage order only when both ends align.
+         * Copy the head/tail as guest bytes; libc handles the aligned middle. */
+        if (!(p & 3) && !(q & 3) && !(span & 3)) {
+            memmove(rt->rdram + p, rt->rdram + q, span);
+        } else if ((p & 3) == (q & 3)) {
+            size_t head = (4 - (p & 3)) & 3;
+            if (head > span) head = span;
+            size_t middle = (span - head) & ~(size_t)3;
+            if (backward) {
+                for (size_t i = span; i > head + middle; ) {
+                    i--; rt->rdram[(p + i) ^ 3] = rt->rdram[(q + i) ^ 3];
+                }
+                memmove(rt->rdram + p + head, rt->rdram + q + head, middle);
+                for (size_t i = head; i; ) {
+                    i--; rt->rdram[(p + i) ^ 3] = rt->rdram[(q + i) ^ 3];
+                }
+            } else {
+                for (size_t i = 0; i < head; i++) rt->rdram[(p + i) ^ 3] = rt->rdram[(q + i) ^ 3];
+                memmove(rt->rdram + p + head, rt->rdram + q + head, middle);
+                for (size_t i = head + middle; i < span; i++) rt->rdram[(p + i) ^ 3] = rt->rdram[(q + i) ^ 3];
+            }
+        } else {
+            for (size_t n = 0; n < span; n++) {
+                size_t i = backward ? span - 1 - n : n;
+                rt->rdram[(p + i) ^ 3] = rt->rdram[(q + i) ^ 3];
+            }
+        }
+        bytes -= (uint32_t)span;
+        if (!backward) { dest += (uint32_t)span; src += (uint32_t)span; }
+    }
+}
+
+static void fill_guest(Runtime *rt, uint32_t dest, uint8_t value, uint32_t bytes) {
+    if ((uint64_t)dest + bytes > UINT64_C(0x100000000))
+        fail_ram("memory fill span overflows", dest, bytes);
+    while (bytes) {
+        size_t span = memory_span(dest, bytes, false);
+        uint32_t p = ram_address(rt, dest, span, true);
+        size_t head = (4 - (p & 3)) & 3;
+        if (head > span) head = span;
+        size_t middle = (span - head) & ~(size_t)3;
+        for (size_t i = 0; i < head; i++) rt->rdram[(p + i) ^ 3] = value;
+        memset(rt->rdram + p + head, value, middle);
+        for (size_t i = head + middle; i < span; i++) rt->rdram[(p + i) ^ 3] = value;
+        dest += (uint32_t)span; bytes -= (uint32_t)span;
+    }
+}
+
+void hook_os_memcpy(Runtime *rt, MipsContext *ctx) {
+    uint32_t dest = (uint32_t)ctx->gpr[4];
+    copy_guest(rt, dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], false);
+    mips_set(ctx, 2, mips_s32(dest));
+}
+void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
+    uint32_t src = (uint32_t)ctx->gpr[4], dest = (uint32_t)ctx->gpr[5], bytes = (uint32_t)ctx->gpr[6];
+    /* Verified SDK variants return the original destination in v0, even though
+     * the public bcopy interface is void. Their overlap check uses signed GPRs. */
+    if (src != dest) copy_guest(rt, dest, src, bytes,
+        mips_i32(dest) >= mips_i32(src) && mips_i32(dest) < mips_i32(src) + bytes);
+    mips_set(ctx, 2, mips_s32(dest));
+}
+void hook_os_memset(Runtime *rt, MipsContext *ctx) {
+    uint32_t dest = (uint32_t)ctx->gpr[4];
+    fill_guest(rt, dest, (uint8_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
+    mips_set(ctx, 2, mips_s32(dest));
+}
+void hook_os_bzero(Runtime *rt, MipsContext *ctx) {
+    if (mips_i32(ctx->gpr[5]) > 0) fill_guest(rt, (uint32_t)ctx->gpr[4], 0, (uint32_t)ctx->gpr[5]);
+}
+void hook_os_bcmp(Runtime *rt, MipsContext *ctx) {
+    uint32_t a = (uint32_t)ctx->gpr[4], b = (uint32_t)ctx->gpr[5];
+    for (int64_t i = 0, bytes = mips_i32(ctx->gpr[6]); i < bytes; i++) {
+        uint64_t value = recomp_load(rt, a + (uint32_t)i, 1);
+        if (value != recomp_load(rt, b + (uint32_t)i, 1)) { mips_set(ctx, 2, 1); return; }
+    }
+    mips_set(ctx, 2, 0);
+}
+void hook_os_strlen(Runtime *rt, MipsContext *ctx) {
+    uint32_t start = (uint32_t)ctx->gpr[4], address = start;
+    while (recomp_load(rt, address, 1)) address++;
+    mips_set(ctx, 2, mips_s32(address - start));
+}
+void hook_os_strchr(Runtime *rt, MipsContext *ctx) {
+    uint32_t address = (uint32_t)ctx->gpr[4];
+    uint8_t wanted = (uint8_t)ctx->gpr[5];
+    for (;;) {
+        uint8_t value = (uint8_t)recomp_load(rt, address, 1);
+        if (value == wanted) { mips_set(ctx, 2, mips_s32(address)); return; }
+        if (!value) { mips_set(ctx, 2, 0); return; }
+        address++;
+    }
 }
 
 uint64_t recomp_load_merge(Runtime *rt, uint32_t address, uint64_t old, unsigned width, bool left) {

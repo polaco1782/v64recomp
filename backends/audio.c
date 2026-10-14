@@ -41,7 +41,7 @@ static void sample_range(unsigned address,unsigned bytes) {
 }
 static uint32_t ram_range(RecompAudio *a,uint32_t address,size_t bytes,unsigned alignment) {
     if(address%alignment)recomp_fail("audio RAM alignment",address);
-    return recomp_ram_address(a->rt,address,bytes);
+    return recomp_physical_address(a->rt,address,bytes);
 }
 static uint32_t address(RecompAudio *a,uint32_t word) {
     unsigned segment=(word>>24)&63;
@@ -233,7 +233,8 @@ void recomp_audio_execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     owner(a);
     a->debug=(RecompAudioSnapshot){.list=list,.bytes=bytes};
     if(!bytes || bytes%8 || bytes>131072)recomp_fail("invalid audio command-list size",list);
-    uint32_t physical=ram_range(a,list,bytes,4);
+    if (list%4) recomp_fail("audio command list alignment", list);
+    uint32_t physical=recomp_ram_address(a->rt,list,bytes);
     memcpy(a->dmem+TASK_DATA_PTR,&physical,4);memcpy(a->dmem+TASK_DATA_SIZE,&bytes,4);
     a->task_done=false;uint64_t start=timer_ns();
     if(a->microcode==RECOMP_AUDIO_ABI1_LINEAR)alist_process_audio_ge(&a->hle);

@@ -6,9 +6,11 @@ C functions; native services supply the N64 OS, graphics, audio, input and saves
 Game-specific code, launch tools and profiles live in `games/sm64-us/`.
 Run the commands below from the `v64recomp` checkout root.
 
-The complete checked ordinary CPU inventory contains **4,378 functions and
-301,116 instruction words**, including compiler-emitted unreachable instructions.
-**45 OS entry points** bind to native handlers. Linked OS implementation bodies,
+The effective ordinary CPU inventory contains **4,373 functions and
+300,840 instruction words**, including compiler-emitted unreachable instructions.
+**52 OS/library entry points** bind to native handlers through the
+[shared catalog](../../docs/native-hooks.md), including memory and string routines.
+Linked OS implementation bodies,
 embedded RSP programs and data have separate fingerprinted classifications.
 Conversion completes without unsupported instructions, unresolved transfers,
 conflicting ownership or fail-on-entry game-function boundaries.

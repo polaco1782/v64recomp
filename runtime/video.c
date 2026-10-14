@@ -19,6 +19,6 @@ bool recomp_vi_registers(Runtime *rt, RecompViRegisters *regs) {
         .x_scale=(uint32_t)recomp_load(rt,mode+32,4),
         .y_scale=(uint32_t)recomp_load(rt,mode+44,4),
     };
-    if(vi.framebuffer)recomp_ram_address(rt,regs->origin,1);
+    if(vi.framebuffer)recomp_physical_address(rt,regs->origin,1);
     return true;
 }

@@ -12,10 +12,12 @@ from pathlib import Path
 
 from common import RecompError, load_metadata, load_profile, load_rom, validate_hook_prefix, write_json
 from emit import analyze, cname, decode_function, emit_function, instruction_addresses, log_emission, resolve_function, target
+from native_hooks import resolve_native_hooks
 
 
 def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
               names: list[str] | None = None, report_only: bool = False) -> dict:
+    profile = dict(profile, hooks=resolve_native_hooks(rom, profile))
     output.mkdir(parents=True, exist_ok=True)
     previous={}
     if not report_only:
@@ -25,6 +27,9 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
             if path.exists():previous[filename]=(path.read_bytes(),path.stat().st_atime_ns,path.stat().st_mtime_ns)
             (output / filename).unlink(missing_ok=True)
     functions = metadata['functions']
+    fpu_fr = profile['game'].get('fpu_fr', 0)
+    if type(fpu_fr) is not int or fpu_fr not in (0, 1):
+        raise RecompError('game fpu_fr must be zero or one')
     log_emission('Start %s: %d functions, %d sections; output %s',
                  'coverage analysis' if report_only else 'translation', len(functions), len(metadata['sections']), output)
     registry = {(f['section'], f['vram']): f for f in functions}
@@ -81,7 +86,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         counts.update(i.opcode for i in instructions)
         errors = [] if key in hooks else ([{'pc': f['vram'], 'word': instructions[0].word, 'assembly': '',
                                           'reason': 'unsupported execution boundary: ' + boundaries[key]}] if key in boundaries
-                                         else [*f.get('discovery_errors', []), *analyze(f, instructions, registry)])
+                                         else [*f.get('discovery_errors', []), *analyze(f, instructions, registry, fpu_fr)])
         if key in selected_keys and not report_only and key not in hooks and key not in boundaries:
             for i in instructions:
                 if i.delay and i.opcode not in ('jr', 'jalr'):

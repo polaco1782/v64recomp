@@ -1,4 +1,4 @@
-/* VR4300 FR=0 arithmetic for an IEEE binary32/binary64 host.
+/* VR4300 arithmetic for an IEEE binary32/binary64 host.
  * Build with -frounding-math -ffp-contract=off, without fast-math.
  * Guest traps fail at the original instruction; there is no exception emulator.
  * See docs/fpu.md for the supported operations and host requirements. */

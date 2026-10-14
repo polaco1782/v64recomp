@@ -4,8 +4,11 @@
 operation and register operands. `runtime/fpu.c` implements those individual
 operations. It does not fetch or decode instructions at runtime. Raw FPR bits
 remain in the thread's `MipsContext`: an FR=0 double uses the even register's low
-word and the following odd register's high word. Generation rejects odd double
-operands or destinations and nonzero floating-point condition codes.
+word and the following odd register's high word. An explicit `game.fpu_fr = 1`
+profile permits independent 64-bit registers, including odd double operands.
+The application must also set `RecompSchedulerConfig.fpu_fr1`; its guest thread
+layout saves all 32 registers in a 0x230-byte object. Existing profiles default
+to FR=0. Generation rejects odd FR=0 double operands and nonzero condition codes.
 
 The supported instructions are:
 
@@ -48,7 +51,7 @@ also stop explicitly. The latter boundary needs independent tininess analysis;
 using host exception flags alone would not establish VR4300 behavior there.
 Long integers use even FR=0 register pairs. Integer-to-single conversions round
 directly to binary32, avoiding double rounding through a binary64 intermediate.
-FCR0 identification, other FCRs and FR=1 are unsupported.
+FCR0 identification, other FCRs and dynamic Status.FR changes are unsupported.
 Instruction-ready status in a coverage report does not certify every operand
 or the full call graph as runnable.
 

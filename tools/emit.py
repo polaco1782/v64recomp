@@ -11,7 +11,7 @@ from common import RecompError
 
 # Set to True to trace translation and emission, including native OS/HW hooks.
 # Messages go to stderr; False keeps the emitter silent.
-LOG_EMISSION = False
+LOG_EMISSION = True
 
 
 def log_emission(message: str, *args: object) -> None:
@@ -50,7 +50,7 @@ SUPPORTED.update(f'{op}.{integer}.{fmt}' for op in ('round', 'trunc', 'ceil', 'f
                  for integer in ('w','l') for fmt in ('s', 'd'))
 
 
-def fp_error(i: 'Instruction') -> str | None:
+def fp_error(i: 'Instruction', fpu_fr: int = 0) -> str | None:
     op = i.opcode
     if op in ('cfc1', 'ctc1') and i.rd != 31:
         return 'only FCR31 control access is supported'
@@ -67,7 +67,7 @@ def fp_error(i: 'Instruction') -> str | None:
         if parts[0] in FP_BINARY or parts[0] == 'c': double_regs.append(i.rt)  # ft
     if ((len(parts) == 2 and parts[-1] in ('d','l')) or (len(parts) == 3 and parts[1] in ('d','l'))):
         double_regs.append(i.shift)  # fd
-    if any(reg % 2 for reg in double_regs):
+    if fpu_fr == 0 and any(reg % 2 for reg in double_regs):
         return 'FR=0 double register must be even'
     return None
 
@@ -134,7 +134,7 @@ def decode_function(rom: bytes, function: dict) -> list[Instruction]:
     return result
 
 
-def analyze(function: dict, instructions: list[Instruction], registry: dict) -> list[dict]:
+def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu_fr: int = 0) -> list[dict]:
     errors = []
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
@@ -150,9 +150,9 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict) -> 
         registered = transfer and transfer.get('registered_targets') is True
         if i.opcode not in SUPPORTED:
             reason = f"unsupported instruction: {i.opcode}"
-        elif fp_error(i):
-            reason = fp_error(i)
-        elif ((i.opcode in ('ldc1', 'sdc1') and i.rt % 2)
+        elif fp_error(i, fpu_fr):
+            reason = fp_error(i, fpu_fr)
+        elif fpu_fr == 0 and ((i.opcode in ('ldc1', 'sdc1') and i.rt % 2)
               or (i.opcode in ('dmfc1','dmtc1') and i.rd % 2)):
             reason = 'FR=0 double register must be even'
         elif i.opcode == 'jalr' and i.rd != 31:
@@ -311,9 +311,9 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
 
     def emit_body(instruction: Instruction, indent: str = '    ') -> list[str]:
         statement = body(instruction)
-        if LOG_EMISSION and ('recomp_load' in statement or 'recomp_store' in statement):
-            log_emission('Memory %s s%s 0x%08x: %s -> %s',
-                         function['name'], function['section'], instruction.pc, instruction.assembly, statement)
+        #if LOG_EMISSION and ('recomp_load' in statement or 'recomp_store' in statement):
+        #    log_emission('Memory %s s%s 0x%08x: %s -> %s',
+        #                 function['name'], function['section'], instruction.pc, instruction.assembly, statement)
         # These helpers report guest traps through ctx->pc. Ordinary arithmetic
         # and memory operations do not consume it; memory errors report the address.
         location = ([f"{indent}ctx->pc = UINT32_C(0x{instruction.pc:08x});"]

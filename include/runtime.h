@@ -40,6 +40,7 @@ typedef struct RecompSchedulerConfig {
     uint32_t stop_before_entry; /* Debugger stop before a thread's first instruction. */
     const uint32_t *stop_before_entries;
     size_t stop_before_count; /* Additional checked demo/debugger boundaries. */
+    bool fpu_fr1; /* SDK uses 0x230-byte threads with 32 independent 64-bit FPRs. */
 } RecompSchedulerConfig;
 
 /* All APIs except event_post and task_post_completion run on one owner host thread. Guest code must
@@ -189,7 +190,16 @@ void hook_os_create_pi_manager(Runtime *, MipsContext *);
 void hook_os_pi_start_dma(Runtime *, MipsContext *);
 void hook_os_pi_raw_read_io(Runtime *, MipsContext *);
 
+void hook_os_memcpy(Runtime *, MipsContext *);
+void hook_os_memset(Runtime *, MipsContext *);
+void hook_os_bcopy(Runtime *, MipsContext *);
+void hook_os_bzero(Runtime *, MipsContext *);
+void hook_os_bcmp(Runtime *, MipsContext *);
+void hook_os_strlen(Runtime *, MipsContext *);
+void hook_os_strchr(Runtime *, MipsContext *);
+
 typedef enum RecompTaskCompletion { RECOMP_SP_DONE, RECOMP_SP_YIELDED, RECOMP_DP_DONE } RecompTaskCompletion;
+enum { RECOMP_TASK_YIELDED = 1, RECOMP_TASK_DP_WAIT = 2, RECOMP_TASK_LOADABLE = 4 };
 typedef struct RecompTask {
     uint64_t token;
     uint32_t guest_address, words[16]; /* OSTask snapshot, guest pointers retained. */

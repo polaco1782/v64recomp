@@ -1,6 +1,7 @@
 # GoldenEye US region, pinned to the exact ROM supplied for this project.
 # All addresses/fingerprints are checked against that ROM; no ELF/map is required.
 # This is an initial discovery profile, not a complete CPU inventory yet.
+# Common OS and library calls are recognized by tools/native_hooks.toml.
 hooks = [
   {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "hook_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
   {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "hook_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0x00e00008]},
@@ -8,12 +9,8 @@ hooks = [
   {symbol = "osPiRawStartDma", vram = 0x7000cf90, kind = "replace_function", handler = "hook_ge_pi_raw_dma", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
   {symbol = "osPiGetStatus", vram = 0x7000d070, kind = "replace_function", handler = "hook_ge_pi_status", expected_words = [0x3c0ea460, 0x03e00008, 0x8dc20010]},
   {symbol = "osInitialize", vram = 0x7000d080, kind = "replace_function", handler = "hook_ge_os_initialize", expected_words = [0x27bdffc0, 0xafbf001c, 0x240e0001]},
-  {symbol = "osWritebackDCacheAll", vram = 0x7000d320, kind = "replace_function", handler = "hook_os_writeback_dcache_all", expected_words = [0x3c088000, 0x240a2000, 0x010a4821]},
   {symbol = "osInvalICache", vram = 0x7000d350, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x00000000, 0x240b4000]},
   {symbol = "osUnmapTLB", vram = 0x7000d3d0, kind = "replace_function", handler = "hook_ge_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000]},
-  {symbol = "osCreateThread", vram = 0x7000d430, kind = "replace_function", handler = "hook_os_create_thread", expected_words = [0x27bdffd8, 0xafa40028, 0xafa5002c]},
-  {symbol = "osStartThread", vram = 0x7000d580, kind = "replace_function", handler = "hook_os_start_thread", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
-  {symbol = "osVirtualToPhysical", vram = 0x7000e8b0, kind = "replace_function", handler = "hook_os_virtual_to_physical", expected_words = [0x27bdffe8, 0xafa40018, 0x8fae0018]},
 ]
 
 [game]

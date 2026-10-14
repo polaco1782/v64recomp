@@ -49,3 +49,4 @@ endif()
 
 add_subdirectory(games/sm64-us)
 add_subdirectory(games/goldeneye-us)
+add_subdirectory(games/shadowman-us)

@@ -1,14 +1,15 @@
-# Native ROM conversion: SM64 and GoldenEye
+# Native ROM conversion: SM64, GoldenEye and Shadow Man
 
 Game profiles, applications, launchers and game-specific diagnostics live under `games/`.
 The original emulator is separate. SM64 is the accepted gameplay baseline;
 GoldenEye is the second ROM target.
+Shadow Man US is the third target, isolated under `games/shadowman-us/`.
 
 The ROM-only inventory classifies all 1,385,456 bytes in the three mapped sections:
-1,204,464 bytes of ordinary CPU text, 20,784 bytes of native OS implementation,
+1,203,388 bytes of ordinary CPU text, 21,860 bytes of native OS/library implementation,
 8,960 bytes of embedded RSP programs and 151,248 bytes of data. All ordinary
-CPU text, including unreachable instructions, converts to C. Its 4,378 function
-entry points and 45 native OS hooks compile successfully. The generated CPU code
+CPU text, including unreachable instructions, converts to C. Its 4,373 function
+entry points and 52 native OS/library hooks compile successfully. The generated CPU code
 contains no fetch/decode interpreter and no unsupported game-function boundaries.
 
 The full profile uses registered function addresses for indirect calls. Local
@@ -17,6 +18,8 @@ are mandatory metadata, not recovered high-level game structures. A matching
 ELF/map was used to cross-check the SM64 inventory during development; the current
 build, generation and app do not consume reference artifacts.
 
+The shared catalog automatically recognizes verified OS and memory/string
+routines; game TOML overrides handle unique behavior. See [native hooks](docs/native-hooks.md).
 Native OS services cover scheduling, queues, clocks, VI/PI/AI/SI, controller input,
 EEPROM and global page aliases. RT64 executes graphics tasks; the ABI1 DSP backend
 writes guest PCM and AI activation sends it to SDL. Existing basic gameplay checks
@@ -50,3 +53,16 @@ GoldenEye milestones (see [setup and current status](games/goldeneye-us/README.m
 GoldenEye uses `0x70000000` library aliases, a relocated inflater and `0x7f000000`
 demand-paged ROM text. Provide native page-load/eviction and hardware behavior;
 privileged exception/TLB instructions do not execute in a CPU interpreter.
+
+Shadow Man milestones (see [setup and status](games/shadowman-us/README.md)):
+
+1. Completed: import and pin the supplied US ROM, trace original load mappings,
+   validate both BSS clears and initial thread creation in translated C.
+2. Completed: FR=1 FPU/thread layouts, native fault delivery to the original
+   page-cache workers, checked callback roots and switch tables, native OS
+   boundaries, and the first original graphics task. ASan/UBSan checks pass.
+3. In progress: RT64/SDL rendering and audio, live controller reads and original
+   menu progression. The Controller Pak prompt renders with matching SP/DP
+   callbacks and zero audio underruns in a bounded desktop run. Controller Pak
+   storage and broader title/gameplay validation remain to be completed.
+4. Complete the CPU inventory and validate gameplay, progression and saves.

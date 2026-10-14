@@ -135,7 +135,9 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     for (unsigned i=0;i<16;i++) task.words[i]=(uint32_t)recomp_load(rt,object+i*4,4);
     t->observed=task;t->has_observed=true;
     if (task.words[0]!=1 && task.words[0]!=2) recomp_fail("unsupported SP task type",object);
-    if (task.words[1]&~3u) recomp_fail("unsupported SP task flags",object);
+    uint32_t flags = RECOMP_TASK_YIELDED | RECOMP_TASK_DP_WAIT;
+    if (task.words[0] == 1) flags |= RECOMP_TASK_LOADABLE;
+    if (task.words[1]&~flags) recomp_fail("unsupported SP task flags",object);
     buffer(rt,task.words[2],task.words[3],true,object);
     /* Older SDKs leave ucode_size zero. The RSP bootstrap loads its fixed
      * IMEM program; the native backend recognizes and bounds that program. */

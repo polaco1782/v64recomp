@@ -1,0 +1,45 @@
+# Shared native OS and library hooks
+
+`tools/native_hooks.toml` is the default recognition catalog for every game.
+`tools/native_hooks.py` finds complete known routine bodies within the ROM's
+configured load regions. An instruction prefix narrows the search; the entire
+body must match its SHA-256 before it is bound to a shared native handler.
+Addresses are discovered from the ROM and are not stored in the catalog.
+
+The catalog covers standard OS services for threads, queues, events, clocks,
+timers, VI/PI/AI, controller input, EEPROM, RSP tasks, cache operations and
+address translation. It also contains `memcpy`, `memset`, `bcopy`, `bzero`,
+`bcmp`, `strlen` and `strchr`. Verified compiler/link variants share the same
+native service; adding a variant does not require a game-specific binding.
+The older emulator's `sym.c` helped identify candidates; its patch code is not
+used. Neither that source tree nor a matching ELF/map is a build dependency.
+Recognition is deliberately specific to known compiler/SDK bodies. A changed
+instruction or delay slot prevents automatic replacement.
+
+Game TOML `hooks` entries take precedence at their explicit address. They remain
+the place for unrecognized SDK versions and special game or hardware behavior.
+For example, GoldenEye and Shadow Man retain their custom cache/TLB and startup
+adapters. Existing fingerprints still validate those overrides.
+An unknown routine without an explicit override keeps its translated CPU code.
+To disable automatic recognition, a profile can set:
+
+```toml
+[native_hooks]
+enabled = false
+```
+
+With recognition disabled, any required native OS services must be supplied
+explicitly by the profile.
+
+Discovery retains existing function names and adds the recognized symbol as an
+alias when needed. Complete CPU inventories are checked against the original
+ROM, then known library spans are classified as native services in the effective
+inventory. This does not require changes to each game's stored code inventory.
+
+OS handlers live in the shared `runtime/` services. The memory/string handlers
+live in `runtime/memory.c`. They use guest addresses and the
+word-swapped RDRAM layout, preserve each verified routine's return behavior,
+and support unaligned bytes, zero-length operations and overlapping `bcopy`.
+Aligned blocks use host memory operations. Custom pagers keep separate reads
+and writes so faults or evictions cannot invalidate a saved host pointer.
+

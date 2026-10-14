@@ -14,6 +14,8 @@ typedef struct MipsContext {
     uint64_t hi, lo;
     uint32_t fpr[32], fcr31;
     uint32_t pc; /* Last tracked call/FP location for diagnostics; not execution state. */
+    uint32_t fpr_high[32]; /* Independent upper words when Status.FR is one. */
+    bool fpu_fr1;
 } MipsContext;
 
 typedef struct Runtime Runtime;
@@ -104,7 +106,7 @@ __attribute__((noinline, cold))
 #endif
 void recomp_fellthrough(uint32_t);
 
-/* FR=0 floating-point helpers. Each operation restores the host environment
+/* Floating-point helpers. Each operation restores the host environment
  * before returning, including when guest rounding differs between threads. */
 enum MipsFpFormat { MIPS_FP_S, MIPS_FP_D, MIPS_FP_W, MIPS_FP_L };
 enum MipsFpOperation { MIPS_FP_ADD, MIPS_FP_SUB, MIPS_FP_MUL, MIPS_FP_DIV,
@@ -122,6 +124,8 @@ uint64_t recomp_load(Runtime *, uint32_t, unsigned);
 void recomp_store(Runtime *, uint32_t, uint64_t, unsigned);
 void recomp_copy_to_ram(Runtime *, uint32_t, const uint8_t *, size_t);
 uint32_t recomp_ram_address(Runtime *, uint32_t, size_t);
+/* Hardware/RSP bus addresses bypass CPU virtual page aliases. */
+uint32_t recomp_physical_address(Runtime *, uint32_t, size_t);
 uint64_t recomp_load_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
 void recomp_store_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
 
@@ -212,12 +216,21 @@ static inline void mips_ddiv(MipsContext *ctx, uint64_t x, uint64_t y, bool is_s
     ctx->lo=negative_x!=negative_y?UINT64_C(0)-q:q;
     ctx->hi=negative_x?UINT64_C(0)-rem:rem;
 }
-/* FR=0: the even raw FGR holds the low word, the odd FGR the high word. */
+/* FR=0 pairs adjacent words; FR=1 has an independent 64-bit register at every index. */
 static inline uint64_t mips_fpr_pair(const MipsContext *ctx, unsigned index) {
+    if (index >= 32) recomp_fail("invalid FPU register", ctx->pc);
+    if (ctx->fpu_fr1) return ((uint64_t)ctx->fpr_high[index]<<32)|ctx->fpr[index];
+    if (index >= 31 || (index & 1)) recomp_fail("FR=0 double register must be even", ctx->pc);
     return ((uint64_t)ctx->fpr[index+1]<<32)|ctx->fpr[index];
 }
 static inline void mips_set_fpr_pair(MipsContext *ctx, unsigned index, uint64_t value) {
-    ctx->fpr[index]=(uint32_t)value; ctx->fpr[index+1]=(uint32_t)(value>>32);
+    if (index >= 32) recomp_fail("invalid FPU register", ctx->pc);
+    if (ctx->fpu_fr1) ctx->fpr_high[index]=(uint32_t)(value>>32);
+    else {
+        if (index >= 31 || (index & 1)) recomp_fail("FR=0 double register must be even", ctx->pc);
+        ctx->fpr[index+1]=(uint32_t)(value>>32);
+    }
+    ctx->fpr[index]=(uint32_t)value;
 }
 
 #ifdef __cplusplus

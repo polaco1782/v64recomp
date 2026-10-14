@@ -18,6 +18,7 @@ from build_native import build_native
 from build_renderer import build_renderer
 from verify_game import verify_game,verify_suite
 from renderer_capture import verify_ppm
+from native_hooks import resolve_native_hooks
 
 
 def prepare_full(output: Path,report_only: bool=False):
@@ -28,7 +29,7 @@ def prepare_full(output: Path,report_only: bool=False):
     metadata=load_metadata(output/'symbols.json',rom)
     report=translate(rom,metadata,profile,output,report_only=report_only)
     write_json(output/'full_boundaries.json',{'rom_sha1':identity['sha1'],'coverage':report['summary'],
-        'code_inventory':metadata['code_inventory'],'native_hooks':profile['hooks'],
+        'code_inventory':metadata['code_inventory'],'native_hooks':resolve_native_hooks(rom,profile),
         'remaining':'broader gameplay, course transitions, ending and prolonged-run validation; additional device/microcode variants'})
     if not report_only:
         write_game_config(profile,metadata,output,('gSoundThread','gGameLoopThread','gControllers',

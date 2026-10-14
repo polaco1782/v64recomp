@@ -1,0 +1,1416 @@
+{
+  "format_version": 1,
+  "rom_sha1": "cfb99dd949fdb2b2a0002ef595ab1813fe865b2c",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 1060960,
+      "sha256": "fe990d6c820f923ab6ac70c5a3f212ad4faa3ad9a7caa3c4c591224a151b5808",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1061232,
+      "sha256": "770c51a84093f5364ef93459a95a516318b6e9be140780f32a9b7de7e44c61f7",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1061392,
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1061528,
+      "sha256": "dcfd1afe8a9ebee741902ecbd3040fdc6f2fa6f28ff7d0d4d4cb4d1ec8000906",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1062016,
+      "sha256": "6d84cf766a537268af524f002e9f0056ec67c2531159d66af7b6252658149b0f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1062112,
+      "sha256": "18d283680d787dc97fba581bcd6e4f1f4f243ebe356adc4ad0e43caf35a712c7",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1062308,
+      "sha256": "11b3d415243ce1fe0eca9c25fbc31283e3539f37013940e78529292ab2ad544b",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1062496,
+      "sha256": "f7436233b6b67aafe3c3648e2c7bdd06200f5b2ed40924c19bf0902194afe17a",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1063032,
+      "sha256": "19ef24fd8c2662a59ab9aa6ee65864e1c5a1af5ce6d6048f46a8c914831e624d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1063164,
+      "sha256": "b058a88939d9da928fe6eb05512f59719a210deb91d38ab056d6c4751d2e0c64",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1063896,
+      "sha256": "f5de66158770c4444acfd65209f4143470de43b82db0b49b96c49ebabef76d30",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1064464,
+      "sha256": "eb0362f9079df1009f37582ddaf245a01ae615496f46078622060adfa768eacc",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1064872,
+      "sha256": "3f846774ba18326689ca3427380f41bf9e901c5ee33efe4f9fcd627d3c45a02f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1064972,
+      "sha256": "ff4ea0cdc98b888e54c4ee398194485ede2374fe644ac5a8420bbec421af53c9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1065120,
+      "sha256": "2ae3f75e50554956661763c5ad8fe7e240425bacc45f282c18f07265fd09a501",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1065236,
+      "sha256": "f3982aeca1d05e0ce759c0d62836419aa56dbcd6d75413c5c49796eaec9a5476",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1065264,
+      "sha256": "743789579401569751c6620f726e0939c35c36678f34fcd5a2287f1a6d5f0889",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1065300,
+      "sha256": "ea8ea492782081fc70723cff5dcdf0aeb97290ac1c70ebb3ee4a4ccfc1c8c568",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1065412,
+      "sha256": "c5a984acc21083d73844a523cecdb5a90dfacfc0b91985b526342936396dbf1f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1065976,
+      "sha256": "19ef24fd8c2662a59ab9aa6ee65864e1c5a1af5ce6d6048f46a8c914831e624d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1066080,
+      "sha256": "5fa605d56a99431ea2530e50da26d62f244559b58cfe2ba641a6adaef2a021a8",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1066240,
+      "sha256": "2d920a138e5ad7afa93a8da0bc2df4a4012c931037d4e48a833a37b7aeacbf14",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1067540,
+      "sha256": "bd29dbcd4215a21bef781371c79b8350c5bf9013fee79dc4523b11268e2e1ec4",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1067612,
+      "sha256": "58ea1693a285534bda3f079fab345381b80083691f90ffbfe90095a218a30d85",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1067968,
+      "sha256": "18c794f10bb91bdd3e255dcd9e3d0b4fc7590eaa25995b9965352e52e8f2aebc",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1068284,
+      "sha256": "baf96ec58de6b9a9aa8af4dbe65f82bc974ba96f832e46211ab1ac931272e089",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1069172,
+      "sha256": "6acb777ae2b40b4ef8d663e9ee6e415b5343db238a8e18a9b457ac06d0c69f70",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1069676,
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1071792,
+      "sha256": "57c3dcc2ecc14af0d2e1f1f2847b8140766d60f1555e91ecb9de0035b92b9c87",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1073360,
+      "sha256": "b8b0144741df88522929b80d6b2cc18f22370bada1652b5e650fe9bbe97e238d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1073568,
+      "sha256": "449a6bcb61579d1ecab08fdf97df906659e430ad8420e854b05dbb0b3970cacb",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1073728,
+      "sha256": "b698f17852c19f87d24cc169b1a8a854526c5949c53e4607fe7e1452658a9420",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1073868,
+      "sha256": "d304de4fde15671967a9feef60ea089a455ec54e931fe454f0704e3b318eeb30",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1074012,
+      "sha256": "af6a8be553e6538fbc59a03a5e4102f866d572471425e14c6571cebc6f365ddc",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1074320,
+      "sha256": "509ec392b36c6761f2b9f066af7ac105a4df1992145deb5c6eb07b59e44bf492",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1074364,
+      "sha256": "4761b137170e2303b74ba3eb4b9d31ad832b0f7e04324515e5593fc7fb0e92ed",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1074956,
+      "sha256": "54e9dfcf18a1ba4462bf93088cd69a8b7715af76b148e2e87635d6ab71385524",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1075272,
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1075504,
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1075648,
+      "sha256": "558bbda8c58ed30139e0174dfa44fddfd900bb32c8401a569623e1b5487f8fd6",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1076976,
+      "sha256": "bca285916542a070642098aec072d920229d10a05cd187e8a3df5984ce098d39",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1077536,
+      "sha256": "f35de9554837059322060cd8ecc621cee58324d4662f7982982b0f0458f472ac",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1077716,
+      "sha256": "b8b0144741df88522929b80d6b2cc18f22370bada1652b5e650fe9bbe97e238d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1077900,
+      "sha256": "d9b988680310e8a1e79ef3305ecf24be8e7578c19db39ddb0ee86a41a6ffe625",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1078260,
+      "sha256": "c763ea3b1adf03f2ec304f9a1c1565f0e0de33c823ebd2e65530823c12fb7c94",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1079692,
+      "sha256": "ea144a89f7fc86abb4f3c585495d1e9260f1963e0bf307afbef66df8446c14ac",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1080256,
+      "sha256": "e4fcb070c748758fbc28c0d47f8ebe3d0bd1e98d751f59b551c4ccf1cc6dd9df",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1092496,
+      "sha256": "9fd6243fd8fe0d553052167e6c8edc20351e58ab024066d784ecdf4789b9fd74",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1093400,
+      "sha256": "258a2a958c0a22fb9fa0b1bbf2022aa86146f4c9801e6133b5d73b2fcaf2c146",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1094012,
+      "sha256": "1923ec99048ae375b11654e0ec46a09b559aeeae852b30b8e12b024e9118f615",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1094428,
+      "sha256": "c29c436ff42dae970d1985c06da4b988141026b4d461c14f7c67564a1b429990",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1109712,
+      "sha256": "6b47debe0aa42102d07d91804c58694bc6f58fc3ddf078a421f6e0ecb95894f0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1109792,
+      "sha256": "a19939835afe5a0faa8491cd1bc5f4517169b6093f93528538cd92c2a3b5cf88",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1109856,
+      "sha256": "f680f47366a0068ccfe2f147890b81889068be5e03348f00a59ff273afdde98f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1109904,
+      "sha256": "7378ea667055cb82cd02e6ef8edeaef605d593e27be5f8d3cf47b770b1dbecc0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1109936,
+      "sha256": "e8520ae47eed7ab2582b1ecfcadfb29f96eef14be8a8080a8d78f8514f57b6d2",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1110368,
+      "sha256": "e5651101001a3833b67748eeacb9d6074804619c30e3eaa4df86b094d32bd90f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1111756,
+      "sha256": "cb557ebb1d6837075bf7f5fa9dc0aebbdccdd7a7fa498d4d0765a5bade38a88d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1112208,
+      "sha256": "27ee3661a5367adeae43638cf92ded18c6197f3f443eb49adea430eec1d434ca",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1112332,
+      "sha256": "ca020621297d677a29c47a0dc14b3c1f465b2a22e1dbadb05b9a393b855a051d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1112484,
+      "sha256": "a1405e5e2c8107683c7efdc7823d52020fc155e00189366df449a18d1ad08f17",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1113056,
+      "sha256": "5ad4fef50217a59a23e154891c222619ce6a11f145f6b89ef64a79c72f62a546",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1113616,
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1115312,
+      "sha256": "5ace0286d5c4f2c9b7a6c246921c1cdb2d1d030ab0c32c974b41ec196d2e5d18",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1116992,
+      "sha256": "242d46fef6a0b1bc096dd721ed7ebe20d458c4a3e2a1aa7e92fc71ddf8d42bb1",
+      "origin": "checked-root",
+      "reference_pc": 1118752,
+      "reason": "Filter constructor supplies this ROM callback to func_00112120"
+    },
+    {
+      "vram": 1117212,
+      "sha256": "4cacf66bc6b2799f45989a48407ff7cbbe115e35914a91655ff2397de94da19d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1117264,
+      "sha256": "f4f0b94d1ee8808c4591d823a16f74c66589fbaabc6421e2c3a0074460db8442",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1118436,
+      "sha256": "a59f2efa73bd9bd56ed34e6d696f80cbfb1fed9252dd34b95b4ec7199e52bec7",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1118612,
+      "sha256": "551f9443f2b801d5e4692adacb5b3475b1274c628b38da3c862e82c5aad62228",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1118704,
+      "sha256": "551f9443f2b801d5e4692adacb5b3475b1274c628b38da3c862e82c5aad62228",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1118796,
+      "sha256": "243c2432681d7489b807c2219d5a10a6289739b700c64a4989050a1a906d2172",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1118936,
+      "sha256": "cfc9a04175e653205e34b9143c9f2e762289e7371321222e3f0708d98002f76e",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1119004,
+      "sha256": "243c2432681d7489b807c2219d5a10a6289739b700c64a4989050a1a906d2172",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1119344,
+      "sha256": "5c7ff62ed8223840458fc63bad0e3098d59ffd8d197d2daf394c9e5bf7a1c3a6",
+      "origin": "checked-root",
+      "reference_pc": 1119044,
+      "reason": "Filter constructor supplies this ROM callback to func_00112120"
+    },
+    {
+      "vram": 1122040,
+      "sha256": "915e22bc91980bd87b91b22641a5cb80ea7867d50902365117565975061bd6e5",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1122592,
+      "sha256": "c0d6e84f49d47eed130a963485980078ee05db7252a54c874600fdb88f42159a",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1122624,
+      "sha256": "96db0d7879f2c4196225bd7b44e1eb2bb94e1cff5e5ea98ebaebb12061af998d",
+      "origin": "checked-root",
+      "reference_pc": 1118660,
+      "reason": "Filter constructor supplies this ROM callback to func_00112120"
+    },
+    {
+      "vram": 1122944,
+      "sha256": "4cacf66bc6b2799f45989a48407ff7cbbe115e35914a91655ff2397de94da19d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1122992,
+      "sha256": "2866725026326076f6cb020d6f121ce88e16c6cd5389bfbc35d151e541ea6608",
+      "origin": "checked-root",
+      "reference_pc": 1118836,
+      "reason": "Filter constructor supplies this ROM callback to func_00112120"
+    },
+    {
+      "vram": 1123440,
+      "sha256": "1b7d11cdfd17156dd946b169b63438aa22d42eb5e7f8d5dc9194775c3cf9c711",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1123632,
+      "sha256": "c28f68c9c1217ab161aaf73f45a45a321489e30c3435db8e95cdb86992225cf2",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1124564,
+      "sha256": "6f6b821e0db7ffd3225f978afbb7a56868ea9b118fc5fafe18518d9bac47f6f7",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1125912,
+      "sha256": "25bca3ad3db7d53373515188f3ea9455dda0bbd0f6f81f1ebaf2517ea553a4cc",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1126592,
+      "sha256": "c3542703176fae6cd35e0ab04ac23faefe4a6eaa9d2e3136510374643b8fb184",
+      "origin": "checked-root",
+      "reference_pc": 1118968,
+      "reason": "Filter constructor supplies this ROM callback to func_00112120"
+    },
+    {
+      "vram": 1126848,
+      "sha256": "d2c9f90e64b3248bfb703de4ead612846a2bf4ca99acccbaee106c99b046ce47",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1126912,
+      "sha256": "a21db8d10b4a3c5ab06f50198c263cefd8fdfb1202586fbe2f2e51dbd1289aa0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1127072,
+      "sha256": "be4713ca7d8f9e89dee5a398492a5a713173c9558bd13cc89be72d1cad940b64",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1127948,
+      "sha256": "87e00a5662539d49968a8dab54544d849805e9dcd556efab04b53d4045801037",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1128028,
+      "sha256": "e07f8d6e75c09ea92b3cc2266fda9d75258bfabaed8c736e984f69cc65f68304",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1128764,
+      "sha256": "87dd117a53ed075782d1d0f497e40a0b4ed24f824632996aaa3180b1e43cc604",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1129340,
+      "sha256": "4f6fb121f47b26a54b31f302494659db7a4366399620097f30b43c7f714068ec",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1129440,
+      "sha256": "b7a2bcc386d4b179933bc30e50f9cf1e305862352964e58ae76cd1d12b626eed",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1139280,
+      "sha256": "df6bbea5c46c9bd7e34aaebb2332ce8b33cc0fab01559b55f4e698b63771e56b",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1140896,
+      "sha256": "8da149cfaf2e60f4c53525053c9dbbce6a615f7f0f4ab19fd33a5e31ca906760",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1148624,
+      "sha256": "4a511d20efcc6778283d68c49d503c55202207c852b886fc248ff1a4af634c06",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1148792,
+      "sha256": "f3e5d80068feb97348f061fcfb316692da25e3a196e2af7a07692edeaef2900a",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1148848,
+      "sha256": "7d352696846f667970bc45439928989cb47869ed69ad8f9cfd731c0f78b43746",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1148896,
+      "sha256": "5610f86214888a51561f072e5f602cc58649d9814e65cc9b4c347f0a4cc2a9eb",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1150244,
+      "sha256": "77c46cbb56a2949147ce6a4ae60b798807bb4eb89af406b39c4c2d08f00405e0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1151376,
+      "sha256": "886109f0cdabb431ae2cf671ea7f428b2361a03df68643876076aecebd71bde0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1152112,
+      "sha256": "56815cb2b77617a40a7dd3a232f488434c1fe3e1eef6a083448b902fc359dba5",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1154120,
+      "sha256": "3485ad8eaca44cc5488ce0d51e872d0d7a02fe278bc337480ba443d9215eccd3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1154644,
+      "sha256": "f0106c1722a62d307675cf09ce178fb2e5ac5eca8327f33ea5cabce347b7e7c7",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1163120,
+      "sha256": "ad197ab8f84e76a2a578cbb445d696b73bc6603c7bd96793255ab6a9a762bde3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1165904,
+      "sha256": "6274a3cd58d1714e559c3865ebd0be2f1e6f4b2417f558f70fe1af40d32a63a6",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1167424,
+      "sha256": "215c82945869f36863f098c0510e87575936df7cbf4087b77976764501967ba8",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1168832,
+      "sha256": "9990f5af8801b9d7c812761eb577bd0f8023e2d88682a22b618e4ce26f820fb5",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1170256,
+      "sha256": "0cedd8eb19c6d487334faf475d4dc5389791a21004906a2d148b4e1e20284cbf",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1171536,
+      "sha256": "b803a6a67328004d494a08bd232e77b663580ecf0074588f012bd30db734d45e",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1171616,
+      "sha256": "e6c09a4763c45e87e3d929d8ba6ded209e35c49ae7b5e7155d649ec4186747e3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1171792,
+      "sha256": "ee988bf6b3c1a81799681ef10a9f40c5ccd0e174062111e67f8f7ba558646c28",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 1172256,
+      "sha256": "e6c09a4763c45e87e3d929d8ba6ded209e35c49ae7b5e7155d649ec4186747e3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2217152,
+      "sha256": "e8081fb4083afba8899cb5d280272a402368af8c4616d43188024c8d98b211ae",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2217180,
+      "sha256": "99acb225a4a74898810686956bd8533797d5e0fbc41e1f485f78762dd62607d2",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2217276,
+      "sha256": "1325d36f7a7daefd4e8748b2df428cb90435e91399f879078b0005ce902b37e0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2217376,
+      "sha256": "af256f5f177ae666cfc210a43e900e2dd781cf4e744e262511972331a2d2e084",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2219204,
+      "sha256": "2fe8d39d72b421e064f752a6f7365976d9fc8fd76d7bfe774879da40d6155ddf",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2219360,
+      "sha256": "b19958c91f7ce2db2558ffa32b938943e2e95a141855017f0efa53d7db182cdc",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2219496,
+      "sha256": "95767df4786815eba84a47f3c6291a8c78a44cdf883ad6705e27f69a87fc1cbe",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2220012,
+      "sha256": "5fa82e797d5fa37590d8ebc45e3340efbcf9481a13df2ffd2a536b00352d2776",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2220472,
+      "sha256": "a6892a85eeb3ee2bbd7d2cf908fb77bcc2e2feab1eb71fac1a6a3d6deef9badf",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2220672,
+      "sha256": "43a6c0fab3deb1656545af65b5931f5f0d0b6dc3fa80674404247522f24ccb27",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2220780,
+      "sha256": "189bf52ced84422a641249ab6afc983343d3b80c76098385900c48b4f1e7909e",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2220832,
+      "sha256": "c6cddedcb7803c3858c203139e488dae531be640813db550b894ca53eeb74bbb",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2220868,
+      "sha256": "6e7ab51c13e651c67ab145a1c65e623c3aa69f742bf379d43eef1c1a2af6ad0a",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2221040,
+      "sha256": "d2f3690ea546c7f617cc8f58b67e8763248f5bc1bf3774dada663509cf554c76",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2223340,
+      "sha256": "02730891d2e9928de6cd446c108016f74ab9679121e4a4a32af8c9acaeb3d0d0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2224608,
+      "sha256": "5e3548e6c57c69e19655a0ff96c3b1c6ce1f638418dd5b60ddeecc708849b102",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2224636,
+      "sha256": "b9d13cfd57c1b1501ed8c9324640199619e61731f1c72012e0162dfbb32bf344",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2225212,
+      "sha256": "eed9c845a60225aaceb2bffccc7649100715369b94da5dba529b67f14023fc21",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2225360,
+      "sha256": "98855f0428d343d7c3afd961396667cb18da6b93502ef421e27c6912e3ec5090",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2226180,
+      "sha256": "18a645900d50230e64413181ea1b29c9bd97e1e07d312cd4fba44238d64c8d31",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2226380,
+      "sha256": "0fc23c070414b065f14e6b9124e8f812f2911115256eb1cd77c7ba79de52a746",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2228264,
+      "sha256": "fafb9c8975dc3898f0a6f40d1ae6baf7d27267966d4c54c3d7548c59c77bcb86",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2229244,
+      "sha256": "3e85531e622699d1057ba1403c3c2742ab55a8780ea64ffc3418ff321435a4b3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2229972,
+      "sha256": "c20cdc55ec0ea8f2d7a6a02b19e4a2f095f35db735682533343869a0d22dc418",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2230916,
+      "sha256": "5d2b1674d70118501138f81cc899da8e355a8c649d68e703abcb1a68ee16c12c",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2231060,
+      "sha256": "1e4a53de1d30f0ffbae4de90de5382fd060bab423407b05e43531c7311a553e1",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2233308,
+      "sha256": "7409789616c93889b158e10695518bdafec3760d2930e755778cf8e3e2b19b41",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2233592,
+      "sha256": "f749e043814fde03a767dc34866dec67557265331a8d223c92ea1054690aa1f0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2233876,
+      "sha256": "19773a3b6b4880f79d60d62fc31da057afe0b83e9cb9404e2cd04b52ea6adcd9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2234152,
+      "sha256": "b92e750e91bd86fdcb30a3b8754a5d4d7d01836850cea09632a7b4bf089d9cf3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2236144,
+      "sha256": "00d9d5b88d185e9b8e14b39bc096ad2496df765c00a89b8fbfc2106726808d22",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2237016,
+      "sha256": "e53857d7c261c3ae13cf5eeac100a89ff4ad77428528d97b65b61dbd5a914478",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2237444,
+      "sha256": "0548356a535ed545c63bed63e4c7089ba0b2fe45cd3da9473bf0622b4a6985ea",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2237648,
+      "sha256": "64d3ab20eb88d8313d3175b39b79cf6f438e08692436147669dfa0ff7d9bf3c0",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2237912,
+      "sha256": "8d8d5e02ffae41211befce86a2c77a9503d63423d22826432866a315a1d980c3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2238148,
+      "sha256": "d84dcf1b0383491b257cc639bee3f0a5fd679443280576db30c8141bcdc57d9d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2238448,
+      "sha256": "9384a6f1c38e7d2643e19a3811c22d4163dc1454126df7308f3bbbbacc83bf81",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2238996,
+      "sha256": "2fc6acaf62ba05defe56b3b2651864d15f4d04dc59a69b87ea6bd5932afa8d1c",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2251504,
+      "sha256": "16ed4cf71cedae54717736ce77959da0ca2b2f8b7bb36931b1e257f5358bf603",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2256724,
+      "sha256": "e7c1a19621f7e55265b8d8ac4632deedc0b691b2090480cfa61343ef58cc2b8d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2262760,
+      "sha256": "b5c73b51bcebf92390e8efd6a131603a079ff63923aac294b0ec1b0f4fce403a",
+      "origin": "checked-root",
+      "reference_pc": 2264472,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2263300,
+      "sha256": "f8c65773913acd766c8cc8ca204c6fea9644204eeb25fb6b0f59b4f8ca8b0acc",
+      "origin": "checked-root",
+      "reference_pc": 2264024,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2263692,
+      "sha256": "68a4be153bb499abf57deedef88ed188b347209afd0731acb1a44e018a4ad1e6",
+      "origin": "checked-root",
+      "reference_pc": 2479784,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2272136,
+      "sha256": "bc3b08934111ece2b6544d361187fc20e12c3b49add6657fef62a7fcf5fb66fa",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2272384,
+      "sha256": "19ef24fd8c2662a59ab9aa6ee65864e1c5a1af5ce6d6048f46a8c914831e624d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2274800,
+      "sha256": "eff98069061cb39a2454c89791097aa9dddb991cbfc0f9cfe9c168673def014a",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2275340,
+      "sha256": "ea8346bab0c87aada729c4427b3f2e3050bfda36948b5f61321ffe47e127f8d9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2282500,
+      "sha256": "4aaa036aab2d8ab3101f02b6ea4ebaf6ae2bd01cf0c3e14cb27870a0c0f38941",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2282560,
+      "sha256": "7424453b4626a8542767172bfa0052958b673513b9dd22ab8926149cb4bde96f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2282808,
+      "sha256": "ca4f09c359e6c13c5752770d224743077aa0f2770317fecc3a62a0558366cd72",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2282912,
+      "sha256": "9fe180ffdbb25982892a411abb49fddc5a3c3c4e7e16ea6883cad8e89c88870f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2283060,
+      "sha256": "5af1fdbd526085e9a05b5550d667b9864f79e2822e8ee2215cdd2ce200ad86d8",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2283176,
+      "sha256": "ddf5af49fea7a446f2047ebd5fef96b565929478571489a3aa6402d639c26e35",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2283804,
+      "sha256": "d44ea8895a83f5ade0d97cd84868ae3fa7613f3558054c1309d3ab1bb0e16dc3",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2284272,
+      "sha256": "20dca78fb7d52025c7a90ccab0bda03fcd0a2c8ac9458cdd1daefcf3e35543e2",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2290736,
+      "sha256": "eb0362f9079df1009f37582ddaf245a01ae615496f46078622060adfa768eacc",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2291212,
+      "sha256": "5d04e075735ac58a073d1a5ee8a226d436fa4fc1ae0919102f8e790d677b95cd",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2291664,
+      "sha256": "88919a529dda1ac07d8aa2f9ee1dac18ab66b37b10114f155cdfe67d90f48953",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2291892,
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2292456,
+      "sha256": "4e03a04890a63f9104f9c0ef41d100073ea6bc5ac2d3e17545eb9254e8c013df",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2293372,
+      "sha256": "98e3df28a0aebf32e58f3723c529fd4333d1f4d901b0cd5ab09ed16c33e2d0d8",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2293832,
+      "sha256": "c7e76f52072225154de20209787eecd0032c9f290eb080a50bf9b9f868d5e11d",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2294008,
+      "sha256": "e67bc247fa67bfb19cfbfb609aa4c4041666cef7183e256e78dc9b6cf0a16b73",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2295200,
+      "sha256": "dd2eb04b9c6e23b9d6a96b851819c9924627728f9ee1e3badb00f5e59e9dcc0f",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2295420,
+      "sha256": "51dae7effd0eef32235887996aea4c6cd2ca7562154480b94f5015b9e0435247",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2296480,
+      "sha256": "1e38cc1574608d5f1c62dbf9793a34c90dcd1aaf0bd9a2d0c7c9bb7b31a76fab",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2297280,
+      "sha256": "3016b217b60a657b421d29860db16d90cf69554892e5acebade56d3368e93556",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2297580,
+      "sha256": "ad322e636ad82c6b73d5e3f81d008a28f7b07eaa0394d4e6244b85a6b909cbf8",
+      "origin": "checked-root",
+      "reference_pc": 2297556,
+      "reason": "ROM callback constant passed in a2 to the resource constructor func_00236594"
+    },
+    {
+      "vram": 2336868,
+      "sha256": "08c6d47c0d6404acdfda801f7720ace3c0e75d2806c8416b24cc83b70159291f",
+      "origin": "checked-root",
+      "reference_pc": 2335196,
+      "reason": "ROM callback constant passed in a2 to the resource constructor func_00236594"
+    },
+    {
+      "vram": 2345544,
+      "sha256": "416a17bdef11451c477fc45d47598a3ff7f211db9fce8dc08d8de67d783ad17f",
+      "origin": "checked-root",
+      "reference_pc": 2345508,
+      "reason": "ROM callback constant passed in a2 to the resource constructor func_00236594"
+    },
+    {
+      "vram": 2369752,
+      "sha256": "7b6c9cace286454f3223cd3c95ed892326bc0f20e0452c87ec9d5a2312738889",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2383436,
+      "sha256": "e6607a85735a1b089785e8c3e1a475c5a7be4e72b238a6f81da38344197e1887",
+      "origin": "checked-root",
+      "reference_pc": 2370172,
+      "reason": "ROM callback constant passed in a2 to the resource constructor func_00236594"
+    },
+    {
+      "vram": 2384560,
+      "sha256": "8f15a64058c784d708642fb06c75bcd96098b15715cc753b783471db6cca616c",
+      "origin": "checked-root",
+      "reference_pc": 2370148,
+      "reason": "ROM callback constant passed in a2 to the resource constructor func_00236594"
+    },
+    {
+      "vram": 2385680,
+      "sha256": "8ab527b503591eaf08ca6c30cf072dc3e086c217ea5cd4b6cd911c77a3a85023",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2386952,
+      "sha256": "0c83aac6dd522de6422bc21a118be554fd0ea4c41f0a55df53b4a89a2e7cc872",
+      "origin": "checked-root",
+      "reference_pc": 2387524,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2414844,
+      "sha256": "bc3b08934111ece2b6544d361187fc20e12c3b49add6657fef62a7fcf5fb66fa",
+      "origin": "checked-root",
+      "reference_vram": 2127884,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2418896,
+      "sha256": "cfd077c92acff48d83d7d04ebc0b0af3e9e00ba3dfde0cc9dd9ccb61e93ca141",
+      "origin": "checked-root",
+      "reference_pc": 2473660,
+      "reason": "Original scene object initializer invoked through the object record at offset 0x1c"
+    },
+    {
+      "vram": 2430228,
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "origin": "checked-root",
+      "reference_vram": 2133692,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2432684,
+      "sha256": "74345380b6ee9a75b0a1119a28d76bdf35636e24318f37c7d677ca8eab8e1f96",
+      "origin": "checked-root",
+      "reference_vram": 2126300,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2435060,
+      "sha256": "258a559da009a2cfcfd1651ac0f8b4574d4f1e0570c6aef19d8311ce45f842c0",
+      "origin": "checked-root",
+      "reference_vram": 2126520,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2443516,
+      "sha256": "fa0a046957d91feb3ae05ab629ffc6922312c116175f44493cbb080361420354",
+      "origin": "checked-root",
+      "reference_vram": 2126344,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2456172,
+      "sha256": "feb4051d1496ba0f6b12569dd7d635aee20d5eb2e4efec59cf230970addeb141",
+      "origin": "checked-root",
+      "reference_vram": 2127180,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2456732,
+      "sha256": "eb0362f9079df1009f37582ddaf245a01ae615496f46078622060adfa768eacc",
+      "origin": "checked-root",
+      "reference_vram": 2127488,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2457968,
+      "sha256": "f2b2e94c050c1bb25100c91d5d3e21f892de328687a0ddd68ee30c09b8d07782",
+      "origin": "checked-root",
+      "reference_vram": 2127400,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2471068,
+      "sha256": "91d1c7550fc3e3c686886aa23ee91e3873eb507541facdd41bb89a368ef1b2b9",
+      "origin": "checked-root",
+      "reference_vram": 2117148,
+      "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2475072,
+      "sha256": "69eebd51cf2689287f329ede67b2e2f226628289ca9235bc733c77772a059163",
+      "origin": "checked-root",
+      "reference_pc": 2982092,
+      "reason": "Menu callback selected after the logo transition"
+    },
+    {
+      "vram": 2479852,
+      "sha256": "9bc20d38984f32af034124817ebd98ac8022d78ac36fa2b91d60d34a78cd5336",
+      "origin": "checked-root",
+      "reference_pc": 2476192,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2482076,
+      "sha256": "f5d8e7e46302c08f82f916d494f2c0128766018fe81631dd39655a84e1c7543f",
+      "origin": "checked-root",
+      "reference_pc": 2485392,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2484520,
+      "sha256": "ac073e03f53fb881076e359cb2188d960d05c510220fbae5c4a743c74f6e2ad5",
+      "origin": "checked-root",
+      "reference_pc": 2482172,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2485044,
+      "sha256": "80689e5d22c94c697ab70704c66d07523d4cea99a93e6db9ed81395e1999b965",
+      "origin": "checked-root",
+      "reference_pc": 2387328,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2486760,
+      "sha256": "f5d8e7e46302c08f82f916d494f2c0128766018fe81631dd39655a84e1c7543f",
+      "origin": "checked-root",
+      "reference_pc": 2489284,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2489152,
+      "sha256": "e03c58e868e5eff5eb7beab288e7f8297ad32b296d33bfee1752927662eb5a15",
+      "origin": "checked-root",
+      "reference_pc": 2486848,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2586960,
+      "sha256": "7a1b1d13c2ccf11e362c0bd40cbd533f53bd7da5bf684f95cc4478ea2a64ec97",
+      "origin": "checked-root",
+      "reference_vram": 2176820,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2588976,
+      "sha256": "6e12ec4d3fd86aab3b3a7514d98646bc29814af0f6e0f6d3a8892e3d3c00f26f",
+      "origin": "checked-root",
+      "reference_vram": 2171852,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2592928,
+      "sha256": "7fc1f91bfc3c37ef1edc982a1a133a199895427f0bcf8e99bf0c816804338e96",
+      "origin": "checked-root",
+      "reference_vram": 2173580,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2595424,
+      "sha256": "9f9518c2723088d0e7e40dc82dd109f86d6fb478f8d047e5734b4fb22eda99f3",
+      "origin": "checked-root",
+      "reference_vram": 2171960,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2600816,
+      "sha256": "18d0037e4383d5bbeda48683df6cf052161985792da1c0adc90f7f7efb65bb29",
+      "origin": "checked-root",
+      "reference_vram": 2173364,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2605680,
+      "sha256": "f4c5df706c40e16decbf53b6f99596c86a6f4f705ea76e141df0c3f49d8eeadf",
+      "origin": "checked-root",
+      "reference_vram": 2173472,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2608656,
+      "sha256": "586de845b7295c121dbe328f959e0b287fe2531a09c1e0c6f22e2dc33a742c24",
+      "origin": "checked-root",
+      "reference_vram": 2174984,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2612144,
+      "sha256": "3c643341830d3ddd9afd73f0a2cf809a126b3db4e747f2614c00b22632b2753a",
+      "origin": "checked-root",
+      "reference_vram": 2175308,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2614320,
+      "sha256": "9f41d7a6f81e0dbf2c933fedf7a3d952ae1fec89ff3cff04b30ff95531bfa5ad",
+      "origin": "checked-root",
+      "reference_vram": 2175200,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2617088,
+      "sha256": "710592de9a3e9cadb68d934771fcd41f818aeba24be0cfec470600b2102f2f1e",
+      "origin": "checked-root",
+      "reference_vram": 2171312,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2620608,
+      "sha256": "7fc1f91bfc3c37ef1edc982a1a133a199895427f0bcf8e99bf0c816804338e96",
+      "origin": "checked-root",
+      "reference_vram": 2171204,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2623632,
+      "sha256": "e5b15b62183a6a481fc256a952176ba71dd2628258661ebb6558c2575af58667",
+      "origin": "checked-root",
+      "reference_vram": 2171420,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2626432,
+      "sha256": "473c373ba44ed72bb15a340bafdb7942282d57db2e899826c0ae8bed2eadae1e",
+      "origin": "checked-root",
+      "reference_vram": 2173796,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2627264,
+      "sha256": "586de845b7295c121dbe328f959e0b287fe2531a09c1e0c6f22e2dc33a742c24",
+      "origin": "checked-root",
+      "reference_vram": 2172068,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2631488,
+      "sha256": "c5d525a59d3cc74fed78910900783af13eb98b4ce28831dbc3e7b820a72dec22",
+      "origin": "checked-root",
+      "reference_vram": 2173688,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2632368,
+      "sha256": "16ea8acdc3aafab163b748e800d840cf241fb500253c950d17884e0daa54eade",
+      "origin": "checked-root",
+      "reference_vram": 2171096,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2636768,
+      "sha256": "143faf5614eb181bdf4dcbd7166609049d9ade00af52e695c14a0f6d815fa794",
+      "origin": "checked-root",
+      "reference_vram": 2171636,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2639104,
+      "sha256": "cacb6071cfe6e8c022c3f5f3d75c356595289d51849017e6a6955f73775c9248",
+      "origin": "checked-root",
+      "reference_vram": 2174120,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2640832,
+      "sha256": "3c643341830d3ddd9afd73f0a2cf809a126b3db4e747f2614c00b22632b2753a",
+      "origin": "checked-root",
+      "reference_vram": 2171528,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2644272,
+      "sha256": "beede08b5529bb96b4c3757f589471ba6bab52164492de7ddf6a5de24a40fc8a",
+      "origin": "checked-root",
+      "reference_vram": 2174228,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2645264,
+      "sha256": "ef91c1f3fef1a3d6c7089f4cb53ceccf80c53ed21eb7046d69836dfc2453b1f4",
+      "origin": "checked-root",
+      "reference_vram": 2174660,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2648544,
+      "sha256": "dfbd71457d728844da8207bfc895ff55414e5078eaf6c7d8d157dddb0634ff01",
+      "origin": "checked-root",
+      "reference_vram": 2174336,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2651152,
+      "sha256": "7a016bcc4eb4ee5711dcad1a7cef0fbd7729f2e78b61a254e2ca399fd6cafb2f",
+      "origin": "checked-root",
+      "reference_vram": 2177252,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2651952,
+      "sha256": "586de845b7295c121dbe328f959e0b287fe2531a09c1e0c6f22e2dc33a742c24",
+      "origin": "checked-root",
+      "reference_vram": 2173904,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2654240,
+      "sha256": "586de845b7295c121dbe328f959e0b287fe2531a09c1e0c6f22e2dc33a742c24",
+      "origin": "checked-root",
+      "reference_vram": 2174012,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2656128,
+      "sha256": "586de845b7295c121dbe328f959e0b287fe2531a09c1e0c6f22e2dc33a742c24",
+      "origin": "checked-root",
+      "reference_vram": 2174552,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2658160,
+      "sha256": "586de845b7295c121dbe328f959e0b287fe2531a09c1e0c6f22e2dc33a742c24",
+      "origin": "checked-root",
+      "reference_vram": 2175524,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2660928,
+      "sha256": "13b9c9b517867e256263fe5abc917b4c43d10ecc6fc990b4a3f89b384a9e6c74",
+      "origin": "checked-root",
+      "reference_vram": 2175848,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2666208,
+      "sha256": "1a23efb439ed55a64a4fb2420fc24240fe3a1c22ac85f34fa096f0986fd4133d",
+      "origin": "checked-root",
+      "reference_vram": 2174444,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2671792,
+      "sha256": "9c5f0fcb61f6983003992f38968dc3e819faf85521876e8575fcee485a8d95f5",
+      "origin": "checked-root",
+      "reference_vram": 2177144,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2676384,
+      "sha256": "d7f0bcac7510cce6dfe2fc8111e1de55e44efaa8b7cf9604a1b21eec63698ff5",
+      "origin": "checked-root",
+      "reference_vram": 2175092,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2680464,
+      "sha256": "255fbc46dfef77b4290625d2a6a564bb79ae35e0c845027b9b355fdee41c36b2",
+      "origin": "checked-root",
+      "reference_vram": 2176388,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2685632,
+      "sha256": "1592894707a8d18495fe6ee7a3f2671b6dd0bbb3b7487dda195d4433751d7189",
+      "origin": "checked-root",
+      "reference_vram": 2176928,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2688224,
+      "sha256": "9f41d7a6f81e0dbf2c933fedf7a3d952ae1fec89ff3cff04b30ff95531bfa5ad",
+      "origin": "checked-root",
+      "reference_vram": 2177036,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2689504,
+      "sha256": "19bf2afc06920e1d8f140363822d1f4d85274916e3163a484dd6a03e73ab0ae3",
+      "origin": "checked-root",
+      "reference_vram": 2176712,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2690016,
+      "sha256": "62dbec1cfb0f0e8d5caa6733e8c05c7c1771fd1de4a1eaebcf82d7e256bb24d3",
+      "origin": "checked-root",
+      "reference_vram": 2176280,
+      "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
+    },
+    {
+      "vram": 2885236,
+      "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
+      "origin": "checked-root",
+      "reference_pc": 2474068,
+      "reason": "Scene callback passed in a3 to func_00239174 and stored in linked object records at offset 0x10"
+    },
+    {
+      "vram": 2946592,
+      "sha256": "48e2c26da6f257c004b29895aed45e4850aef79b8fd59d2743822e0d1a55e0d8",
+      "origin": "checked-root",
+      "reference_pc": 2305468,
+      "reason": "Resource initializer passed in a2 to func_002365b8 by the main menu loader"
+    },
+    {
+      "vram": 2972540,
+      "sha256": "e1a4b84ba328ea645cad0f57744fd65d00c9b974d6d24cb5615e84ffb0c55fd1",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2972816,
+      "sha256": "d1423011fd2fd4317e82e8601e4f9145811c4648e7342a99108a5c4d274ff7e9",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2974528,
+      "sha256": "1cf7671377557e37f292c487b60690e1818268cc82feefc177859243620e068b",
+      "origin": "checked-root",
+      "reference_pc": 2956388,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2981328,
+      "sha256": "fcc357380f343600b14e619bfc21cca2077e3b0642120c3a71083e597836e55b",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2981904,
+      "sha256": "1e80acf93e0f7dfde353eadbe98ce38f656088031241e906592005700c5ed2ba",
+      "origin": "checked-root",
+      "reference_pc": 2981744,
+      "reason": "Logo transition callback written to the main loop callback at 0x80052778"
+    },
+    {
+      "vram": 2982156,
+      "sha256": "b394a3e8bc27d92e16d7875ec3ae4eaaaac18a25e310f863f419a20dc847e4aa",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2991536,
+      "sha256": "7eb1bb0cbd81cf90dc38db24fa441aef78351189ef07ad99e4da46d1af28347c",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2991548,
+      "sha256": "b830e2733c6e6c9a801565f49aac529eac299316be4e83e853801ae4b8728567",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2992496,
+      "sha256": "da62e260f972cb72872b501b2baf014c05d667f0e598e4d38b649969189ccc24",
+      "origin": "checked-root",
+      "reference_pc": 2992620,
+      "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2993984,
+      "sha256": "95e3e378faa01dba40e1ca30377d901b9cfabd4e85786699254e0438266ca1ff",
+      "origin": "checked-root"
+    },
+    {
+      "vram": 2147484672,
+      "sha256": "a5b25bd4e27237d0ceb2d2c732fc43263abcfc88def4345c9a59f8b3fb9d05a5",
+      "origin": "checked-root"
+    }
+  ]
+}

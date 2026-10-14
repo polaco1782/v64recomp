@@ -11,9 +11,11 @@ import sys
 from common import RecompError, load_profile, load_rom, validate_hook_prefix, write_json
 from code_inventory import load_inventory, load_entry_inventory, complete_code
 from emit import decode, target
+from native_hooks import classify_native_bodies, resolve_native_hooks
 
 
 def discover(rom: bytes, profile: dict) -> dict:
+    profile = dict(profile, hooks=resolve_native_hooks(rom, profile))
     game, config = profile['game'], profile.get('discovery', {})
     regions = config.get('regions', [])
     if not regions:
@@ -35,6 +37,8 @@ def discover(rom: bytes, profile: dict) -> dict:
     if set(game['code_sections']) != {s['name'] for s in sections}:
         raise RecompError('discovery regions must cover every configured section')
     inventory,inventory_entries=load_inventory(config['inventory'],rom,sections) if config.get('inventory') else (None,[])
+    if inventory is not None:
+        inventory, inventory_entries = classify_native_bodies(rom, sections, inventory, inventory_entries, profile['hooks'])
     partial_entries = load_entry_inventory(config['entry_inventory'], rom, sections) if config.get('entry_inventory') else []
     dynamic_calls=config.get('allow_registered_indirect_calls',False)
     if type(dynamic_calls) is not bool:raise RecompError('allow_registered_indirect_calls must be boolean')
@@ -94,7 +98,13 @@ def discover(rom: bytes, profile: dict) -> dict:
             continue
         if hook.get('kind') not in ('replace_function', 'unsupported_function'):
             raise RecompError(f"hook kind not implemented: {hook.get('kind')}")
-        key = add_entry(hook['vram'], hook['symbol'], 'native-replacement')
+        section = mapping(hook['vram'])
+        existing = entries.get((section['id'], hook['vram'])) if section else None
+        if 'catalog_body_size' in hook and existing and existing['name'] != hook['symbol']:
+            key = add_entry(hook['vram'], origin='native-replacement')
+            existing.setdefault('aliases', []).append(hook['symbol'])
+        else:
+            key = add_entry(hook['vram'], hook['symbol'], 'native-replacement')
         section = sections[key[0]]
         offset = section['rom_offset'] + key[1] - section['vram']
         size = validate_hook_prefix(rom, offset, key[1], section['vram'] + section['size'] - key[1], hook)
@@ -155,7 +165,7 @@ def discover(rom: bytes, profile: dict) -> dict:
             # inferred, and privileged OS internals are not followed past it.
             size, kind = replacements[key]
             offset = section['rom_offset'] + start - section['vram']
-            return dict(name=entries[key]['name'], aliases=[], section=section_id, vram=start, size=size,
+            return dict(name=entries[key]['name'], aliases=entries[key].get('aliases', []), section=section_id, vram=start, size=size,
                         rom_offset=offset, sha256=hashlib.sha256(rom[offset:offset + size]).hexdigest(),
                         size_source='native-replacement-prefix' if kind == 'replace_function' else 'unsupported-boundary-prefix',
                         origin='native-replacement' if kind == 'replace_function' else 'unsupported-boundary',

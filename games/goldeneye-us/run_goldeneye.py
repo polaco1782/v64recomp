@@ -206,7 +206,22 @@ def main() -> int:
     parser.add_argument('--jobs', type=int, default=4)
     parser.add_argument('--cc', default=os.environ.get('RECOMP_TEST_CC') or shutil.which('clang') or 'cc')
     parser.add_argument('--output', type=Path, help='output root (default: build/goldeneye-us/rom)')
+
+    textures=project/'local/textures/goldeneye-us'
+    parser.add_argument('--dump-textures',type=Path,nargs='?',const=textures/'dump',help='dump original RGBA PNGs as textures reach RT64 (optional directory)')
+    parser.add_argument('--dump-grid',type=Path,nargs='?',const=True,metavar='PNG',help='export all dumped textures as grids of up to 16 enlarged tiles with JSONs/prompts; with --render, export on exit')
+    parser.add_argument('--texture-replacements',type=Path,default=textures/'replacements',help='directory of hash-named replacement PNGs; F5 reloads and toggles originals/replacements during play')
+    parser.add_argument('--no-texture-replacements',action='store_true',help='render only original textures')
+
     args = parser.parse_args()
+    if args.dump_grid is not None:
+        from remake_textures import main as remake_textures
+        dump=args.dump_textures or textures/'dump'
+        grid=dump.parent/'grids/all-textures.png' if args.dump_grid is True else args.dump_grid
+        grid_command=['--input',str(dump),'--dump-grid',str(grid)]
+        if not args.render:return remake_textures(grid_command)
+        args.dump_textures=dump
+
     if args.frames is None:args.frames=0 if args.cheat_menu else 360
     if args.render:args.startup=True
     if not 0<=args.frames<=36000 or not 1<=args.jobs<=32:
@@ -291,6 +306,10 @@ def main() -> int:
         save=(args.save or project/'local/saves/goldeneye-us.eeprom').resolve();save.parent.mkdir(parents=True,exist_ok=True)
         env['RECOMP_GOLDENEYE_SAVE']=str(save);env['RECOMP_AUDIO_MUTE']='1' if args.mute else '0'
         env.pop('RECOMP_GOLDENEYE_INPUT',None);env.pop('RECOMP_GOLDENEYE_WAV',None)
+
+        env['RECOMP_TEXTURE_DUMP']=str(args.dump_textures.resolve()) if args.dump_textures is not None else ''
+        env['RECOMP_TEXTURE_REPLACEMENTS']='' if args.no_texture_replacements else str(args.texture_replacements.resolve())
+
         if args.input_script:
             replay=output/'controller-input.txt';controller_script(args.input_script,replay,identity['sha1'])
             env['RECOMP_GOLDENEYE_INPUT']=str(replay)

@@ -2,6 +2,7 @@
 #include "hle/rt64_application.h"
 #include "hle/rt64_workload_queue.h"
 #include "hle/rt64_present_queue.h"
+#include "imgui.h"
 #include "textures.h"
 #define Status int
 #include <X11/Xutil.h>
@@ -93,12 +94,16 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     active_renderer=s.get();
     try {
         s->app=std::make_unique<RT64::Application>(core,config);
+        s->app->userConfig.developerMode=true;
         s->app->userConfig.graphicsAPI=RT64::UserConfiguration::GraphicsAPI::Vulkan;
         s->app->userConfig.resolution=RT64::UserConfiguration::Resolution::Manual;
         s->app->userConfig.resolutionMultiplier=4.0;
         s->app->userConfig.antialiasing=RT64::UserConfiguration::Antialiasing::MSAA4X;
         s->app->userConfig.threePointFiltering=false;
+        s->app->userConfig.aspectRatio=RT64::UserConfiguration::AspectRatio::Expand;
+        s->app->userConfig.extAspectRatio=RT64::UserConfiguration::AspectRatio::Expand;
         s->app->userConfig.refreshRate=RT64::UserConfiguration::RefreshRate::Original;
+        s->app->enhancementConfig.textureLOD.scale=true;
         if(s->app->setup(0)!=RT64::Application::SetupResult::Success) {
             std::fprintf(stderr,"RT64 setup failed: %s\n",RT64::GlobalLastError.c_str());
             active_renderer=nullptr;s->app.reset();SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
@@ -109,10 +114,12 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->app->swapChain->setVsyncEnabled(false);
         s->app->presentQueue->presentWaitEnabled=false;
         s->app->appWindow->sdlWindow=s->window;
+        s->app->appWindow->sdlCheckFilterInstallation();
         s->textureFiles.configure(*s->app->textureCache);
         return s.release();
     } catch(const std::exception &e) {
         std::fprintf(stderr,"RT64 setup: %s\n",e.what());active_renderer=nullptr;
+        SDL_SetEventFilter(nullptr,nullptr);
         s->app.reset();SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
     }
 }
@@ -134,7 +141,8 @@ void recomp_renderer_destroy(RecompRenderer *s) {
 bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
     uint64_t start=monotonic_ns();
     s->check_owner();
-    if(!s->ready || s->token || task->resumed || task->words[0]!=1 || (task->words[1]&~2u)
+    if(!s->ready || s->token || task->resumed || task->words[0]!=1
+       || (task->words[1]&~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE))
        || !task->words[4] || task->words[5]>0x2000
        || !task->words[6] || !task->words[7] || task->words[7]>0x2000
        || task->words[13]%8 || !task->words[13])return false;
@@ -185,9 +193,14 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
             }
         }
     }
+    *pad={};pad->connected=true;
+    {
+        const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+        // SDL's keyboard state includes keys consumed by the ImGui event filter.
+        if(s->app->presentQueue->inspector && ImGui::GetIO().WantCaptureKeyboard)return true;
+    }
     const Uint8 *keys=SDL_GetKeyboardState(nullptr);
     if(keys[SDL_SCANCODE_ESCAPE])return false;
-    *pad={};pad->connected=true;
     const struct { SDL_Scancode key;uint16_t button; } bindings[]={
         {SDL_SCANCODE_A,0x8000},{SDL_SCANCODE_X,0x4000},{SDL_SCANCODE_Z,0x2000},{SDL_SCANCODE_S,0x1000},
         {SDL_SCANCODE_T,0x0800},{SDL_SCANCODE_G,0x0400},{SDL_SCANCODE_F,0x0200},{SDL_SCANCODE_H,0x0100},
