@@ -2,6 +2,13 @@
 #include "overlays.h"
 static void oot_prepare_call(Runtime *rt, uint32_t address) {
 #if BOOT_STARTUP
+    /* mainproc's first call is osCreateViManager. osStartThread preempts IPL,
+     * so its handoff hook may not return until graphics is already running.
+     * Retire the parked IPL thread here, before OOT reuses its OSThread and
+     * stack storage for the framebuffer at 0x803da800..0x80400000. */
+    if (address == 0x80005f20 && recomp_thread_id(rt, 0) == BOOT_MAIN_ID
+            && (uint32_t)recomp_thread_context(rt, 0)->gpr[31] == 0x80000650)
+        recomp_thread_destroy(rt, 0x803ff000);
     if (address == 0x80003040 && !rt->section_loaded[2]
             && (uint32_t)recomp_thread_context(rt, 0)->gpr[31] == 0x800adacc) {
         uint8_t *image=malloc(OOT_DD_SIZE), digest[32]; unsigned length=0;
@@ -37,5 +44,7 @@ void hook_oot_cic_boot_task(Runtime *rt, MipsContext *ctx) {
 }
 void hook_oot_start_thread(Runtime *rt, MipsContext *ctx) {
     hook_os_start_thread(rt, ctx);
-    if (recomp_thread_id(rt, 0) == -1) recomp_thread_stop(rt, 0);
+    /* Fallback if the handoff did not preempt. The normal path retires IPL
+     * from mainproc's first call above; IPL must never resume guest code. */
+    if (recomp_thread_id(rt, 0) == -1) recomp_thread_destroy(rt, 0);
 }

@@ -103,6 +103,8 @@ static uint64_t guest_time(void *opaque) {
 }
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt; (void)opaque;
+    require(recomp_thread_state(rt, 0x803ff000) == RECOMP_DEAD,
+            "Ocarina of Time IPL thread still owns framebuffer storage", 0x803ff000);
     if (task->words[0] == 4) {
         require(task->words[4] == 0x800e7200 && !task->resumed,
                 "OOT unrecognized JPEG task", task->words[4]);

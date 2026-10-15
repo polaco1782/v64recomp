@@ -1945,6 +1945,14 @@ expected_words = [0x27bdffe8, 0xafbf0014, 0x0c035848, 0x24040400, 0x8fbf0014, 0x
 
 # Verified relocated SDK body (Ocarina of Time NTSC 1.2).
 [[signatures]]
+symbol = "osMotorInit"
+handler = "hook_os_motor_init"
+body_size = 0x15c
+sha256 = "13ffc4869435e89d2a309e15c8364f91ebdc0efd376d515d338006aed59a01c4"
+expected_words = [0x27bdffb8, 0xafbf001c, 0xafb00018, 0xafa40048, 0xafa60050, 0xaca40004, 0x8faf0050, 0x241800ff]
+
+# Verified relocated SDK body (Ocarina of Time NTSC 1.2).
+[[signatures]]
 symbol = "osContStartQuery"
 handler = "hook_os_cont_start_query"
 body_size = 0x84
