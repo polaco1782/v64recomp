@@ -115,6 +115,10 @@ This performs a wrapping 32-bit addition and sign-extends the result into the
 The game executes those compiled functions; CPU instructions are decoded during
 generation rather than fetched and interpreted during play.
 
+See [MIPS code expansion and native efficiency](code-expansion.md) for measured
+source/native size ratios, a real MIPS → C → x86-64 example and the optimizations
+available to the host compiler.
+
 Guest addresses remain N64 addresses. The runtime maps them into its RDRAM
 buffer, handles supported address aliases and game-specific mappings, and checks
 memory access ranges. Floating-point helpers preserve the required guest

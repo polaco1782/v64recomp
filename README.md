@@ -177,6 +177,7 @@ the native audio backend processes supported sound tasks and sends PCM to SDL.
 The technical documentation covers each part:
 
 - [Recompilation pipeline](docs/recompilation.md): ROM mappings, discovery, translation and native execution.
+- [MIPS code expansion and native efficiency](docs/code-expansion.md): measured size ratios, a MIPS → C → x86-64 example and compiler optimizations.
 - [OS emulation and native calls](docs/os-emulation.md): why OS support is needed, which calls are replaced and how guest behavior is preserved.
 - [Native hook recognition](docs/native-hooks.md): ROM fingerprints, game-specific overrides and guarded direct calls.
 - [Thread scheduling and workers](docs/threading.md): priorities, blocking, message delivery and asynchronous graphics/audio work.
