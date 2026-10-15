@@ -4,14 +4,48 @@ Native N64 recompilation for Linux. ROM instructions are translated to C and
 compiled for the host; shared native services supply scheduling, input, saves,
 audio, and RT64 Vulkan graphics. See [how it works](docs/recompilation.md).
 
+## Screenshots
+
+Captured from the native builds.
+
+| Super Mario 64 | The Legend of Zelda: Ocarina of Time | GoldenEye 007 |
+| --- | --- | --- |
+| ![Super Mario 64 in Castle Grounds](docs/screenshots/super-mario-64.png) | ![The Legend of Zelda: Ocarina of Time title screen](docs/screenshots/ocarina-of-time.png) | ![GoldenEye 007 gameplay](docs/screenshots/goldeneye-007.png) |
+
 ## Build and play
 
 Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
 X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
 Python generates CPU sources during the build. Built games launch directly.
 
-You'll have to provide the ROMs an place them under local/ directory.
-They should match the following names/md5sum
+Run these commands from the checkout root to install the build tools:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+Provide your own ROM files and import each game once with
+[`tools/import_rom.py`](tools/import_rom.py). The tool accepts big-endian
+(`.z64`), byte-swapped (`.v64`) and word-swapped (`.n64`) ROMs. It normalizes the
+bytes, verifies the selected profile's exact ROM size and SHA-1, then copies the
+result into `local/` with the required filename. It rejects a mismatched ROM or
+an existing destination containing different bytes.
+
+```sh
+# Super Mario 64 US
+.venv/bin/python tools/import_rom.py \
+  --profile games/sm64-us/full.toml --rom '/path/to/Super Mario 64.v64'
+
+# Ocarina of Time US V1.2
+.venv/bin/python tools/import_rom.py \
+  --profile games/oot-us-v12/profile.toml --rom '/path/to/Ocarina of Time.n64'
+```
+
+SM64 uses `games/sm64-us/full.toml`; the other supported games use
+`games/<game>/profile.toml`, where `<game>` is `goldeneye-us`, `shadowman-us`,
+`quake-us`, `duke-us`, `nightmare-us`, or `oot-us-v12`.
+The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
 | --- | --- |
@@ -23,13 +57,9 @@ They should match the following names/md5sum
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
 | `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
 
-Run these commands from the checkout root:
+After importing a ROM, build and run its game:
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python tools/import_rom.py --profile games/sm64-us/full.toml --rom '/path/to/rom.z64'
-
 cmake --preset sm64-us-release
 cmake --build --preset sm64-us-release -j 4
 cmake --build --preset sm64-us-release --target run
@@ -38,9 +68,8 @@ cmake --build --preset sm64-us-release --target run
 ```
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
-`nightmare-us`, or `oot-us-v12`. Other ROM imports use `games/<game>/profile.toml`.
-Every profile pins a ROM revision and verifies its size and SHA-1. ROMs, saves,
-texture packs and crash dumps stay in ignored `local/`.
+`nightmare-us`, or `oot-us-v12`. ROMs, saves, texture packs and crash dumps stay
+in ignored `local/`.
 
 The equivalent explicit CMake configuration is:
 
