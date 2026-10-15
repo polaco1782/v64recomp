@@ -12,6 +12,7 @@
 #include <time.h>
 #include "renderer.h"
 #include "audio.h"
+#include "jpeg.h"
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
 #define LOG_OOT_CALLS (getenv("RECOMP_TRACE_CALLS") != NULL)
@@ -23,7 +24,7 @@ static unsigned call_cursor;
 static uint64_t now_ns;
 static bool reached_task;
 static RecompTask first_task;
-static unsigned skipped_jpeg_tasks;
+static unsigned jpeg_tasks;
 static RecompRenderer *renderer;
 static RecompAudio *audio;
 static unsigned graphics_tasks, presentations;
@@ -106,9 +107,8 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     require(recomp_thread_state(rt, 0x803ff000) == RECOMP_DEAD,
             "Ocarina of Time IPL thread still owns framebuffer storage", 0x803ff000);
     if (task->words[0] == 4) {
-        require(task->words[4] == 0x800e7200 && !task->resumed,
-                "OOT unrecognized JPEG task", task->words[4]);
-        skipped_jpeg_tasks++;
+        require(recomp_jpeg_decode_ps(rt, task, &oot_jpeg_profile), "OOT JPEG task rejected", task->words[4]);
+        jpeg_tasks++;
         return recomp_task_complete(rt, task->token, RECOMP_SP_DONE);
     }
     require(task->words[0] == 1 || task->words[0] == 2, "Ocarina of Time unsupported RSP task type", task->guest_address);
@@ -305,7 +305,7 @@ int main(int argc, char **argv) {
             "Ocarina of Time application thread ABI mismatch", BOOT_MAIN_ENTRY);
     f = fopen(report_path, "w");
     require(f != NULL, "cannot open Ocarina of Time report", 0);
-    fprintf(f, "{\"skipped_jpeg_tasks\":%u,", skipped_jpeg_tasks);
+    fprintf(f, "{\"jpeg_tasks\":%u,", jpeg_tasks);
     fprintf(f, "\"target_fps\":%u,\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64 ",",
             (unsigned)RECOMP_OOT_FPS, rs.display_frames, rs.display_elapsed_ns);
     int written = fprintf(f, "\"bss_cleared\":true,\"bss_guard_verified\":true,"

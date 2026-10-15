@@ -38,14 +38,26 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(recomp_runtime PRIVATE -Wall -Wextra -Werror -fno-fast-math -frounding-math -ffp-contract=off)
 endif()
 
+add_library(recomp_rsp_memory STATIC third_party/rsp-hle/memory.c)
+target_compile_options(recomp_rsp_memory PRIVATE -Wall -Wextra -Werror -fno-strict-aliasing)
+add_library(recomp_jpeg STATIC backends/jpeg.c third_party/rsp-hle/jpeg.c)
+target_include_directories(recomp_jpeg PRIVATE third_party/rsp-hle)
+target_link_libraries(recomp_jpeg PUBLIC recomp_runtime recomp_rsp_memory)
+target_compile_options(recomp_jpeg PRIVATE -Wall -Wextra -Werror -fno-strict-aliasing -fno-fast-math -ffp-contract=off)
+set_property(SOURCE third_party/rsp-hle/jpeg.c APPEND PROPERTY COMPILE_DEFINITIONS
+    rsp_break=recomp_jpeg_break HleWarnMessage=recomp_jpeg_warn HleVerboseMessage=recomp_jpeg_verbose)
+add_executable(recomp_jpeg_test EXCLUDE_FROM_ALL tests/jpeg.c)
+target_link_libraries(recomp_jpeg_test PRIVATE recomp_jpeg)
+target_compile_options(recomp_jpeg_test PRIVATE -Wall -Wextra -Werror)
+
 option(RECOMP_BUILD_AUDIO "Build native ABI1/Zelda NEAD synthesis and SDL playback" ON)
 if(RECOMP_BUILD_AUDIO)
     find_package(SDL2 REQUIRED)
     add_library(recomp_audio STATIC backends/audio.c third_party/rsp-hle/alist.c
         third_party/rsp-hle/alist_audio.c third_party/rsp-hle/alist_nead.c
-        third_party/rsp-hle/audio.c third_party/rsp-hle/memory.c)
+        third_party/rsp-hle/audio.c)
     target_include_directories(recomp_audio PRIVATE third_party/rsp-hle)
-    target_link_libraries(recomp_audio PUBLIC recomp_runtime SDL2::SDL2)
+    target_link_libraries(recomp_audio PUBLIC recomp_runtime recomp_rsp_memory SDL2::SDL2)
     target_compile_options(recomp_audio PRIVATE -Wall -Wextra -Werror -fno-strict-aliasing)
 endif()
 

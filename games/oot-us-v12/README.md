@@ -1,6 +1,6 @@
 # Ocarina of Time US V1.2
 
-Original title, file select, name entry and new-game opening with verified decompressed code and 469 relocatable overlays. Zelda NEAD audio is supported. JPEG SP tasks retain the existing skip-and-complete behavior. Inventory and full-game validation remain incomplete.
+Original title, file select, name entry and new-game opening with verified decompressed code and 469 relocatable overlays. Zelda NEAD audio and native JPEG SP decoding are supported. Inventory and full-game validation remain incomplete.
 
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/oot-us-v12/profile.toml --rom /path/to/rom`.
@@ -38,6 +38,20 @@ include `target_fps`, `display_frames` (swap-chain draws, including interpolated
 frames), and `display_elapsed_ns` (time between the first and last draw).
 The existing `presentations` counter counts host VI updates rather than displayed
 frames.
+
+JPEG tasks decode the game's coefficient buffers into RGBA5551 tiles before
+posting SP completion. The native decoder uses the pinned Mupen64Plus RSP-HLE
+implementation and verifies the boot, code and data images against this ROM's
+SHA-256 profile. Link's house background was checked through the original opening;
+other JPEG rooms and full-game progression still need validation. Debug reports
+count completed tasks as `jpeg_tasks`.
+
+The shared decoder fixtures run without a ROM or desktop:
+
+```sh
+cmake --build --preset oot-us-v12-release --target recomp_jpeg_test -j 4
+./build/oot-us-v12-release/recomp_jpeg_test
+```
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).

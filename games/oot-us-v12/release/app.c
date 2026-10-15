@@ -3,6 +3,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
+#include "jpeg.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,7 @@ static uint64_t guest_time(void *opaque) {
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt; (void)opaque;
     if(task->words[0]==4) {
-        require(task->words[4]==0x800e7200 && !task->resumed,"OOT unrecognized JPEG task",task->words[4]);
+        require(recomp_jpeg_decode_ps(rt,task,&oot_jpeg_profile),"OOT JPEG task rejected",task->words[4]);
         return recomp_task_complete(rt,task->token,RECOMP_SP_DONE);
     }
     require(task->words[0]==1 || task->words[0]==2,"unsupported RSP task type",task->guest_address);
