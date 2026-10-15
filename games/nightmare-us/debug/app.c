@@ -128,6 +128,8 @@ static uint64_t guest_time(void *opaque) {
 }
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt; (void)opaque;
+    require(recomp_thread_state(rt, 0x803ff000) == RECOMP_DEAD,
+            "Nightmare Creatures IPL thread still owns graphics storage", 0x803ff000);
     require(task->words[0] == 1 || task->words[0] == 2, "Nightmare Creatures unsupported RSP task type", task->guest_address);
     if (!reached_task) first_task = *task;
     reached_task = true;
