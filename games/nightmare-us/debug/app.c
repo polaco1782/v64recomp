@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
     RecompIOConfig io = {.connected_mask=1, .si_transfer_ticks=BOOT_COUNTER_HZ/1000};
     RecompTaskBackend backend = {.submit=submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Nightmare Creatures IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, argv[4], "Nightmare Creatures native recompilation");
+    renderer = recomp_renderer_create_named(&rt, argv[4], "Nightmare Creatures");
     require(renderer != NULL, "Nightmare Creatures renderer initialization failed", 0);
     RecompAudioConfig ac = {.output_enabled=true, .playback=getenv("RECOMP_AUDIO_MUTE") == NULL,
         .prebuffer_ms=160,

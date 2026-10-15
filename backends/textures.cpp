@@ -145,8 +145,8 @@ void RecompTextureFiles::collect(RT64::TextureCache &cache) {
         auto temporary = dumpDirectory / (base + ".png.tmp");
         if (!stbi_write_png(temporary.c_str(), texture.width, texture.height, 4, pixels.data(), texture.width * 4))
             throw std::runtime_error("could not write texture PNG");
-        // Publish the complete PNG before its metadata. The remake tool only
-        // picks up pairs, so it never reads an image still being written.
+        // Publish the complete PNG before its metadata so a complete pair
+        // always contains a fully written image.
         std::filesystem::rename(temporary, png);
         json data{{"hash", RT64::ReplacementDatabase::hashToString(item.hash)},
                   {"hash_version", uint32_t(RT64::TMEMHasher::CurrentHashVersion)}, {"width", texture.width},

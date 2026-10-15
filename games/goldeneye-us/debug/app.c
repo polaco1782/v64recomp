@@ -228,7 +228,7 @@ int main(int argc,char **argv) {
     require(recomp_rom_attach(&rt,rom,BOOT_ROM_SIZE,boot_sha1),"GoldenEye ROM identity mismatch",0);
     char renderer_data[2048];
     require(snprintf(renderer_data,sizeof(renderer_data),"%s.rt64",report_path)<(int)sizeof(renderer_data),"GoldenEye render path too long",0);
-    renderer=recomp_renderer_create_named(&rt,renderer_data,"Native GoldenEye 007 recompilation");
+    renderer=recomp_renderer_create_named(&rt,renderer_data,"GoldenEye 007");
     require(renderer!=NULL,"GoldenEye renderer initialization failed",0);
     recomp_renderer_set_graphics_hook(renderer,goldeneye_configure_graphics);
     const char *script=getenv("RECOMP_GOLDENEYE_INPUT");

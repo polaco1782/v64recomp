@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
     RecompIOConfig io = {.connected_mask=1, .si_transfer_ticks=BOOT_COUNTER_HZ/1000};
     RecompTaskBackend backend = {.submit=submit, .additional_task_types=1u<<4};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Ocarina of Time IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, argv[4], "Ocarina of Time native recompilation");
+    renderer = recomp_renderer_create_named(&rt, argv[4], "The Legend of Zelda: Ocarina of Time");
     require(renderer != NULL, "Ocarina of Time renderer initialization failed", 0);
     RecompAudioConfig ac = {.output_enabled=true, .playback=getenv("RECOMP_AUDIO_MUTE") == NULL,
         .prebuffer_ms=160,

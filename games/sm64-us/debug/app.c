@@ -98,7 +98,7 @@ static bool submit(Runtime *rt,void *unused,const RecompTask *task) {
                 ready=true;memcpy(start_pos,last_pos,sizeof(start_pos));max_height=min_height=last_pos[1];
                 printf("Mario controllable in level %u after %u world frames.\n",level,world_frames);fflush(stdout);
                 char data[4096];CHECK(snprintf(data,sizeof(data),"%s/rt64-data",output)>0);
-                if(!renderer) { renderer=recomp_renderer_create_named(rt,data,"Native SM64 recompilation");CHECK(renderer); }
+                if(!renderer) { renderer=recomp_renderer_create_named(rt,data,"Super Mario 64");CHECK(renderer); }
                 if(!live_startup) { recomp_audio_set_output_enabled(native_audio,true);playback_origin=monotonic_ns();clock_origin=ns; }
                 if(!goal && !live_clock) { wall_origin=monotonic_ns();clock_origin=ns;live_clock=true; }
             }
@@ -198,7 +198,7 @@ int main(int argc,char **argv) {
     live_startup=!goal && !strcmp(mode,"live");
     if(live_startup) {
         char data[4096];CHECK(snprintf(data,sizeof(data),"%s/rt64-data",output)>0);
-        renderer=recomp_renderer_create_named(&rt,data,"Native SM64 recompilation");CHECK(renderer);
+        renderer=recomp_renderer_create_named(&rt,data,"Super Mario 64");CHECK(renderer);
         wall_origin=monotonic_ns();clock_origin=ns;live_clock=true;
     }
     char wav_path[4096];CHECK(snprintf(wav_path,sizeof(wav_path),"%s/audio.wav",output)>0);

@@ -9,6 +9,20 @@ audio, and RT64 Vulkan graphics. See [how it works](docs/recompilation.md).
 Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
 X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
 Python generates CPU sources during the build. Built games launch directly.
+
+You'll have to provide the ROMs an place them under local/ directory.
+They should match the following names/md5sum
+
+| Filename | MD5 |
+| --- | --- |
+| `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
+| `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
+| `nightmare.us.z64` | `4116cf435db315a2481af8d1e9352feb` |
+| `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
+| `quake.us.z64` | `097605021951024c3ecb2d502c0c2a9f` |
+| `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
+| `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
+
 Run these commands from the checkout root:
 
 ```sh
@@ -50,9 +64,9 @@ use these adapters and the same checked ROM metadata in the game's root.
 Release retains correctness checks and crash reporting. It writes no routine
 reports, WAVs, screenshots, RAM captures or call traces during normal play.
 
-`games/<game>/debug/` holds diagnostic applications, replay inputs, inspection
-and texture-authoring tools. Debug includes full symbols, unoptimized game code,
-call tracing, captures, gameplay probes, RT64's F1 inspector and F6 wireframe.
+`games/<game>/debug/` holds diagnostic applications, replay inputs and inspection
+tools. Debug includes full symbols, unoptimized game code, call tracing, captures,
+gameplay probes, RT64's F1 inspector and F6 wireframe.
 It retains the existing diagnostic startup behavior and checks.
 
 ```sh
@@ -102,11 +116,11 @@ Release does not establish full-game correctness for partial ports.
 ## Layout
 
 - `games/<game>/release/`: playable app and required game adapters/generation inputs.
-- `games/<game>/debug/`: trace apps, captures/replays and inspection/authoring tools.
+- `games/<game>/debug/`: trace apps, captures/replays and inspection tools.
 - `games/<game>/*.toml`, `*.json`: shared pinned ROM profiles and checked inventories.
 - `runtime/`, `include/`, `backends/`: shared runtime and rendering/audio services.
 - `cmake/`, `CMakePresets.json`: game selection, generation, build and run integration.
-- `tools/`: shared ROM import, discovery, translation, crash and texture tools.
+- `tools/`: shared ROM import, discovery, translation and crash inspection tools.
 - `third_party/`: RT64 and the audio DSP dependency.
 - `local/`: private ROMs, saves, packs, renderer data and crash dumps.
 - `build/`: disposable generated sources, binaries and debug output.
@@ -114,3 +128,13 @@ Release does not establish full-game correctness for partial ports.
 See [audio](docs/audio.md), [floating point](docs/fpu.md),
 [threading](docs/threading.md), [native hooks](docs/native-hooks.md),
 [debugging](docs/debugging.md), and [textures](docs/textures.md).
+
+## Legal and third-party software
+
+This repository does not include or distribute ROM images or copyrighted game
+assets. Users must provide their own ROM files. The project uses free and
+open-source software; each third-party component remains subject to its own
+license.
+
+Graphics are provided by [RT64](https://github.com/rt64/rt64), an open-source
+N64 graphics renderer used by this project for Vulkan rendering.

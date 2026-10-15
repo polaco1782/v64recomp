@@ -1,2 +1,0 @@
-# Optional dependency for the texture remake tool only.
-Pillow>=11.0,<13

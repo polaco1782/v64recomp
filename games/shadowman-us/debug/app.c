@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
     RecompIOConfig io = {.connected_mask=1};
     RecompTaskBackend backend = {.submit=submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Shadow Man IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, argv[4], "Shadow Man native recompilation");
+    renderer = recomp_renderer_create_named(&rt, argv[4], "Shadow Man");
     require(renderer != NULL, "Shadow Man renderer initialization failed", 0);
     RecompAudioConfig ac = {.output_enabled=true, .playback=getenv("RECOMP_AUDIO_MUTE") == NULL,
         .microcode=RECOMP_AUDIO_ABI1, .task_profile=&shadowman_audio_task_profile,

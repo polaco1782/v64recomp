@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
     RecompIOConfig io = {.connected_mask=1};
     RecompTaskBackend backend = {.submit=submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Duke Nukem 64 IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, argv[4], "Duke Nukem 64 native recompilation");
+    renderer = recomp_renderer_create_named(&rt, argv[4], "Duke Nukem 64");
     require(renderer != NULL, "Duke Nukem 64 renderer initialization failed", 0);
     RecompAudioConfig ac = {.output_enabled=true, .playback=getenv("RECOMP_AUDIO_MUTE") == NULL,
         .prebuffer_ms=160,
