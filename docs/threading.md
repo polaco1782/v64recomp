@@ -42,11 +42,6 @@ Full-RAM snapshots and kernel thread handoffs have costs. This implementation
 establishes native threading and processing overlap; comparative CPU and frame
 pacing measurements are still needed before claiming a performance improvement.
 
-Build and run the focused scheduling, lifecycle, failure-forwarding and DSP
-completion checks with:
-
-```sh
-cmake -S . -B build/host -G Ninja -DRECOMP_BUILD_AUDIO=ON
-cmake --build build/host --target recomp_threading_test recomp_audio_worker_test
-ctest --test-dir build/host --output-on-failure
-```
+Build the shared services with `cmake -S . -B build/host -G Ninja
+-DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF`, then `cmake --build build/host`.
+Game diagnostic runs use the debug presets described in [debugging](debugging.md).

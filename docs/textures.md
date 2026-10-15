@@ -4,7 +4,7 @@ The native RT64 runner can export the original textures as they enter the decode
 texture cache. Enable it while playing:
 
 ```sh
-.venv/bin/python games/sm64-us/run_sm64.py --render --dump-textures
+RECOMP_TEXTURE_DUMP="$PWD/local/textures/sm64-us/dump" ./build/sm64-us-debug/bin/sm64-us
 ```
 
 The default game directory is `local/textures/sm64-us/`. `dump/` receives
@@ -34,21 +34,21 @@ Install the optional image-processing dependency:
 Preview one request locally, without an API key or upload:
 
 ```sh
-.venv/bin/python games/sm64-us/remake_textures.py --dry-run
+.venv/bin/python games/sm64-us/debug/remake_textures.py --dry-run
 ```
 
 Set `OPENAI_API_KEY` in your environment, then run:
 
 ```sh
 # Default: redraw one texture, preserving resolution and matching source opacity.
-.venv/bin/python games/sm64-us/remake_textures.py
+.venv/bin/python games/sm64-us/debug/remake_textures.py
 # Select a texture and append consistent art/material instructions.
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --texture 0123456789abcdef --prompt-file /path/to/art-style.txt
 # Process at most ten new textures, skipping existing replacements.
-.venv/bin/python games/sm64-us/remake_textures.py --limit 10
+.venv/bin/python games/sm64-us/debug/remake_textures.py --limit 10
 # Give the exact text for a selected glyph (this SM64 texture is capital A).
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --texture 029cca6f508abde8 --text A
 ```
 
@@ -133,7 +133,7 @@ seam continuity; inspect the result in the game before processing a large batch.
 For smaller game files, explicitly save at four times the original dimensions:
 
 ```sh
-.venv/bin/python games/sm64-us/remake_textures.py --limit 10 --resize-to-scale
+.venv/bin/python games/sm64-us/debug/remake_textures.py --limit 10 --resize-to-scale
 ```
 
 This requests the same minimum API canvas, then reduces the new AI artwork
@@ -158,7 +158,7 @@ To restore a previously processed replacement from its cached AI output without
 another upload or API call, run:
 
 ```sh
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --texture 0123456789abcdef --reuse-generated
 ```
 
@@ -173,7 +173,7 @@ If the model painted a known background color into a cutout, remove that backgro
 from the cached artwork without another request:
 
 ```sh
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --texture 05ca166bef1000bc --reuse-generated \
   --background-key ffffff --background-tolerance 48
 ```
@@ -198,11 +198,12 @@ unchanged in the reference. For example, 32×32 and 16×16 become 512×512;
 
 ```sh
 # Export existing dumps without building or starting the game.
-.venv/bin/python games/sm64-us/run_sm64.py --dump-grid
+.venv/bin/python games/sm64-us/debug/remake_textures.py --dump-grid
 # Collect textures during play, then export when the game exits.
-.venv/bin/python games/sm64-us/run_sm64.py --render --dump-grid
+RECOMP_TEXTURE_DUMP="$PWD/local/textures/sm64-us/dump" ./build/sm64-us-debug/bin/sm64-us
+.venv/bin/python games/sm64-us/debug/remake_textures.py --dump-grid
 # Select a base filename, eight textures per grid, and the minimum tile area.
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --dump-grid /path/to/game-grid.png --tiles-per-sheet 8 --grid-tile-size 512
 ```
 
@@ -242,7 +243,7 @@ It does not need to produce individual texture files or a ZIP.
 Save processed files with these names in a directory and import them together:
 
 ```sh
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --import-grid /path/to/processed-grids \
   --grid-json local/textures/sm64-us/grids/all-textures.json
 ```
@@ -251,7 +252,7 @@ To import one batch, use its matching JSON; this also allows any processed PNG
 filename:
 
 ```sh
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --import-grid /path/to/processed-grid.png \
   --grid-json local/textures/sm64-us/grids/all-textures.001.json
 ```
@@ -287,12 +288,12 @@ No replacement directory or renderer changes are needed.
 
 ```sh
 # Preview up to sixteen 32x32 originals locally; no upload or game files changed.
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --tileset --tile-size 32x32 --dry-run
 # Redraw up to sixty-four pending textures, grouping all original sizes.
-.venv/bin/python games/sm64-us/remake_textures.py --tileset --limit 64
+.venv/bin/python games/sm64-us/debug/remake_textures.py --tileset --limit 64
 # Use smaller sheets and explicitly save each recreation at 4x its original size.
-.venv/bin/python games/sm64-us/remake_textures.py \
+.venv/bin/python games/sm64-us/debug/remake_textures.py \
   --tileset --tiles-per-sheet 8 --limit 32 --resize-to-scale
 ```
 
@@ -358,12 +359,12 @@ textures. Replacements start enabled: the first press shows originals, the next
 shows refreshed replacements. Replacements also load on the next launch.
 
 ```sh
-.venv/bin/python games/sm64-us/run_sm64.py --render
-# Use custom directories.
-.venv/bin/python games/sm64-us/run_sm64.py --render \
-  --dump-textures /path/to/originals --texture-replacements /path/to/remakes
+./build/sm64-us-release/bin/sm64-us
+# Custom dump and replacement directories (debug only for dumping).
+RECOMP_TEXTURE_DUMP=/path/to/originals RECOMP_TEXTURE_REPLACEMENTS=/path/to/remakes \
+  ./build/sm64-us-debug/bin/sm64-us
 # Compare with the originals.
-.venv/bin/python games/sm64-us/run_sm64.py --render --no-texture-replacements
+RECOMP_TEXTURE_REPLACEMENTS= ./build/sm64-us-release/bin/sm64-us
 ```
 
 Dump and replacement directories must differ. Reloading can briefly stall while

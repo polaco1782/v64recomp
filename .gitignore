@@ -1,6 +1,6 @@
 .venv/
-build/
-local/
+build/*
+local/*
 __pycache__
 *.pyc
 core

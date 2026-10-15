@@ -1,8 +1,0 @@
-extends = "profile.toml"
-# The original thread is created, then stopped before its first instruction.
-boundaries = [
-  {symbol = "mainproc", vram = 0x00103298, kind = "unsupported_function", reason = "Bounded bootstrap stops before the first application thread", expected_words = [0x27bdffe8, 0xafbf0010, 0x3c040010, 0x24843210]},
-]
-
-[discovery]
-exclude_roots = ["application"]

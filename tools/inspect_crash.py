@@ -23,7 +23,7 @@ def source_location(frame: dict) -> tuple[str,str]:
 
 
 def guest_location(location: str) -> str | None:
-    match=re.match(r'(.+functions\.c):(\d+)',location)
+    match=re.match(r'(.+(?:functions|cpu-[^/]+)\.c):(\d+)',location)
     if not match:return None
     path,line=Path(match[1]),int(match[2])
     if not path.is_file():return None
@@ -74,8 +74,8 @@ def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('report',type=Path,nargs='?')
     args=parser.parse_args();path=args.report
     if path is None:
-        directory=Path(__file__).resolve().parents[1]/'build'
-        reports=[*directory.rglob('crash-*.json'),*directory.rglob('*.crash.json')]
+        directory=Path(__file__).resolve().parents[1]
+        reports=[p for base in (directory/'local/crashes',directory/'build') for pattern in ('crash-*.json','*.crash.json') for p in base.rglob(pattern)]
         if not reports:raise ValueError(f'no crash reports in {directory}')
         path=max(reports,key=lambda p:p.stat().st_mtime_ns)
     inspect_crash(path);return 0

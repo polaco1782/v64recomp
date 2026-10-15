@@ -1,186 +1,229 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Prepare debug directories",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "-c",
-                "from pathlib import Path; [Path(p).mkdir(parents=True, exist_ok=True) for p in ('local/saves', 'local/rt64/mesa-cache')]"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Build Debug: Super Mario 64",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "${workspaceFolder}/games/sm64-us/run_sm64.py",
-                "--render",
-                "--debug",
-                "--build-only",
-                "--jobs",
-                "4"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "dependsOn": [
-                "Prepare debug directories"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": true
-            }
-        },
-        {
-            "label": "Build Debug: GoldenEye 007",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "${workspaceFolder}/games/goldeneye-us/run_goldeneye.py",
-                "--render",
-                "--debug",
-                "--build-only",
-                "--jobs",
-                "4"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "dependsOn": [
-                "Prepare debug directories"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": true
-            }
-        },
-        {
-            "label": "Build Debug: Shadow Man",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "${workspaceFolder}/games/shadowman-us/run_shadowman.py",
-                "--render",
-                "--debug",
-                "--build-only",
-                "--jobs",
-                "4"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "dependsOn": [
-                "Prepare debug directories"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": true
-            }
-        },
-        {
-            "label": "Build Debug: Quake 64",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "${workspaceFolder}/games/quake-us/run_quake.py",
-                "--render",
-                "--debug",
-                "--build-only",
-                "--jobs",
-                "4"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "dependsOn": [
-                "Prepare debug directories"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": true
-            }
-        },
-        {
-            "label": "Build Debug: Duke Nukem 64",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "${workspaceFolder}/games/duke-us/run_duke.py",
-                "--render",
-                "--debug",
-                "--build-only",
-                "--jobs",
-                "4"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "dependsOn": [
-                "Prepare debug directories"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": true
-            }
-        },
-        {
-            "label": "Build Debug: Nightmare Creatures",
-            "type": "process",
-            "command": "${workspaceFolder}/.venv/bin/python",
-            "args": [
-                "${workspaceFolder}/games/nightmare-us/run_nightmare.py",
-                "--render",
-                "--debug",
-                "--build-only",
-                "--jobs",
-                "4"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "dependsOn": [
-                "Prepare debug directories"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": true
-            }
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Configure Debug: Super Mario 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "sm64-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Super Mario 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "sm64-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Super Mario 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: GoldenEye 007 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "goldeneye-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: GoldenEye 007 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "goldeneye-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: GoldenEye 007 US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: Shadow Man US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "shadowman-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Shadow Man US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "shadowman-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Shadow Man US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: Quake 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "quake-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Quake 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "quake-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Quake 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: Duke Nukem 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "duke-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Duke Nukem 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "duke-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Duke Nukem 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: Nightmare Creatures US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "nightmare-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Nightmare Creatures US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "nightmare-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Nightmare Creatures US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: Ocarina of Time US V1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "oot-us-v12-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Ocarina of Time US V1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "oot-us-v12-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Ocarina of Time US V1.2",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    }
+  ]
 }

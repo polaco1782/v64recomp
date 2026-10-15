@@ -1,9 +1,0 @@
-# Bounded startup validation. The main thread is registered for OS creation,
-# but the scheduler stops before its first instruction. This is not a game stub.
-extends = "profile.toml"
-boundaries = [
-  {symbol = "mainproc", vram = 0x7000089c, kind = "unsupported_function", reason = "GoldenEye bootstrap check stops before the main game thread", expected_words = [0x27bdffe8, 0xafbf0014, 0x0c0001ce]},
-]
-
-[discovery]
-exclude_roots = ["mainproc", "game_text_start"]

@@ -36,11 +36,13 @@ struct PausedUploads {
 }
 
 void RecompTextureFiles::configure(RT64::TextureCache &cache) {
+#ifdef RECOMP_DEBUG
     if (const char *path = std::getenv("RECOMP_TEXTURE_DUMP"); path && *path) {
         dumpDirectory = path;
         std::filesystem::create_directories(dumpDirectory);
         std::fprintf(stderr, "Texture PNG dump: %s\n", dumpDirectory.c_str());
     }
+#endif
     if (const char *path = std::getenv("RECOMP_TEXTURE_REPLACEMENTS"); path && *path) replacementDirectory = path;
     reload(cache);
 }
@@ -110,6 +112,7 @@ void RecompTextureFiles::refreshAndToggle(RT64::TextureCache &cache) {
 }
 
 void RecompTextureFiles::collect(RT64::TextureCache &cache) {
+#ifdef RECOMP_DEBUG
     if (dumpDirectory.empty() && !replacementFiles) return;
     struct Pending { uint64_t hash; RT64::Texture texture; };
     std::vector<Pending> pending;
@@ -160,4 +163,7 @@ void RecompTextureFiles::collect(RT64::TextureCache &cache) {
         std::fprintf(stderr, "Dumped texture %s: %ux%u, TLUT %u, %s\n", base.c_str(), texture.width, texture.height,
                      texture.tlut, transparent ? "transparent" : "opaque");
     }
+#else
+    (void)cache;
+#endif
 }

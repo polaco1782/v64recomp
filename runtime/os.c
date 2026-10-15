@@ -51,11 +51,13 @@ void hook_os_create_thread(Runtime *rt, MipsContext *ctx) {
     int32_t priority = (int32_t)mips_i32(recomp_load(rt, sp + 20, 4));
     recomp_thread_create(rt, argument(ctx, 0), signed_argument(ctx, 1), argument(ctx, 2),
                          argument(ctx, 3), stack, priority);
+#ifdef RECOMP_DEBUG
     fprintf(stderr, "[osCreateThread] created pthread: id=%" PRId32 " priority=%" PRId32
                     " thread=0x%08" PRIx32 " entry=0x%08" PRIx32
                     " arg=0x%08" PRIx32 " stack=0x%08" PRIx32 "\n",
             signed_argument(ctx, 1), priority, argument(ctx, 0), argument(ctx, 2),
             argument(ctx, 3), stack);
+#endif
 }
 void hook_os_start_thread(Runtime *rt, MipsContext *ctx) { recomp_thread_start(rt, argument(ctx, 0)); }
 void hook_os_stop_thread(Runtime *rt, MipsContext *ctx) { recomp_thread_stop(rt, argument(ctx, 0)); }

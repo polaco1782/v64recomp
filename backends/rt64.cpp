@@ -119,6 +119,7 @@ static void process_present(void *opaque) {
 RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,const char *window_title) {
     if(active_renderer || !rt->rom || rt->rdram_size>8*1024*1024 || !data_path)return nullptr;
     if(!XInitThreads())return nullptr;
+    SDL_SetHint(SDL_HINT_VIDEODRIVER,"x11");
     if(SDL_InitSubSystem(SDL_INIT_VIDEO|SDL_INIT_EVENTS)!=0) {
         std::fprintf(stderr,"RT64 requires an X11 desktop: %s\n",SDL_GetError());return nullptr;
     }
@@ -148,7 +149,11 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     active_renderer=s.get();
     try {
         s->app=std::make_unique<RT64::Application>(core,config);
+#ifdef RECOMP_DEBUG
         s->app->userConfig.developerMode=true;
+#else
+        s->app->userConfig.developerMode=false;
+#endif
         s->app->userConfig.graphicsAPI=RT64::UserConfiguration::GraphicsAPI::Vulkan;
         s->app->userConfig.resolution=RT64::UserConfiguration::Resolution::Manual;
         s->app->userConfig.resolutionMultiplier=4.0;
@@ -168,7 +173,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->app->swapChain->setVsyncEnabled(false);
         s->app->presentQueue->presentWaitEnabled=false;
         s->app->appWindow->sdlWindow=s->window;
+#ifdef RECOMP_DEBUG
         s->app->appWindow->sdlCheckFilterInstallation();
+#endif
         s->textureFiles.configure(*s->app->textureCache);
         s->before.resize(rt->rdram_size);
         s->worker=recomp_worker_create("n64-video");
@@ -194,9 +201,11 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     recomp_worker_destroy(s->worker);
     SDL_SetEventFilter(nullptr,nullptr);
     if(s->ready) { s->wait_workers();s->app->end(); }
+#ifdef RECOMP_DEBUG
     std::fprintf(stderr,"Textures: %llu PNGs written, %llu replacements used.\n",
                  static_cast<unsigned long long>(s->textureFiles.pngsWritten),
                  static_cast<unsigned long long>(s->textureFiles.replacedCount()));
+#endif
     active_renderer=nullptr;
     SDL_Window *window=s->window;
     s->app.reset();if(window)SDL_DestroyWindow(window);SDL_Quit();delete s;
@@ -224,7 +233,10 @@ bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
 }
 bool recomp_renderer_present(RecompRenderer *s) {
     s->check_owner();service_renderer(s->rt,s,true);
-    s->sync_vi();SDL_PumpEvents();s->app->appWindow->sdlCheckFilterInstallation();
+    s->sync_vi();SDL_PumpEvents();
+#ifdef RECOMP_DEBUG
+    s->app->appWindow->sdlCheckFilterInstallation();
+#endif
     s->presenting=true;s->busy=recomp_worker_submit(s->worker,process_present,s);
     return s->busy;
 }
@@ -235,6 +247,7 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
         if(event.type==SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode==SDL_SCANCODE_F5) {
             s->wait_workers();s->textureFiles.refreshAndToggle(*s->app->textureCache);
         }
+#ifdef RECOMP_DEBUG
         if(event.type==SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode==SDL_SCANCODE_F6) {
             s->wait_workers();
             if(s->app->device->getCapabilities().wireframe) {
@@ -247,13 +260,16 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
                 std::fprintf(stderr,"Wireframe rendering is unavailable on this graphics device.\n");
             }
         }
+#endif
     }
     *pad={};pad->connected=true;
+#ifdef RECOMP_DEBUG
     {
         const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
         // SDL's keyboard state includes keys consumed by the ImGui event filter.
         if(s->app->presentQueue->inspector && ImGui::GetIO().WantCaptureKeyboard)return true;
     }
+#endif
     const Uint8 *keys=SDL_GetKeyboardState(nullptr);
     if(keys[SDL_SCANCODE_ESCAPE])return false;
     const struct { SDL_Scancode key;uint16_t button; } bindings[]={
@@ -267,6 +283,7 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
     if(pad->stick_x && pad->stick_y) { pad->stick_x=pad->stick_x*7/10;pad->stick_y=pad->stick_y*7/10; }
     return true;
 }
+#ifdef RECOMP_DEBUG
 bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
     s->check_owner();service_renderer(s->rt,s,true);s->wait_workers();
     SDL_SysWMinfo info{};SDL_VERSION(&info.version);
@@ -287,6 +304,7 @@ bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
     }
     bool okay=!std::ferror(file);if(std::fclose(file))okay=false;XDestroyImage(shot);return okay;
 }
+#endif
 RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {
     s->check_owner();service_renderer(s->rt,s,true);s->stats.textures_dumped=s->textureFiles.pngsWritten;
     s->stats.textures_replaced=s->textureFiles.replacedCount();

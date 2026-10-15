@@ -14,11 +14,10 @@ explicitly. No CPU or RSP instruction interpreter is linked.
 Zelda FILTER setup copies coefficients into an RSP-local cache. Filter execution
 updates that cache and the 32-byte guest filter state, preserving the CPU-owned
 source table. This permits the game to prepare the following task's coefficients
-while synthesis runs. `nead_filter` checks source preservation, INIT history and
-cache reload behavior.
+while synthesis runs. Source coefficients remain CPU-owned across filter execution.
 
 Games provide pinned task addresses and boot/text/data microcode hashes through
-`games/<game>/audio.h`. The shared adapter validates these fingerprints and each
+`games/<game>/release/audio.h`. The shared adapter validates these fingerprints and each
 command's RAM/DMEM ranges, alignment and supported flags. Unknown microcodes,
 commands and unsupported resampling flags fail explicitly. Revision, license and
 local changes are in [third_party/rsp-hle/README.md](../third_party/rsp-hle/README.md).
@@ -43,10 +42,10 @@ until the reserve is refilled. Disabling output clears and pauses playback.
 the running queue before PCM admission, excluding initial buffering.
 
 ```sh
-.venv/bin/python games/sm64-us/run_sm64.py --render
-.venv/bin/python games/sm64-us/run_sm64.py --render --mute
-.venv/bin/python games/sm64-us/run_sm64.py --render --capture
-.venv/bin/python games/sm64-us/run_sm64.py --playback --mode jump
+./build/sm64-us-release/bin/sm64-us
+./build/sm64-us-release/bin/sm64-us --mute
+./build/sm64-us-debug/bin/sm64-us --frames 180 --mode jump
+./build/oot-us-v12-debug/bin/oot-us-v12 --audio-trace /tmp/oot-audio.csv
 ```
 
 Interactive output uses wall time from startup. Deterministic gameplay checks
@@ -57,7 +56,7 @@ Rendered apps use absolute presentation deadlines. Ocarina of Time additionally
 runs bounded scheduler batches during the remaining interval, sleeping at most
 1 ms between batches. Its audio manager discards duplicate retrace messages;
 servicing VI/AI and worker completions during pacing prevents that coalescing
-from starving playback. Its launcher supports `--audio-trace PATH` for a CSV of
+from starving playback. Its debug executable supports `--audio-trace PATH` for a CSV of
 host timestamps, admitted frames, sample rate, SDL queue bytes and underruns.
 
 Captured ROM scenarios can verify stereo output, bounded clipping and waveform

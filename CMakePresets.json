@@ -1,0 +1,210 @@
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "sm64-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/sm64-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "sm64-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "sm64-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/sm64-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "sm64-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "goldeneye-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/goldeneye-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "goldeneye-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "goldeneye-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/goldeneye-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "goldeneye-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "shadowman-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/shadowman-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "shadowman-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "shadowman-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/shadowman-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "shadowman-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "quake-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/quake-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "quake-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "quake-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/quake-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "quake-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "duke-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/duke-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "duke-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "duke-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/duke-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "duke-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "nightmare-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/nightmare-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "nightmare-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "nightmare-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/nightmare-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "nightmare-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "oot-us-v12-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/oot-us-v12-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "oot-us-v12",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "oot-us-v12-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/oot-us-v12-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "oot-us-v12",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "sm64-us-release",
+      "configurePreset": "sm64-us-release"
+    },
+    {
+      "name": "sm64-us-debug",
+      "configurePreset": "sm64-us-debug"
+    },
+    {
+      "name": "goldeneye-us-release",
+      "configurePreset": "goldeneye-us-release"
+    },
+    {
+      "name": "goldeneye-us-debug",
+      "configurePreset": "goldeneye-us-debug"
+    },
+    {
+      "name": "shadowman-us-release",
+      "configurePreset": "shadowman-us-release"
+    },
+    {
+      "name": "shadowman-us-debug",
+      "configurePreset": "shadowman-us-debug"
+    },
+    {
+      "name": "quake-us-release",
+      "configurePreset": "quake-us-release"
+    },
+    {
+      "name": "quake-us-debug",
+      "configurePreset": "quake-us-debug"
+    },
+    {
+      "name": "duke-us-release",
+      "configurePreset": "duke-us-release"
+    },
+    {
+      "name": "duke-us-debug",
+      "configurePreset": "duke-us-debug"
+    },
+    {
+      "name": "nightmare-us-release",
+      "configurePreset": "nightmare-us-release"
+    },
+    {
+      "name": "nightmare-us-debug",
+      "configurePreset": "nightmare-us-debug"
+    },
+    {
+      "name": "oot-us-v12-release",
+      "configurePreset": "oot-us-v12-release"
+    },
+    {
+      "name": "oot-us-v12-debug",
+      "configurePreset": "oot-us-v12-debug"
+    }
+  ]
+}
