@@ -12,6 +12,10 @@ Captured from the native builds.
 | --- | --- | --- |
 | ![Super Mario 64 in Castle Grounds](docs/screenshots/super-mario-64.png) | ![The Legend of Zelda: Ocarina of Time title screen](docs/screenshots/ocarina-of-time.png) | ![GoldenEye 007 gameplay](docs/screenshots/goldeneye-007.png) |
 
+RT64's widescreen expansion gives *Ocarina of Time* an ultrawide view of Hyrule.
+
+![Ocarina of Time rendered in an ultrawide window with RT64](docs/screenshots/zelda-wide.png)
+
 ## Build and play
 
 Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
