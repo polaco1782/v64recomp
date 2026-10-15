@@ -12,11 +12,16 @@ typedef struct RecompRendererStats {
     uint64_t textures_dumped, textures_replaced, replacement_files;
     uint64_t rdp_triangles;
     uint64_t graphics_tasks_without_dp;
+    /* Swap-chain draws, including interpolated frames, and time from first to last. */
+    uint64_t display_frames, display_elapsed_ns;
 } RecompRendererStats;
 /* Linux/X11 Vulkan adapter. Public entry points run on the host owner. Display
  * lists and presentation run on a private worker; SDL input/window work stays
  * on the owner. Stats/capture/destroy drain pending jobs. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
+/* 0 preserves the game's original rate; 10..1000 enables RT64 interpolation.
+ * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */
+void recomp_renderer_set_frame_rate(RecompRenderer *, uint32_t target_fps);
 /* Configure a game-specific microcode extension after RT64 recognizes a task. */
 void recomp_renderer_set_graphics_hook(RecompRenderer *, RecompGraphicsHook);
 void recomp_renderer_destroy(RecompRenderer *);

@@ -2,12 +2,14 @@
 #include "hle/rt64_application.h"
 #include "hle/rt64_workload_queue.h"
 #include "hle/rt64_present_queue.h"
+#include "rhi/rt64_render_hooks.h"
 #include "imgui.h"
 #include "textures.h"
 #define Status int
 #include <X11/Xutil.h>
 #undef Status
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cstdio>
 #include <cstring>
@@ -33,6 +35,7 @@ struct RecompRenderer {
     uint32_t mi=0, dp_start=0,dp_end=0,dp_current=0,dp_status=0,dp_clock=0,dp_busy=0,dp_pipe=0,dp_tmem=0;
     RecompViRegisters vi{};
     RecompRendererStats stats{};
+    std::atomic<uint64_t> display_frames{0}, first_display_ns{0}, last_display_ns{0};
     RecompTextureFiles textureFiles;
     uint64_t token=0;
     bool sp_seen=false,dp_seen=false;
@@ -51,6 +54,12 @@ struct RecompRenderer {
 static RecompRenderer *active_renderer;
 static uint64_t monotonic_ns() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+static void display_draw(plume::RenderCommandList *,plume::RenderFramebuffer *) {
+    RecompRenderer *s=active_renderer;
+    uint64_t now=monotonic_ns();
+    if(s->display_frames.load()==0)s->first_display_ns=now;
+    s->last_display_ns=now;s->display_frames++;
 }
 static void interrupts() {
     RecompRenderer *s=active_renderer;
@@ -147,6 +156,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     RT64::ApplicationConfiguration config;
     config.appId="n64-native-recomp";config.detectDataPath=false;config.useConfigurationFile=false;config.dataPath=data_path;
     active_renderer=s.get();
+    RT64::SetRenderHooks(nullptr,display_draw,nullptr);
     try {
         s->app=std::make_unique<RT64::Application>(core,config);
 #ifdef RECOMP_DEBUG
@@ -165,7 +175,8 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->app->enhancementConfig.textureLOD.scale=true;
         if(s->app->setup(0)!=RT64::Application::SetupResult::Success) {
             std::fprintf(stderr,"RT64 setup failed: %s\n",RT64::GlobalLastError.c_str());
-            active_renderer=nullptr;s->app.reset();SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
+            s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);
+            active_renderer=nullptr;SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
         }
         s->ready=true;
         // The app clock paces this serialized adapter. Waiting again on the
@@ -186,10 +197,23 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         }
         return s.release();
     } catch(const std::exception &e) {
-        std::fprintf(stderr,"RT64 setup: %s\n",e.what());active_renderer=nullptr;
+        std::fprintf(stderr,"RT64 setup: %s\n",e.what());
         SDL_SetEventFilter(nullptr,nullptr);
-        s->app.reset();SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
+        s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);active_renderer=nullptr;
+        SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
     }
+}
+void recomp_renderer_set_frame_rate(RecompRenderer *s,uint32_t target_fps) {
+    s->check_owner();
+    if(s->busy || s->stats.graphics_tasks || s->stats.presentations || (target_fps && (target_fps<10 || target_fps>1000)))
+        recomp_fail("configure renderer frame rate before submitting tasks",target_fps);
+    s->app->userConfig.refreshRate=target_fps?RT64::UserConfiguration::RefreshRate::Manual:RT64::UserConfiguration::RefreshRate::Original;
+    if(target_fps)s->app->userConfig.refreshRateTarget=static_cast<int>(target_fps);
+    s->app->updateUserConfig(false);
+    // Start presenting interpolated frames with the completed display list.
+    // Waiting for the guest's buffered VI swap delays the interpolation window.
+    s->app->enhancementConfig.presentation.mode=target_fps?RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly:RT64::EnhancementConfiguration::Presentation::Mode::SkipBuffering;
+    s->app->updateEnhancementConfig();
 }
 void recomp_renderer_set_graphics_hook(RecompRenderer *s,RecompGraphicsHook hook) {
     s->check_owner();service_renderer(s->rt,s,true);s->graphics_hook=hook;
@@ -206,9 +230,10 @@ void recomp_renderer_destroy(RecompRenderer *s) {
                  static_cast<unsigned long long>(s->textureFiles.pngsWritten),
                  static_cast<unsigned long long>(s->textureFiles.replacedCount()));
 #endif
-    active_renderer=nullptr;
     SDL_Window *window=s->window;
-    s->app.reset();if(window)SDL_DestroyWindow(window);SDL_Quit();delete s;
+    s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);active_renderer=nullptr;
+    if(window)SDL_DestroyWindow(window);
+    SDL_Quit();delete s;
 }
 bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
     s->check_owner();service_renderer(s->rt,s,true);
@@ -308,5 +333,9 @@ bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
 RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {
     s->check_owner();service_renderer(s->rt,s,true);s->stats.textures_dumped=s->textureFiles.pngsWritten;
     s->stats.textures_replaced=s->textureFiles.replacedCount();
-    s->stats.replacement_files=s->textureFiles.replacementFiles;return s->stats;
+    s->stats.replacement_files=s->textureFiles.replacementFiles;
+    uint64_t first=s->first_display_ns.load(),last=s->last_display_ns.load();
+    s->stats.display_frames=s->display_frames.load();
+    s->stats.display_elapsed_ns=last>=first?last-first:0;
+    return s->stats;
 }

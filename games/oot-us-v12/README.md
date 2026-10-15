@@ -20,5 +20,24 @@ the original trace/capture harness and inspection tools. Profiles and inventorie
 in this directory are shared by both builds. Generated C stays under the selected
 build directory, and private ROM/save data stays in `local/`.
 
+Both builds target **60 FPS** using RT64 frame interpolation. Gameplay and audio
+retain the original timing; the extra display frames interpolate movement between
+game frames. This does not increase the game's logic or input update rate.
+
+Set the display target at configuration time (RT64 caps it to the detected display
+refresh rate). Use `0` to restore the original frame rate:
+
+```sh
+cmake --preset oot-us-v12-release -DRECOMP_OOT_FPS=0
+cmake --build --preset oot-us-v12-release -j 4
+```
+
+Set `-DRECOMP_OOT_FPS=60` to restore 60 FPS, or choose another target from 10 to
+1000. The setting is cached separately in each build directory. Debug reports
+include `target_fps`, `display_frames` (swap-chain draws, including interpolated
+frames), and `display_elapsed_ns` (time between the first and last draw).
+The existing `presentations` counter counts host VI updates rather than displayed
+frames.
+
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).
