@@ -22,6 +22,22 @@ Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
 X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
 Python generates CPU sources during the build. Built games launch directly.
 
+Clone with submodules to download the pinned RT64 revision and its dependencies,
+including Plume:
+
+```sh
+git clone --recurse-submodules https://github.com/polaco1782/v64recomp.git
+cd v64recomp
+```
+
+For an existing checkout, run this from the repository root:
+
+```sh
+git submodule update --init --recursive
+```
+
+CMake builds these sources locally; it does not clone or initialize submodules.
+
 Run these commands from the checkout root to install the build tools:
 
 ```sh
@@ -145,6 +161,27 @@ Host faults outside these controlled checks require GDB or a host core dump.
 Save paths preserve the existing SM64/GoldenEye EEPROM and OOT SRAM locations.
 Game support remains at the milestones in [status](docs/status.md); selecting
 Release does not establish full-game correctness for partial ports.
+
+## Technical information: how it works
+
+The build verifies a game ROM, discovers functions using checked profiles and
+inventories, translates MIPS instructions into C11, and compiles the generated
+code into a native executable. Game logic runs as compiled host code while the
+ROM supplies its original assets and data.
+
+The shared runtime implements the OS and device behavior the game expects:
+thread scheduling, message queues, timers, input, saves and task completion.
+Verified OS/library routines call native handlers. RT64 renders graphics tasks;
+the native audio backend processes supported sound tasks and sends PCM to SDL.
+
+The technical documentation covers each part:
+
+- [Recompilation pipeline](docs/recompilation.md): ROM mappings, discovery, translation and native execution.
+- [OS emulation and native calls](docs/os-emulation.md): why OS support is needed, which calls are replaced and how guest behavior is preserved.
+- [Native hook recognition](docs/native-hooks.md): ROM fingerprints, game-specific overrides and guarded direct calls.
+- [Thread scheduling and workers](docs/threading.md): priorities, blocking, message delivery and asynchronous graphics/audio work.
+- [Audio processing](docs/audio.md): native DSP tasks, AI timing and SDL playback.
+- [Floating-point semantics](docs/fpu.md): guest rounding, exceptions and host arithmetic.
 
 ## Layout
 
