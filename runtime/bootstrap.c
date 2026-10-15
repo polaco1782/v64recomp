@@ -1,4 +1,5 @@
 #include "runtime.h"
+#include "runtime_debug.h"
 #include <openssl/evp.h>
 #include <string.h>
 
@@ -11,6 +12,9 @@ bool recomp_rom_attach(Runtime *rt, const uint8_t *rom, size_t size, const uint8
         return false;
     rt->rom = rom;
     rt->rom_size = size;
+    RECOMP_LOG("game", "verified ROM title=%.20s bytes=%zu entry=0x%08" PRIx32
+        " country=0x%02x revision=%u", (const char *)rom+0x20, size,
+        (uint32_t)rom[8]<<24 | (uint32_t)rom[9]<<16 | (uint32_t)rom[10]<<8 | rom[11], rom[0x3e], rom[0x3f]);
     return true;
 }
 
@@ -38,6 +42,9 @@ bool recomp_boot_load(Runtime *rt, const RecompBootLoad *loads, size_t count) {
     for (size_t i = 0; i < count; i++) {
         recomp_copy_to_ram(rt, loads[i].vram, rt->rom + loads[i].rom_offset, loads[i].size);
         rt->section_loaded[loads[i].section] = true;
+        RECOMP_LOG("game", "boot section=%" PRIu32 " rom=0x%08" PRIx32
+            " ram=0x%08" PRIx32 " bytes=%" PRIu32,
+            loads[i].section, loads[i].rom_offset, loads[i].vram, loads[i].size);
     }
     return true;
 }

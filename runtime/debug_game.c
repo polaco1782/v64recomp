@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "game.h"
+#include "runtime_debug.h"
 #include "game_defaults.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,8 @@ static void setting(const char *suffix,const char *value) {
     setenv(key,value,1);
 }
 int main(int argc,char **argv) {
+    RECOMP_LOG("game", "%s debug diagnostics enabled; frequent events sampled (RECOMP_DEBUG_FULL=1 logs all)", RECOMP_GAME_ID);
+    for(int i=1;i<argc;i++)RECOMP_LOG("game", "argument[%d]=%s", i, argv[i]);
     /* Keep the diagnostic harness's positional interface available to tools. */
     if(argc>1 && argv[1][0]!='-')return recomp_debug_main(argc,argv);
     char **filtered=calloc((size_t)argc+1,sizeof(*filtered));
@@ -40,6 +43,8 @@ int main(int argc,char **argv) {
     }
     RecompGameOptions o;int parsed=recomp_game_options(count,filtered,&o);free(filtered);
     if(parsed)return parsed<0?2:0;
+    RECOMP_LOG("game", "ROM=%s data=%s save=%s frames=%u mute=%s output=%s",
+        o.rom, o.data, o.save, o.frames, o.mute?"yes":"no", RECOMP_DEBUG_OUTPUT);
     bool sm64=!strcmp(RECOMP_GAME_ID,"sm64-us"),goldeneye=!strcmp(RECOMP_GAME_ID,"goldeneye-us");
     if(cheats && !sm64 && !goldeneye){fputs("--cheat-menu is available for SM64 and GoldenEye\n",stderr);return 2;}
     if(mode && !sm64){fputs("--mode is available for SM64\n",stderr);return 2;}
@@ -60,5 +65,7 @@ int main(int argc,char **argv) {
     else {args[n++]=report;args[n++]=frames;args[n++]=(char *)o.data;}
     if(cheats)args[n++]="--cheat-menu";
     args[n]=NULL;
-    return recomp_debug_main(n,args);
+    int status=recomp_debug_main(n,args);
+    RECOMP_LOG("game", "%s exited: status=%d", RECOMP_GAME_ID, status);
+    return status;
 }

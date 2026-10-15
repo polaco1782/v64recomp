@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "runtime.h"
+#include "runtime_debug.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -56,9 +57,15 @@ bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
             bool valid = fread(s->eeprom, 1, s->eeprom_size, file) == s->eeprom_size
                       && fgetc(file) == EOF && !ferror(file);
             if (fclose(file)) valid = false;
+            RECOMP_LOG("save", "EEPROM load path=%s bytes=%" PRIu32 " result=%s", s->path, s->eeprom_size, valid?"ok":"invalid image/read failure");
             if (!valid) { free(s->path); free(s); return false; }
-        } else if (errno != ENOENT) { free(s->path); free(s); return false; }
+        } else if (errno != ENOENT) {
+            RECOMP_LOG("save", "EEPROM load path=%s failed: %s", s->path, strerror(errno));
+            free(s->path); free(s); return false;
+        } else RECOMP_LOG("save", "EEPROM new image path=%s bytes=%" PRIu32 " initial=0xff", s->path, s->eeprom_size);
     }
+    RECOMP_LOG("input", "controller mask=0x%x EEPROM bytes=%" PRIu32 " storage=%s SI delay=%" PRIu64 " ticks",
+        config->connected_mask, s->eeprom_size, s->path?s->path:"memory", s->si_transfer_ticks);
     rt->io = s; rt->destroy_io = recomp_io_destroy; rt->poll_io = poll_io; return true;
 }
 void recomp_io_destroy(Runtime *rt) {
@@ -72,21 +79,26 @@ bool recomp_input_set(Runtime *rt, unsigned port, const RecompPad *pad) {
 RecompIOStats recomp_io_stats(Runtime *rt) { return io(rt)->stats; }
 
 void hook_os_pfs_init_pak(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    RECOMP_LOG("save", "Controller Pak init port=%" PRIu32 " result=PFS_ERR_NOPACK", arg(ctx, 2));
     (void)io(rt);
     /* RecompIO exposes controllers without a Controller Pak. */
     result(ctx, 2); /* PFS_ERR_NOPACK */
 }
 void hook_os_pfs_is_plug(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     (void)io(rt);
     recomp_store(rt, arg(ctx, 1), 0, 1); /* No port has an accessory. */
     result(ctx, 0);
 }
 void hook_os_cont_set_ch(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     unsigned channels = (uint8_t)arg(ctx, 0);
     io(rt)->max_channels = channels > 4 ? 4 : (uint8_t)channels;
     result(ctx, 0);
 }
 void hook_os_motor_init(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     (void)io(rt);
     uint32_t pfs=arg(ctx,1), channel=arg(ctx,2);
     if(channel>=4) { result(ctx,5); return; } /* PFS_ERR_INVALID */
@@ -98,14 +110,17 @@ void hook_os_motor_init(Runtime *rt, MipsContext *ctx) {
     result(ctx,2); /* PFS_ERR_NOPACK: no Rumble Pak is configured. */
 }
 void hook_os_motor_start(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     (void)io(rt);
     result(ctx,5); /* PFS_ERR_INVALID: osMotorInit could not initialize a Pak. */
 }
 void hook_os_motor_stop(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     hook_os_motor_start(rt,ctx);
 }
 
 void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (s->initialized) { result(ctx, 0); return; }
     uint32_t pattern = arg(ctx, 1), status = arg(ctx, 2); uint8_t mask = 0;
@@ -123,6 +138,7 @@ void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
     result(ctx, 0);
 }
 void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized) recomp_fail("controller read before osContInit", ctx->pc);
     recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
@@ -136,6 +152,7 @@ void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
     s->stats.read_pending = true; s->stats.reads_started++; result(ctx, 0);
 }
 void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized) recomp_fail("controller result before osContInit", ctx->pc);
     uint32_t pads = arg(ctx, 0);
@@ -151,6 +168,7 @@ void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
     }
 }
 void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s=io(rt);
     if(!s->initialized)recomp_fail("controller query before osContInit",ctx->pc);
     recomp_ram_address(rt,arg(ctx,0),RECOMP_QUEUE_BYTES);
@@ -164,6 +182,7 @@ void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
     s->stats.query_pending=true;s->stats.queries_started++;result(ctx,0);
 }
 void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s=io(rt);
     if(!s->initialized)recomp_fail("controller status before osContInit",ctx->pc);
     uint32_t status=arg(ctx,0);
@@ -176,8 +195,10 @@ void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
     }
 }
 void hook_os_eeprom_probe(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt); recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
     result(ctx, s->eeprom_size == 2048 ? 2 : s->eeprom_size == 512 ? 1 : 0);
+    RECOMP_LOG("save", "EEPROM probe bytes=%" PRIu32 " result=%" PRId32, s->eeprom_size, (int32_t)ctx->gpr[2]);
 }
 static bool persist(RecompIO *s, const uint8_t *bytes) {
     if (!s->path) return true;
@@ -197,25 +218,44 @@ static bool persist(RecompIO *s, const uint8_t *bytes) {
         if (okay && rename(temp, s->path)) okay = false;
     }
     if (!okay && fd >= 0) unlink(temp);
+    RECOMP_LOG("save", "EEPROM persist path=%s bytes=%" PRIu32 " result=%s", s->path, s->eeprom_size, okay?"ok":"failed");
     free(temp); return okay;
 }
 static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data) {
     RecompIO *s = io(rt); recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
-    if (!s->eeprom_size || s->stats.read_pending || s->stats.query_pending) { result(ctx, 8); return; }
     uint32_t block = (uint8_t)arg(ctx, 1), address = arg(ctx, 2), count = arg(ctx, 3);
-    if (count % 8 || block*8 > s->eeprom_size || count > s->eeprom_size-block*8) { result(ctx, -1); return; }
+    RECOMP_LOG("save", "EEPROM %s block=%" PRIu32 " offset=0x%04" PRIx32 " ram=0x%08" PRIx32
+        " bytes=%" PRIu32 " path=%s", write_data?"write":"read", block, block*8, address, count, s->path?s->path:"memory");
+    if (!s->eeprom_size || s->stats.read_pending || s->stats.query_pending) {
+        RECOMP_LOG("save", "EEPROM transfer rejected: absent device or SI busy result=8");
+        result(ctx, 8); return;
+    }
+    if (count % 8 || block*8 > s->eeprom_size || count > s->eeprom_size-block*8) {
+        RECOMP_LOG("save", "EEPROM transfer rejected: invalid range/alignment result=-1");
+        result(ctx, -1); return;
+    }
     if (!count) { result(ctx, 0); return; }
     recomp_ram_address(rt, address, count);
     if (write_data) {
         uint8_t next[2048]; memcpy(next, s->eeprom, sizeof(next));
         for (uint32_t n=0;n<count;n++) next[block*8+n] = (uint8_t)recomp_load(rt, address+n, 1);
-        if (!persist(s, next)) { s->stats.persistence_failures++; result(ctx, -1); return; }
+        if (!persist(s, next)) {
+            RECOMP_LOG("save", "EEPROM write failed: persistence failure result=-1");
+            s->stats.persistence_failures++; result(ctx, -1); return;
+        }
         memcpy(s->eeprom, next, sizeof(next)); s->stats.eeprom_writes++;
     } else {
         recomp_copy_to_ram(rt, address, s->eeprom+block*8, count); s->stats.eeprom_reads++;
     }
     /* These blocking SDK calls consume their internal SI/timer notifications. */
     result(ctx, 0);
+    RECOMP_LOG("save", "EEPROM %s complete result=0", write_data?"write":"read");
 }
-void hook_os_eeprom_long_read(Runtime *rt, MipsContext *ctx) { transfer_eeprom(rt, ctx, false); }
-void hook_os_eeprom_long_write(Runtime *rt, MipsContext *ctx) { transfer_eeprom(rt, ctx, true); }
+void hook_os_eeprom_long_read(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    transfer_eeprom(rt, ctx, false);
+}
+void hook_os_eeprom_long_write(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    transfer_eeprom(rt, ctx, true);
+}

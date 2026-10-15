@@ -33,6 +33,7 @@ target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto Threads::Threads m $
 target_include_directories(recomp_runtime PUBLIC include)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(recomp_runtime PRIVATE RECOMP_DEBUG)
+    target_sources(recomp_runtime PRIVATE runtime/debug.c)
 endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(recomp_runtime PRIVATE -Wall -Wextra -Werror -fno-fast-math -frounding-math -ffp-contract=off)

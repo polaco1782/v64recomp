@@ -1,4 +1,5 @@
 #include "runtime.h"
+#include "runtime_debug.h"
 #include <stdatomic.h>
 #include <stdlib.h>
 
@@ -163,6 +164,7 @@ static void buffer(Runtime *rt, uint32_t address, uint32_t bytes, bool required,
     if (address) recomp_ram_address(rt,address,bytes?bytes:1);
 }
 void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t=tasks(rt);
     uint32_t object=(uint32_t)ctx->gpr[4];
     if (!object || object%8 || t->active) recomp_fail("invalid or busy SP task load",object);
@@ -210,6 +212,7 @@ static void submit_on_host(Runtime *rt, void *opaque) {
         recomp_fail("backend rejected SP task",r->task.guest_address);
 }
 void hook_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t=tasks(rt); uint32_t object=(uint32_t)ctx->gpr[4];
     if (!t->has_loaded || t->active || recomp_ram_address(rt,object,64)!=recomp_ram_address(rt,t->loaded.guest_address,64))
         recomp_fail("SP start without matching loaded task",object);
@@ -220,6 +223,9 @@ void hook_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
     TaskRecord *r=calloc(1,sizeof(*r));
     if (!r) recomp_fail("SP task allocation failed",object);
     r->task=t->loaded; r->task.token=++t->next_token;
+    RECOMP_LOG_SAMPLED("task", "submit token=%" PRIu64 " type=%" PRIu32 " task=0x%08" PRIx32
+        " ucode=0x%08" PRIx32 " data=0x%08" PRIx32 " bytes=%" PRIu32 " resumed=%s",
+        r->task.token, r->task.words[0], object, r->task.words[4], r->task.words[12], r->task.words[13], r->task.resumed?"yes":"no");
     t->observed=r->task;
     if (t->has_yielded_task && t->yielded_key==recomp_ram_address(rt,object,64)) t->has_yielded_task=false;
     r->next=t->records; t->records=r; t->active=r; t->has_loaded=false;
@@ -246,8 +252,12 @@ static void yield_on_host(Runtime *rt, void *opaque) {
     if (r->sp_posted) return; /* The owner's completion is already queued. */
     if (!t->backend.yield(rt,t->backend.userdata,r->task.token)) recomp_fail("backend rejected SP yield",ctx->pc);
 }
-void hook_os_sp_task_yield(Runtime *rt, MipsContext *ctx) { recomp_on_host(rt,yield_on_host,ctx); }
+void hook_os_sp_task_yield(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    recomp_on_host(rt,yield_on_host,ctx);
+}
 void hook_os_sp_task_yielded(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t=tasks(rt); uint32_t object=(uint32_t)ctx->gpr[4];
     if (recomp_ram_address(rt,object,64)!=t->last_key) recomp_fail("yield query does not match SP completion",object);
     uint32_t flags=(uint32_t)recomp_load(rt,object+4,4);

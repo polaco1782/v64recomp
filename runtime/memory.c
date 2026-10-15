@@ -1,4 +1,5 @@
 #include "runtime.h"
+#include "runtime_debug.h"
 
 #include <execinfo.h>
 #include <unwind.h>
@@ -84,10 +85,12 @@ bool recomp_runtime_init(Runtime *rt, size_t ram_size,
         qsort(rt->function_index, count, sizeof(*rt->function_index), compare_entries);
     }
     if (loaded) memcpy(rt->section_loaded, loaded, sections * sizeof(bool));
+    RECOMP_LOG("game", "runtime initialized: RAM=%zu bytes functions=%zu sections=%zu", ram_size, count, sections);
     return true;
 }
 
 void recomp_runtime_destroy(Runtime *rt) {
+    RECOMP_LOG("game", "runtime shutdown: RAM=%zu bytes", rt->rdram_size);
     if (rt->destroy_scheduler) rt->destroy_scheduler(rt);
     if (rt->destroy_tasks) rt->destroy_tasks(rt);
     if (rt->destroy_io) rt->destroy_io(rt);
@@ -173,12 +176,16 @@ void recomp_map_pages(Runtime *rt, unsigned index, uint32_t mask, uint32_t addre
 
 void recomp_unmap_pages(Runtime *rt) { memset(rt->page_mappings,0,sizeof(rt->page_mappings)); }
 void hook_os_map_tlb(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t stack = (uint32_t)ctx->gpr[29];
     if (recomp_load(rt,stack+20,4) != UINT32_MAX) recomp_fail("ASID page mapping unsupported", ctx->pc);
     recomp_map_pages(rt,(uint32_t)ctx->gpr[4],(uint32_t)ctx->gpr[5],(uint32_t)ctx->gpr[6],
                      (uint32_t)ctx->gpr[7],(uint32_t)recomp_load(rt,stack+16,4));
 }
-void hook_os_unmap_tlb_all(Runtime *rt, MipsContext *ctx) { (void)ctx; recomp_unmap_pages(rt); }
+void hook_os_unmap_tlb_all(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    (void)ctx; recomp_unmap_pages(rt);
+}
 
 uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
     if (!(bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8)) recomp_fail("invalid load width", address);
@@ -316,6 +323,7 @@ static void fill_guest(Runtime *rt, uint32_t dest, uint8_t value, uint32_t bytes
 }
 
 void hook_os_memcpy(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t dest = (uint32_t)ctx->gpr[4];
     copy_guest(rt, dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], false);
     mips_set(ctx, 2, mips_s32(dest));
@@ -325,6 +333,7 @@ void hook_os_memcpy(Runtime *rt, MipsContext *ctx) {
                 dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
 }
 void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t src = (uint32_t)ctx->gpr[4], dest = (uint32_t)ctx->gpr[5], bytes = (uint32_t)ctx->gpr[6];
     /* Verified SDK variants return the original destination in v0, even though
      * the public bcopy interface is void. Their overlap check uses signed GPRs. */
@@ -333,14 +342,17 @@ void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
     mips_set(ctx, 2, mips_s32(dest));
 }
 void hook_os_memset(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t dest = (uint32_t)ctx->gpr[4];
     fill_guest(rt, dest, (uint8_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
     mips_set(ctx, 2, mips_s32(dest));
 }
 void hook_os_bzero(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     if (mips_i32(ctx->gpr[5]) > 0) fill_guest(rt, (uint32_t)ctx->gpr[4], 0, (uint32_t)ctx->gpr[5]);
 }
 void hook_os_bcmp(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t a = (uint32_t)ctx->gpr[4], b = (uint32_t)ctx->gpr[5];
     for (int64_t i = 0, bytes = mips_i32(ctx->gpr[6]); i < bytes; i++) {
         uint64_t value = recomp_load(rt, a + (uint32_t)i, 1);
@@ -349,11 +361,13 @@ void hook_os_bcmp(Runtime *rt, MipsContext *ctx) {
     mips_set(ctx, 2, 0);
 }
 void hook_os_strlen(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t start = (uint32_t)ctx->gpr[4], address = start;
     while (recomp_load(rt, address, 1)) address++;
     mips_set(ctx, 2, mips_s32(address - start));
 }
 void hook_os_strchr(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint32_t address = (uint32_t)ctx->gpr[4];
     uint8_t wanted = (uint8_t)ctx->gpr[5];
     for (;;) {

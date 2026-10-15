@@ -5,6 +5,21 @@ Configure `cmake --preset <game>-debug` and build that preset. The binary is
 under `games/<game>/debug/`, and generated sources under the build's `generated/`.
 The original positional diagnostic interfaces are also retained for tools.
 
+Debug builds automatically print timestamped diagnostics to stderr: game and ROM
+identity, boot/code loads, native OS hook entry arguments and caller addresses,
+thread creation/start/stop/exit and priority changes, scheduling and queue waits,
+event bindings, controller setup, ROM DMA, RSP tasks, and EEPROM/SRAM access.
+Save logs include paths, offsets, sizes, results, and persistence failures.
+Controller Pak initialization reports the absent accessory.
+Once per second while the scheduler runs, status lines show thread states, VI
+retraces/framebuffer, input reads, and EEPROM counters.
+
+Frequent events print their first eight occurrences and then powers of two per
+call site and host thread; OS entries include the cumulative call count. Set
+`RECOMP_DEBUG_FULL=1` to print every sampled event. Save operations and thread
+lifecycle events always print. These diagnostics are compiled out of Release.
+For example: `build/quake-us-debug/bin/quake-us --frames 300 2>/tmp/quake-debug.log`.
+
 Debug always keeps the game's existing startup checks and final report/capture.
 Artifacts live in `build/<game>-debug/debug-output/<game>/`. Call logging is
 opt-in with `--trace-calls` (or `RECOMP_TRACE_CALLS=1`); it can be very verbose.

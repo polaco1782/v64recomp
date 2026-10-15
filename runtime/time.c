@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "runtime.h"
+#include "runtime_debug.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -168,16 +169,22 @@ uint64_t recomp_clock_next_deadline(Runtime *rt) {
 uint32_t recomp_clock_timer_sentinel(Runtime *rt) { return clock_state(rt)->config.timer_sentinel; }
 uint64_t recomp_clock_frequency(Runtime *rt) { return clock_state(rt)->config.ticks_per_second; }
 
-void hook_os_get_count(Runtime *rt, MipsContext *ctx) { mips_set(ctx, 2, mips_s32((uint32_t)recomp_count64(rt))); }
+void hook_os_get_count(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    mips_set(ctx, 2, mips_s32((uint32_t)recomp_count64(rt)));
+}
 void hook_os_get_time(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     uint64_t value = recomp_get_time(rt);
     /* o32 returns a 64-bit value in V0 (high word), V1 (low word). */
     mips_set(ctx, 2, mips_s32((uint32_t)(value >> 32))); mips_set(ctx, 3, mips_s32((uint32_t)value));
 }
 void hook_os_set_time(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     recomp_set_time(rt, ((uint64_t)(uint32_t)ctx->gpr[4] << 32) | (uint32_t)ctx->gpr[5]);
 }
 void hook_os_set_timer(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     /* A0 timer, A1 padding, A2/A3 countdown, stack+16 interval,
      * stack+24 queue, stack+28 message. All guest words remain big-endian. */
     uint32_t sp = (uint32_t)ctx->gpr[29];
@@ -187,6 +194,7 @@ void hook_os_set_timer(Runtime *rt, MipsContext *ctx) {
     mips_set(ctx, 2, 0);
 }
 void hook_os_stop_timer(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
     bool stopped=recomp_timer_stop(rt,(uint32_t)ctx->gpr[4]);
     mips_set(ctx,2,stopped?0:mips_s32(UINT32_MAX));
 }
