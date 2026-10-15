@@ -66,7 +66,9 @@ static bool idle_only(Runtime *rt) {
     for(size_t i=0;i<count;i++) {
         const RecompThreadSnapshot *t=&threads[i];
         if(t->state!=RECOMP_READY && t->state!=RECOMP_RUNNING)continue;
-        if((uint32_t)t->id!=BOOT_IDLE_THREAD_ID || t->priority!=0 || t->context.pc!=BOOT_IDLE_ENTRY)return false;
+        /* Debug tracks each instruction in the verified three-word idle body. */
+        if((uint32_t)t->id!=BOOT_IDLE_THREAD_ID || t->priority!=0
+                || t->context.pc<BOOT_IDLE_ENTRY || t->context.pc>=BOOT_IDLE_ENTRY+12)return false;
     }
     return true;
 }

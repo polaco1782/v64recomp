@@ -50,8 +50,10 @@ static void drain(Runtime *rt) {
              * Once it yields there, let the host pace presentations and
              * keep servicing VI/audio deadlines instead of burning the
              * entire resume budget repeatedly reading the same clock. */
+            /* The guest link register identifies this call independently of
+             * diagnostic PC tracking and remains set while the loop polls. */
             if (threads[i].id == BOOT_GAME_THREAD_ID
-                    && threads[i].context.pc == BOOT_FRAME_POLL_CALL) {
+                    && (uint32_t)threads[i].context.gpr[31] == BOOT_FRAME_POLL_CALL+8) {
                 continue;
             }
             work = true;

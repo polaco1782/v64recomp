@@ -23,10 +23,18 @@ typedef struct MipsContext {
     uint64_t gpr[32];
     uint64_t hi, lo;
     uint32_t fpr[32], fcr31;
-    uint32_t pc; /* Last tracked call/FP location for diagnostics; not execution state. */
+    uint32_t pc; /* Debug instruction/call location; thread entry in Release. Not execution state. */
     uint32_t fpr_high[32]; /* Independent upper words when Status.FR is one. */
     bool fpu_fr1;
 } MipsContext;
+
+/* Generated sources are shared between build modes. Release must not evaluate
+ * either argument or emit any diagnostic PC stores, even at -O0. */
+#ifdef RECOMP_DEBUG
+#define RECOMP_TRACK_PC(context, address) ((context)->pc = (address))
+#else
+#define RECOMP_TRACK_PC(context, address) ((void)0)
+#endif
 
 typedef struct Runtime Runtime;
 typedef struct RecompScheduler RecompScheduler;

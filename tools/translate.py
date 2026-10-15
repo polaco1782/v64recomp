@@ -173,8 +173,9 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
             log_emission('Emit failure boundary %s s%s 0x%08x: %s',
                          f['name'], f['section'], f['vram'], boundaries[key])
             source.append(f'void {symbol}(Runtime *runtime, MipsContext *ctx) {{\n'
-                          f'    (void)runtime; ctx->pc = UINT32_C(0x{f["vram"]:08x});\n'
-                          f'    recomp_fail({json.dumps(boundaries[key])}, ctx->pc);\n}}')
+                          f'    (void)runtime; (void)ctx;\n'
+                          f'    RECOMP_TRACK_PC(ctx, UINT32_C(0x{f["vram"]:08x}));\n'
+                          f'    recomp_fail({json.dumps(boundaries[key])}, UINT32_C(0x{f["vram"]:08x}));\n}}')
         elif key in hooks:
             log_emission('Bind native hook %s s%s 0x%08x -> %s', f['name'], f['section'], f['vram'], symbol)
         else:

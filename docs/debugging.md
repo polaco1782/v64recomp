@@ -20,6 +20,15 @@ call site and host thread; OS entries include the cumulative call count. Set
 lifecycle events always print. These diagnostics are compiled out of Release.
 For example: `build/quake-us-debug/bin/quake-us --frames 300 2>/tmp/quake-debug.log`.
 
+Generated Debug code updates `ctx->pc` before every translated MIPS instruction,
+including branches, jumps, nops, and executed delay slots. Annulled branch-likely
+slots do not update it. Native calls restore the call-site PC after the delay
+slot so blocking hooks and thread snapshots identify the caller. Addresses use
+the compiled guest layout, including for relocated code.
+`RECOMP_TRACK_PC` compiles to a no-op in Release, with no argument evaluation or
+PC stores; the retained context field holds the scheduler's initial thread entry.
+Release failure boundaries still report their known address directly.
+
 Debug always keeps the game's existing startup checks and final report/capture.
 Artifacts live in `build/<game>-debug/debug-output/<game>/`. Call logging is
 opt-in with `--trace-calls` (or `RECOMP_TRACE_CALLS=1`); it can be very verbose.

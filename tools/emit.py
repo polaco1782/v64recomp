@@ -235,7 +235,7 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     logical_imm = f'((uint16_t)({imm}))' if relocated_immediate else f"UINT64_C(0x{i.word & 0xffff:04x})"
     destination = i.rt
     expression = None
-    if op == 'nop': return ";"
+    if op == 'nop': return ""
     if op == 'break': return f'recomp_fail("MIPS BREAK {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'mtc1': return f'ctx->fpr[{i.rd}] = {b};'
     if op == 'mfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fpr[{i.rd}]));'
@@ -381,6 +381,9 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
     if direct_hooks is None:
         direct_hooks = direct_hook_targets(registry, hooks)
 
+    def location(pc: int, indent: str = '    ') -> str:
+        return f"{indent}RECOMP_TRACK_PC(ctx, UINT32_C(0x{pc:08x}));"
+
     def emit_body(instruction: Instruction, indent: str = '    ') -> list[str]:
         relocated = instruction.pc in function.get('relocation_pcs', [])
         immediate = (f'(int16_t)recomp_load(runtime, recomp_relocated_address(runtime, '
@@ -390,22 +393,20 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             log_emission('Memory %s s%s 0x%08x: %s -> %s',
                          function['name'], function['section'], instruction.pc, instruction.assembly, statement,
                          verbose=True)
-        # These helpers report guest traps through ctx->pc. Ordinary arithmetic
-        # and memory operations do not consume it; memory errors report the address.
-        location = ([f"{indent}ctx->pc = UINT32_C(0x{instruction.pc:08x});"]
-                    if statement.startswith('mips_fp_') else [])
-        return [*location, indent + statement]
+        # Include nops and inline delay slots. Annulled likely slots never reach
+        # this code at runtime. RECOMP_TRACK_PC disappears in Release builds.
+        return [location(instruction.pc, indent), *([indent + statement] if statement else [])]
 
     def call_location(indent: str) -> str:
         # Native hooks can suspend inside nested generated calls. Preserve the
         # call site for guest OSThread/debug snapshots; C frames own resumption.
-        return f"{indent}ctx->pc = UINT32_C(0x{i.pc:08x});"
+        return location(i.pc, indent)
 
     def fallthrough(address: int, indent: str = '    ') -> str:
         return f'{indent}recomp_fellthrough(UINT32_C(0x{address:08x}));'
 
     def jump(address: int, indent: str = '    ') -> str:
-        used_labels.add(f'L_{address:08x}: ;')
+        used_labels.add(f'L_{address:08x}:')
         return f'{indent}goto L_{address:08x};'
 
     def log_call(address: int, kind: str) -> None:
@@ -441,10 +442,10 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 checkpoint.append(f"{indent}{call}(runtime);")
             return [*checkpoint, jump(address, indent)]
         log_call(address, 'Tail/branch call')
-        return [*emit_call(address, indent), f"{indent}return;"]
+        return [call_location(indent), *emit_call(address, indent), f"{indent}return;"]
 
     for index, i in enumerate(instructions):
-        lines.extend([f"L_{i.pc:08x}: ;", f"    /* {i.pc:08x}: {i.assembly} */"])
+        lines.extend([f"L_{i.pc:08x}:", f"    /* {i.pc:08x}: {i.assembly} */"])
         if not i.delay:
             lines.extend(emit_body(i))
             if 'instruction_addresses' in function:
@@ -461,6 +462,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                         lines.append(fallthrough(i.pc))
             continue
         slot = instructions[index + 1]
+        lines.append(location(i.pc))
         lines.append('    {')
         if i.opcode not in ('j', 'jal', 'jr', 'jalr'):
             known = constant_condition(i)
