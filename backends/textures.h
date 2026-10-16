@@ -11,6 +11,7 @@ public:
     void configure(RT64::TextureCache &cache);
     void reload(RT64::TextureCache &cache);
     void refreshAndToggle(RT64::TextureCache &cache);
+    void refresh(RT64::TextureCache &cache);
     void collect(RT64::TextureCache &cache);
     uint64_t replacedCount() const { return replaced.size(); }
 };

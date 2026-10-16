@@ -149,6 +149,11 @@ path (an empty value disables packs). Rendering uses 4x resolution, 4x MSAA,
 widescreen expansion and texture LOD scaling. This RT64 revision has no game
 ray-tracing renderer.
 
+Use `--texture-scan /path/to/extracted-pack` to match Rice/GLideN64 PNGs while
+playing. A native worker moves matching images into the game's replacement
+folder every 15 seconds and requests an RT64 reload. See
+[native texture scanning](texture_scan/README.md) for extraction and usage.
+
 Release failures routed through `recomp_fail` write a uniquely named JSON report
 and RDRAM snapshot to `local/crashes/<game>/`. Reports include native stack
 addresses, guest thread registers/last tracked PCs and the latest task. Keep the

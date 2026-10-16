@@ -1,0 +1,33 @@
+# Shared style for C and C++ sources and headers.
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+ContinuationIndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+
+BreakBeforeBraces: Attach
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+AccessModifierOffset: -4
+NamespaceIndentation: None
+IndentExternBlock: NoIndent
+IndentCaseLabels: true
+IndentPPDirectives: None
+
+DerivePointerAlignment: false
+PointerAlignment: Right
+ReferenceAlignment: Left
+SpaceBeforeParens: ControlStatements
+
+# Include order can depend on surrounding implementation/configuration macros.
+SortIncludes: Never
+IncludeBlocks: Preserve
+
+FixNamespaceComments: false
+ReflowComments: false
+MaxEmptyLinesToKeep: 1

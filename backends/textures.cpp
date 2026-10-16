@@ -55,6 +55,22 @@ void RecompTextureFiles::reload(RT64::TextureCache &cache) {
     cache.clearReplacementDirectories();
     // A missing pack is normal: the game uses its original textures.
     if (!std::filesystem::exists(replacementDirectory)) return;
+    if (std::filesystem::is_regular_file(replacementDirectory) ||
+        std::filesystem::is_regular_file(replacementDirectory / "rt64.json")) {
+        // Standard RT64 packs retain their own streaming, mip cache, hash
+        // version, and UV shift settings. Uploads stay paused while the index
+        // is replaced; PausedUploads restarts the worker on return.
+        if (!cache.loadReplacementDirectory(RT64::ReplacementDirectory(replacementDirectory)))
+            throw std::runtime_error("could not load RT64 texture pack");
+        {
+            std::unique_lock lock(cache.textureMapMutex);
+            for (const auto &paths : cache.textureMap.replacementMap.fileSystemResolvedPaths)
+                replacementFiles += paths.size();
+        }
+        std::fprintf(stderr, "Texture pack: %llu mappings in %s (F5 reloads and toggles originals/replacements)\n",
+                     static_cast<unsigned long long>(replacementFiles), replacementDirectory.c_str());
+        return;
+    }
     if (!std::filesystem::is_directory(replacementDirectory)) throw std::runtime_error("texture replacements must be a directory");
     RT64::ReplacementDatabase db;
     db.config.hashVersion = RT64::TMEMHasher::CurrentHashVersion;
@@ -109,6 +125,16 @@ void RecompTextureFiles::refreshAndToggle(RT64::TextureCache &cache) {
     }
     map.globalVersion++;
     std::fprintf(stderr, "Textures: %s\n", map.replacementMapEnabled ? "replacements" : "originals");
+}
+
+void RecompTextureFiles::refresh(RT64::TextureCache &cache) {
+    reload(cache);
+    std::unique_lock lock(cache.textureMapMutex);
+    auto &map = cache.textureMap;
+    for (size_t i = 0; i < map.textureReplacements.size(); i++) {
+        if (map.textureReplacements[i]) map.versions[i]++;
+    }
+    map.globalVersion++;
 }
 
 void RecompTextureFiles::collect(RT64::TextureCache &cache) {

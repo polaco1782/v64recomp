@@ -24,15 +24,26 @@ static void directory(const char *path) {
     }
 }
 int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
+    const char *texture_source=NULL;
     *o=(RecompGameOptions){.rom=RECOMP_DEFAULT_ROM,.data=RECOMP_DEFAULT_DATA,
         .save=RECOMP_DEFAULT_SAVE,.crash_dir=RECOMP_DEFAULT_CRASH};
     for(int i=1;i<argc;i++) {
         const char *arg=argv[i];
         if(!strcmp(arg,"--help")) {
-            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute]\n",argv[0]);
+            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] [--texture-scan [DIRECTORY]]\n",argv[0]);
             return 1;
         }
         if(!strcmp(arg,"--mute")){o->mute=true;continue;}
+        if(!strcmp(arg,"--texture-scan")) {
+            texture_source=RECOMP_DEFAULT_TEXTURE_SOURCE;
+            if(i+1<argc && argv[i+1][0]!='-')texture_source=argv[++i];
+            struct stat source;
+            if(stat(texture_source,&source) || !S_ISDIR(source.st_mode)) {
+                fprintf(stderr,"texture scan source must be an extracted directory: %s\n",texture_source);
+                return -1;
+            }
+            continue;
+        }
         if(i+1>=argc) { fprintf(stderr,"missing value for %s\n",arg);return -1; }
         const char *value=argv[++i];
         if(!*value){fprintf(stderr,"empty value for %s\n",arg);return -1;}
@@ -55,6 +66,12 @@ int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
     if(slash && slash!=parent){*slash=0;directory(parent);}
     crash_dir=o->crash_dir;
     if(!getenv("RECOMP_TEXTURE_REPLACEMENTS"))setenv("RECOMP_TEXTURE_REPLACEMENTS",RECOMP_DEFAULT_TEXTURES,1);
+    if(texture_source) {
+        setenv("RECOMP_TEXTURE_SCAN",texture_source,1);
+        if(!getenv("RECOMP_TEXTURE_SCAN_RAW"))setenv("RECOMP_TEXTURE_SCAN_RAW",RECOMP_DEFAULT_TEXTURE_RAW,1);
+        const char *replacements=getenv("RECOMP_TEXTURE_REPLACEMENTS");
+        if(!replacements || !*replacements)setenv("RECOMP_TEXTURE_REPLACEMENTS",RECOMP_DEFAULT_TEXTURES,1);
+    }
     return 0;
 }
 void recomp_game_require(bool condition,const char *message,uint32_t address) {
