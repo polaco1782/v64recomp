@@ -30,7 +30,7 @@ nop lui addiu addi addu add subu sub daddiu daddu dsubu
 and or xor nor andi ori xori slt sltu slti sltiu
 sll srl sra sllv srlv srav dsll dsrl dsra dsll32 dsrl32 dsra32 dsllv dsrlv dsrav
 mult multu div divu mfhi mflo mthi mtlo
-dmult dmultu ddiv ddivu break
+dmult dmultu ddiv ddivu break syscall
 lb lbu lh lhu lw lwu ld sb sh sw sd
 lwl lwr ldl ldr swl swr sdl sdr
 mtc1 mfc1 dmtc1 dmfc1 lwc1 swc1 ldc1 sdc1
@@ -237,6 +237,7 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     expression = None
     if op == 'nop': return ""
     if op == 'break': return f'recomp_fail("MIPS BREAK {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
+    if op == 'syscall': return f'recomp_fail("MIPS SYSCALL {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'mtc1': return f'ctx->fpr[{i.rd}] = {b};'
     if op == 'mfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fpr[{i.rd}]));'
     if op == 'cfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fcr31));'
@@ -370,7 +371,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
     safe_name = function['name'].replace('*/', '* /').replace('\n', ' ')
     lines = [f"/* {safe_name} at 0x{function['vram']:08x} */",
              f"void {cname(function)}(Runtime *runtime, MipsContext *ctx) {{",
-             "    uint32_t return_address = (uint32_t)ctx->gpr[31];",
+             (f"    uint32_t return_address = (uint32_t)recomp_load(runtime, (uint32_t)ctx->gpr[29] + UINT32_C(0x{function['return_address_stack_offset']:x}), 4);"
+              if 'return_address_stack_offset' in function else "    uint32_t return_address = (uint32_t)ctx->gpr[31];"),
              "    (void)return_address; (void)runtime; (void)ctx;"]
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
@@ -530,6 +532,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))
                 lines.extend([call_location('        '), *call])
+            if i.pc in function.get('nonlocal_return_calls', []):
+                lines.append('        if ((uint32_t)ctx->gpr[31] == return_address) return;')
             lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
                          else fallthrough(i.pc, '        '))
         elif i.opcode == 'j': lines.extend(transfer(target(i)))

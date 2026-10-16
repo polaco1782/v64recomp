@@ -46,12 +46,5 @@ SHA-256 profile. Link's house background was checked through the original openin
 other JPEG rooms and full-game progression still need validation. Debug reports
 count completed tasks as `jpeg_tasks`.
 
-The shared decoder fixtures run without a ROM or desktop:
-
-```sh
-cmake --build --preset oot-us-v12-release --target recomp_jpeg_test -j 4
-./build/oot-us-v12-release/recomp_jpeg_test
-```
-
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).

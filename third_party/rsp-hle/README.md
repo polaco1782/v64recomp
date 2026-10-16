@@ -4,7 +4,9 @@ Upstream: https://github.com/mupen64plus/mupen64plus-rsp-hle
 Revision: `8a7a472a7172eb2c8725b305eae26818ed7b51a2`
 License: GPL-2.0-or-later, see source notices and `LICENSES`.
 
-`alist.c`, `alist_audio.c`, `alist_nead.c`, `audio.c` and `memory.c` are compiled. These
+`alist.c`, `alist_audio.c`, `alist_nead.c`, `alist_naudio.c`, `mp3.c`, `audio.c`
+and `memory.c` are compiled. NAudio MP3 supplies Perfect Dark's audio command
+processing and synthesis transform using the same pinned upstream revision. These
 implement audio-command operations in native C, including ADPCM, envelope
 mixing, four-tap resampling and interleaving. No plugin shell, CPU interpreter,
 RSP instruction interpreter or graphics microcode modules are imported.

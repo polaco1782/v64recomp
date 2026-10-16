@@ -8,9 +8,9 @@ audio, and RT64 Vulkan graphics. See [how it works](docs/recompilation.md).
 
 Captured from the native builds.
 
-| Super Mario 64 | The Legend of Zelda: Ocarina of Time | GoldenEye 007 |
-| --- | --- | --- |
-| ![Super Mario 64 in Castle Grounds](docs/screenshots/super-mario-64.png) | ![The Legend of Zelda: Ocarina of Time title screen](docs/screenshots/ocarina-of-time.png) | ![GoldenEye 007 gameplay](docs/screenshots/goldeneye-007.png) |
+| Super Mario 64 | The Legend of Zelda: Ocarina of Time | GoldenEye 007 | Perfect Dark |
+| --- | --- | --- | --- |
+| ![Super Mario 64 in Castle Grounds](docs/screenshots/super-mario-64.png) | ![The Legend of Zelda: Ocarina of Time title screen](docs/screenshots/ocarina-of-time.png) | ![GoldenEye 007 gameplay](docs/screenshots/goldeneye-007.png) | ![Perfect Dark in the Carrington Institute](docs/screenshots/perfect-dark.png) |
 
 RT64's widescreen expansion gives *Ocarina of Time* an ultrawide view of Hyrule.
 
@@ -64,7 +64,7 @@ an existing destination containing different bytes.
 
 SM64 uses `games/sm64-us/full.toml`; the other supported games use
 `games/<game>/profile.toml`, where `<game>` is `goldeneye-us`, `shadowman-us`,
-`quake-us`, `duke-us`, `nightmare-us`, or `oot-us-v12`.
+`quake-us`, `duke-us`, `nightmare-us`, `oot-us-v12`, or `perfectdark-us-v11`.
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
@@ -73,6 +73,7 @@ The imported, normalized files have these filenames and MD5 checksums:
 | `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
 | `nightmare.us.z64` | `4116cf435db315a2481af8d1e9352feb` |
 | `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
+| `perfectdark.us.v11.z64` | `e03b088b6ac9e0080440efed07c1e40f` |
 | `quake.us.z64` | `097605021951024c3ecb2d502c0c2a9f` |
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
 | `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
@@ -88,7 +89,7 @@ cmake --build --preset sm64-us-release --target run
 ```
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
-`nightmare-us`, or `oot-us-v12`. ROMs, saves, texture packs and crash dumps stay
+`nightmare-us`, `oot-us-v12`, or `perfectdark-us-v11`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 
 The equivalent explicit CMake configuration is:

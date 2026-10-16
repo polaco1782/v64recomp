@@ -1,0 +1,10 @@
+# Perfect Dark boot boundaries. Standard OS calls use the shared native catalog.
+hooks = [
+  {symbol = "mtx_get_obfuscated_rom_base", vram = 0x70015fd0, kind = "replace_function", handler = "hook_pd_boot_rom_read", expected_words = [0x27bdffe0, 0xafbf0014, 0x3c04800a, 0x2484c7a8, 0x24050000, 0xc0121bc, 0x3c060001, 0x3c04a45f, 0x3484ffff, 0x24840011, 0x8c880000, 0x31080003, 0x1500fffd, 0x0, 0x3c058000, 0x8ca50308, 0x3c04b764, 0x3484b4fd, 0x852025, 0x3c050764, 0x34a5bea1, 0x852026, 0x8c820000, 0xafa20018, 0x3c04800a, 0x2484c7a8, 0x24050000, 0xc012238, 0x3c060000, 0x8fa20018, 0x8fbf0014, 0x3e00008, 0x27bd0020]},
+  {symbol = "vm_boot", vram = 0x70001050, kind = "replace_function", handler = "hook_pd_boot_tlb", expected_words = [0x3c08007f, 0x3508e000]},
+  {symbol = "vm_unmap_range", vram = 0x70001634, kind = "replace_function", handler = "hook_pd_unmap_range", expected_words = [0x40085000, 0x3c0a8000]},
+  {symbol = "seg_inflate", vram = 0x700016ac, kind = "replace_function", handler = "hook_pd_enter_inflate", expected_words = [0x3c077020, 0x24e7126c]},
+  {symbol = "vm_boot_alias", vram = 0x80001050, kind = "replace_function", handler = "hook_pd_boot_tlb", expected_words = [0x3c08007f, 0x3508e000]},
+]
+checkpoints = [{pc = 0x70001938, expected_word = 0x1000ffff, kind = "yield", reason = "Yield the original idle loop"}]
+extends = "profile.toml"

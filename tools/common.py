@@ -133,6 +133,16 @@ def load_metadata(path: Path, rom: bytes) -> dict:
         address, size, offset = function["vram"], function["size"], function["rom_offset"]
         if address % 4 or size <= 0 or size % 4 or offset % 4:
             raise RecompError(f"invalid function alignment/size: {function['name']}")
+        if 'return_address_stack_offset' in function:
+            slot=function['return_address_stack_offset']
+            if type(slot) is not int or not 0<=slot<=0x7fff or slot%4:
+                raise RecompError(f"invalid shared return stack slot: {function['name']}")
+        for pc in function.get('nonlocal_return_calls', []):
+            if type(pc) is not int or pc % 4 or not address <= pc < address + size:
+                raise RecompError(f"invalid nonlocal return call: {function['name']}")
+            word = int.from_bytes(rom[offset + pc - address:offset + pc - address + 4], 'big')
+            if word >> 26 != 3:
+                raise RecompError(f"nonlocal return site is not JAL: {function['name']}")
         if not (section["vram"] <= address and address + size <= section["vram"] + section["size"]):
             raise RecompError(f"function outside its section: {function['name']}")
         if offset != section["rom_offset"] + address - section["vram"] or offset + size > len(rom):

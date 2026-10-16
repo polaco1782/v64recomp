@@ -1,0 +1,34 @@
+[game]
+name = "Perfect Dark (US revision 1.1)"
+rom_sha1 = "af8788ac4d1a57260eae9c53ffe851fcf2a3319b"
+rom_size = 0x2000000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+rom = "../../local/perfectdark.us.v11.z64"
+code_sections = [".entry", ".lib", ".inflate", ".data", ".game"]
+boot_sections = [".entry", ".lib"]
+
+[discovery]
+max_functions = 16384
+roots = [{name = "boot", vram = 0x700016cc}, {name = "idleproc", vram = 0x70001934}, {name = "inflate", vram = 0x7020126c}]
+regions = [{name = ".entry", vram = 0x80001000, rom_offset = 0x1000, size = 0xa4}]
+transfers = [{pc = 0x80001030, expected_word = 0x01400008, kind = "tail", targets = [0x80001050]}]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80001000
+initial_load_size = 0x100000
+bss_start = 0x8008ae20
+bss_end = 0x800ad1c0
+counter_hz = 46875000
+
+[bootstrap.parameters]
+# CIC-6105 IPL leaves this RSP instruction in RDRAM; boot verifies it.
+0x800002e8 = 0xc86e2000
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 6105
+0x80000314 = 1
+0x80000318 = 0x800000

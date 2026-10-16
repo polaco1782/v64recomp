@@ -6,7 +6,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 # One native game per build tree. Use a separate directory for each mode.
 set(RECOMP_GAME "sm64-us" CACHE STRING "Game to build, or none for shared libraries")
-set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12)
+set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11)
 set_property(CACHE RECOMP_GAME PROPERTY STRINGS none ${RECOMP_GAMES})
 if(NOT RECOMP_GAME STREQUAL "none" AND NOT RECOMP_GAME IN_LIST RECOMP_GAMES)
     message(FATAL_ERROR "Unknown RECOMP_GAME=${RECOMP_GAME}. Choose: ${RECOMP_GAMES};none")
@@ -38,7 +38,6 @@ endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(recomp_runtime PRIVATE -Wall -Wextra -Werror -fno-fast-math -frounding-math -ffp-contract=off)
 endif()
-
 add_library(recomp_rsp_memory STATIC third_party/rsp-hle/memory.c)
 target_compile_options(recomp_rsp_memory PRIVATE -Wall -Wextra -Werror -fno-strict-aliasing)
 add_library(recomp_jpeg STATIC backends/jpeg.c third_party/rsp-hle/jpeg.c)
@@ -47,15 +46,12 @@ target_link_libraries(recomp_jpeg PUBLIC recomp_runtime recomp_rsp_memory)
 target_compile_options(recomp_jpeg PRIVATE -Wall -Wextra -Werror -fno-strict-aliasing -fno-fast-math -ffp-contract=off)
 set_property(SOURCE third_party/rsp-hle/jpeg.c APPEND PROPERTY COMPILE_DEFINITIONS
     rsp_break=recomp_jpeg_break HleWarnMessage=recomp_jpeg_warn HleVerboseMessage=recomp_jpeg_verbose)
-add_executable(recomp_jpeg_test EXCLUDE_FROM_ALL tests/jpeg.c)
-target_link_libraries(recomp_jpeg_test PRIVATE recomp_jpeg)
-target_compile_options(recomp_jpeg_test PRIVATE -Wall -Wextra -Werror)
-
 option(RECOMP_BUILD_AUDIO "Build native ABI1/Zelda NEAD synthesis and SDL playback" ON)
 if(RECOMP_BUILD_AUDIO)
     find_package(SDL2 REQUIRED)
     add_library(recomp_audio STATIC backends/audio.c third_party/rsp-hle/alist.c
         third_party/rsp-hle/alist_audio.c third_party/rsp-hle/alist_nead.c
+        third_party/rsp-hle/alist_naudio.c third_party/rsp-hle/mp3.c
         third_party/rsp-hle/audio.c)
     target_include_directories(recomp_audio PRIVATE third_party/rsp-hle)
     target_link_libraries(recomp_audio PUBLIC recomp_runtime recomp_rsp_memory SDL2::SDL2)

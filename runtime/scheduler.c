@@ -647,6 +647,13 @@ static QueueFields fields(Runtime *rt, NativeQueue *q) {
 }
 
 int32_t recomp_queue_send(Runtime *rt, uint32_t object, uint32_t message, int32_t flag, bool jam) {
+    /* libultra's nonblocking send rejects a zero-capacity queue before it
+     * touches wait lists or the message buffer. A BSS queue can receive early
+     * timer deliveries before osCreateMesgQueue initializes it. */
+    if(object && flag==RECOMP_MESG_NOBLOCK) {
+        recomp_ram_address(rt,object,RECOMP_QUEUE_BYTES);
+        if(recomp_load(rt,object+8,4)==0 && recomp_load(rt,object+16,4)==0)return -1;
+    }
     NativeQueue *q = queue(rt, object);
     QueueFields f = fields(rt, q);
     while (f.valid == f.count) {

@@ -21,6 +21,13 @@ bool recomp_vi_registers(Runtime *rt, RecompViRegisters *regs) {
     };
     regs->x_scale=(regs->x_scale&~0xfffu)|((uint32_t)((regs->x_scale&0xfff)*vi.x_factor)&0xfff);
     regs->y_scale=(regs->y_scale&~0xfffu)|((uint32_t)((regs->y_scale&0xfff)*vi.y_factor)&0xfff);
+    /* Games can suppress scanout with a reversed active interval while
+     * preparing their first framebuffer. Do not pass a negative extent to
+     * RT64, which represents framebuffer dimensions as unsigned values. */
+    if((regs->h_start&0x3ff)<=((regs->h_start>>16)&0x3ff)
+            || (regs->v_start&0x3ff)<=((regs->v_start>>16)&0x3ff)
+            || !regs->width || !(regs->x_scale&0xfff) || !(regs->y_scale&0xfff))
+        regs->status&=~3u;
     if(!vi.black && vi.framebuffer)recomp_physical_address(rt,regs->origin,1);
     return true;
 }

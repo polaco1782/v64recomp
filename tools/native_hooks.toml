@@ -2118,3 +2118,383 @@ handler = "hook_os_stop_timer"
 body_size = 0xe8
 sha256 = "fa08d709f123d558c6fde696af4277e943a4fa5d75684f9b22091020ace233fa"
 expected_words = [0x27bdffd0, 0xafa40030, 0x8fae0030, 0xafbf001c, 0xafb00018, 0x8dcf0000, 0x15e00003, 0x0]
+
+# SDK variants measured in the Perfect Dark US 1.1 decoded library.
+
+[[signatures]]
+symbol = "osCreateViManager"
+handler = "hook_os_create_vi_manager"
+body_size = 0x180
+sha256 = "3bef63ca58b53d50a260c49bc348f7b1e70c9b7a90c3f2756f8f718c34712614"
+expected_words = [0x27bdffd0, 0xafb00020, 0x3c108006, 0x2610cee0, 0x8e0e0000, 0xafbf0024, 0xafa40030, 0x55c00054]
+
+[[signatures]]
+symbol = "osCreatePiManager"
+handler = "hook_os_create_pi_manager"
+body_size = 0x170
+sha256 = "48533142fb8aba6ed911651fb231c2926a18fbdfb343aa9d60e9d1f564e97405"
+expected_words = [0x27bdffd0, 0xafb00020, 0x3c108006, 0x2610cf00, 0x8e0e0000, 0xafbf0024, 0xafa40030, 0xafa50034]
+
+[[signatures]]
+symbol = "osCreateThread"
+handler = "hook_os_create_thread"
+body_size = 0xc8
+sha256 = "ecb89d7d77b87a24e1d7267cbacb7648621f0ee7bb3ef435a9fdd37afa157091"
+expected_words = [0x27bdffe0, 0xafbf001c, 0xafb00018, 0xac850014, 0x8fae0034, 0x0007c7c3, 0xac800000, 0xac800008]
+
+[[signatures]]
+symbol = "osSpTaskLoad"
+handler = "hook_os_sp_task_load"
+body_size = 0x168
+sha256 = "8346a9da426010e064554b372f2fa65b5183c37f95fcc1005737840bf4c88b7b"
+expected_words = [0x27bdffd8, 0xafbf0024, 0xafb00014, 0x00808025, 0xafb30020, 0xafb2001c, 0x0c001790, 0xafb10018]
+
+[[signatures]]
+symbol = "osSpTaskStartGo"
+handler = "hook_os_sp_task_start_go"
+body_size = 0x40
+sha256 = "46d8c9e0640230dd85c2bcf132ef3b1b5c743e403a3df43cffe76cd29b153225"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c012d78, 0xafa40018, 0x10400005, 0x00000000, 0x0c012d78, 0x00000000]
+
+[[signatures]]
+symbol = "osStartThread"
+handler = "hook_os_start_thread"
+body_size = 0x150
+sha256 = "1d77c8253805b416d2eb55de0d380a3dcc3c4b04654bdeac6fde5e1974998760"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafb10018, 0x0c01256c, 0xafb00014, 0x8fae0028, 0x24010001]
+
+[[signatures]]
+symbol = "osCreateMesgQueue"
+handler = "hook_os_create_mesg_queue"
+body_size = 0x2c
+sha256 = "8c01065a89274ad9d76eed8e4812d6c830fe156b0c8954053cc4ffdefb4c5fde"
+expected_words = [0x3c0e8006, 0x3c0f8006, 0x25ce0930, 0x25ef0930, 0xac8e0000, 0xac8f0004, 0xac800008, 0xac80000c]
+
+[[signatures]]
+symbol = "osStopThread"
+handler = "hook_os_stop_thread"
+body_size = 0xc0
+sha256 = "e3a6539df948f5c981a7e0b0b54c31e6112217a948075fc3b7724759d1705902"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafb20020, 0xafb1001c, 0x0c01256c, 0xafb00018, 0x8fae0038]
+
+[[signatures]]
+symbol = "osSetThreadPri"
+handler = "hook_os_set_thread_pri"
+body_size = 0xe0
+sha256 = "3b2a1e4eb9a8c7714f5f6fb0fe0c10f06117d88056ddfab7f59bc1547c9fe45d"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0x0c01256c, 0xafb00018, 0x8fae0028, 0x00408025]
+
+[[signatures]]
+symbol = "osSetEventMesg"
+handler = "hook_os_set_event_mesg"
+body_size = 0xb4
+sha256 = "c95bd5f926db28717586c5d35e2ea6d99ac62f4f6e11e1f554a9e3e74ff14e24"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0x0c01256c, 0xafb00018, 0x8fae0028]
+
+[[signatures]]
+symbol = "osViSetEvent"
+handler = "hook_os_vi_set_event"
+body_size = 0x6c
+sha256 = "5366172392ee022bd67b10ef7c6c485493fbb4361d95780e6e3e67f674e87613"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0x0c01256c, 0xafb00018, 0x3c0f8006]
+
+[[signatures]]
+symbol = "osSetIntMask"
+handler = "hook_os_set_int_mask"
+body_size = 0xa0
+sha256 = "8787e7ee554e5e3679414d36d2274c850fa55bde8678c803320b9668d2f2e404"
+expected_words = [0x400c6000, 0x3182ff01, 0x3c088006, 0x2508cf70, 0x8d0b0000, 0x2401ffff, 0x01614026, 0x3108ff00]
+
+[[signatures]]
+symbol = "osRecvMesg"
+handler = "hook_os_recv_mesg"
+body_size = 0x138
+sha256 = "257752ad47c79ea445b90a3c82dedd12877c73a930e285f1ce379781335eb3a7"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018, 0x0c01256c, 0xafb00014]
+
+[[signatures]]
+symbol = "osViGetCurrentFramebuffer"
+handler = "hook_os_vi_get_current_framebuffer"
+body_size = 0x40
+sha256 = "b43f0e9ca438b44615b0cc095a075d19352cefd5687792299fe12c7964431977"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c01256c, 0xafb00018, 0x3c0e8006, 0x8dce0910, 0x00408025, 0x02002025]
+
+[[signatures]]
+symbol = "osViGetNextFramebuffer"
+handler = "hook_os_vi_get_next_framebuffer"
+body_size = 0x40
+sha256 = "3ea3cc19198d712d2396bf4f7632d174d50536182b18e566def6c8af74d333b1"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c01256c, 0xafb00018, 0x3c0e8006, 0x8dce0914, 0x00408025, 0x02002025]
+
+[[signatures]]
+symbol = "osDpSetStatus"
+handler = "hook_os_dp_set_status"
+body_size = 0xc
+sha256 = "7c09caec343a59641049fd624ea2eff63051085009ae0039d5564b74c8303c2d"
+expected_words = [0x3c0ea410, 0x03e00008, 0xadc4000c]
+
+[[signatures]]
+symbol = "osGetThreadPri"
+handler = "hook_os_get_thread_pri"
+body_size = 0x18
+sha256 = "0e76eb69109b35fd0fce7458c6f6d3a751d5c4cf026b1e08cd0411549e6066ea"
+expected_words = [0x14800003, 0x00000000, 0x3c048006, 0x8c840940, 0x03e00008, 0x8c820004]
+
+[[signatures]]
+symbol = "osSendMesg"
+handler = "hook_os_send_mesg"
+body_size = 0x14c
+sha256 = "c3d6cc7b8557d514a1ca6acd59730623bd23360f8eb13ef3717a10ac507f4864"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafa5003c, 0xafa60040, 0xafb20020, 0xafb1001c, 0x0c01256c]
+
+[[signatures]]
+symbol = "osStopTimer"
+handler = "hook_os_stop_timer"
+body_size = 0xe8
+sha256 = "61a966d64f4bb0d6e9ef7833de917b0a8b1a338122d7db4199c463a031c21b9c"
+expected_words = [0x27bdffd0, 0xafa40030, 0x8fae0030, 0xafbf001c, 0xafb00018, 0x8dcf0000, 0x15e00003, 0x00000000]
+
+[[signatures]]
+symbol = "osSetTimer"
+handler = "hook_os_set_timer"
+body_size = 0xd4
+sha256 = "cab1fbadaba80ec0732ba83bf622b7ae673903f6def0cae5d3a87b9ab7563b6d"
+expected_words = [0x27bdffe0, 0xafa40020, 0x8fae0020, 0xafbf0014, 0xafa60028, 0xafa7002c, 0xadc00000, 0x8faf0020]
+
+[[signatures]]
+symbol = "osSpTaskYielded"
+handler = "hook_os_sp_task_yielded"
+body_size = 0x80
+sha256 = "f2d29e9477fa0deedf4b131477113de34a17b2a64a8a8dfae955b46db27c0998"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c014624, 0xafa40020, 0xafa2001c, 0x8fae001c, 0x31cf0100, 0x11e00004]
+
+[[signatures]]
+symbol = "osDpGetCounters"
+handler = "hook_os_dp_get_counters"
+body_size = 0x44
+sha256 = "412bda181519fac2c3ccca97341a1a0ed8c5797e9f12bcc6a34ac7caad1b442e"
+expected_words = [0x3c0ea410, 0x8dcf0010, 0x3c18a410, 0x3c08a410, 0xac8f0000, 0x8f190014, 0x24840004, 0x3c0aa410]
+
+[[signatures]]
+symbol = "osViBlack"
+handler = "hook_os_vi_black"
+body_size = 0x70
+sha256 = "124e48d3f452fdadc9e3588beb5c05670e3399a0140e19fc91aca116b5b84a6d"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c01256c, 0xafb00018, 0x93ae002b, 0x00408025, 0x11c00007]
+
+[[signatures]]
+symbol = "osViSetMode"
+handler = "hook_os_vi_set_mode"
+body_size = 0x68
+sha256 = "aa193e0f79c9ef3658cbf30bf6e77c79ce72e3a01579059d646305d92766f0a3"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c01256c, 0xafb00018, 0x3c0f8006, 0x8def0914, 0x8fae0028]
+
+[[signatures]]
+symbol = "osViSetXScale"
+handler = "hook_os_vi_set_x_scale"
+body_size = 0x128
+sha256 = "4261da0de050ec4dedf1f9480db7a0c2643d3c5b4ca95df25da09492fc6005cf"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xe7ac0028, 0xafb10018, 0x0c01256c, 0xafb00014, 0x3c0e8006, 0x8dce0914]
+
+[[signatures]]
+symbol = "osViSetYScale"
+handler = "hook_os_vi_set_y_scale"
+body_size = 0x58
+sha256 = "9c31cad3a96423f64c09091f53ba8c901ceac4379d7edbe4bb76bdf419b6d8ff"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xe7ac0028, 0x0c01256c, 0xafb00018, 0x3c0e8006, 0x8dce0914, 0xc7a40028]
+
+[[signatures]]
+symbol = "osViSetSpecialFeatures"
+handler = "hook_os_vi_set_special_features"
+body_size = 0x15c
+sha256 = "2a37ecb3a459d91ce4bfce6d356fffb816e6855740a648b50751937356b8dd07"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c01256c, 0xafa40018, 0x8fa40018, 0x00402825, 0x3c038006, 0x308e0001]
+
+[[signatures]]
+symbol = "osViSwapBuffer"
+handler = "hook_os_vi_swap_buffer"
+body_size = 0x50
+sha256 = "48873cc2b656a28092f7951e6206abd8918d2fbd8214daa940cb05f27deee827"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c01256c, 0xafa40020, 0x3c0f8006, 0x8def0914, 0x8fae0020, 0xafa2001c]
+
+[[signatures]]
+symbol = "osSpTaskYield"
+handler = "hook_os_sp_task_yield"
+body_size = 0x20
+sha256 = "a54c3829d94548f274f455ad785a308b6a409ebb77f20840a9e4c1c1a7227c1d"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c012d40, 0x24040400, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]
+
+[[signatures]]
+symbol = "osGetTime"
+handler = "hook_os_get_time"
+body_size = 0x84
+sha256 = "f380fd080e1e6602864d258414baa9d141b022df774df112f38393f5af137315"
+expected_words = [0x27bdffc8, 0xafbf001c, 0x0c01256c, 0xafb00018, 0x0c012144, 0x00408025, 0xafa20034, 0x3c0f800a]
+
+[[signatures]]
+symbol = "__osDisableInt"
+handler = "hook_os_disable_int"
+body_size = 0x70
+sha256 = "6485ee396fd6d104b6b5777d1375ca45184ae15211a3540b45c4b04b83a3829c"
+expected_words = [0x3c0a8006, 0x254acf70, 0x8d4b0000, 0x316bff00, 0x40086000, 0x2401fffe, 0x01014824, 0x40896000]
+
+[[signatures]]
+symbol = "osDestroyThread"
+handler = "hook_os_destroy_thread"
+body_size = 0x104
+sha256 = "7fbb226a1063a71e0751b06a8be96758f912aaa6143af9c337767f464060522f"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafb20020, 0xafb1001c, 0x0c01256c, 0xafb00018, 0x8fae0038]
+
+[[signatures]]
+symbol = "osContInit"
+handler = "hook_os_cont_init"
+body_size = 0x170
+sha256 = "edfa6cba2fa13bbaa408a3ddef21da16767c5ec388371e43b892d068c77b515c"
+expected_words = [0x27bdff90, 0x3c0e8006, 0x8dce0960, 0xafbf0024, 0xafa40070, 0xafa50074, 0xafa60078, 0x11c00003]
+
+[[signatures]]
+symbol = "osVirtualToPhysical"
+handler = "hook_os_virtual_to_physical"
+body_size = 0x7c
+sha256 = "43a03b9e9e1cd4becc9f8790a1c208e2f36226a41f87cb7615b675c089f355c5"
+expected_words = [0x27bdffe8, 0xafa40018, 0x8fae0018, 0x3c018000, 0xafbf0014, 0x01c1082b, 0x14200007, 0x3c01a000]
+
+[[signatures]]
+symbol = "osAiSetFrequency"
+handler = "hook_os_ai_set_frequency"
+body_size = 0x144
+sha256 = "b9e4d95fe2a0a9f5f65746dceb03e1a4a57950cfae91f260aa475358530ddcd7"
+expected_words = [0x3c058006, 0x24a5cf68, 0x8cae0000, 0x44844000, 0x3c014f80, 0x448e2000, 0x468042a0, 0x04810004]
+
+[[signatures]]
+symbol = "osAiSetNextBuffer"
+handler = "hook_os_ai_set_next_buffer"
+body_size = 0xa4
+sha256 = "31384ce35b726a2e47ad08c79c1cc59c86175bd4b795a48805dfd34d2fb0d96f"
+expected_words = [0x27bdffe0, 0x3c0f8006, 0x91ef0990, 0xafa40020, 0x8fae0020, 0xafbf0014, 0xafa50024, 0x11e00003]
+
+[[signatures]]
+symbol = "osPiStartDma"
+handler = "hook_os_pi_start_dma"
+body_size = 0x10c
+sha256 = "ff5c2f2bcec0c3385b05c16aa128cc40d1cb231d9364b6aef6bedd7d7482234d"
+expected_words = [0x27bdffd8, 0x3c0e8006, 0x8dcecf00, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafa70034]
+
+[[signatures]]
+symbol = "osContStartQuery"
+handler = "hook_os_cont_start_query"
+body_size = 0x84
+sha256 = "f0199d3bc7755421588265a078927761888e3050305b7aa77f78fb72aaa3cfed"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c012a18, 0xafa0001c, 0x3c0e800a, 0x91cec820, 0x11c0000c]
+
+[[signatures]]
+symbol = "osContGetQuery"
+handler = "hook_os_cont_get_query"
+body_size = 0x28
+sha256 = "3e6bddca54b7dc332c5ac4971fa4b03c62c92f9a92c12ff5a3367c5a70a20be2"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x8fa50020, 0x0c012abc, 0x27a4001f, 0x8fbf0014, 0x27bd0020]
+
+[[signatures]]
+symbol = "osContStartReadData"
+handler = "hook_os_cont_start_read"
+body_size = 0x84
+sha256 = "4a7c49870d2f81f821858bb2c6a0b1064781a4bccb85565cb67b1ddca16c6789"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c012a18, 0xafa40020, 0x3c0e800a, 0x91cec820, 0x24010001, 0x11c1000b]
+
+[[signatures]]
+symbol = "osContGetReadData"
+handler = "hook_os_cont_get_read"
+body_size = 0x8c
+sha256 = "b3ffed10ea3db49e4ab55c8ac8b60e10583e51e50671a2168f907f583b4e0283"
+expected_words = [0x3c05800a, 0x24a5c821, 0x90ae0000, 0x3c02800a, 0x27bdfff0, 0x2442c7e0, 0x19c0001a, 0x00001825]
+
+[[signatures]]
+symbol = "osMotorInit"
+handler = "hook_os_motor_init"
+body_size = 0x15c
+sha256 = "0ff9e2f7bf574d0884fa72d23157896047822dec6dbc715a70c40ddaa3069aa2"
+expected_words = [0x27bdffb8, 0xafbf001c, 0xafb00018, 0xafa40048, 0xafa60050, 0xaca40004, 0x8faf0050, 0x241800ff]
+
+[[signatures]]
+symbol = "osYieldThread"
+handler = "hook_os_yield_thread"
+body_size = 0x4c
+sha256 = "b201eb2b558088f15c421e2e10d646d9827f2682d2fbb81a14cb292f4debebb2"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c01256c, 0xafb00018, 0x3c0f8006, 0x8def0940, 0x240e0002, 0x3c048006]
+
+[[signatures]]
+symbol = "osJamMesg"
+handler = "hook_os_jam_mesg"
+body_size = 0x150
+sha256 = "d4470232337d0adb84e76bff33a93f74743b16cfcb21c8d3e2d91112a4899874"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018, 0x0c01256c, 0xafb00014]
+
+[[signatures]]
+symbol = "osPiGetCmdQueue"
+handler = "hook_os_pi_get_cmd_queue"
+body_size = 0x28
+sha256 = "2a6ed7e9cae763173a8e243208090aee0b4f9f96abb9b600c6cc64b0db5a099a"
+expected_words = [0x3c0e8006, 0x8dcecf00, 0x15c00003, 0x00000000, 0x03e00008, 0x00001025, 0x3c028006, 0x8c42cf08]
+
+[[signatures]]
+symbol = "osDpGetStatus"
+handler = "hook_os_dp_get_status"
+body_size = 0xc
+sha256 = "7bae6b2c6cd7e33634bb26a81f45f181d834a210562a71385918bf2b101c00e9"
+expected_words = [0x3c0ea410, 0x03e00008, 0x8dc2000c]
+
+[[signatures]]
+symbol = "osInitialize"
+handler = "hook_os_initialize"
+body_size = 0x260
+sha256 = "71a16d07edef09635466cdd10f7bca575ad868c16cce99be219e8f3cb908c8ef"
+expected_words = [0x27bdffc8, 0xafbf001c, 0x240e0001, 0x3c018009, 0xafb10018, 0xafb00014, 0xc012b34, 0xac2e0a60]
+
+[[signatures]]
+symbol = "osEepromProbe"
+handler = "hook_os_eeprom_probe"
+body_size = 0x70
+sha256 = "7e2f68e8ce1d033e5e26ab6118dbfe4249d56a79ca025226d139ffe3082e3e67"
+expected_words = [0x27bdffd0, 0xafbf0014, 0xc012a18, 0xafa40030, 0x8fa40030, 0xc012fb9, 0x27a50024, 0x10400003]
+
+[[signatures]]
+symbol = "osEepromLongRead"
+handler = "hook_os_eeprom_long_read"
+body_size = 0x8c
+sha256 = "fe30a12e050ef6577ab89ff4c36555f6fd94f51009d25669b61693289d45f126"
+expected_words = [0x27bdffe0, 0xafa7002c, 0x8fae002c, 0xafbf0014, 0xafa40020, 0xafa50024, 0xafa60028, 0x19c00016]
+
+[[signatures]]
+symbol = "osEepromLongWrite"
+handler = "hook_os_eeprom_long_write"
+body_size = 0x104
+sha256 = "ffaedf2f571a659fd286f842a3e40fc235e7c75ce389fbc6799a37fea18bcb38"
+expected_words = [0x27bdffb8, 0xafb70040, 0xafb6003c, 0xafb2002c, 0xafb10028, 0xafb00024, 0xe08025, 0x30b100ff]
+
+[[signatures]]
+symbol = "osPfsIsPlug"
+handler = "hook_os_pfs_is_plug"
+body_size = 0x18c
+sha256 = "38873f97a12c49423b2eff956df1b786746758739787bcb8720a03ebb04ce2df"
+expected_words = [0x27bdff90, 0xafbf003c, 0xafb5002c, 0xafb20020, 0xafb1001c, 0x809025, 0xafbe0038, 0xafb70034]
+
+[[signatures]]
+symbol = "osPfsInitPak"
+handler = "hook_os_pfs_init_pak"
+body_size = 0x238
+sha256 = "a45c1dd01b848ffe96e9aaffa42110a9ea90ee9fa30202b7eedbf296374fdaa6"
+expected_words = [0x27bdff90, 0xafbf001c, 0xafb00018, 0xa08025, 0xafa40070, 0xafa60078, 0xc012a18, 0xafa7007c]
+
+[[signatures]]
+symbol = "osPiReadIo"
+handler = "hook_os_pi_raw_read_io"
+body_size = 0x3c
+sha256 = "7085cc7703c37fdf995ab74d83c6367e764f5ddfa181a4b37d11693d1afc17a3"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0xc0126b8, 0xafa50024, 0x8fa40020, 0xc01481c, 0x8fa50024]
+
+[[signatures]]
+symbol = "osPiRawReadIo"
+handler = "hook_os_pi_raw_read_io"
+body_size = 0x4c
+sha256 = "c427465135a458d341726c892fbe83ad5c1d5448eed9c934ebd33e0aa6bcd54d"
+expected_words = [0x3c03a460, 0x34630010, 0x8c620000, 0x3c188000, 0x304e0003, 0x11c00005, 0x0, 0x8c620000]

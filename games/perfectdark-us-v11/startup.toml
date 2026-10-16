@@ -1,0 +1,18 @@
+extends = "dispatches.toml"
+
+[discovery]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+
+fallthroughs = [
+  {pc = 0x700195c8, expected_word = 0x24020001, target = 0x700195cc, reason = "Original model assembly falls into its shared return epilogue"},
+  {pc = 0x7002f5d4, expected_word = 0x460e1080, target = 0x7002f5d8, reason = "Original collision wrapper falls into the shared floating point implementation"},
+  {pc = 0x700159fc, expected_word = 0xa03020, target = 0x70015a00, reason = "Original assembly wrapper falls into its shared implementation"},
+  {pc = 0x70015b10, expected_word = 0xa03020, target = 0x70015b14, reason = "Original assembly wrapper falls into its shared implementation"},
+  {pc = 0x70015b64, expected_word = 0xa03020, target = 0x70015b68, reason = "Original assembly wrapper falls into its shared implementation"},
+  {pc = 0x70015be0, expected_word = 0xa03020, target = 0x70015be4, reason = "Original assembly wrapper falls into its shared implementation"},
+  {pc = 0x7001a3d8, expected_word = 0x460d6300, target = 0x7001a3dc, reason = "Original assembly wrapper falls into its shared implementation"},
+]
+
+roots = [{name = "modelasm_return", vram = 0x700195cc}]
+transfers = [{pc = 0x7002f558, expected_word = 0x01a00008, kind = "tail", targets = [0x7002f5d8]}]

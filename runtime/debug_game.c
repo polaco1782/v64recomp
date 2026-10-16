@@ -49,6 +49,7 @@ int main(int argc,char **argv) {
     if(cheats && !sm64 && !goldeneye){fputs("--cheat-menu is available for SM64 and GoldenEye\n",stderr);return 2;}
     if(mode && !sm64){fputs("--mode is available for SM64\n",stderr);return 2;}
     if(o.mute)setenv("RECOMP_AUDIO_MUTE","1",1);
+    setting("SAVE",o.save);
     if(goldeneye)setenv("RECOMP_GOLDENEYE_SAVE",o.save,1);
     if(sm64)setenv("RECOMP_CAPTURE","1",1);
     char frames[32];snprintf(frames,sizeof(frames),"%u",o.frames);

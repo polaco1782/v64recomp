@@ -14,7 +14,7 @@ from discover import discover
 from translate import translate
 
 PROJECT = Path(__file__).resolve().parents[1]
-GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12')
+GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11')
 
 
 def split_sources(output: Path) -> list[Path]:
@@ -70,8 +70,9 @@ def generate(game: str, output: Path, report_only: bool) -> None:
             generator.validate_inspection(rom,profile)
             generator.validate_cheats(rom,profile)
             generator.checked_dispatches(rom,profile)
-        if game=='oot-us-v12':rom,profile=generator.prepare(rom,profile,output)
+        if hasattr(generator,'prepare'):rom,profile=generator.prepare(rom,profile,output)
         metadata=discover(rom,profile)
+        if hasattr(generator,'finalize_metadata'):generator.finalize_metadata(rom,metadata,profile)
         for function in metadata['functions']:
             sites=profile.get('oot_relocations',{}).get(function['section'])
             if sites is not None:
@@ -80,6 +81,8 @@ def generate(game: str, output: Path, report_only: bool) -> None:
                 function['relocation_pcs']=[pc for pc in sites if pc in owned]
         write_json(output/'symbols.json',metadata)
         metadata=load_metadata(output/'symbols.json',rom)
+        if not report_only and hasattr(generator,'configure_translation'):
+            generator.configure_translation(rom,metadata,profile,output)
         if game=='goldeneye-us' and not report_only:
             audit=translate(rom,metadata,profile,output,report_only=True)
             functions={(f['section'],f['vram']):f for f in metadata['functions']}

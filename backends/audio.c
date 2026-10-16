@@ -135,12 +135,53 @@ static void validate_nead(RecompAudio *a,uint32_t w1,uint32_t w2,uint32_t pc) {
     }
     }
 }
+static void validate_naudio(RecompAudio *a,uint32_t w1,uint32_t w2,uint32_t pc) {
+    unsigned op=w1>>24, addr=w2&0xffffff;
+    if(op>15)recomp_fail("unknown NAudio command",pc);
+    a->stats.commands++;a->stats.opcodes[op]++;
+    switch(op) {
+    case 0:sample_range(0x4f0+(w1&4095),0x170);break;
+    case 1: {
+        unsigned n=align((w2>>16)&4095,32);
+        if(n && a->book_coefficients<16)recomp_fail("NAudio ADPCM without codebook",pc);
+        dmem_range(0x4f0+((w2>>12)&15),n/32*9);
+        sample_range(0x4f0+(w2&4095),n+32);ram_range(a,w1&0xffffff,32,2);
+        if(w2&0x20000000)ram_range(a,a->hle.alist_naudio.loop,32,2);
+        break;
+    }
+    case 2:dmem_range(0x4f0+(w1&65535),w2&4095);break;
+    case 3:ram_range(a,addr,80,4);break;
+    case 4:case 6: {
+        unsigned n=(w1>>12)&4095;
+        dmem_range((0x4f0+(w1&4095))&~3u,align(n,8));
+        ram_range(a,addr&~7u,align(n,8),8);break;
+    }
+    case 5: {
+        unsigned input=0x4f0+((w2>>2)&4095),pitch=((w2>>14)&65535)*2;
+        sample_range(input-8,((184*(uint64_t)pitch+65535)/65536+4)*2+8);
+        ram_range(a,w1&0xffffff,10,2);break;
+    }
+    case 7:ram_range(a,addr,0x488,2);break;
+    case 8:case 9:case 13:break;
+    case 10:dmem_range(0x4f0+(w1&65535),align(w2&65535,4));
+        dmem_range(0x4f0+(w2>>16),align(w2&65535,4));break;
+    case 11: {
+        unsigned n=w1&65535;
+        if(n>sizeof(a->hle.alist_naudio.table) || n%32)recomp_fail("NAudio codebook size",pc);
+        ram_range(a,addr,n,2);a->book_coefficients=n/2;break;
+    }
+    case 12:sample_range(0x4f0+(w2>>16),0x170);sample_range(0x4f0+(w2&65535),0x170);break;
+    case 14:ram_range(a,addr,32,2);break;
+    case 15:ram_range(a,addr,32,2);break;
+    }
+}
 void HleValidateCommand(void *opaque,uint32_t w1,uint32_t w2,uint32_t pc) {
     RecompAudio *a=opaque;struct alist_audio_t *s=&a->hle.alist_audio;
     a->debug.history[a->debug.command_index%RECOMP_AUDIO_HISTORY]=(RecompAudioCommand){pc,w1,w2};
     a->debug.command_index++;
     if(a->debug.history_count<RECOMP_AUDIO_HISTORY)a->debug.history_count++;
     if(a->microcode==RECOMP_AUDIO_NEAD_OOT) { validate_nead(a,w1,w2,pc);return; }
+    if(a->microcode==RECOMP_AUDIO_NAUDIO_MP3) { validate_naudio(a,w1,w2,pc);return; }
     unsigned op=w1>>24,flags=(w1>>16)&255,count=s->count;
     if(op>15)recomp_fail("unknown ABI1 audio command",pc);
     a->stats.commands++;a->stats.opcodes[op]++;
@@ -276,7 +317,7 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
     if(!rt || !rt->platform || !config
        || config->prebuffer_ms>200
        || (config->microcode!=RECOMP_AUDIO_ABI1 && config->microcode!=RECOMP_AUDIO_ABI1_LINEAR
-           && config->microcode!=RECOMP_AUDIO_NEAD_OOT))return NULL;
+           && config->microcode!=RECOMP_AUDIO_NEAD_OOT && config->microcode!=RECOMP_AUDIO_NAUDIO_MP3))return NULL;
     RecompAudio *a=calloc(1,sizeof(*a));if(!a)return NULL;
     a->rt=rt;a->owner=SDL_ThreadID();a->playback=config->playback;a->enabled=config->output_enabled;
     a->microcode=config->microcode;a->task_profile=config->task_profile;
@@ -339,6 +380,7 @@ static void execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     memcpy(a->dmem+TASK_DATA_PTR,&physical,4);memcpy(a->dmem+TASK_DATA_SIZE,&bytes,4);
     a->task_done=false;uint64_t start=timer_ns();
     if(a->microcode==RECOMP_AUDIO_NEAD_OOT)alist_process_nead_oot(&a->hle);
+    else if(a->microcode==RECOMP_AUDIO_NAUDIO_MP3)alist_process_naudio_mp3(&a->hle);
     else if(a->microcode==RECOMP_AUDIO_ABI1_LINEAR)alist_process_audio_ge(&a->hle);
     else alist_process_audio(&a->hle);
     a->stats.synth_ns+=timer_ns()-start;

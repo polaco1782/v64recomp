@@ -111,7 +111,23 @@ void hook_os_writeback_dcache_all(Runtime *rt, MipsContext *ctx) {
 }
 void hook_os_cache_range(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
-    /* Validate the range while coherent native RAM supplies cache visibility. */
-    uint32_t bytes = (uint32_t)ctx->gpr[5];
-    if (bytes) recomp_ram_address(rt, argument(ctx, 0), bytes);
+    /* Cache instructions operate on cache tags, without reading the addressed
+     * RAM. SDK callers also pass ROM aliases and entire virtual ranges.
+     * Native CPU and backend snapshots already provide coherent storage. */
+    (void)rt; (void)ctx;
+}
+void hook_os_dp_set_status(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    /* Native task submission owns RDP execution; hardware freeze/flush and
+     * performance-counter requests do not leave a pending MMIO operation. */
+    (void)rt; (void)ctx;
+}
+void hook_os_dp_get_status(Runtime *rt, MipsContext *ctx) {
+    (void)rt;
+    RECOMP_TRACE_OS(rt, ctx);
+    result(ctx,0);
+}
+void hook_os_dp_get_counters(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    for(unsigned i=0;i<4;i++)recomp_store(rt,argument(ctx,0)+i*4,0,4);
 }

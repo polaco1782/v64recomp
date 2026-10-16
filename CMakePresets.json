@@ -147,6 +147,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "perfectdark-us-v11-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/perfectdark-us-v11-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "perfectdark-us-v11",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RECOMP_OPT_LEVEL": "3"
+      }
+    },
+    {
+      "name": "perfectdark-us-v11-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/perfectdark-us-v11-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "perfectdark-us-v11",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -205,6 +226,14 @@
     {
       "name": "oot-us-v12-debug",
       "configurePreset": "oot-us-v12-debug"
+    },
+    {
+      "name": "perfectdark-us-v11-release",
+      "configurePreset": "perfectdark-us-v11-release"
+    },
+    {
+      "name": "perfectdark-us-v11-debug",
+      "configurePreset": "perfectdark-us-v11-debug"
     }
   ]
 }

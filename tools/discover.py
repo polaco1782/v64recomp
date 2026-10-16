@@ -224,10 +224,10 @@ def discover(rom: bytes, profile: dict) -> dict:
             if i.opcode == 'invalid':
                 error(pc, 'invalid instruction on reachable path')
                 continue
-            if i.opcode == 'break':
+            if i.opcode in ('break','syscall'):
                 # A fatal native trap terminates this path; it is not a stub.
                 continue
-            if i.opcode in ('syscall', 'eret'):
+            if i.opcode == 'eret':
                 error(pc, f'{i.opcode} requires a native exception/OS boundary')
                 continue
             if not i.delay:

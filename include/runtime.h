@@ -297,6 +297,9 @@ void hook_os_recv_mesg(Runtime *, MipsContext *);
 void hook_os_set_event_mesg(Runtime *, MipsContext *);
 void hook_os_writeback_dcache_all(Runtime *, MipsContext *);
 void hook_os_cache_range(Runtime *, MipsContext *);
+void hook_os_dp_set_status(Runtime *, MipsContext *);
+void hook_os_dp_get_status(Runtime *, MipsContext *);
+void hook_os_dp_get_counters(Runtime *, MipsContext *);
 /* Global libultra page pairs. ASID mappings and privileged instructions are unsupported. */
 void recomp_map_pages(Runtime *, unsigned, uint32_t, uint32_t, uint32_t, uint32_t);
 void recomp_unmap_pages(Runtime *);
