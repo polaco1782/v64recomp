@@ -177,12 +177,13 @@ static void poll_platform(Runtime *rt) {
     if (p->config.vi_intr_count) recomp_store(rt, p->config.vi_intr_count, (uint32_t)p->vi.retraces, 4);
     if (p->config.current_time) recomp_store(rt, p->config.current_time, recomp_get_time(rt), 8);
     if (p->config.base_counter) recomp_store(rt, p->config.base_counter, (uint32_t)now, 4);
-    if (p->vi_queue) {
-        /* Bounded work; excess overdue presentation notifications are dropped. */
-        if (deliveries > 256) deliveries = 256;
-        for (uint64_t i = 0; i < deliveries; i++)
-            (void)recomp_queue_send(rt, p->vi_queue, p->vi_message, RECOMP_MESG_NOBLOCK, false);
-    }
+    /* A host stall (such as reloading textures) must not replay a queue full
+     * of old VI notifications before pending SP/DP completions are delivered.
+     * Those completions share the game's scheduler queue and can be lost,
+     * leaving the guest waiting forever. Coalesce overdue notifications while
+     * retaining the elapsed retraces and the requested retrace-count phase. */
+    if (p->vi_queue && deliveries)
+        (void)recomp_queue_send(rt, p->vi_queue, p->vi_message, RECOMP_MESG_NOBLOCK, false);
 }
 
 bool recomp_platform_init(Runtime *rt, const RecompPlatformConfig *config) {

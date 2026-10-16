@@ -1,10 +1,12 @@
 # Texture dumps and replacements
 
 For automatic Rice/GLideN64 matching while playing, use
-[`--texture-scan [DIRECTORY]`](../texture_scan/README.md). The native worker moves
-matching images into the game's replacement folder and requests a reload every
-15 seconds when new matches are found. Both release and debug runners support
-this mode; no Python texture importer or `.rtz` conversion is needed.
+[`--texture-scan [ZIP_OR_DIRECTORY]`](../texture_scan/README.md). The native worker
+reads source images without extracting ZIPs, builds `replacements/textures.rtz`
+with an embedded `rt64.json`, and writes a copy of the index beside the archive.
+Changed matches trigger publication and reload every 60 seconds. Source ZIPs and
+images are preserved. Both release and debug runners support this mode; no
+Python texture importer or separate packing command is needed.
 
 The native RT64 runner can export the original textures as they enter the decoded
 texture cache. Enable it while playing:
@@ -31,7 +33,9 @@ the splash, title and menu textures too.
 
 ## Use replacements
 
-The runner automatically reads `replacements/` when it exists. A matching PNG
+The runner automatically loads `replacements/textures.rtz` when present. The
+archive includes its own RT64 index and loads without scanning enabled.
+Existing loose PNG folders are also supported. A matching PNG
 replaces the original through RT64's texture cache and UV scaling; missing files
 use the original ROM texture. No `rt64.json` index is required. Put a custom
 PNG with the same hash filename here and preserve the original aspect ratio.

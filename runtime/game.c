@@ -30,7 +30,7 @@ int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
     for(int i=1;i<argc;i++) {
         const char *arg=argv[i];
         if(!strcmp(arg,"--help")) {
-            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] [--texture-scan [DIRECTORY]]\n",argv[0]);
+            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] [--texture-scan [ZIP_OR_DIRECTORY]]\n",argv[0]);
             return 1;
         }
         if(!strcmp(arg,"--mute")){o->mute=true;continue;}
@@ -38,8 +38,8 @@ int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
             texture_source=RECOMP_DEFAULT_TEXTURE_SOURCE;
             if(i+1<argc && argv[i+1][0]!='-')texture_source=argv[++i];
             struct stat source;
-            if(stat(texture_source,&source) || !S_ISDIR(source.st_mode)) {
-                fprintf(stderr,"texture scan source must be an extracted directory: %s\n",texture_source);
+            if(stat(texture_source,&source) || (!S_ISDIR(source.st_mode) && !S_ISREG(source.st_mode))) {
+                fprintf(stderr,"texture scan source must be a ZIP file or directory: %s\n",texture_source);
                 return -1;
             }
             continue;

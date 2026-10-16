@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "textures.h"
 #include "../texture_scan/scanner.h"
+#include "../texture_scan/capture.h"
 #define Status int
 #include <X11/Xutil.h>
 #undef Status
@@ -41,6 +42,7 @@ struct RecompRenderer {
     std::atomic<uint64_t> display_frames{0}, first_display_ns{0}, last_display_ns{0};
     RecompTextureFiles textureFiles;
     std::unique_ptr<RecompTextures::Scanner> textureScan;
+    std::unique_ptr<RecompTextures::CaptureWriter> textureCapture;
     uint64_t token=0;
     bool sp_seen=false,dp_seen=false;
     bool ready=false;
@@ -52,6 +54,14 @@ struct RecompRenderer {
     void wait_workers() {
         app->workloadQueue->waitForWorkloadId(app->state->workloadId);
         app->presentQueue->waitForPresentId(app->state->presentId);
+    }
+    void wait_texture_reload() {
+        wait_workers();
+        // A workload ID is signaled after its first rendered frame. Remaining
+        // interpolated frames can still hold the old texture snapshot. Match
+        // RT64's resource-reload barrier before rebuilding the replacement map.
+        app->workloadQueue->waitForIdle();
+        app->presentQueue->waitForIdle();
     }
     void sync_vi() { (void)recomp_vi_registers(rt,&vi); }
 };
@@ -113,12 +123,8 @@ static void process_graphics(void *opaque) {
     s->app->interpreter->loadUCodeGBI(s->code,s->data,true);
     if(!s->app->interpreter->hleGBI)recomp_fail("RT64 did not recognize the graphics microcode",s->code);
     if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->before.size(),&s->stats.rdp_triangles);
-    {
-        // Raw dumps are complete before the scanner snapshots their files.
-        std::unique_lock<std::mutex> captures;
-        if(s->textureScan)captures=s->textureScan->guardCaptures();
-        s->app->processDisplayLists(s->ram.data(),s->list,0,true);
-    }
+    if(s->textureCapture)s->textureCapture->beginTask();
+    s->app->processDisplayLists(s->ram.data(),s->list,0,true);
     s->wait_workers();
     s->textureFiles.collect(*s->app->textureCache);
     s->stats.submit_ns+=monotonic_ns()-start;
@@ -204,14 +210,18 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
                 throw std::runtime_error("texture scan paths are not configured");
             std::string title(reinterpret_cast<const char *>(rt->rom + 32), 20);
             while (!title.empty() && (title.back() == ' ' || title.back() == '\0')) title.pop_back();
-            std::array<char,4096> executable{};
-            ssize_t length=readlink("/proc/self/exe",executable.data(),executable.size()-1);
-            auto hasher=length>0?std::filesystem::path(std::string(executable.data(),length)).parent_path()/"texture_hasher":
-                                std::filesystem::path(RECOMP_TEXTURE_HASHER);
-            s->textureScan=std::make_unique<RecompTextures::Scanner>(RecompTextures::ScanConfig{source,raw,replacements,hasher,title});
-            s->app->state->dumpingTexturesDirectory=raw;
+            s->textureScan=std::make_unique<RecompTextures::Scanner>(RecompTextures::ScanConfig{source,raw,replacements,title});
+            s->textureCapture=std::make_unique<RecompTextures::CaptureWriter>(raw);
+            s->app->state->textureManager.captureTexture=[capture=s->textureCapture.get(),s=s.get()](
+                    uint64_t hash,RT64::State *state,const RT64::LoadTile &tile,uint16_t width,uint16_t height,uint32_t tlut) {
+                const auto &load=state->rdp->rice.lastLoadOpByTMEM[tile.tmem];
+                const auto &palette=state->rdp->rice.lastLoadOpByTMEM[256+(tile.siz==G_IM_SIZ_4b?tile.palette*16:0)];
+                return capture->capture(hash,reinterpret_cast<const uint8_t *>(state->rdp->TMEM),state->RDRAM,
+                                        s->ram.size(),tile,load,palette,width,height,tlut);
+            };
             s->textureScan->start();
-            std::fprintf(stderr,"Texture scan: %s; matches are moved into %s every 15 seconds.\n",source,replacements);
+            std::fprintf(stderr,"Texture scan: %s; pack output %s/textures.rtz; matching every %u seconds.\n",
+                         source,replacements,RecompTextures::ScanIntervalSeconds);
         }
 #ifdef RECOMP_DEBUG
         if (const char *path = std::getenv("RECOMP_TEXTURE_RAW_DUMP"); path && *path && !s->textureScan) {
@@ -255,6 +265,8 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     s->check_owner();service_renderer(s->rt,s,true);
     recomp_task_service_remove(s->rt,s);
     recomp_worker_destroy(s->worker);
+    s->app->state->textureManager.captureTexture={};
+    s->textureCapture.reset();
     if(s->textureScan)s->textureScan->stop();
     SDL_SetEventFilter(nullptr,nullptr);
     if(s->ready) { s->wait_workers();s->app->end(); }
@@ -301,13 +313,13 @@ bool recomp_renderer_present(RecompRenderer *s) {
 bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
     s->check_owner();service_renderer(s->rt,s,true);SDL_Event event;
     if(s->textureScan && s->textureScan->takeReload()) {
-        s->wait_workers();s->textureFiles.refresh(*s->app->textureCache);
+        s->wait_texture_reload();s->textureFiles.refresh(*s->app->textureCache);
         std::fprintf(stderr,"Texture scan: RT64 replacements refreshed.\n");
     }
     while(SDL_PollEvent(&event)) {
         if(event.type==SDL_QUIT)return false;
         if(event.type==SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode==SDL_SCANCODE_F5) {
-            s->wait_workers();s->textureFiles.refreshAndToggle(*s->app->textureCache);
+            s->wait_texture_reload();s->textureFiles.refreshAndToggle(*s->app->textureCache);
         }
 #ifdef RECOMP_DEBUG
         if(event.type==SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode==SDL_SCANCODE_F6) {

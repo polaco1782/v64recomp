@@ -1,93 +1,99 @@
 # Native texture scanning
 
-Extract a Rice/GLideN64 PNG pack, then run the matching game's native executable:
+Pass a Rice/GLideN64 PNG pack ZIP or an extracted directory to the matching game:
 
 ```sh
-./build/sm64-us-release/bin/sm64-us --texture-scan /path/to/extracted-mario-pack
-./build/duke-us-release/bin/duke-us --texture-scan /path/to/extracted-duke-pack
+./build/sm64-us-release/bin/sm64-us --texture-scan /home/cmartin/Downloads/NINTEMOD_Mario_64_Complete.zip
+./build/duke-us-release/bin/duke-us --texture-scan /path/to/duke-pack.zip
 ./build/goldeneye-us-release/bin/goldeneye-us --texture-scan /path/to/extracted-ge-pack
 ```
 
-Both release and debug runners support scanning. Build the selected runner
-normally with CMake; this also builds `bin/texture_hasher` beside it. Keep that
-native helper beside the game if moving the executables. No Python texture
-importer, generated pack, or separate conversion command is needed.
+Both release and debug runners support scanning. Rice hashing is linked into
+the game and runs directly on the native scanner thread. No helper executable,
+Python texture importer, or separate conversion/packing command is needed.
+The project is licensed under GPL version 2; the original Rice/GLideN64 and RT64
+notices are retained in [the third-party notices](../THIRD_PARTY_NOTICES.md).
+The RT64 checkout includes a capture callback used by the background writer.
+The capture writer, importer, ZIP reader, and pack writer live in this folder.
 
-With no directory argument, `--texture-scan` reads
-`local/textures/<game>/source/`. For example:
-
-```sh
-mkdir -p local/textures/sm64-us/source
-unzip -q /home/cmartin/Downloads/NINTEMOD_Mario_64_Complete.zip \
-  -d local/textures/sm64-us/source
-./build/sm64-us-release/bin/sm64-us --texture-scan
-```
-
-The directory must already be extracted; the runner does not unpack ZIP files.
+With no directory or ZIP argument, `--texture-scan` reads
+`local/textures/<game>/source/`. ZIP entries are read directly without extracting
+the source pack. Original ZIPs and extracted source images remain untouched.
 The running game's ROM header selects the filename prefix to match, so Mario
 textures cannot be imported into GoldenEye by accident.
 
 ## What happens while playing
 
 RT64 captures raw texture memory and load information as textures are drawn.
-A native worker takes complete snapshots, calls RT64's native Rice hasher,
-and scans the source directory immediately and then every 15 seconds. The
-helper preserves RT64's existing separation of its GPL Rice implementation.
-Hashing and source image matching run outside the renderer. Snapshot copying
-briefly synchronizes with the graphics worker so files are never hashed while
-RT64 writes them.
+A capture worker writes immutable raw snapshots. A separate native scanner
+thread calculates Rice hashes, matches source images, and updates the pack
+immediately and then every 60 seconds.
+Capture writes, hashing, source image decoding, and packing run outside the renderer.
+The graphics worker only copies bounded amounts of guest memory into a bounded,
+nonblocking queue; a full queue defers discovery until a later draw. Atomic
+completion markers let the scanner read captures without locking graphics.
+Matching runs at lower CPU priority, retains one decoded image at a time, and
+skips decoding unchanged inputs and outputs on subsequent scans.
 
-Matched `_all.png`, `_ciByRGBA.png`, and `_allciByRGBA.png` images are **moved** into
-`local/textures/<game>/replacements/` with RT64 names such as
-`0123456789abcdef.v5.png`. PNGs are checked before import. An image is published
-atomically, its reusable mapping is saved, and then the original is removed.
-Keep the original ZIP if you want to restore the extracted images later.
+Matched PNGs are stored inside a single RT64 pack:
 
-Rice's split `_rgb.png` and `_a.png` format is also supported. A complete pair
-is combined into one RGBA PNG using the mask's red channel as alpha; both
-source files are consumed after the result and mapping are saved. Dimensions
-must match. An unpaired `_rgb.png` becomes opaque. Complete pairs take
+```text
+local/textures/<game>/replacements/textures.rtz
+local/textures/<game>/replacements/rt64.json
+```
+
+The archive contains hash-named textures such as `0123456789abcdef.v5.png` and
+its own `rt64.json` index, so the `.rtz` is self-contained. The external JSON is
+a readable copy of that index. PNG data is already compressed and is stored
+without additional compression to keep background packing work small. PNG packs
+use RT64's stall loading operation; a DDS low-mip streaming cache is not needed.
+
+When matches change, the scanner writes a new archive and atomically publishes
+it before requesting an RT64 reload. The renderer can continue reading its
+previously mapped archive during packing. Unchanged scans do not rebuild it.
+Existing converted hash-named PNGs are migrated into the archive and removed
+only after publication and mapping persistence succeed. Source images are kept.
+
+The runner loads `textures.rtz` automatically from the replacement folder, even
+without `--texture-scan`. A self-contained pack can also be loaded directly:
+
+```sh
+RECOMP_TEXTURE_REPLACEMENTS=/path/to/textures.rtz ./build/sm64-us-release/bin/sm64-us
+```
+
+## Image matching
+
+The matcher accepts `_all.png`, `_ciByRGBA.png`, and `_allciByRGBA.png` images,
+as well as split `_rgb.png` and `_a.png` images. A complete RGB/mask pair is
+combined into one RGBA PNG using the mask's red channel as alpha. Dimensions
+must match. An unpaired RGB image becomes opaque. Complete pairs take
 precedence over combined variants, and combined variants over unpaired RGB.
-Persisted mappings retain that preference after originals have been moved, so
-a leftover RGB file cannot erase an already imported texture's transparency.
 This follows the split-mask convention in
 [GLideN64's loader](https://github.com/gonetz/GLideN64/blob/master/src/GLideNHQ/TxHiResLoader.cpp).
 
-New replacements trigger a synchronized RT64 reload on the host thread without
-toggling originals/replacements. F5 still reloads and toggles manually; automatic
-reload preserves the mode selected with F5. Reloading can briefly stall during
-GPU uploads. No source scanning or raw capture happens in an ordinary launch.
+The matcher supports palette and texture `$` wildcards. Its saved mappings let
+images from earlier move-based imports match later RT64 hashes and palette
+variants, including after migration to an archive. Ordinary filenames beat
+corresponding `Copy of ` and `flash ` variants; pixel-identical duplicates are
+accepted. Conflicting ordinary images produce an error for manual review.
 
-The native matcher supports palette and texture `$` wildcards. Its mapping file
-allows an already moved image to match a later RT64 hash or palette variant.
-Ordinary filenames beat corresponding `Copy of ` and `flash ` variants; pixel
-identical duplicates are accepted. Conflicting ordinary images remain in the
-source directory and produce an error for manual review.
+Automatic reload preserves the original/replacement mode selected with F5.
+F5 still reloads and toggles manually. GPU uploads can briefly stall during
+reload. Ordinary launches do not capture or scan textures.
 
 The following files persist under each game's texture directory:
 
-- `scan/`: RT64 raw dumps, complete `ready/` snapshots, their `rt64.json` hash
-  database, and `hasher.log`.
-- `replacements/`: hash-named PNGs and `.texture-scan.json`, which preserves
-  aliases to moved source images. Keep this mapping when continuing a scan.
-- `source/`: unmatched images, when using the default source directory.
+- `scan/`: RT64 raw dumps, complete `ready/` snapshots, and their hash database.
+  Hashing errors go to the game log. These are capture data, not extracted source images.
+- `replacements/`: `textures.rtz`, `rt64.json`, and `.texture-scan.json`, which
+  preserves reusable source mappings. Keep this mapping when continuing a scan.
+- `source/`: original images, if using the default source directory.
 
-Existing captures and mappings are reused in later runs. Replacement PNGs also
-load without `--texture-scan`. Only drawn textures can be discovered, and Rice
-matching can differ between plugins; unmatched textures retain the originals.
-Source, dump, and replacement directories must be separate. A scan destination
-must be a hash-named replacement folder rather than an indexed RT64 pack.
-`RECOMP_TEXTURE_REPLACEMENTS` overrides the destination and
-`RECOMP_TEXTURE_SCAN_RAW` overrides the raw capture directory.
-
-## Native checks
-
-```sh
-cmake --preset goldeneye-us-debug -DRECOMP_BUILD_TEXTURE_SCAN_TESTS=ON
-cmake --build build/goldeneye-us-debug --target check-texture-scan -j 4
-```
-
-These checks use temporary image fixtures, do not launch a game or desktop, and cover
-file moves, persistent wildcard aliases, split RGB/mask composition, format
-preference after moving files, duplicate names, wrong ROM prefixes, output
-isolation, reload notifications, and thread shutdown.
+Existing captures and mappings are reused in later runs. Only drawn textures
+can be discovered, and Rice matching can differ between plugins; unmatched
+textures retain the originals. RT64 can lack Rice source-load information for
+interior mip levels loaded in one block; these are skipped without hashing an
+unset source address. Source, dump, and replacement paths must be
+separate. The scan destination must be a directory; unrelated indexed RT64
+packs are protected from overwriting. `RECOMP_TEXTURE_REPLACEMENTS` overrides
+that directory, and `RECOMP_TEXTURE_SCAN_RAW` overrides the capture directory.

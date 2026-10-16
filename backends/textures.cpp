@@ -18,7 +18,13 @@ struct PausedUploads {
     explicit PausedUploads(RT64::TextureCache &cache) : cache(cache) {
         cache.waitForAllStreamThreads(false);
         cache.waitForGPUUploads();
-        cache.uploadThreadRunning = false;
+        {
+            // Change the wait predicate under the waiter's mutex. Otherwise
+            // the notification can arrive between its predicate check and
+            // sleep, leaving join() waiting forever for an idle uploader.
+            std::unique_lock lock(cache.uploadQueueMutex);
+            cache.uploadThreadRunning = false;
+        }
         cache.uploadQueueChanged.notify_all();
         cache.uploadThread->join();
         cache.uploadThread.reset();
@@ -55,12 +61,15 @@ void RecompTextureFiles::reload(RT64::TextureCache &cache) {
     cache.clearReplacementDirectories();
     // A missing pack is normal: the game uses its original textures.
     if (!std::filesystem::exists(replacementDirectory)) return;
-    if (std::filesystem::is_regular_file(replacementDirectory) ||
+    const auto scannedPack = replacementDirectory / "textures.rtz";
+    const auto loadPath = std::filesystem::is_directory(replacementDirectory) && std::filesystem::is_regular_file(scannedPack)
+        ? scannedPack : replacementDirectory;
+    if (std::filesystem::is_regular_file(loadPath) ||
         std::filesystem::is_regular_file(replacementDirectory / "rt64.json")) {
         // Standard RT64 packs retain their own streaming, mip cache, hash
         // version, and UV shift settings. Uploads stay paused while the index
         // is replaced; PausedUploads restarts the worker on return.
-        if (!cache.loadReplacementDirectory(RT64::ReplacementDirectory(replacementDirectory)))
+        if (!cache.loadReplacementDirectory(RT64::ReplacementDirectory(loadPath)))
             throw std::runtime_error("could not load RT64 texture pack");
         {
             std::unique_lock lock(cache.textureMapMutex);
@@ -68,7 +77,7 @@ void RecompTextureFiles::reload(RT64::TextureCache &cache) {
                 replacementFiles += paths.size();
         }
         std::fprintf(stderr, "Texture pack: %llu mappings in %s (F5 reloads and toggles originals/replacements)\n",
-                     static_cast<unsigned long long>(replacementFiles), replacementDirectory.c_str());
+                     static_cast<unsigned long long>(replacementFiles), loadPath.c_str());
         return;
     }
     if (!std::filesystem::is_directory(replacementDirectory)) throw std::runtime_error("texture replacements must be a directory");

@@ -6,10 +6,12 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <map>
 
 namespace RecompTextures {
+inline constexpr unsigned ScanIntervalSeconds = 60;
 struct ScanConfig {
-    std::filesystem::path source, raw, replacements, hasher;
+    std::filesystem::path source, raw, replacements;
     std::string romTitle;
 };
 
@@ -18,18 +20,20 @@ class Scanner {
     ScanConfig config;
     std::thread worker;
     std::mutex mutex;
-    std::mutex captures;
+    std::map<std::string, std::string> inputStamps, outputStamps;
     std::condition_variable changed;
     bool stopping = false;
     std::atomic<bool> reloadPending{false};
     void run();
+
 public:
     explicit Scanner(ScanConfig config);
     ~Scanner();
     void start();
     void stop();
-    bool takeReload() { return reloadPending.exchange(false); }
-    std::unique_lock<std::mutex> guardCaptures() { return std::unique_lock<std::mutex>(captures); }
+    bool takeReload() {
+        return reloadPending.exchange(false);
+    }
     // Also used by the native test runner with archived RT64 captures.
     size_t scanOnce();
 };

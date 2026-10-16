@@ -149,10 +149,11 @@ path (an empty value disables packs). Rendering uses 4x resolution, 4x MSAA,
 widescreen expansion and texture LOD scaling. This RT64 revision has no game
 ray-tracing renderer.
 
-Use `--texture-scan /path/to/extracted-pack` to match Rice/GLideN64 PNGs while
-playing. A native worker moves matching images into the game's replacement
-folder every 15 seconds and requests an RT64 reload. See
-[native texture scanning](texture_scan/README.md) for extraction and usage.
+Use `--texture-scan /path/to/pack.zip` (or an extracted directory) to match
+Rice/GLideN64 PNGs while playing. A native worker builds `textures.rtz` and
+`rt64.json` in the game's replacement folder every 60 seconds when matches change,
+then requests an RT64 reload. Original ZIPs and source images are kept. See
+[native texture scanning](texture_scan/README.md) for usage.
 
 Release failures routed through `recomp_fail` write a uniquely named JSON report
 and RDRAM snapshot to `local/crashes/<game>/`. Reports include native stack
@@ -207,6 +208,10 @@ See [audio](docs/audio.md), [floating point](docs/fpu.md),
 [debugging](docs/debugging.md), and [textures](docs/textures.md).
 
 ## Legal and third-party software
+
+v64recomp is licensed under the **GNU General Public License, version 2**
+(`GPL-2.0-only`); see [LICENSE](LICENSE). Third-party components retain their
+original licenses and notices; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 This repository does not include or distribute ROM images or copyrighted game
 assets. Users must provide their own ROM files. The project uses free and
