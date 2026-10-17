@@ -1,0 +1,45 @@
+[game]
+name = "Conker's Bad Fur Day (US revision 0)"
+rom_sha1 = "4cbadd3c4e0729dec46af64ad018050eada4f47a"
+rom_size = 0x4000000
+ram_size = 0x400000
+fpu_fr = 1
+entry_symbol = "entry_point"
+rom = "../../local/conker.us.z64"
+code_sections = [".entry", ".boot_tlb", ".init", ".init_data", ".game", ".game_data", ".debugger"]
+boot_sections = [".entry", ".boot_tlb", ".init", ".init_data"]
+
+[discovery]
+max_functions = 16384
+regions = [
+  {name = ".entry", vram = 0x80001000, rom_offset = 0x1000, size = 0x50},
+  {name = ".boot_tlb", vram = 0x80005ab0, rom_offset = 0x5ab0, size = 0x54},
+  {name = ".init", vram = 0x10001050, rom_offset = 0x1050, size = 0x28080},
+  {name = ".init_data", vram = 0x800290d0, rom_offset = 0x290d0, size = 0x43e0},
+]
+roots = [{name = "bootproc", vram = 0x10001050}, {name = "idleproc", vram = 0x100010f8}, {name = "mainproc", vram = 0x10001194}]
+transfers = [{pc = 0x80001030, expected_word = 0x01400008, kind = "tail", targets = [0x80005ab0]}]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80001000
+initial_load_size = 0x100000
+bss_start = 0x8002d4b0
+bss_end = 0x80043b40
+counter_hz = 46875000
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d9
+0x80000314 = 1
+0x80000318 = 0x400000
+
+[[hooks]]
+symbol = "conker_boot_tlb"
+vram = 0x80005ab0
+kind = "replace_function"
+handler = "hook_conker_boot_tlb"
+expected_words = [0x3c08007f, 0x3508e000, 0x40882800, 0x3c081000, 0x40885000, 0x2408001f, 0x40881000, 0x3c080001, 0x3508001f, 0x40881800, 0x24080000, 0x40880000, 0, 0x42000002, 0, 0, 0, 0x3c081000, 0x25081050, 0x01000008, 0]

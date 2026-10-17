@@ -1,0 +1,179 @@
+{
+  "format_version": 1,
+  "rom_sha1": "5b96fe8c03a0f0843af953b4a15644a3aea86b94",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 268439800,
+      "origin": "checked-root",
+      "sha256": "d5ba29193fd4c071ac550df76068406a10953a26c551ab6a2a833039f1affecc"
+    },
+    {
+      "vram": 268439956,
+      "origin": "checked-root",
+      "sha256": "34696b565045b9b144d7c2aa8e5062280787dfdb007f2b99ff6449862e2ac8e0"
+    },
+    {
+      "vram": 268456608,
+      "origin": "checked-root",
+      "sha256": "bf8671ad4ccfbde4bc11d62d5f2fd684578d7f513c09c343e2f9f83f1e6c17e7",
+      "note": "Thread callback passed in a2 to osCreateThread at 0x10005274"
+    },
+    {
+      "vram": 268454368,
+      "origin": "checked-root",
+      "sha256": "09360e36d8a7790a9b07341a5c86414da876d1ebbe66f1938efc8558e9029e64",
+      "note": "Thread callback passed in a2 to osCreateThread at 0x100051a4"
+    },
+    {
+      "vram": 268473344,
+      "origin": "checked-root",
+      "sha256": "6e818e909209573af52f453416c417fc3e5a9b261e22d2f82d46119abe548bb0",
+      "note": "Thread callback passed in a2 to osCreateThread at 0x1000938c"
+    },
+    {
+      "vram": 268474752,
+      "origin": "checked-root",
+      "sha256": "6887fa2b9434cd1d78bbca1c5a7f908dd12b9e5fffc962355dd706d2ac674563",
+      "note": "DMA callback constructor stored at config+0x10 by 0x10008fcc"
+    },
+    {
+      "vram": 268474316,
+      "origin": "checked-root",
+      "sha256": "0934ddb1a781a1e9e0c8b4c57c2e23f47eee7de43f4e38847c7651a8353c36e5",
+      "note": "DMA callback returned by constructor 0x10009980"
+    },
+    {
+      "vram": 268476412,
+      "origin": "checked-root",
+      "sha256": "1bbe07fb35da1e36c67909bec0a3b5c35a8f9fbf079bf5d1a5a97ef973f9cd87",
+      "note": "Audio callback stored at config+0x14 by 0x10009000"
+    },
+    {
+      "vram": 268475180,
+      "origin": "checked-root",
+      "sha256": "d4999a1774241c1a0a9183aef9370b5f4be60c731358175c1e4ecc15f0bc8443",
+      "note": "Audio callback stored at config+0x18 by 0x10009004"
+    },
+    {
+      "vram": 268475280,
+      "origin": "checked-root",
+      "sha256": "4bbee850564a2fd39bb6fc599fae50f316af3e9e36c1d7c4a33bc9b9bcaaed0e",
+      "note": "Audio callback stored at config+0x1c by 0x10009008"
+    },
+    {
+      "vram": 268475212,
+      "origin": "checked-root",
+      "sha256": "e8c649f6df61ee34bfc63b91921263be26fde295311e50bbfe7199a29b66464b",
+      "note": "Audio callback stored at config+0x20 by 0x1000900c"
+    },
+    {
+      "vram": 353693296,
+      "origin": "checked-root",
+      "sha256": "bccdb0e416a8cb10baa2cc0bfad1ad4a1726ddbbc506b974bee49be33760ce0f",
+      "note": "Function pointer at initialized data 0x8008aacc loaded by 0x1514d1fc and called by 0x1514d204"
+    },
+    {
+      "vram": 352993116,
+      "origin": "checked-root",
+      "sha256": "4bfd4daa1811f9a48cded29e998d0d5051311a3ff445cb88b4e019b8a1b1aa71",
+      "note": "Shared collision epilogue restores saved integer registers and RA from FPR15"
+    },
+    {
+      "vram": 352993212,
+      "origin": "checked-root",
+      "sha256": "ac7c0d536fde50cbb88200e0ed6ba6042f715022bbfa99fcf59703614eff1a8f",
+      "note": "Shared leaf JR RA reached by zero input branches"
+    },
+    {
+      "vram": 352994264,
+      "origin": "checked-root",
+      "sha256": "8862445f2909605c4cd15d0b396d7f05d55362c3119e2781e9b6490f19a168db",
+      "note": "Shared leaf JR RA reached by zero input branch"
+    },
+    {
+      "vram": 353002688,
+      "origin": "checked-root",
+      "sha256": "ecae020415351f6fb1908fa6ddce9637d8702e41fbaed3ab63ee96ee0f7c1a47",
+      "note": "Shared leaf JR RA reached by empty collision state"
+    },
+    {
+      "vram": 268523640,
+      "origin": "checked-root",
+      "sha256": "496c28badc26443b3b30906cb4663ffd1f766361f3b1b4b7e16788305a6d873b",
+      "note": "Audio client callback stored at client+8 by 0x10015800 and called at 0x10019548"
+    },
+    {
+      "vram": 268514712,
+      "origin": "checked-root",
+      "sha256": "2277c37876f3a89f3bf387b63e24b2aa52fbd37f075c964650c3888946dd1f1f",
+      "note": "Audio client callback stored at client+8 by 0x1001356c"
+    },
+    {
+      "vram": 268512772,
+      "origin": "checked-root",
+      "sha256": "14e33d58628beef58490d02cd5819ee55a391df0ffa128ab59e41902ab515dd5",
+      "note": "Audio stream method stored at object+0x10 by 0x100132e0"
+    },
+    {
+      "vram": 268513172,
+      "origin": "checked-root",
+      "sha256": "14e33d58628beef58490d02cd5819ee55a391df0ffa128ab59e41902ab515dd5",
+      "note": "Audio stream method stored at object+0x14 by 0x100132f0"
+    },
+    {
+      "vram": 268513752,
+      "origin": "checked-root",
+      "sha256": "e64ebd96cf87b99b23036bcfffefd03e55dc82d98fdfd0ce6e041f49973013f0",
+      "note": "Audio stream method stored at object+0x18 by 0x10013300"
+    },
+    {
+      "vram": 268559664,
+      "origin": "checked-root",
+      "sha256": "df55935183a88889f9a44d4ca9c88488269a28d6744b0804e3af42295886fd6b",
+      "note": "Audio filter pull callback stored at filter+4 by 0x10019200"
+    },
+    {
+      "vram": 354281172,
+      "origin": "checked-root",
+      "sha256": "067997ba7919dde94fc783531b72601d221c6b8fac0d9b0676018d9aeb9450dc",
+      "note": "Scene callback index 11 at table 0x8008fdec, called at 0x151e52ac; runtime state byte 0x800e0b94 = 11"
+    },
+    {
+      "vram": 353010080,
+      "origin": "checked-root",
+      "sha256": "b28296a2de22c08e20c8b1f26d1f38373bf7f05d04128add2d4da8f03cc990d7",
+      "note": "Independent 64-byte matrix-copy tail at 0x150a81a0..1cc, called by beqz a2 at 0x150a81fc before stack allocation"
+    },
+    {
+      "vram": 353012224,
+      "origin": "checked-root",
+      "sha256": "b6b0b751fc08576b63d8c40571ca0f50d8e9724bc66e5eb88d1147aa8b53a749",
+      "note": "Animation mode flag branch target, joins shared body via J 0x150a8a10"
+    },
+    {
+      "vram": 353012480,
+      "origin": "checked-root",
+      "sha256": "5b116e1533e5b279ac6a6dabbb244851817e895f6e7476844ae4fd66a69ce29c",
+      "note": "Shared animation body reached from 0x150a8a00 and not-taken branch 0x150a8af8"
+    },
+    {
+      "vram": 353436616,
+      "origin": "checked-root",
+      "sha256": "acc7ca47b1a2ac051788255a881fc686cab7b5d76265ee87c5d1646c083d5663",
+      "note": "Projection callback table 0x800891d8 index 0, called at 0x1511027c; index is camera byte +8"
+    },
+    {
+      "vram": 354335568,
+      "origin": "checked-root",
+      "sha256": "dbee4e80cb64ddfff5411e60f4a9f5de3d4fd05c9463a86681f800cd486a74db",
+      "note": "Scene drawing callback table 0x8008ffc0 index 11, called at 0x151e8654; selector byte 0x800e0b94 = 11"
+    },
+    {
+      "vram": 353034412,
+      "origin": "checked-root",
+      "sha256": "b3bdc0acd8fe2dc9bc6a769591aba7db797d73cc9ee8c045dcbeb4202b10a6cb",
+      "note": "Shared animation decoder frame epilogue; normal exit 0x150ae0a4 or nonlocal abort 0x150ae280 restores saved SP"
+    }
+  ]
+}
