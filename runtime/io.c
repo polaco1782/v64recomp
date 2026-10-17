@@ -221,9 +221,9 @@ static bool persist(RecompIO *s, const uint8_t *bytes) {
     RECOMP_LOG("save", "EEPROM persist path=%s bytes=%" PRIu32 " result=%s", s->path, s->eeprom_size, okay?"ok":"failed");
     free(temp); return okay;
 }
-static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data) {
+static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data, uint32_t count) {
     RecompIO *s = io(rt); recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
-    uint32_t block = (uint8_t)arg(ctx, 1), address = arg(ctx, 2), count = arg(ctx, 3);
+    uint32_t block = (uint8_t)arg(ctx, 1), address = arg(ctx, 2);
     RECOMP_LOG("save", "EEPROM %s block=%" PRIu32 " offset=0x%04" PRIx32 " ram=0x%08" PRIx32
         " bytes=%" PRIu32 " path=%s", write_data?"write":"read", block, block*8, address, count, s->path?s->path:"memory");
     if (!s->eeprom_size || s->stats.read_pending || s->stats.query_pending) {
@@ -253,9 +253,17 @@ static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data) {
 }
 void hook_os_eeprom_long_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
-    transfer_eeprom(rt, ctx, false);
+    transfer_eeprom(rt, ctx, false, arg(ctx, 3));
 }
 void hook_os_eeprom_long_write(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
-    transfer_eeprom(rt, ctx, true);
+    transfer_eeprom(rt, ctx, true, arg(ctx, 3));
+}
+void hook_os_eeprom_read(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    transfer_eeprom(rt, ctx, false, 8);
+}
+void hook_os_eeprom_write(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    transfer_eeprom(rt, ctx, true, 8);
 }

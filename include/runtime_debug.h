@@ -13,9 +13,11 @@ void recomp_debug_log(const char *category, const char *format, ...)
 #endif
     ;
 bool recomp_debug_sample(uint64_t count);
+bool recomp_debug_watch_queue(uint32_t object);
 void recomp_debug_os(Runtime *, const MipsContext *, const char *, uint64_t);
 bool recomp_debug_current_thread(Runtime *, int32_t *id, uint32_t *object);
 #define RECOMP_LOG(category, ...) recomp_debug_log(category, __VA_ARGS__)
+#define RECOMP_WATCH_QUEUE(object) recomp_debug_watch_queue(object)
 #define RECOMP_LOG_SAMPLED(category, ...) do { \
     static _Thread_local uint64_t debug_count; \
     if (debug_count != UINT64_MAX) ++debug_count; \
@@ -31,6 +33,7 @@ bool recomp_debug_current_thread(Runtime *, int32_t *id, uint32_t *object);
 } while (0)
 #else
 #define RECOMP_LOG(...) ((void)0)
+#define RECOMP_WATCH_QUEUE(...) false
 #define RECOMP_LOG_SAMPLED(...) ((void)0)
 #define RECOMP_TRACE_OS(...) ((void)0)
 #endif

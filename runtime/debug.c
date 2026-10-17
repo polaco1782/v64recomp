@@ -10,11 +10,20 @@
 
 static pthread_once_t settings_once = PTHREAD_ONCE_INIT;
 static bool full;
+static uint32_t watched_queue;
 static struct timespec origin;
 static void settings(void) {
     const char *value = getenv("RECOMP_DEBUG_FULL");
     full = value && !strcmp(value, "1");
+    value = getenv("RECOMP_DEBUG_QUEUE");
+    if (value) watched_queue = (uint32_t)strtoul(value, NULL, 0);
     (void)clock_gettime(CLOCK_MONOTONIC, &origin);
+}
+bool recomp_debug_watch_queue(uint32_t object) {
+    int saved_errno = errno;
+    pthread_once(&settings_once, settings);
+    errno = saved_errno;
+    return watched_queue && ((watched_queue ^ object) & 0x1fffffff) == 0;
 }
 bool recomp_debug_sample(uint64_t count) {
     int saved_errno = errno;

@@ -198,6 +198,8 @@ void hook_os_cont_get_query(Runtime *, MipsContext *);
 void hook_os_eeprom_probe(Runtime *, MipsContext *);
 void hook_os_eeprom_long_read(Runtime *, MipsContext *);
 void hook_os_eeprom_long_write(Runtime *, MipsContext *);
+void hook_os_eeprom_read(Runtime *, MipsContext *);
+void hook_os_eeprom_write(Runtime *, MipsContext *);
 
 void hook_os_initialize(Runtime *, MipsContext *);
 void hook_os_get_mem_size(Runtime *, MipsContext *);

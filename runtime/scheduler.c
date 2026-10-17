@@ -671,6 +671,10 @@ int32_t recomp_queue_send(Runtime *rt, uint32_t object, uint32_t message, int32_
     recomp_store(rt, f.messages + index * 4, message, 4);
     recomp_store(rt, q->object + 12, f.first, 4);
     recomp_store(rt, q->object + 8, f.valid + 1, 4);
+    if (RECOMP_WATCH_QUEUE(object))
+        RECOMP_LOG("queue-watch", "send queue=%08" PRIx32 " message=%08" PRIx32 " valid=%u id=%d pc=%08" PRIx32,
+            object, message, f.valid + 1, scheduler(rt)->current ? scheduler(rt)->current->id : 0,
+            scheduler(rt)->current ? scheduler(rt)->current->context.pc : 0);
     wake(rt, q, RECOMP_WAIT_RECV);
     sync_guest(rt);
     preempt(rt);
@@ -692,12 +696,20 @@ int32_t recomp_queue_recv(Runtime *rt, uint32_t object, uint32_t destination, in
     QueueFields f = fields(rt, q);
     while (!f.valid) {
         if (!flag) return -1;
+        if (RECOMP_WATCH_QUEUE(object))
+            RECOMP_LOG("queue-watch", "wait queue=%08" PRIx32 " id=%d pc=%08" PRIx32,
+                object, thread(rt, 0)->id, thread(rt, 0)->context.pc);
         NativeThread *t = thread(rt, 0);
         t->wait_queue = q; t->wait_kind = RECOMP_WAIT_RECV;
         suspend(rt, RECOMP_WAIT_RECV);
         f = fields(rt, q);
     }
     if (destination) recomp_store(rt, destination, recomp_load(rt, f.messages + f.first * 4, 4), 4);
+    if (RECOMP_WATCH_QUEUE(object))
+        RECOMP_LOG("queue-watch", "recv queue=%08" PRIx32 " message=%08" PRIx32 " valid=%u id=%d pc=%08" PRIx32,
+            object, (uint32_t)recomp_load(rt, f.messages + f.first * 4, 4), f.valid - 1,
+            scheduler(rt)->current ? scheduler(rt)->current->id : 0,
+            scheduler(rt)->current ? scheduler(rt)->current->context.pc : 0);
     recomp_store(rt, q->object + 12, (f.first + 1) % f.count, 4);
     recomp_store(rt, q->object + 8, f.valid - 1, 4);
     wake(rt, q, RECOMP_WAIT_SEND);

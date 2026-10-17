@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
+# Select defaults before project() enables C; preserve explicit compiler/toolchain choices.
+if(NOT CMAKE_TOOLCHAIN_FILE AND "$ENV{CMAKE_TOOLCHAIN_FILE}" STREQUAL ""
+        AND NOT DEFINED CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
+    find_program(CMAKE_C_COMPILER NAMES clang gcc REQUIRED)
+endif()
 project(v64recomp LANGUAGES C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -31,12 +36,12 @@ if(NOT RECOMP_GAME STREQUAL "none")
 endif()
 find_package(OpenSSL 3 REQUIRED COMPONENTS Crypto)
 find_package(Threads REQUIRED)
-add_library(recomp_runtime STATIC runtime/memory.c runtime/fpu.c runtime/scheduler.c runtime/worker.c runtime/os.c
-    runtime/bootstrap.c runtime/time.c runtime/platform.c runtime/tasks.c runtime/io.c runtime/video.c)
+add_library(recomp_runtime STATIC runtime/memory.c runtime/dispatch.c runtime/fpu.c runtime/scheduler.c runtime/worker.c
+    runtime/os.c runtime/bootstrap.c runtime/time.c runtime/platform.c runtime/tasks.c runtime/io.c runtime/video.c)
 target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto Threads::Threads m ${CMAKE_DL_LIBS})
 target_include_directories(recomp_runtime PUBLIC include)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(recomp_runtime PRIVATE RECOMP_DEBUG)
+    target_compile_definitions(recomp_runtime PUBLIC RECOMP_DEBUG)
     target_sources(recomp_runtime PRIVATE runtime/debug.c)
 endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -64,6 +69,10 @@ endif()
 
 option(RECOMP_BUILD_RT64 "Build the standalone RT64 graphics adapter" ${RECOMP_RENDER_DEFAULT})
 if(RECOMP_BUILD_RT64)
+    if(NOT CMAKE_TOOLCHAIN_FILE AND "$ENV{CMAKE_TOOLCHAIN_FILE}" STREQUAL ""
+            AND NOT DEFINED CMAKE_CXX_COMPILER AND "$ENV{CXX}" STREQUAL "")
+        find_program(CMAKE_CXX_COMPILER NAMES clang++ g++ REQUIRED)
+    endif()
     enable_language(CXX)
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)

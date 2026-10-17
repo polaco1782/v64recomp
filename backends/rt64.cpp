@@ -31,6 +31,8 @@ struct RecompRenderer {
     uint32_t code=0,data=0,list=0;
     std::thread::id processing;
     RecompGraphicsHook graphics_hook=nullptr;
+    RecompMicrocodeHook microcode_hook=nullptr;
+    bool custom_gbi=false;
     std::thread::id owner=std::this_thread::get_id();
     std::unique_ptr<RT64::Application> app;
     std::vector<uint8_t> ram=std::vector<uint8_t>(8*1024*1024);
@@ -118,7 +120,16 @@ static void process_graphics(void *opaque) {
     RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
     s->processing=std::this_thread::get_id();
     uint64_t start=monotonic_ns();
-    if(s->app->interpreter->UCode.textAddress!=s->code || s->app->interpreter->UCode.dataAddress!=s->data)
+    bool custom=s->microcode_hook && s->microcode_hook(s->app->interpreter.get(),s->before.size(),s->code,s->data);
+    if(!custom && s->custom_gbi) {
+        s->app->interpreter->UCode.textAddress=UINT32_MAX;
+        s->app->interpreter->UCode.dataAddress=UINT32_MAX;
+    }
+    if(custom && (!s->app->interpreter->hleGBI || s->app->interpreter->UCode.textAddress!=s->code
+                   || s->app->interpreter->UCode.dataAddress!=s->data))
+        recomp_fail("custom graphics microcode binding is incomplete",s->code);
+    s->custom_gbi=custom;
+    if(!custom && (s->app->interpreter->UCode.textAddress!=s->code || s->app->interpreter->UCode.dataAddress!=s->data))
         s->app->interpreter->gbiManager.deduceGBIInformation(s->ram.data(),s->code,s->data);
     s->app->interpreter->loadUCodeGBI(s->code,s->data,true);
     if(!s->app->interpreter->hleGBI)recomp_fail("RT64 did not recognize the graphics microcode",s->code);
@@ -259,6 +270,9 @@ void recomp_renderer_set_frame_rate(RecompRenderer *s,uint32_t target_fps) {
 }
 void recomp_renderer_set_graphics_hook(RecompRenderer *s,RecompGraphicsHook hook) {
     s->check_owner();service_renderer(s->rt,s,true);s->graphics_hook=hook;
+}
+void recomp_renderer_set_microcode_hook(RecompRenderer *s,RecompMicrocodeHook hook) {
+    s->check_owner();service_renderer(s->rt,s,true);s->microcode_hook=hook;
 }
 void recomp_renderer_destroy(RecompRenderer *s) {
     if(!s)return;

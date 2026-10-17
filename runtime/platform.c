@@ -419,6 +419,9 @@ void hook_os_vi_set_mode(Runtime *rt, MipsContext *ctx) {
     RecompPlatform *p = platform(rt);
     recomp_ram_address(rt, arg(ctx, 0), 80);
     p->vi.mode = arg(ctx, 0);
+    /* osViSetMode assigns MODE_UPDATED to the next context's state, clearing
+     * the BLACK bit set by manager initialization or an earlier osViBlack. */
+    p->vi.black = false;
     p->vi.x_factor = p->vi.y_factor = 1.0f;
     p->mode_ctrl = (uint32_t)recomp_load(rt, p->vi.mode + 4, 4);
     p->vi.special_features = p->mode_ctrl;

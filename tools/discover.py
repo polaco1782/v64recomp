@@ -147,11 +147,27 @@ def discover(rom: bytes, profile: dict) -> dict:
         kind = transfer['kind']
         targets = transfer['targets']
         if (i is None or i.word != transfer['expected_word'] or pc in transfers
-                or kind not in ('tail', 'jump', 'call') or not targets or len(set(targets)) != len(targets)
+                or kind not in ('tail', 'jump', 'call', 'return')
+                or (bool(targets) == (kind == 'return')) or len(set(targets)) != len(targets)
                 or (kind == 'call' and i.opcode != 'jalr')
                 or (kind != 'call' and (i.opcode != 'jr' or i.rs == 31))
                 or any(mapping(a) is None or a % 4 for a in targets)):
             raise RecompError(f'invalid or mismatched checked indirect transfer at {pc:#010x}')
+        if kind == 'return':
+            save = read(transfer.get('save_pc', -1))
+            link_entry = read(transfer.get('entry_pc', -1))
+            # An explicit saved-RA return also checks the instruction copying RA
+            # into its alternate register. Emission checks the runtime target.
+            saved_ra = not (save is None or save.word != transfer.get('expected_save_word')
+                    or save.opcode not in ('or', 'addu') or save.rs != 31 or save.rt != 0
+                    or save.rd != i.rs or mapping(save.pc) != mapping(pc) or save.pc >= pc)
+            entry_link = (link_entry is not None and link_entry.word == transfer.get('expected_entry_word')
+                          and mapping(link_entry.pc) == mapping(pc) and link_entry.pc < pc
+                          and type(transfer.get('entry_register')) is int
+                          and 0 < transfer.get('entry_register', 0) == i.rs < 31)
+            if ((not entry_link or 'save_pc' in transfer or 'expected_save_word' in transfer)
+                    if 'entry_register' in transfer else not saved_ra):
+                raise RecompError(f'invalid checked return save at {pc:#010x}')
         transfers[pc] = transfer
     fallthroughs = {}
     for transfer in config.get('fallthroughs', []):
@@ -163,6 +179,15 @@ def discover(rom: bytes, profile: dict) -> dict:
             raise RecompError(f'invalid checked function fallthrough at {pc:#010x}')
         add_entry(destination)
         fallthroughs[pc]=transfer
+    continuations = {}
+    for site in config.get('tail_continuations', []):
+        pc = site['pc']
+        i = read(pc)
+        resume = site['resume_pc']
+        if (i is None or i.opcode != 'j' or i.word != site['expected_word'] or pc in continuations
+                or type(resume) is not int or resume % 4 or mapping(resume) != mapping(pc)):
+            raise RecompError(f'invalid checked tail continuation at {pc:#010x}')
+        continuations[pc] = site
 
     def walk(key):
         section_id, start = key
@@ -180,6 +205,7 @@ def discover(rom: bytes, profile: dict) -> dict:
                         indirect_transfers=[])
         pending, visited, expanded, errors, used_transfers = deque([start]), set(), set(), [], []
         used_fallthroughs=[]
+        used_continuations=[]
 
         def error(pc, reason):
             i = read(pc)
@@ -233,6 +259,8 @@ def discover(rom: bytes, profile: dict) -> dict:
             if not i.delay:
                 if pc in fallthroughs:
                     used_fallthroughs.append(fallthroughs[pc])
+                    if 'resume_pc' in fallthroughs[pc]:
+                        local(fallthroughs[pc]['resume_pc'], pc)
                     continue
                 pending.append(pc + 4)
                 continue
@@ -259,6 +287,8 @@ def discover(rom: bytes, profile: dict) -> dict:
                         pending.append(pc + 8)
                     continue
                 used_transfers.append(override)
+                if override['kind'] == 'return' and 'entry_register' in override and override['entry_pc'] != start:
+                    error(pc, 'checked link register belongs to another function entry')
                 for address in override['targets']:
                     if override['kind'] == 'jump':
                         if mapping(address) != section or address < start or (section_id, address) in entries and address != start:
@@ -274,7 +304,11 @@ def discover(rom: bytes, profile: dict) -> dict:
                 call(target(i), pc)
                 pending.append(pc + 8)
             elif i.opcode == 'j':
-                if target(i) < start:
+                if pc in continuations:
+                    used_continuations.append(continuations[pc])
+                    call(target(i), pc)
+                    local(continuations[pc]['resume_pc'], pc)
+                elif target(i) < start:
                     call(target(i), pc)
                 else:
                     local(target(i), pc)
@@ -289,15 +323,30 @@ def discover(rom: bytes, profile: dict) -> dict:
                 if not never:
                     local(target(i), pc)
                 if not always:
-                    pending.append(pc + 8)
+                    # A checked fallthrough may sit in the delay slot of the
+                    # final branch. It applies only to the not-taken successor.
+                    if pc + 4 in fallthroughs:
+                        used_fallthroughs.append(fallthroughs[pc + 4])
+                        if 'resume_pc' in fallthroughs[pc + 4]:
+                            local(fallthroughs[pc + 4]['resume_pc'], pc)
+                    else:
+                        pending.append(pc + 8)
         addresses = sorted(visited)
         size = addresses[-1] + 4 - start
         offset = section['rom_offset'] + start - section['vram']
-        return dict(name=entries[key]['name'], aliases=[], section=section_id, vram=start, size=size,
+        result = dict(name=entries[key]['name'], aliases=[], section=section_id, vram=start, size=size,
                     rom_offset=offset, sha256=hashlib.sha256(rom[offset:offset + size]).hexdigest(),
                     size_source='rom-control-flow', origin=entries[key]['origin'],
                     instruction_addresses=addresses, discovery_errors=errors,
                     indirect_transfers=used_transfers, fallthrough_transfers=used_fallthroughs)
+        if used_continuations:
+            result['tail_call_continuations'] = used_continuations
+        link_registers = {t['entry_register'] for t in used_transfers if 'entry_register' in t}
+        if link_registers:
+            if len(link_registers) != 1:
+                raise RecompError(f'conflicting entry link registers at {start:#010x}')
+            result['return_address_register'] = link_registers.pop()
+        return result
 
     while queue:
         walk(queue.popleft())

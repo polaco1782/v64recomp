@@ -163,11 +163,21 @@ static void buffer(Runtime *rt, uint32_t address, uint32_t bytes, bool required,
     if ((!address && bytes) || (required && (!address || !bytes))) recomp_fail("invalid task buffer",object);
     if (address) recomp_ram_address(rt,address,bytes?bytes:1);
 }
+static void wait_sp_load_on_host(Runtime *rt, void *opaque) {
+    uint32_t object = *(uint32_t *)opaque;
+    /* SDK __osSpSetPc retries until SP_STATUS_HALT. Native workers must finish
+     * and publish that same completion before the next task can be loaded. */
+    recomp_task_services_flush(rt);
+    poll_tasks(rt);
+    if (tasks(rt)->active) recomp_fail("SP task did not halt before load", object);
+}
 void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t=tasks(rt);
     uint32_t object=(uint32_t)ctx->gpr[4];
-    if (!object || object%8 || t->active) recomp_fail("invalid or busy SP task load",object);
+    if (!object || object%8) recomp_fail("invalid SP task load",object);
+    if (t->active) recomp_on_host(rt, wait_sp_load_on_host, &object);
+    if (t->active) recomp_fail("busy SP task load",object);
     recomp_ram_address(rt,object,64);
     RecompTask task={.guest_address=object};
     for (unsigned i=0;i<16;i++) task.words[i]=(uint32_t)recomp_load(rt,object+i*4,4);
@@ -186,7 +196,11 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     buffer(rt,task.words[6],task.words[7],false,object);
     buffer(rt,task.words[8],task.words[9],false,object);
     buffer(rt,task.words[12],task.words[13],true,object);
-    buffer(rt,task.words[14],task.words[15],false,object);
+    /* Audio microcode never yields. Some SDK task builders leave the standard
+     * yield size set while providing no buffer. A supplied pointer must still
+     * describe valid RAM, and graphics always requires a consistent span. */
+    if (task.words[0] != 2 || task.words[14])
+        buffer(rt,task.words[14],task.words[15],false,object);
     /* Graphics ucode_size describes the linked source image, including code
      * overlays loaded by the bootstrap. It can exceed the 4 KiB IMEM bank.
      * RT64 recognizes these images with a bounded 8 KiB source range. */

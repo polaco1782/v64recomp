@@ -6,6 +6,7 @@ extern "C" {
 #endif
 typedef struct RecompRenderer RecompRenderer;
 typedef void (*RecompGraphicsHook)(void *interpreter, size_t ram_size, uint64_t *rdp_triangles);
+typedef bool (*RecompMicrocodeHook)(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
 typedef struct RecompRendererStats {
     uint64_t graphics_tasks, sp_callbacks, dp_callbacks, presentations;
     uint64_t submit_ns, present_ns;
@@ -24,6 +25,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, c
 void recomp_renderer_set_frame_rate(RecompRenderer *, uint32_t target_fps);
 /* Configure a game-specific microcode extension after RT64 recognizes a task. */
 void recomp_renderer_set_graphics_hook(RecompRenderer *, RecompGraphicsHook);
+/* A game may bind a verified custom GBI before the normal RT64 lookup. Return
+ * false to use RT64's database; true requires a configured interpreter GBI. */
+void recomp_renderer_set_microcode_hook(RecompRenderer *, RecompMicrocodeHook);
 void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
 bool recomp_renderer_present(RecompRenderer *);

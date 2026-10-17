@@ -58,7 +58,8 @@ def load_profile(path: Path, _parents: tuple[Path, ...] = ()) -> dict:
                     result[key] = merge(result[key], value, site)
                 elif site in (('hooks',), ('boundaries',), ('checkpoints',), ('discovery', 'roots'),
                               ('discovery', 'transfers'), ('discovery', 'jump_tables'),
-                              ('discovery', 'function_tables'), ('discovery', 'fallthroughs')):
+                              ('discovery', 'function_tables'), ('discovery', 'fallthroughs'),
+                              ('discovery', 'tail_continuations')):
                     if not isinstance(value, list) or not isinstance(result.get(key, []), list):
                         raise RecompError(f'profile field {".".join(site)} must be a list')
                     result[key] = [*result.get(key, []), *value]
@@ -137,12 +138,35 @@ def load_metadata(path: Path, rom: bytes) -> dict:
             slot=function['return_address_stack_offset']
             if type(slot) is not int or not 0<=slot<=0x7fff or slot%4:
                 raise RecompError(f"invalid shared return stack slot: {function['name']}")
+        if 'return_address_fpr' in function:
+            reg = function['return_address_fpr']
+            if type(reg) is not int or not 0 <= reg < 32 or 'return_address_stack_offset' in function:
+                raise RecompError(f"invalid shared return FPR: {function['name']}")
+        if 'return_address_register' in function:
+            reg = function['return_address_register']
+            if (type(reg) is not int or not 1 <= reg < 31 or
+                    any(k in function for k in ('return_address_stack_offset', 'return_address_fpr'))):
+                raise RecompError(f"invalid entry link register: {function['name']}")
+        for site in function.get('tail_call_continuations', []):
+            pc = site['pc']
+            if (pc not in function['instruction_addresses'] or site['resume_pc'] not in function['instruction_addresses']
+                    or site['expected_word'] != int.from_bytes(rom[offset+pc-address:offset+pc-address+4], 'big')
+                    or site['expected_word'] >> 26 != 2):
+                raise RecompError(f"invalid checked tail continuation: {function['name']}")
         for pc in function.get('nonlocal_return_calls', []):
             if type(pc) is not int or pc % 4 or not address <= pc < address + size:
                 raise RecompError(f"invalid nonlocal return call: {function['name']}")
             word = int.from_bytes(rom[offset + pc - address:offset + pc - address + 4], 'big')
-            if word >> 26 != 3:
-                raise RecompError(f"nonlocal return site is not JAL: {function['name']}")
+            if word >> 26 != 3 and word & 0xfc1fffff != 0x0000f809:
+                raise RecompError(f"nonlocal return site is not a call: {function['name']}")
+        for site in function.get('unwind_calls', []):
+            pc = site['pc']
+            word = site['expected_word']
+            if (pc not in function['instruction_addresses']
+                    or (word >> 26 != 3 and word & 0xfc1fffff != 0x0000f809)
+                    or type(site.get('conditional', False)) is not bool
+                    or int.from_bytes(rom[offset+pc-address:offset+pc-address+4], 'big') != site['expected_word']):
+                raise RecompError(f"invalid checked unwind call: {function['name']}")
         if not (section["vram"] <= address and address + size <= section["vram"] + section["size"]):
             raise RecompError(f"function outside its section: {function['name']}")
         if offset != section["rom_offset"] + address - section["vram"] or offset + size > len(rom):
