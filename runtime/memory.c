@@ -26,6 +26,11 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context,void *opa
     info->native_frames[info->native_frame_count++]=(void *)address;
     return _URC_NO_REASON;
 }
+
+/* Failure paths are cold and never return. Keeping them out of line keeps
+   the store fast paths small. */
+__attribute__((noreturn, cold)) void recomp_fail(const char *msg, uint32_t address);
+
 void recomp_set_failure_handler(RecompFailureHandler handler, void *userdata) {
     failure_handler=handler;failure_userdata=userdata;
 }
@@ -48,9 +53,6 @@ _Noreturn void recomp_fail(const char *message, uint32_t address) {
         if (failure_handler) failure_handler(&info,failure_userdata);
     }
     abort();
-}
-_Noreturn void recomp_fellthrough(uint32_t address) {
-    recomp_fail("fell off generated function", address);
 }
 static _Noreturn void fail_ram(const char *message,uint32_t address,size_t bytes) {
     failed_ram_range=true;failed_bytes=bytes;recomp_fail(message,address);
@@ -125,7 +127,7 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
 
 static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write) {
     uint32_t result = address;
-    if (address >= UINT32_C(0x80000000) && address < UINT32_C(0xc0000000)) result &= UINT32_C(0x1fffffff);
+    if (recomp_direct_address(address)) result &= UINT32_C(0x1fffffff);
     else if (rt->resolve_address && rt->resolve_address(rt, address, bytes, write, &result)) {
         /* The native loader supplies the backing page; range validation below
          * still applies. It must not alter the semantics of unrelated aliases. */
@@ -143,15 +145,19 @@ static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool wr
             result = m->physical[page] + offset;
             size_t span = m->page_size - offset;
             if (bytes > span && ((uint64_t)address + span > UINT32_MAX
-                || recomp_ram_address(rt, address + (uint32_t)span, bytes - span) != result + span))
+                || ram_address(rt, address + (uint32_t)span, bytes - span, write) != result + span))
                 recomp_fail("noncontiguous native page span", address);
         }
     }
     if (result >= rt->rdram_size || bytes > rt->rdram_size - result) fail_ram("RAM address out of range", address,bytes);
     return result;
 }
+
 uint32_t recomp_ram_address(Runtime *rt, uint32_t address, size_t bytes) {
     return ram_address(rt, address, bytes, false);
+}
+uint32_t recomp_ram_address_write_slow(Runtime *rt, uint32_t address, size_t bytes) {
+    return ram_address(rt, address, bytes, true);
 }
 uint32_t recomp_physical_address(Runtime *rt, uint32_t address, size_t bytes) {
     if (address >= rt->rdram_size || bytes > rt->rdram_size-address)
@@ -188,16 +194,37 @@ void hook_os_unmap_tlb_all(Runtime *rt, MipsContext *ctx) {
 }
 
 uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
+#ifdef RECOMP_DEBUG
     if (!(bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8)) recomp_fail("invalid load width", address);
     if (address % bytes) fail_ram("unaligned load", address,bytes);
+#endif
     /* Some audio managers inline osAiGetLength. Use the same native DMA
      * state as the SDK hook for this read-only register, including polling
      * completed buffers. Other hardware accesses still fail below. */
     if (bytes == 4 && (address == UINT32_C(0xa4500004)
             || address == UINT32_C(0x84500004) || address == UINT32_C(0x04500004)))
         return recomp_ai_state(rt).length;
+    uint32_t bus = address;
+    if (address >= UINT32_C(0x80000000) && address < UINT32_C(0xc0000000))
+        bus &= UINT32_C(0x1fffffff);
+    /* Native PI copies run atomically between guest dispatches. Queued requests
+     * are software messages; no PI bus transfer remains active in guest code. */
+    if (bytes == 4 && bus == UINT32_C(0x04600010) && rt->platform_initialized)
+        return 0;
+    /* Some games read cartridge integrity words directly instead of calling
+     * osPiRawReadIo. Use the attached, verified canonical ROM, never RDRAM. */
+    if (address >= UINT32_C(0x80000000) && address < UINT32_C(0xc0000000)
+            && bus >= UINT32_C(0x10000000) && bus < UINT32_C(0x1fc00000) && rt->rom) {
+        size_t offset = bus - UINT32_C(0x10000000);
+        if (offset > rt->rom_size || bytes > rt->rom_size - offset)
+            recomp_fail("cartridge read outside attached ROM", address);
+        uint64_t value = 0;
+        for (unsigned i = 0; i < bytes; i++)
+            value = (value << 8) | rt->rom[offset + i];
+        return value;
+    }
     uint32_t p = recomp_ram_address(rt, address, bytes);
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#if RECOMP_LITTLE_ENDIAN_HOST
     /* RDRAM is word-swapped: aligned guest words already have native byte
      * order on little-endian hosts. memcpy avoids aliasing/alignment UB. */
     if(bytes==4 && !(p&3)) { uint32_t word;memcpy(&word,rt->rdram+p,4);return word; }
@@ -214,21 +241,74 @@ uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
     return value;
 }
 
+uint8_t recomp_load8_shared(Runtime *rt, uint32_t address) {
+#ifndef RECOMP_DEBUG
+    if (recomp_direct_ram_read(address))
+        return rt->rdram[(address & UINT32_C(0x1fffffff)) ^ 3];
+#endif
+    return (uint8_t)recomp_load(rt, address, 1);
+}
+
+uint16_t recomp_load16_shared(Runtime *rt, uint32_t address) {
+#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
+    if (recomp_direct_ram_read(address)) {
+        uint16_t value;
+        memcpy(&value, rt->rdram + ((address & UINT32_C(0x1fffffff)) ^ 2), 2);
+        return value;
+    }
+#endif
+    return (uint16_t)recomp_load(rt, address, 2);
+}
+
+uint32_t recomp_load32_shared(Runtime *rt, uint32_t address) {
+#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
+    if (recomp_direct_ram_read(address)) {
+        uint32_t value;
+        memcpy(&value, rt->rdram + (address & UINT32_C(0x1fffffff)), 4);
+        return value;
+    }
+#endif
+    return (uint32_t)recomp_load(rt, address, 4);
+}
+
+uint64_t recomp_load64_shared(Runtime *rt, uint32_t address) {
+#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
+    if (recomp_direct_ram_read(address)) {
+        uint64_t value;
+        memcpy(&value, rt->rdram + (address & UINT32_C(0x1fffffff)), 8);
+        return (value << 32) | (value >> 32);
+    }
+#endif
+    return recomp_load(rt, address, 8);
+}
+
 void recomp_store(Runtime *rt, uint32_t address, uint64_t value, unsigned bytes) {
+#ifdef RECOMP_DEBUG
     if (!(bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8)) recomp_fail("invalid store width", address);
-    if (address % bytes) fail_ram("unaligned store", address,bytes);
-    uint32_t p = ram_address(rt, address, bytes, true);
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    if(bytes==4 && !(p&3)) { uint32_t word=(uint32_t)value;memcpy(rt->rdram+p,&word,4);return; }
-    if(bytes==8 && !(p&3)) {
-        uint32_t high=(uint32_t)(value>>32),low=(uint32_t)value;
-        memcpy(rt->rdram+p,&high,4);memcpy(rt->rdram+p+4,&low,4);
+    if (address % bytes) fail_ram("unaligned store", address, bytes);
+#endif
+    uint32_t p = recomp_ram_address_write_slow(rt, address, bytes);
+#if RECOMP_LITTLE_ENDIAN_HOST
+    /* A resolver may return backing with a different alignment from the guest
+     * address. Keep that bytewise fallback here, once for the whole program. */
+    if (bytes == 4 && !(p & 3)) {
+        uint32_t word = (uint32_t)value;
+        memcpy(rt->rdram + p, &word, 4);
         return;
     }
-    if(bytes==2 && !(p&1)) { uint16_t half=(uint16_t)value;memcpy(rt->rdram+(p^2),&half,2);return; }
-    if(bytes==1){rt->rdram[p^3]=(uint8_t)value;return;}
+    if (bytes == 8 && !(p & 3)) {
+        uint64_t swapped = (value << 32) | (value >> 32);
+        memcpy(rt->rdram + p, &swapped, 8);
+        return;
+    }
+    if (bytes == 2 && !(p & 1)) {
+        uint16_t half = (uint16_t)value;
+        memcpy(rt->rdram + (p ^ 2), &half, 2);
+        return;
+    }
 #endif
-    for (unsigned i = 0; i < bytes; i++) rt->rdram[(p + i) ^ 3] = (uint8_t)(value >> (8 * (bytes - i - 1)));
+    for (unsigned i = 0; i < bytes; i++)
+        rt->rdram[(p + i) ^ 3] = (uint8_t)(value >> (8 * (bytes - i - 1)));
 }
 
 void recomp_copy_to_ram(Runtime *rt, uint32_t address, const uint8_t *source, size_t bytes) {
@@ -236,19 +316,15 @@ void recomp_copy_to_ram(Runtime *rt, uint32_t address, const uint8_t *source, si
     for (size_t i = 0; i < bytes; i++) rt->rdram[(p + i) ^ 3] = source[i];
 }
 
-static bool direct_address(uint32_t address) {
-    return address >= UINT32_C(0x80000000) && address < UINT32_C(0xc0000000);
-}
-
 /* A custom pager can yield or evict a previously resolved source when resolving
  * the destination. Keep its reads/writes separate, like generated guest code.
  * Fixed mappings can use blocks, bounded by the smallest libultra page (4 KiB). */
 static bool paged_address(Runtime *rt, uint32_t address) {
-    return rt->resolve_address && !direct_address(address);
+    return rt->resolve_address && !recomp_direct_address(address);
 }
 
 static size_t memory_span(uint32_t address, size_t bytes, bool backward) {
-    size_t span = direct_address(address) ? bytes
+    size_t span = recomp_direct_address(address) ? bytes
         : backward ? (address & 0xfff) + 1 : 0x1000 - (address & 0xfff);
     return span < bytes ? span : bytes;
 }
@@ -392,12 +468,14 @@ uint64_t recomp_load_merge(Runtime *rt, uint32_t address, uint64_t old, unsigned
 }
 
 void recomp_store_merge(Runtime *rt, uint32_t address, uint64_t value, unsigned width, bool left) {
+#ifdef RECOMP_DEBUG
     if (width!=4 && width!=8) recomp_fail("invalid merge store width", address);
+#endif
     unsigned offset=address&(width-1), count=left?width-offset:offset+1;
     uint32_t start=left?address:address-offset;
-    recomp_ram_address(rt,start,count); /* Validate all touched bytes before writing. */
+    uint32_t p = recomp_ram_address_write(rt, start, count);
     for (unsigned i=0;i<count;i++) {
         unsigned byte=left?i:width-count+i;
-        recomp_store(rt,start+i,value>>((width-1-byte)*8),1);
+        rt->rdram[(p + i) ^ 3] = (uint8_t)(value >> ((width - 1 - byte) * 8));
     }
 }

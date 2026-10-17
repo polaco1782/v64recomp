@@ -50,8 +50,11 @@ SUPPORTED.update(('cfc1', 'ctc1', 'bc1f', 'bc1t', 'bc1fl', 'bc1tl',
                   'cvt.s.d', 'cvt.s.w', 'cvt.s.l', 'cvt.d.s', 'cvt.d.w', 'cvt.d.l',
                   'cvt.w.s', 'cvt.w.d', 'cvt.l.s', 'cvt.l.d'))
 SUPPORTED.update(f'{op}.{integer}.{fmt}' for op in ('round', 'trunc', 'ceil', 'floor')
-                 for integer in ('w','l') for fmt in ('s', 'd'))
+                 for integer in ('w', 'l') for fmt in ('s', 'd'))
 
+LOAD_OPS = {'lb', 'lbu', 'lh', 'lhu', 'lw', 'lwu', 'ld'}
+LOAD_HELPERS = {1: 'recomp_load8', 2: 'recomp_load16', 4: 'recomp_load32', 8: 'recomp_load64'}
+STORE_HELPERS = {1: 'recomp_store8', 2: 'recomp_store16', 4: 'recomp_store32', 8: 'recomp_store64'}
 
 def fp_error(i: 'Instruction', fpu_fr: int = 0) -> str | None:
     op = i.opcode
@@ -65,10 +68,10 @@ def fp_error(i: 'Instruction', fpu_fr: int = 0) -> str | None:
     if parts[0] == 'c' and i.shift:
         return 'only floating-point condition code zero is supported'
     double_regs = []
-    if parts[-1] in ('d','l'):
+    if parts[-1] in ('d', 'l'):
         double_regs.append(i.rd)  # fs
         if parts[0] in FP_BINARY or parts[0] == 'c': double_regs.append(i.rt)  # ft
-    if ((len(parts) == 2 and parts[-1] in ('d','l')) or (len(parts) == 3 and parts[1] in ('d','l'))):
+    if ((len(parts) == 2 and parts[-1] in ('d', 'l')) or (len(parts) == 3 and parts[1] in ('d', 'l'))):
         double_regs.append(i.shift)  # fd
     if fpu_fr == 0 and any(reg % 2 for reg in double_regs):
         return 'FR=0 double register must be even'
@@ -88,6 +91,8 @@ class Instruction:
     rd: int
     shift: int
     immediate: int
+    gpr_read_mask: int
+    gpr_write_mask: int
 
 
 def decode(raw: bytes, address: int) -> list[Instruction]:
@@ -98,10 +103,25 @@ def decode(raw: bytes, address: int) -> list[Instruction]:
         instruction = rabbitizer.Instruction(word, pc)
         opcode = instruction.getOpcodeName() if instruction.isValid() else "invalid"
         imm = word & 0xffff
+        operands = ((word >> 21) & 31, (word >> 16) & 31, (word >> 11) & 31)
+        reads = writes = 0
+        for r, read, written in zip(operands,
+                                    (instruction.readsRs(), instruction.readsRt(), instruction.readsRd()),
+                                    (instruction.modifiesRs(), instruction.modifiesRt(), instruction.modifiesRd())):
+            if r and read:
+                reads |= 1 << r
+            if r and written:
+                writes |= 1 << r
+        # Rabbitizer describes the explicit destination, but JAL writes an
+        # implicit link and merge loads also read the old destination value.
+        if opcode == 'jal':
+            writes |= 1 << 31
+        if opcode in ('lwl', 'lwr', 'ldl', 'ldr') and operands[1]:
+            reads |= 1 << operands[1]
         result.append(Instruction(pc, word, opcode, instruction.disassemble(),
                                   instruction.hasDelaySlot(), instruction.isBranchLikely(),
-                                  (word >> 21) & 31, (word >> 16) & 31, (word >> 11) & 31,
-                                  (word >> 6) & 31, imm - 65536 if imm & 0x8000 else imm))
+                                  *operands, (word >> 6) & 31, imm - 65536 if imm & 0x8000 else imm,
+                                  reads, writes))
     return result
 
 
@@ -154,11 +174,17 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
     for transfer in function.get('fallthrough_transfers', []):
-        i=next((i for i in instructions if i.pc==transfer['pc']),None)
-        if (i is None or i.delay or i.word!=transfer['expected_word'] or transfer['target']!=i.pc+4
-                or resolve_function(registry,function['section'],transfer['target']) is None):
-            errors.append({'pc':transfer['pc'],'word':transfer['expected_word'],'assembly':'',
-                           'reason':'invalid checked function fallthrough'})
+        i = next((i for i in instructions if i.pc == transfer['pc']), None)
+        if (i is None or i.delay or i.word != transfer['expected_word'] or transfer['target'] != i.pc + 4
+                or resolve_function(registry, function['section'], transfer['target']) is None):
+            errors.append({'pc': transfer['pc'], 'word': transfer['expected_word'], 'assembly': '',
+                           'reason': 'invalid checked function fallthrough'})
+        if 'resume_pc' in transfer and transfer['resume_pc'] not in addresses:
+            errors.append({'pc': transfer['pc'], 'word': transfer['expected_word'], 'assembly': '',
+                           'reason': 'checked fallthrough continuation is not local'})
+        if type(transfer.get('resume_register', 31)) is not int or not 1 <= transfer.get('resume_register', 31) < 32:
+            errors.append({'pc': transfer['pc'], 'word': transfer['expected_word'], 'assembly': '',
+                           'reason': 'invalid checked continuation register'})
     for index, i in enumerate(instructions):
         reason = None
         transfer = transfers.get(i.pc)
@@ -168,18 +194,28 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
         elif fp_error(i, fpu_fr):
             reason = fp_error(i, fpu_fr)
         elif fpu_fr == 0 and ((i.opcode in ('ldc1', 'sdc1') and i.rt % 2)
-              or (i.opcode in ('dmfc1','dmtc1') and i.rd % 2)):
+              or (i.opcode in ('dmfc1', 'dmtc1') and i.rd % 2)):
             reason = 'FR=0 double register must be even'
         elif i.opcode == 'jalr' and i.rd != 31:
             reason = "nonstandard link register requires a local replacement"
         elif transfer and (transfer['expected_word'] != i.word
-                           or transfer['kind'] not in ('jump', 'tail', 'call')
-                           or (not transfer['targets'] and not registered)
+                           or transfer['kind'] not in ('jump', 'tail', 'call', 'return')
+                           or (not transfer['targets'] and not registered and transfer['kind'] != 'return')
+                           or (transfer['kind'] == 'return' and transfer['targets'])
                            or len(set(transfer['targets'])) != len(transfer['targets'])
-                           or (registered and (transfer['kind']!='call' or transfer['targets']))
+                           or (registered and (transfer['kind'] != 'call' or transfer['targets']))
                            or (transfer['kind'] == 'call' and i.opcode != 'jalr')
                            or (transfer['kind'] != 'call' and (i.opcode != 'jr' or i.rs == 31))):
             reason = 'invalid checked indirect-transfer metadata'
+        elif transfer and transfer['kind'] == 'return' and not (any(
+                save.pc == transfer.get('save_pc') and save.pc < i.pc
+                and save.word == transfer.get('expected_save_word')
+                and save.opcode in ('or', 'addu') and save.rs == 31 and save.rt == 0 and save.rd == i.rs
+                for save in instructions) or (
+                    function.get('return_address_register') == i.rs == transfer.get('entry_register')
+                    and function['vram'] == transfer.get('entry_pc')
+                    and instructions[0].word == transfer.get('expected_entry_word'))):
+            reason = 'invalid checked return save'
         elif transfer and any((a not in addresses if transfer['kind'] == 'jump'
                                else resolve_function(registry, function['section'], a) is None)
                               for a in transfer['targets']):
@@ -203,7 +239,43 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
 
 
 def reg(number: int) -> str:
-    return f"ctx->gpr[{number}]" if number else "UINT64_C(0)"
+    return f"r{number}" if number else "UINT64_C(0)"
+
+
+def set_reg(number: int, expression: str, effectful: bool = False) -> str:
+    if number == 0:
+        # Discard ALU results. Loads still perform the access (MMIO may have side effects).
+        return f"(void)({expression});" if effectful else ""
+    return f"r{number} = {expression};"
+
+
+def gpr_set(function: dict, instructions: list[Instruction]) -> list[int]:
+    # Immediate bits and FPU register fields are not integer registers. Only
+    # cache actual GPR operands and the registers used by checked continuations.
+    mask = 0
+    for i in instructions:
+        reads = i.gpr_read_mask
+        if i.delay and i.opcode not in ('j', 'jal', 'jr', 'jalr') and constant_condition(i) is not None:
+            reads = 0
+        elif i.opcode == 'sltiu' and i.immediate == 0:
+            reads = 0
+        elif reads and not i.delay and not i.gpr_write_mask and not body(i):
+            # ALU results discarded through $zero have no emitted operands.
+            # Effectful loads still emit their access and keep the base GPR.
+            reads = 0
+        mask |= reads | i.gpr_write_mask
+    regs = {r for r in range(1, 32) if mask & (1 << r)}
+    if 'return_address_stack_offset' in function or function.get('unwind_calls'):
+        regs.add(29)
+    if not any(key in function for key in ('return_address_stack_offset', 'return_address_fpr')):
+        regs.add(function.get('return_address_register', 31))
+    if function.get('tail_call_continuations') or function.get('nonlocal_return_calls'):
+        regs.add(31)
+    regs.update(t.get('resume_register', 31)
+                for t in function.get('indirect_transfers', []) + function.get('fallthrough_transfers', [])
+                if 'resume_register' in t or 'resume_pc' in t)
+    regs.discard(0)
+    return sorted(regs)
 
 
 def add_immediate(value: str, immediate: int | str) -> str:
@@ -239,12 +311,12 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     if op == 'break': return f'recomp_fail("MIPS BREAK {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'syscall': return f'recomp_fail("MIPS SYSCALL {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'mtc1': return f'ctx->fpr[{i.rd}] = {b};'
-    if op == 'mfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fpr[{i.rd}]));'
-    if op == 'cfc1': return f'mips_set(ctx, {i.rt}, mips_s32(ctx->fcr31));'
+    if op == 'mfc1': return set_reg(i.rt, f'mips_s32(ctx->fpr[{i.rd}])')
+    if op == 'cfc1': return set_reg(i.rt, 'mips_s32(ctx->fcr31)')
     if op == 'ctc1': return f'mips_fp_set_control(ctx, {b});'
     parts = op.split('.')
     if op == 'dmtc1': return f'mips_set_fpr_pair(ctx, {i.rd}, {b});'
-    if op == 'dmfc1': return f'mips_set(ctx, {i.rt}, mips_fpr_pair(ctx, {i.rd}));'
+    if op == 'dmfc1': return set_reg(i.rt, f'mips_fpr_pair(ctx, {i.rd})')
     if len(parts) >= 2 and parts[-1] in ('s', 'd', 'w', 'l'):
         fmt = f'MIPS_FP_{parts[-1].upper()}'
         if parts[0] in FP_BINARY:
@@ -258,10 +330,10 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
             return f'mips_fp_convert(ctx, {i.shift}, {i.rd}, {fmt}, MIPS_FP_{parts[1].upper()}, {mode});'
     if op in ('lwc1', 'swc1', 'ldc1', 'sdc1'):
         address = memory_address(i, relocated_immediate)
-        if op == 'lwc1': return f'ctx->fpr[{i.rt}] = (uint32_t)recomp_load(runtime, {address}, 4);'
-        if op == 'swc1': return f'recomp_store(runtime, {address}, ctx->fpr[{i.rt}], 4);'
-        if op == 'ldc1': return f'mips_set_fpr_pair(ctx, {i.rt}, recomp_load(runtime, {address}, 8));'
-        return f'recomp_store(runtime, {address}, mips_fpr_pair(ctx, {i.rt}), 8);'
+        if op == 'lwc1': return f'ctx->fpr[{i.rt}] = {LOAD_HELPERS[4]}(runtime, {address});'
+        if op == 'swc1': return f'{STORE_HELPERS[4]}(runtime, {address}, ctx->fpr[{i.rt}]);'
+        if op == 'ldc1': return f'mips_set_fpr_pair(ctx, {i.rt}, {LOAD_HELPERS[8]}(runtime, {address}));'
+        return f'{STORE_HELPERS[8]}(runtime, {address}, mips_fpr_pair(ctx, {i.rt}));'
     if op in ('lwl', 'lwr', 'ldl', 'ldr', 'swl', 'swr', 'sdl', 'sdr'):
         address = memory_address(i, relocated_immediate)
         width = 4 if op[1] == 'w' else 8
@@ -270,8 +342,10 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
             return f'recomp_store_merge(runtime, {address}, {b}, {width}, {left});'
         expression = f'recomp_load_merge(runtime, {address}, {b}, {width}, {left})'
         if width == 4: expression = f'mips_s32({expression})'
-        return f'mips_set(ctx, {i.rt}, {expression});'
-    if op == 'lui': expression = f'mips_s32((uint32_t){logical_imm} << 16)' if relocated_immediate else signed_constant((i.word & 0xffff) << 16, 32)
+        return set_reg(i.rt, expression, effectful=True)
+    if op == 'lui':
+        expression = (f'mips_s32((uint32_t){logical_imm} << 16)' if relocated_immediate
+                      else signed_constant((i.word & 0xffff) << 16, 32))
     elif op in ('addiu', 'addi', 'daddiu'):
         expression = (f"mips_s32({add_immediate(a, relocated_immediate or i.immediate)})" if op == 'addiu'
                       else f"mips_add32({a}, {imm})" if op == 'addi' else add_immediate(a, relocated_immediate or i.immediate))
@@ -317,12 +391,12 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     elif op in ('lb', 'lbu', 'lh', 'lhu', 'lw', 'lwu', 'ld', 'sb', 'sh', 'sw', 'sd'):
         width = {'b': 1, 'h': 2, 'w': 4, 'd': 8}[op[1]]
         address = memory_address(i, relocated_immediate)
-        if op.startswith('s'): return f"recomp_store(runtime, {address}, {b}, {width});"
-        expression = f"recomp_load(runtime, {address}, {width})"
+        if op.startswith('s'): return f"{STORE_HELPERS[width]}(runtime, {address}, {b});"
+        expression = f"{LOAD_HELPERS[width]}(runtime, {address})"
         if op in ('lb', 'lh', 'lw'): expression = f"mips_s{width * 8}({expression})"
     if expression is None:
         raise RecompError(f"no straight-line emitter for {op}")
-    return f"mips_set(ctx, {destination}, {expression});"
+    return set_reg(destination, expression, effectful=op in LOAD_OPS)
 
 
 def constant_condition(i: Instruction) -> bool | None:
@@ -354,62 +428,110 @@ def condition(i: Instruction) -> str:
     raise RecompError(f"no branch condition for {i.opcode}")
 
 
-def direct_hook_targets(registry: dict, hooks: dict[tuple[int, int], str]) -> dict[int, tuple[int, str]]:
+@dataclass(frozen=True)
+class DirectCallTarget:
+    section: int
+    symbol: str
+    registry_index: int
+
+
+def direct_call_targets(registry: dict, hooks: dict[tuple[int, int], str],
+                        selected: list[dict] | None = None) -> dict[int, DirectCallTarget]:
     # A shared guest address must retain runtime loaded-section resolution.
     counts = Counter(address for _, address in registry)
-    return {address: (section, handler) for (section, address), handler in hooks.items()
-            if counts[address] == 1}
+    indices = {(f['section'], f['vram']): index
+               for index, f in enumerate(selected if selected is not None else registry.values())}
+    return {address: DirectCallTarget(section, hooks.get((section, address), cname(function)),
+                                      indices[(section, address)])
+            for (section, address), function in registry.items()
+            if counts[address] == 1 and (section, address) in indices}
 
 
 def emit_function(function: dict, instructions: list[Instruction], registry: dict,
                   yield_sites: set[int] | None = None,
                   hooks: dict[tuple[int, int], str] | None = None,
-                  direct_hooks: dict[int, tuple[int, str]] | None = None) -> str:
+                  direct_targets: dict[int, DirectCallTarget] | None = None) -> str:
     log_emission('Emit %s s%s 0x%08x -> %s (%d instructions)',
                  function['name'], function['section'], function['vram'], cname(function), len(instructions),
                  verbose=True)
     safe_name = function['name'].replace('*/', '* /').replace('\n', ' ')
+    gprs = gpr_set(function, instructions)
+    written_mask = 0
+    for instruction in instructions:
+        written_mask |= instruction.gpr_write_mask
+    written_gprs = [r for r in gprs if written_mask & (1 << r)]
+
+    def flush(indent: str) -> list[str]:
+        # Read-only locals already match ctx. Native calls/checkpoints reload
+        # every cached register afterward, including registers they may change.
+        return [f'{indent}ctx->gpr[{n}] = r{n};' for n in written_gprs]
+
+    def reload(indent: str) -> list[str]:
+        return [f'{indent}r{n} = ctx->gpr[{n}];' for n in gprs]
+
+    def around(statements: list[str], indent: str, resume: bool = True) -> list[str]:
+        # Anything here may run native code that reads or writes ctx.
+        return [*flush(indent), *statements, *(reload(indent) if resume else [])]
+
+    if 'return_address_stack_offset' in function:
+        ra_line = (f"    uint32_t return_address = recomp_load32(runtime, "
+                   f"(uint32_t)r29 + UINT32_C(0x{function['return_address_stack_offset']:x}));")
+    elif 'return_address_fpr' in function:
+        ra_line = f"    uint32_t return_address = ctx->fpr[{function['return_address_fpr']}];"
+    else:
+        ra_line = f"    uint32_t return_address = (uint32_t)r{function.get('return_address_register', 31)};"
+
     lines = [f"/* {safe_name} at 0x{function['vram']:08x} */",
              f"void {cname(function)}(Runtime *runtime, MipsContext *ctx) {{",
-             (f"    uint32_t return_address = (uint32_t)recomp_load(runtime, (uint32_t)ctx->gpr[29] + UINT32_C(0x{function['return_address_stack_offset']:x}), 4);"
-              if 'return_address_stack_offset' in function else "    uint32_t return_address = (uint32_t)ctx->gpr[31];"),
+             *(['    uint64_t ' + ', '.join(f'r{n} = ctx->gpr[{n}]' for n in gprs) + ';'] if gprs else []),
+             ra_line,
              "    (void)return_address; (void)runtime; (void)ctx;"]
+    if function.get('unwind_calls'):
+        lines.append('    uint32_t entry_stack_pointer = (uint32_t)r29;')
+
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
     fallthrough_transfers = {t['pc']: t for t in function.get('fallthrough_transfers', [])}
     used_labels = set()
     yield_sites = yield_sites or set()
     hooks = hooks or {}
-    if direct_hooks is None:
-        direct_hooks = direct_hook_targets(registry, hooks)
+    if direct_targets is None:
+        direct_targets = direct_call_targets(registry, hooks)
 
     def location(pc: int, indent: str = '    ') -> str:
         return f"{indent}RECOMP_TRACK_PC(ctx, UINT32_C(0x{pc:08x}));"
 
     def emit_body(instruction: Instruction, indent: str = '    ') -> list[str]:
         relocated = instruction.pc in function.get('relocation_pcs', [])
-        immediate = (f'(int16_t)recomp_load(runtime, recomp_relocated_address(runtime, '
-                     f'{function["section"]}, UINT32_C(0x{instruction.pc:08x})), 4)') if relocated else None
+        immediate = (f'(int16_t)recomp_load32(runtime, recomp_relocated_address(runtime, '
+                     f'{function["section"]}, UINT32_C(0x{instruction.pc:08x})))') if relocated else None
         statement = body(instruction, immediate)
         if LOG_EMISSION and LOG_EMISSION_VERBOSE and ('recomp_load' in statement or 'recomp_store' in statement):
             log_emission('Memory %s s%s 0x%08x: %s -> %s',
                          function['name'], function['section'], instruction.pc, instruction.assembly, statement,
                          verbose=True)
-        # Include nops and inline delay slots. Annulled likely slots never reach
-        # this code at runtime. RECOMP_TRACK_PC disappears in Release builds.
         return [location(instruction.pc, indent), *([indent + statement] if statement else [])]
 
     def call_location(indent: str) -> str:
-        # Native hooks can suspend inside nested generated calls. Preserve the
-        # call site for guest OSThread/debug snapshots; C frames own resumption.
         return location(i.pc, indent)
 
     def fallthrough(address: int, indent: str = '    ') -> str:
-        return f'{indent}recomp_fellthrough(UINT32_C(0x{address:08x}));'
+        return f'{indent}recomp_fail("fell off generated function", UINT32_C(0x{address:08x}));'
 
     def jump(address: int, indent: str = '    ') -> str:
         used_labels.add(f'L_{address:08x}:')
         return f'{indent}goto L_{address:08x};'
+
+    def checked_fallthrough(checked: dict, indent: str) -> list[str]:
+        code = emit_call(checked['target'], indent, resume='resume_pc' in checked)
+        if 'resume_pc' in checked:
+            resume, link = checked['resume_pc'], checked.get('resume_register', 31)
+            code.extend([f'{indent}if ((uint32_t)r{link} != UINT32_C(0x{resume:08x}))',
+                         f'{indent}    recomp_fail("checked continuation return mismatch", (uint32_t)r{link});',
+                         jump(resume, indent)])
+        else:
+            code.append(indent + 'return;')
+        return code
 
     def log_call(address: int, kind: str) -> None:
         if not LOG_EMISSION or not LOG_EMISSION_VERBOSE:
@@ -424,15 +546,20 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                      kind, function['name'], function['section'], i.pc,
                      callee['name'], callee['section'], address, handler or cname(callee),
                      'native hook' if handler else 'generated function',
-                     'direct native call' if address in direct_hooks else 'via recomp_lookup', verbose=True)
+                     'known function entry' if address in direct_targets else 'via recomp_lookup', verbose=True)
 
-    def emit_call(address: int, indent: str = '        ') -> list[str]:
-        hook = direct_hooks.get(address)
-        if hook is not None:
-            section, handler = hook
-            return [f"{indent}recomp_prepare_direct_call(runtime, UINT32_C(0x{address:08x}), {section});",
-                    f"{indent}{handler}(runtime, ctx);"]
-        return [f"{indent}recomp_lookup(runtime, UINT32_C(0x{address:08x}))(runtime, ctx);"]
+    def emit_call(address: int, indent: str = '        ', resume: bool = True) -> list[str]:
+        # Resuming callers reload locals: the callee may have changed any GPR.
+        direct = direct_targets.get(address)
+        if direct is not None:
+            if (direct.section, address) in hooks:
+                call = [f"{indent}recomp_prepare_direct_call(runtime, UINT32_C(0x{address:08x}), {direct.section});",
+                        f"{indent}{direct.symbol}(runtime, ctx);"]
+            else:
+                call = [f"{indent}recomp_call_generated(runtime, ctx, &recomp_functions[{direct.registry_index}]);"]
+        else:
+            call = [f"{indent}recomp_lookup(runtime, UINT32_C(0x{address:08x}))(runtime, ctx);"]
+        return around(call, indent, resume)
 
     def transfer(address: int, indent: str = '        ') -> list[str]:
         if address in addresses:
@@ -441,28 +568,28 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 call = 'recomp_yield_checkpoint' if i.pc in yield_sites else 'recomp_checkpoint'
                 log_emission('Checkpoint %s s%s 0x%08x -> 0x%08x: %s',
                              function['name'], function['section'], i.pc, address, call, verbose=True)
-                checkpoint.append(f"{indent}{call}(runtime);")
+                # Checkpoints may suspend and snapshot ctx, and resumption may rewrite it.
+                checkpoint = around([f"{indent}{call}(runtime);"], indent)
             return [*checkpoint, jump(address, indent)]
         log_call(address, 'Tail/branch call')
-        return [call_location(indent), *emit_call(address, indent), f"{indent}return;"]
+        return [call_location(indent), *emit_call(address, indent, resume=False), f"{indent}return;"]
 
     for index, i in enumerate(instructions):
         lines.extend([f"L_{i.pc:08x}:", f"    /* {i.pc:08x}: {i.assembly} */"])
         if not i.delay:
             lines.extend(emit_body(i))
             if 'instruction_addresses' in function:
-                checked_fallthrough = fallthrough_transfers.get(i.pc)
-                if checked_fallthrough:
-                    lines.extend([*emit_call(checked_fallthrough['target'], '    '), '    return;'])
+                checked = fallthrough_transfers.get(i.pc)
+                if checked:
+                    lines.extend(checked_fallthrough(checked, '    '))
                 else:
-                    # Fall through only when the next emitted instruction is
-                    # the guest successor. Sparse/reordered bodies can need a jump.
                     if i.pc + 4 in addresses:
                         if index + 1 == len(instructions) or instructions[index + 1].pc != i.pc + 4:
                             lines.append(jump(i.pc + 4))
                     else:
                         lines.append(fallthrough(i.pc))
             continue
+
         slot = instructions[index + 1]
         lines.append(location(i.pc))
         lines.append('    {')
@@ -473,8 +600,6 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 lines.extend(transfer(target(i)))
                 lines.append('    }')
                 continue
-            # Test before the delay slot can change branch inputs. Each path
-            # executes the slot once; branch-likely annuls it when not taken.
             if known is None:
                 lines.append(f"        if ({condition(i)}) {{")
                 lines.extend(emit_body(slot, '            '))
@@ -482,20 +607,33 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 lines.append('        }')
             if not i.likely:
                 lines.extend(emit_body(slot, '        '))
-            lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
-                         else fallthrough(i.pc, '        '))
+            checked = fallthrough_transfers.get(slot.pc)
+            if checked:
+                lines.extend(checked_fallthrough(checked, '        '))
+            else:
+                lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
+                             else fallthrough(i.pc, '        '))
             lines.append('    }')
             continue
+
         if i.opcode in ('jr', 'jalr'):
+            # Read the target before the delay slot can change the source register.
             lines.append(f"        uint32_t destination = (uint32_t){reg(i.rs)};")
         if i.opcode in ('jal', 'jalr'):
             ra = (f'mips_s32(recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc+8:08x})))'
                   if function.get('relocatable') else signed_constant(i.pc + 8, 32))
-            lines.append(f"        mips_set(ctx, {31 if i.opcode == 'jal' else i.rd}, {ra});")
+            lines.append('        ' + set_reg(31 if i.opcode == 'jal' else i.rd, ra))
         lines.extend(emit_body(slot, '        '))
         checked = transfers.get(i.pc)
-        if i.opcode == 'jr' and checked:
-            destination = 'recomp_canonical_function_address(runtime, destination)' if function.get('relocatable') else 'destination'
+
+        if i.opcode == 'jr' and checked and checked['kind'] == 'return':
+            lines.extend(flush('        '))
+            lines.extend(['        if (destination != return_address)',
+                          '            recomp_fail("checked return target mismatch", destination);',
+                          '        return;'])
+        elif i.opcode == 'jr' and checked:
+            destination = ('recomp_canonical_function_address(runtime, destination)'
+                           if function.get('relocatable') else 'destination')
             lines.append(f'        switch ({destination}) {{')
             for address in checked['targets']:
                 lines.append(f'        case UINT32_C(0x{address:08x}):')
@@ -504,40 +642,65 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 else:
                     log_call(address, 'Checked indirect tail target')
                     lines.extend([call_location('            '),
-                                  *emit_call(address, '            '), '            return;'])
-            lines.extend(['        default: recomp_fail("unlisted indirect jump target", destination);', '        }'])
+                                  *emit_call(address, '            ', resume=False), '            return;'])
+            lines.append('        default:')
+            lines.extend(flush('            '))
+            lines.extend(['            recomp_fail("unlisted indirect jump target", destination);', '        }'])
         elif i.opcode == 'jr':
             if i.rs != 31:
                 log_emission('Indirect tail %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                              function['name'], function['section'], i.pc, i.assembly, verbose=True)
+            # Flush before the branch: both the lookup-tail and the return path leave the function.
+            lines.extend(flush('        '))
             lines.extend(['        if (destination != return_address) {',
                           call_location('            '),
                           '            recomp_lookup(runtime, destination)(runtime, ctx);', '        }', '        return;'])
         elif i.opcode in ('jal', 'jalr'):
             dest = 'destination' if i.opcode == 'jalr' else f"UINT32_C(0x{target(i):08x})"
             if checked and not checked.get('registered_targets'):
-                destination = 'recomp_canonical_function_address(runtime, destination)' if function.get('relocatable') else 'destination'
+                destination = ('recomp_canonical_function_address(runtime, destination)'
+                               if function.get('relocatable') else 'destination')
                 lines.append(f'        switch ({destination}) {{')
                 for address in checked['targets']:
                     log_call(address, 'Checked indirect call target')
                     lines.extend([f'        case UINT32_C(0x{address:08x}):', call_location('            '),
                                   *emit_call(address, '            '), '            break;'])
-                lines.extend(['        default: recomp_fail("unlisted indirect call target", destination);', '        }'])
+                lines.append('        default:')
+                lines.extend(flush('            '))
+                lines.extend(['            recomp_fail("unlisted indirect call target", destination);', '        }'])
             else:
                 if i.opcode == 'jalr':
                     log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                                  function['name'], function['section'], i.pc, i.assembly, verbose=True)
-                    call = [f"        recomp_lookup(runtime, {dest})(runtime, ctx);"]
+                    call = around([f"        recomp_lookup(runtime, {dest})(runtime, ctx);"], '        ')
                 else:
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))
                 lines.extend([call_location('        '), *call])
+            unwind = next((c for c in function.get('unwind_calls', []) if c['pc'] == i.pc), None)
+            if unwind:
+                if unwind.get('conditional'):
+                    lines.append('        if ((uint32_t)r29 > entry_stack_pointer) return;')
+                else:
+                    lines.extend(['        if ((uint32_t)r29 <= entry_stack_pointer)',
+                                  '            recomp_fail("checked unwind did not restore outer stack", (uint32_t)r29);',
+                                  '        return;'])
             if i.pc in function.get('nonlocal_return_calls', []):
-                lines.append('        if ((uint32_t)ctx->gpr[31] == return_address) return;')
+                lines.append('        if ((uint32_t)r31 == return_address) return;')
             lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
                          else fallthrough(i.pc, '        '))
-        elif i.opcode == 'j': lines.extend(transfer(target(i)))
+        elif i.opcode == 'j':
+            continuation = next((c for c in function.get('tail_call_continuations', []) if c['pc'] == i.pc), None)
+            if continuation:
+                resume = continuation['resume_pc']
+                lines.extend(emit_call(target(i)))
+                lines.extend([f'        if ((uint32_t)r31 != UINT32_C(0x{resume:08x}))',
+                              '            recomp_fail("checked continuation return mismatch", (uint32_t)r31);',
+                              jump(resume, '        ')])
+            else:
+                lines.extend(transfer(target(i)))
         lines.append('    }')
+
     last_pc = instructions[-1].pc if instructions else function['vram']
     lines.extend([fallthrough(last_pc), '}'])
     # Only control-flow destinations need labels. Delay slots remain separately
