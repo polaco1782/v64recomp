@@ -9,11 +9,14 @@ Configure `cmake --preset <game>-debug` and build that preset. The binary is
 under `games/<game>/debug/`, and generated sources under the build's `generated/`.
 The original positional diagnostic interfaces are also retained for tools.
 
-RT64 and its bundled dependencies use the compiler's `RelWithDebInfo` flags even
-in Debug builds (normally `-O2 -g -DNDEBUG` with Clang/GCC). This retains renderer
+RT64 and its bundled dependencies share a build under `build/shared/rt64/` across
+all games and both modes. The default `RelWithDebInfo` configuration uses
+`-O2 -g -DNDEBUG` with Clang/GCC. This retains renderer
 symbols while disabling RT64 assertions, internal file logging and Vulkan
 validation layers. Game code, the shared runtime and native adapters retain
 their Debug settings; F1 inspection and F6 wireframe remain available.
+Set `RECOMP_RT64_BUILD_TYPE=Debug` explicitly when debugging RT64 itself; this
+selects a separate shared build with its assertions and diagnostics enabled.
 
 Debug builds automatically print timestamped diagnostics to stderr: game and ROM
 identity, boot/code loads, native OS hook entry arguments and caller addresses,

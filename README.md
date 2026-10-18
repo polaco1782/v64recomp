@@ -114,6 +114,15 @@ ROMs or generation failures stop configuration explicitly. The generation log is
 in the build directory. CPU sources are split into smaller files for parallel
 compilation. Use `-DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF` to build shared libraries.
 
+RT64, its shaders and bundled libraries build once under `build/shared/rt64/`
+and are reused by every game and both game modes. The shared build uses
+`RelWithDebInfo` by default; `-DRECOMP_RT64_BUILD_TYPE=Release` selects another
+renderer configuration. Compiler, toolchain and relevant flag changes select a
+separate cache directory. Source edits rebuild the affected RT64 files.
+`-DRECOMP_RT64_JOBS=4` controls its compiler jobs, independently of game build
+parallelism. Builds from different game directories serialize access to RT64.
+Cleaning a game removes its local library links while retaining the shared cache.
+
 ## Release and debug
 
 `games/<game>/` holds `profile.toml`, `generate.py`, headers, audio profiles and
@@ -127,9 +136,8 @@ reports, WAVs, screenshots, RAM captures or call traces during normal play.
 tools. Debug includes full symbols, unoptimized game code, call tracing, captures,
 gameplay probes, RT64's F1 inspector and F6 wireframe.
 It retains the existing diagnostic startup behavior and checks.
-RT64 and its bundled dependencies use optimized `RelWithDebInfo` compiler flags
-inside Debug builds; game code, the shared runtime and native adapters retain
-their Debug flags.
+Both modes reuse RT64's optimized `RelWithDebInfo` build by default. Game code,
+the shared runtime and native adapters retain their selected configuration flags.
 
 ```sh
 cmake --preset quake-us-debug
@@ -216,6 +224,7 @@ The technical documentation covers each part:
 - `third_party/`: RT64 and the audio DSP dependency.
 - `local/`: private ROMs, saves, packs, renderer data and crash dumps.
 - `build/`: disposable generated sources, binaries and debug output.
+- `build/shared/rt64/`: reusable RT64 builds, grouped by compiler and configuration.
 
 See [audio](docs/audio.md), [floating point](docs/fpu.md),
 [threading](docs/threading.md), [native hooks](docs/native-hooks.md),

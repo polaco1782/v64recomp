@@ -95,6 +95,8 @@ in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
 entries. Follow `cmake/Game.cmake` for ROM/save defaults, additional sources,
 generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
+Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
+game-specific RT64 copy. Its independent build cache is under `build/shared/rt64/`.
 List shared translation units in `RECOMP_GAME_SOURCES`; use
 `RECOMP_GAME_DEBUG_SOURCES` / `RECOMP_GAME_RELEASE_SOURCES` for additional
 mode-specific sources. Neither mode may include or compile files from the other
