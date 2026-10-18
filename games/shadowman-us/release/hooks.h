@@ -33,18 +33,8 @@ void hook_shadowman_unmap_tlb(Runtime *rt, MipsContext *ctx) {
     require(index < 32, "Shadow Man invalid TLB index", index);
     rt->page_mappings[index] = (RecompPageMapping){0};
 }
-void hook_shadowman_no_pak(Runtime *rt, MipsContext *ctx) {
-    (void)rt;
-    mips_set(ctx, 2, 2); /* PFS_ERR_NOPACK: the configured controller has no accessory. */
-}
 void hook_shadowman_motor_init(Runtime *rt, MipsContext *ctx) {
-    uint32_t pfs = (uint32_t)ctx->gpr[5], channel = (uint32_t)ctx->gpr[6];
-    require(channel < 4, "Shadow Man invalid motor channel", channel);
-    recomp_store(rt, pfs, 0, 4);
-    recomp_store(rt, pfs+4, ctx->gpr[4], 4);
-    recomp_store(rt, pfs+8, channel, 4);
-    recomp_store(rt, pfs+0x65, 0x80, 1);
-    mips_set(ctx, 2, 2);
+    hook_os_motor_init(rt, ctx);
 }
 void hook_shadowman_motor_stop(Runtime *rt, MipsContext *ctx) {
     (void)rt;

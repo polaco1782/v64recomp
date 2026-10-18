@@ -186,7 +186,10 @@ int main(int argc, char **argv) {
         .app_nmi_buffer=0x8000031c};
     require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler)
             && recomp_platform_init(&rt, &platform), "Shadow Man native services init failed", 0);
-    RecompIOConfig io = {.connected_mask=1};
+    char pak_path[4096];
+    require(snprintf(pak_path, sizeof(pak_path), "%s.mpk", argv[1]) < (int)sizeof(pak_path),
+            "Controller Pak save path too long", 0);
+    RecompIOConfig io = {.connected_mask=1, .pak_mask=1, .pak_paths={pak_path}};
     RecompTaskBackend backend = {.submit=submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Shadow Man IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "Shadow Man");

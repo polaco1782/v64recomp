@@ -87,7 +87,7 @@ int main(int argc,char **argv) {
             && recomp_platform_init(&rt, &platform), "Nightmare Creatures native services init failed", 0);
     /* The priority-15 pad thread continuously reads. A 1 ms serial transfer
      * allows priority-10 game code to run between controller reads. */
-    RecompIOConfig io = {.connected_mask=1, .si_transfer_ticks=BOOT_COUNTER_HZ/1000};
+    RecompIOConfig io = {.connected_mask=1, .pak_mask=1, .pak_paths={options.save}, .si_transfer_ticks=BOOT_COUNTER_HZ/1000};
     RecompTaskBackend backend = {.submit=submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Nightmare Creatures IO/task init failed", 0);
     renderer=recomp_renderer_create_named(&rt,options.data,"Nightmare Creatures");

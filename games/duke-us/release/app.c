@@ -122,7 +122,7 @@ int main(int argc,char **argv) {
         .app_nmi_buffer=0x8000031c};
     require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler)
             && recomp_platform_init(&rt, &platform), "Duke Nukem 64 native services init failed", 0);
-    RecompIOConfig io = {.connected_mask=1};
+    RecompIOConfig io = {.connected_mask=1, .pak_mask=1, .pak_paths={options.save}};
     RecompTaskBackend backend = {.submit=submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Duke Nukem 64 IO/task init failed", 0);
     renderer=recomp_renderer_create_named(&rt,options.data,"Duke Nukem 64");

@@ -1,7 +1,6 @@
 # Exact US ROM; native SDK boundaries are bound to instruction fingerprints.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 hooks = [
-  {symbol = "__osContRamWrite", vram = 0x00115340, kind = "replace_function", handler = "hook_shadowman_no_pak", expected_words = [0x27bdffb0, 0xafb40048, 0x0080a021, 0xafb00038, 0x00a08021, 0xafb30044, 0x00c09821, 0xafb20040]},
   {symbol = "osInitialize", vram = 0x00116920, kind = "replace_function", handler = "hook_shadowman_initialize", expected_words = [0x27bdffe0, 0x24020001, 0xafbf0018, 0xafa00014, 0x3c018005, 0xac2203a8, 0x0c0460c8, 0x00000000]},
   {symbol = "osStartThread", vram = 0x001171a0, kind = "replace_function", handler = "hook_shadowman_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafbf001c, 0xafb20018, 0x0c0460cc, 0xafb10014, 0x00409021]},
   {symbol = "__osGetSR", vram = 0x00118320, kind = "replace_function", handler = "hook_shadowman_get_sr", expected_words = [0x40026000, 0x03e00008, 0x00000000]},
@@ -15,7 +14,6 @@ hooks = [
   {symbol = "osUnmapTLB", vram = 0x107a60, kind = "replace_function", handler = "hook_shadowman_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x40801800, 0x00000000, 0x42000002]},
   {symbol = "osMotorInit", vram = 0x00114878, kind = "replace_function", handler = "hook_shadowman_motor_init", expected_words = [0x27bdff80, 0xafb00060, 0x00808021, 0xafb50074, 0x00c0a821, 0x240600fe, 0x2404001f, 0x27a30037]},
   {symbol = "osMotorStop", vram = 0x001144f0, kind = "replace_function", handler = "hook_shadowman_motor_stop", expected_words = [0x27bdffb8, 0xafb1003c, 0x00808821, 0xafbf0040, 0xafb00038, 0x8e220008, 0x00021080, 0x3c018002]},
-  {symbol = "osPfsInitPak", vram = 0x2dd030, kind = "replace_function", handler = "hook_shadowman_no_pak", expected_words = [0x27bdff90, 0xafb1005c, 0x00808821, 0xafb20060, 0x00a09021, 0xafb30064, 0x00c09821, 0xafbf0068]},
   {symbol = "osAiDeviceBusy", vram = 0x113f30, kind = "replace_function", handler = "hook_shadowman_ai_busy", expected_words = [0x3c02a450, 0x3442000c, 0x8c420000, 0x03e00008, 0x28420000]},
 ]
 
