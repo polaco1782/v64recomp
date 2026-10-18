@@ -177,11 +177,14 @@ typedef struct RecompIOConfig {
     const char *eeprom_path; /* NULL keeps an in-memory device. Copied at init. */
     /* SI completion delay; zero completes at the next scheduler poll. */
     uint64_t si_transfer_ticks;
+    uint8_t pak_mask; /* One 32 KiB Controller Pak per selected port. */
+    const char *pak_paths[4]; /* NULL keeps that Pak in memory. Copied at init. */
 } RecompIOConfig;
 typedef struct RecompIOStats {
     uint64_t reads_started, reads_completed, si_events;
     uint64_t queries_started, queries_completed;
     uint64_t eeprom_reads, eeprom_writes, persistence_failures;
+    uint64_t pak_reads, pak_writes;
     bool read_pending;
     bool query_pending;
 } RecompIOStats;
@@ -226,6 +229,9 @@ void hook_os_vi_get_next_framebuffer(Runtime *, MipsContext *);
 void hook_os_set_int_mask(Runtime *, MipsContext *);
 void hook_os_pfs_init_pak(Runtime *, MipsContext *);
 void hook_os_pfs_is_plug(Runtime *, MipsContext *);
+void hook_os_pfs_get_status(Runtime *, MipsContext *);
+void hook_os_cont_ram_read(Runtime *, MipsContext *);
+void hook_os_cont_ram_write(Runtime *, MipsContext *);
 void hook_os_cont_set_ch(Runtime *, MipsContext *);
 void hook_os_motor_init(Runtime *, MipsContext *);
 void hook_os_motor_start(Runtime *, MipsContext *);
