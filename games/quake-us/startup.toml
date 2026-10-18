@@ -78,6 +78,8 @@ jump_tables = [
 # Original entity factory: 77 records of name pointer and spawn callback.
 # Record zero has no callback; records 1 through 76 are callable.
 function_tables = [
+  # Shared audio-sequence commands 0x13..0x23. Command 0x20 calls 0x80053904.
+  {pc = 0x80053d14, expected_word = 0x0320f809, table_vram = 0x8006f76c, count = 17, sha256 = "5c48085b847c3b5caac40ecfa8b90cbd4b6786c0e7e65bffe36424031d3cf0c9"},
   # Original 16-entry controller action table (move, turn, fire and jump).
   {pc = 0x80046e4c, expected_word = 0x0320f809, table_vram = 0x8006d3e0, count = 16, sha256 = "3d7c1435bc6ab3e6d3c9c370123abe181cf19c884251c740f1552b429612631b"},
   {pc = 0x800420e8, expected_word = 0x0320f809, table_vram = 0x8006d174, count = 154, indices = [3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 97, 99, 101, 103, 105, 107, 109, 111, 113, 115, 117, 119, 121, 123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143, 145, 147, 149, 151, 153], sha256 = "67b5a4a87c5306da730b4521e4760362afb58109c341e1505798ff80ae691241"},
