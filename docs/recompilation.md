@@ -138,6 +138,12 @@ Generated functions are registered by their original guest addresses.
 `recomp_lookup` resolves calls to a registered function in a loaded section;
 unknown, unloaded or ambiguous destinations fail explicitly. Verified native
 hooks with unique entries can be called directly while retaining section checks.
+Fixed generated calls and checked indirect targets also use precomputed registry
+entries where the address is unique. Remaining dynamic calls use an address hash
+index built once during runtime initialization, with expected constant-time
+lookup. Addresses shared by overlays still check their loaded-section candidates
+on each call. The index retains live registry references so Debug replacements,
+address remapping and pager preparation continue to apply.
 
 The [shared native hook catalog](native-hooks.md) recognizes known OS and
 library routines by their complete ROM-body fingerprints. These bind to native

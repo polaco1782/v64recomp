@@ -95,6 +95,8 @@ struct Runtime {
     void (*destroy_io)(Runtime *);
     void (*poll_io)(Runtime *);
     const RecompFunctionEntry **function_index; /* Sorted once at init; original registry order is retained. */
+    size_t *function_lookup; /* Hash slots hold the first sorted index + 1 for each guest address. */
+    size_t function_lookup_mask;
     RecompAddressResolver resolve_address;
     void (*prepare_call)(Runtime *, uint32_t);
     void *address_userdata;

@@ -64,6 +64,43 @@ static int compare_entries(const void *a, const void *b) {
     return (x->address > y->address) - (x->address < y->address);
 }
 
+static size_t function_hash(uint32_t address) {
+    /* Mix the whole address: overlays and ROM mappings often share low bits. */
+    uint32_t key = address >> 2;
+    key = (key ^ (key >> 16)) * UINT32_C(0x7feb352d);
+    key = (key ^ (key >> 15)) * UINT32_C(0x846ca68b);
+    return key ^ (key >> 16);
+}
+
+static bool index_functions(Runtime *rt) {
+    size_t count = rt->function_count;
+    if (!count) return true;
+    rt->function_index = malloc(count * sizeof(*rt->function_index));
+    if (!rt->function_index) return false;
+    for (size_t i = 0; i < count; i++) rt->function_index[i] = &rt->functions[i];
+    qsort(rt->function_index, count, sizeof(*rt->function_index), compare_entries);
+
+    /* Keep the table at most half full, with a zero slot ending every probe. */
+    if (count > SIZE_MAX / 2) return false;
+    size_t slots = 1;
+    while (slots < count * 2) {
+        if (slots > SIZE_MAX / 2) return false;
+        slots *= 2;
+    }
+    if (slots > SIZE_MAX / sizeof(*rt->function_lookup)) return false;
+    rt->function_lookup = calloc(slots, sizeof(*rt->function_lookup));
+    if (!rt->function_lookup) return false;
+    rt->function_lookup_mask = slots - 1;
+    for (size_t i = 0; i < count; i++) {
+        uint32_t address = rt->function_index[i]->address;
+        if (i && rt->function_index[i - 1]->address == address) continue;
+        size_t slot = function_hash(address) & rt->function_lookup_mask;
+        while (rt->function_lookup[slot]) slot = (slot + 1) & rt->function_lookup_mask;
+        rt->function_lookup[slot] = i + 1;
+    }
+    return true;
+}
+
 bool recomp_runtime_init(Runtime *rt, size_t ram_size,
                          const RecompFunctionEntry *functions, size_t count,
                          const bool *loaded, size_t sections) {
@@ -80,12 +117,7 @@ bool recomp_runtime_init(Runtime *rt, size_t ram_size,
     rt->functions = functions;
     rt->function_count = count;
     rt->section_count = sections;
-    if (count) {
-        rt->function_index = malloc(count * sizeof(*rt->function_index));
-        if (!rt->function_index) { recomp_runtime_destroy(rt); return false; }
-        for (size_t i = 0; i < count; i++) rt->function_index[i] = &functions[i];
-        qsort(rt->function_index, count, sizeof(*rt->function_index), compare_entries);
-    }
+    if (!index_functions(rt)) { recomp_runtime_destroy(rt); return false; }
     if (loaded) memcpy(rt->section_loaded, loaded, sections * sizeof(bool));
     RECOMP_LOG("game", "runtime initialized: RAM=%zu bytes functions=%zu sections=%zu", ram_size, count, sections);
     return true;
@@ -101,6 +133,7 @@ void recomp_runtime_destroy(Runtime *rt) {
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);
+    free(rt->function_lookup);
     if (failure_userdata == rt) recomp_set_failure_handler(NULL, NULL);
     *rt = (Runtime){0};
 }
@@ -109,11 +142,17 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
     recomp_record_call(rt, address);
     address = recomp_canonical_function_address(rt, address);
     RecompFunction result = NULL;
-    size_t first = 0, end = rt->function_count;
-    while (first < end) {
-        size_t middle = first + (end - first) / 2;
-        if (rt->function_index[middle]->address < address) first = middle + 1;
-        else end = middle;
+    size_t first = rt->function_count;
+    if (rt->function_lookup) {
+        size_t slot = function_hash(address) & rt->function_lookup_mask;
+        while (rt->function_lookup[slot]) {
+            size_t index = rt->function_lookup[slot] - 1;
+            if (rt->function_index[index]->address == address) {
+                first = index;
+                break;
+            }
+            slot = (slot + 1) & rt->function_lookup_mask;
+        }
     }
     for (size_t i = first; i < rt->function_count && rt->function_index[i]->address == address; i++) {
         const RecompFunctionEntry *entry = rt->function_index[i];
