@@ -226,6 +226,10 @@ bool conker_bind_microcode(void *opaque, size_t ram_size, uint32_t code, uint32_
     check(fingerprint(interpreter->state, code, 0x14a0, "55a64255ef5c60046c3e88bb73891f72ee095e0005b4b748f78f5ff296b35cfa") &&
           fingerprint(interpreter->state, data, 0x780, "eded3bafe0d2ea7f1c3b7d2d0633fb38854b200b98763af8d355781e170b3fe8"),
           "Conker unrecognized graphics microcode", code);
+    // The intro reads a CI8 render target as RGBA16 without a TLUT. RT64's
+    // GPU reinterpretation shader cannot perform that conversion. Its RAM
+    // path synchronizes framebuffer pairs and loads the original packed bytes.
+    interpreter->state->ext.emulatorConfig->framebuffer.copyWithGPU = false;
     if (cbfd.gbi.ucode == RT64::GBIUCode::Unknown) {
         cbfd.gbi.ucode = RT64::GBIUCode::F3DEX2;
         RT64::GBI_RDP::setup(&cbfd.gbi, true);

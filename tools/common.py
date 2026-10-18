@@ -149,9 +149,14 @@ def load_metadata(path: Path, rom: bytes) -> dict:
                 raise RecompError(f"invalid entry link register: {function['name']}")
         for site in function.get('tail_call_continuations', []):
             pc = site['pc']
+            word = site['expected_word']
+            op = word >> 26
+            conditional = (op in (4, 5, 6, 7, 20, 21, 22, 23)
+                           or op == 1 and (word >> 16 & 31) in (0, 1, 2, 3)
+                           or op == 17 and (word >> 21 & 31) == 8)
             if (pc not in function['instruction_addresses'] or site['resume_pc'] not in function['instruction_addresses']
                     or site['expected_word'] != int.from_bytes(rom[offset+pc-address:offset+pc-address+4], 'big')
-                    or site['expected_word'] >> 26 != 2):
+                    or not (op == 2 or conditional)):
                 raise RecompError(f"invalid checked tail continuation: {function['name']}")
         for pc in function.get('nonlocal_return_calls', []):
             if type(pc) is not int or pc % 4 or not address <= pc < address + size:

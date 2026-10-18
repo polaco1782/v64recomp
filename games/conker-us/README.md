@@ -3,12 +3,16 @@
 The US revision 0 port has a native Debug executable. It runs original startup,
 creates five guest threads, decompresses paged code on demand into the game's
 allocated cache, loads scene assets through PI DMA, polls the controller, and
-runs scene initialization. Title/menu rendering and playable gameplay have not
-been demonstrated. Remaining unsupported paths fail explicitly.
+runs scene initialization. The Nintendo logo and the 3D N64-logo intro scene
+have rendered on the desktop; title/menu and playable gameplay have not been
+demonstrated. Remaining unsupported paths fail explicitly.
 
-The audio thread generates its first command list. Its task profile is pinned
-to the verified NAudio CBFD microcode; actual synthesis and audible playback
-remain unverified. Graphics task support and save persistence are unfinished.
+The adapter executes verified F3DEXBG.NoN graphics and NAudio CBFD audio tasks.
+The first five seconds complete successfully, with 127 graphics tasks and 139
+audio tasks. Longer intro runs now produce nonzero PCM samples after the
+Nintendo logo. The user confirmed hearing the intro audio on the desktop;
+3D lighting accuracy and gameplay save/reload remain unverified. The 16 Kbit
+EEPROM is configured and its first four blocks read successfully.
 See [RESUME.md](RESUME.md) for addresses and the current replay boundary.
 
 The normalized 64 MiB ROM has SHA-1
@@ -26,10 +30,14 @@ cmake --build --preset conker-us-debug -j 4
 ./build/conker-us-debug/bin/conker-us --frames 300
 ```
 
-The bounded replay currently stops at an unsupported boundary. Debug keeps its
+The 300-presentation replay exits successfully. Longer runs are still being
+brought up through the intro. Debug keeps its
 report/captures under `build/conker-us-debug/debug-output/conker-us/`; crashes include a JSON
 report and RDRAM under ignored `local/crashes/conker-us/`. Release uses the
 `conker-us-release` presets and shares the runtime adapter.
+Debug logs final thread states and PCs. Set `RECOMP_CONKER_RAM` to an output
+filename to retain a word-swapped RDRAM snapshot after a bounded run; this also
+supports diagnosing stalls that do not trigger the crash reporter.
 
 Generate a fresh raw CPU report independently of the explicit runtime boundaries:
 
@@ -48,3 +56,8 @@ those failing functions do not implement the missing behavior.
 
 `debug/analyze_switches.py` reports bounded switch candidates for manual review.
 It verifies the prepared image and table destinations and never edits metadata.
+
+The graphics adapter uses RT64's RAM-backed framebuffer copies because the intro
+reinterprets a CI8 render target as RGBA16 without a TLUT, a conversion absent
+from RT64's GPU reinterpretation shader. This preserves packed texture bytes;
+extra framebuffer synchronization may affect performance.

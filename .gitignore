@@ -5,3 +5,28 @@ __pycache__
 *.pyc
 core
 core.*
+
+# Tests and test suites, at any depth and in any language.
+[Tt][Ee][Ss][Tt]*
+*[._-][Tt][Ee][Ss][Tt]*
+*Test*
+*TEST*
+__[Tt][Ee][Ss][Tt]*__/
+[Ss][Pp][Ee][Cc]/
+[Ss][Pp][Ee][Cc][Ss]/
+[Ss][Pp][Ee][Cc][._-]*
+*[._-][Ss][Pp][Ee][Cc]
+*[._-][Ss][Pp][Ee][Cc][._-]*
+*Spec.*
+*Specs.*
+
+# Test runner state and coverage reports.
+.pytest_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage/
+htmlcov/
+junit*.xml

@@ -106,3 +106,10 @@ def finalize_metadata(rom, metadata, profile):
     if rom[off:off+4] != bytes.fromhex('0060f809'):
         raise RecompError('Conker bytecode callback dispatch fingerprint mismatch')
     decoder['nonlocal_return_calls'] = [0x150adffc]
+    # Four wrappers tail-enter this dispatcher. Ordinary callbacks resume here;
+    # an abort has already restored the interpreter's outer frame and RA.
+    dispatcher = functions[0x150ae140]
+    off = dispatcher['rom_offset'] + 0x150ae180 - dispatcher['vram']
+    if rom[off:off+4] != bytes.fromhex('0060f809'):
+        raise RecompError('Conker nested bytecode dispatch fingerprint mismatch')
+    dispatcher['unwind_calls'] = [dict(pc=0x150ae180, expected_word=0x0060f809, conditional=True)]

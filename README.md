@@ -22,6 +22,12 @@ Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
 X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
 Python generates CPU sources during the build. Built games launch directly.
 
+CMake prefers Clang (`clang`/`clang++`), falling back to GCC (`gcc`/`g++`) when
+the corresponding Clang compiler is unavailable. Explicit `CC`/`CXX`,
+`CMAKE_C_COMPILER`/`CMAKE_CXX_COMPILER`, and toolchain selections take precedence.
+Existing build directories keep their cached compiler; use a new build directory
+to apply the default to a previously configured build.
+
 Clone with submodules to download the pinned RT64 revision and its dependencies,
 including Plume:
 
@@ -64,12 +70,14 @@ an existing destination containing different bytes.
 
 SM64 uses `games/sm64-us/full.toml`; the other supported games use
 `games/<game>/profile.toml`, where `<game>` is `goldeneye-us`, `shadowman-us`,
-`quake-us`, `duke-us`, `nightmare-us`, `oot-us-v12`, or `perfectdark-us-v11`.
+`quake-us`, `duke-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
+`conker-us` (experimental; see its [port status](games/conker-us/README.md)).
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
 | --- | --- |
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
+| `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |
 | `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
 | `nightmare.us.z64` | `4116cf435db315a2481af8d1e9352feb` |
 | `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
@@ -89,7 +97,7 @@ cmake --build --preset sm64-us-release --target run
 ```
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
-`nightmare-us`, `oot-us-v12`, or `perfectdark-us-v11`. ROMs, saves, texture packs and crash dumps stay
+`nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 
 The equivalent explicit CMake configuration is:
@@ -184,6 +192,7 @@ the native audio backend processes supported sound tasks and sends PCM to SDL.
 The technical documentation covers each part:
 
 - [Recompilation pipeline](docs/recompilation.md): ROM mappings, discovery, translation and native execution.
+- [Adding a ROM](docs/adding-a-rom.md): step-by-step porting, required tools, missing symbols and crash investigation.
 - [MIPS code expansion and native efficiency](docs/code-expansion.md): measured size ratios, a MIPS → C → x86-64 example and compiler optimizations.
 - [OS emulation and native calls](docs/os-emulation.md): why OS support is needed, which calls are replaced and how guest behavior is preserved.
 - [Native hook recognition](docs/native-hooks.md): ROM fingerprints, game-specific overrides and guarded direct calls.

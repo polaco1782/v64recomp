@@ -562,6 +562,13 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         return around(call, indent, resume)
 
     def transfer(address: int, indent: str = '        ') -> list[str]:
+        continuation = next((c for c in function.get('tail_call_continuations', []) if c['pc'] == i.pc), None)
+        if continuation:
+            resume = continuation['resume_pc']
+            return [*emit_call(address, indent),
+                    f'{indent}if ((uint32_t)r31 != UINT32_C(0x{resume:08x}))',
+                    f'{indent}    recomp_fail("checked continuation return mismatch", (uint32_t)r31);',
+                    jump(resume, indent)]
         if address in addresses:
             checkpoint = []
             if address <= i.pc:
@@ -690,15 +697,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
                          else fallthrough(i.pc, '        '))
         elif i.opcode == 'j':
-            continuation = next((c for c in function.get('tail_call_continuations', []) if c['pc'] == i.pc), None)
-            if continuation:
-                resume = continuation['resume_pc']
-                lines.extend(emit_call(target(i)))
-                lines.extend([f'        if ((uint32_t)r31 != UINT32_C(0x{resume:08x}))',
-                              '            recomp_fail("checked continuation return mismatch", (uint32_t)r31);',
-                              jump(resume, '        ')])
-            else:
-                lines.extend(transfer(target(i)))
+            lines.extend(transfer(target(i)))
         lines.append('    }')
 
     last_pc = instructions[-1].pc if instructions else function['vram']

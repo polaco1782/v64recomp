@@ -60,16 +60,32 @@ int recomp_debug_main(int argc, char **argv) {
     }
     RecompAudioStats as = game.audio ? recomp_audio_stats(game.audio) : (RecompAudioStats){0};
     RecompRendererStats rs = recomp_renderer_stats(game.renderer);
+    RecompThreadSnapshot threads[16];
+    size_t thread_count = recomp_thread_snapshots(&game.runtime, threads, 16);
+    for (size_t i = 0; i < thread_count; i++)
+        fprintf(stderr, "Conker thread %d state=%u pc=%08x ra=%08x sp=%08x\n", threads[i].id,
+                (unsigned)threads[i].state, threads[i].context.pc, (uint32_t)threads[i].context.gpr[31],
+                (uint32_t)threads[i].context.gpr[29]);
+    const char *ram_path = getenv("RECOMP_CONKER_RAM");
+    if (ram_path) {
+        FILE *ram = fopen(ram_path, "wb");
+        require(ram != NULL, "Conker RAM snapshot cannot open", 0);
+        require(fwrite(game.runtime.rdram, 1, game.runtime.rdram_size, ram) == game.runtime.rdram_size,
+                "Conker RAM snapshot write failed", 0);
+        require(fclose(ram) == 0, "Conker RAM snapshot close failed", 0);
+    }
     if (report_path) {
         FILE *f = fopen(report_path, "w");
         require(f != NULL, "Conker report cannot open", 0);
         fprintf(f,
                 "{\"presentations\":%u,\"host_seconds\":%.3f,\"graphics_tasks\":%u,\"audio_tasks\":%u,"
-                "\"rdp_triangles\":%llu,\"audio_frames\":%llu,\"nonzero_samples\":%llu,\"stage\":%u,"
+                "\"rdp_triangles\":%llu,\"audio_frames\":%llu,\"nonzero_samples\":%llu,\"scene_selector\":%u,"
+                "\"display_frames\":%llu,\"page_loads\":%u,\"page_evictions\":%u,"
                 "\"queue_underruns\":%llu,\"queue_resets\":%llu,\"game_image_verified\":%s}\n",
                 frame, (recomp_game_monotonic() - game.start_ns) / 1e9, game.graphics_tasks, game.audio_tasks,
                 (unsigned long long)rs.rdp_triangles, (unsigned long long)as.frames,
-                (unsigned long long)as.nonzero_samples, (unsigned)recomp_load(&game.runtime, 0x800be615, 1),
+                (unsigned long long)as.nonzero_samples, (unsigned)recomp_load(&game.runtime, 0x800e0b94, 1),
+                (unsigned long long)rs.display_frames, game.page_loads, game.page_evictions,
                 (unsigned long long)as.queue_underruns, (unsigned long long)as.queue_resets,
                 game.runtime.section_loaded[4] ? "true" : "false");
         require(fclose(f) == 0, "Conker report write failed", 0);

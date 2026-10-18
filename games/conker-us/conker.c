@@ -254,8 +254,8 @@ static void initialize_services(Runtime *rt) {
 #endif
     game->audio = recomp_audio_create(rt, &audio);
     require(game->audio != NULL, "Conker audio initialization failed", 0);
-    /* Save-device capacity will be selected after tracing the original probe. */
-    RecompIOConfig io = {.connected_mask = 1};
+    /* Save setup at 0x1501c5d4 requires the probe's 16 Kbit device result (2). */
+    RecompIOConfig io = {.connected_mask = 1, .eeprom_size = 2048, .eeprom_path = game->options.save};
     RecompTaskBackend backend = {.userdata = game, .submit = submit};
     require(recomp_io_init(rt, &io) && recomp_tasks_init(rt, &backend), "Conker IO/tasks initialization failed", 0);
 }
@@ -299,8 +299,10 @@ void conker_step(Conker *game, const RecompPad *pad) {
     recomp_game_sleep(game->next_ns);
 }
 void conker_stop(Conker *game) {
+#ifdef RECOMP_DEBUG
     fprintf(stderr, "Conker: %u graphics tasks, %u audio tasks, %u page loads, %u evictions\n", game->graphics_tasks,
             game->audio_tasks, game->page_loads, game->page_evictions);
+#endif
     recomp_audio_destroy(game->audio);
     recomp_renderer_destroy(game->renderer);
     recomp_set_failure_handler(NULL, NULL);

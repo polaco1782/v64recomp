@@ -184,7 +184,8 @@ def discover(rom: bytes, profile: dict) -> dict:
         pc = site['pc']
         i = read(pc)
         resume = site['resume_pc']
-        if (i is None or i.opcode != 'j' or i.word != site['expected_word'] or pc in continuations
+        if (i is None or not i.delay or i.opcode in ('jr', 'jal', 'jalr', 'bltzal', 'bgezal', 'bltzall', 'bgezall')
+                or i.word != site['expected_word'] or pc in continuations
                 or type(resume) is not int or resume % 4 or mapping(resume) != mapping(pc)):
             raise RecompError(f'invalid checked tail continuation at {pc:#010x}')
         continuations[pc] = site
@@ -321,7 +322,12 @@ def discover(rom: bytes, profile: dict) -> dict:
                 always = i.opcode == 'b' or i.opcode in ('beq', 'beql') and i.rs == i.rt
                 never = i.opcode in ('bne', 'bnel') and i.rs == i.rt
                 if not never:
-                    local(target(i), pc)
+                    if pc in continuations:
+                        used_continuations.append(continuations[pc])
+                        call(target(i), pc)
+                        local(continuations[pc]['resume_pc'], pc)
+                    else:
+                        local(target(i), pc)
                 if not always:
                     # A checked fallthrough may sit in the delay slot of the
                     # final branch. It applies only to the not-taken successor.

@@ -168,6 +168,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "conker-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/conker-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "conker-us",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RECOMP_OPT_LEVEL": "3"
+      }
+    },
+    {
+      "name": "conker-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/conker-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "conker-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -234,6 +255,14 @@
     {
       "name": "perfectdark-us-v11-debug",
       "configurePreset": "perfectdark-us-v11-debug"
+    },
+    {
+      "name": "conker-us-release",
+      "configurePreset": "conker-us-release"
+    },
+    {
+      "name": "conker-us-debug",
+      "configurePreset": "conker-us-debug"
     }
   ]
 }

@@ -174,6 +174,84 @@
       "origin": "checked-root",
       "sha256": "b3bdc0acd8fe2dc9bc6a769591aba7db797d73cc9ee8c045dcbeb4202b10a6cb",
       "note": "Shared animation decoder frame epilogue; normal exit 0x150ae0a4 or nonlocal abort 0x150ae280 restores saved SP"
+    },
+    {
+      "vram": 353034560,
+      "origin": "checked-root",
+      "sha256": "9136bf9307f201228fbd4de0e24e59135fa0ce37a00dbe727e79ff792684c467",
+      "note": "Shared bytecode callback dispatcher; four table-selecting wrappers branch here at 0x150ae100, 0x150ae110, 0x150ae124, 0x150ae138"
+    },
+    {
+      "vram": 268475580,
+      "origin": "checked-root",
+      "sha256": "84ef42cfe42a0a4948abdc7271686faf4a2220b3be815a21742b5e7f57bd62b5",
+      "note": "Audio callback returned in v0 by constructor 0x10009ffc at 0x1000a02c/30; dispatched by 0x1001bd88"
+    },
+    {
+      "vram": 352467160,
+      "origin": "checked-root",
+      "sha256": "1470e3fcec97038ca85f2839627077071b0083d5d465800cda4ce5bc47dcdd13",
+      "note": "Callback materialized at 0x15029ec8/ed4 and passed on stack +0x1c to audio event setup; dispatched via object +0x14 at 0x1001187c"
+    },
+    {
+      "vram": 354368588,
+      "origin": "checked-root",
+      "sha256": "62cd38e1de564c9fe1b5c84e1c408c7e90ef2f1499cd7530f3107e6114bcd7da",
+      "note": "Streaming read callback materialized as a0 at 0x15016258/5c; reader 0x151f8088 calls object field +4 at 0x151f80e4"
+    },
+    {
+      "vram": 354381776,
+      "origin": "checked-root",
+      "sha256": "9e6665c91fd88a392f534c3a8f3a53b11ad5b611dbf9769871106151705799cf",
+      "note": "MP3 decoder callback assigned by 0x151f8514..8538 into stream state +0x847c; 0x151f858c dispatches +0x847c"
+    },
+    {
+      "vram": 354384052,
+      "origin": "checked-root",
+      "sha256": "797ca7a3fa4b10bedf62078cc28ae7bb4a36ff2f7506bb73c73d3176c572ce7a",
+      "note": "MP3 decoder callback assigned by 0x151f8514..8538 into stream state +0x8478; 0x151f858c dispatches +0x847c"
+    },
+    {
+      "vram": 268510560,
+      "origin": "checked-root",
+      "sha256": "57b5341757913dd66229be3ba99a8ad1ef6f3ff540dca16c32aff23a752f1497",
+      "note": "Streaming message callback passed as a0 by 0x100125b0/b8 to 0x151f3c1c; stored at 0x800e0e00 and dispatched at 0x151f8838"
+    },
+    {
+      "vram": 352828436,
+      "origin": "checked-root",
+      "sha256": "e285b521dfdc96cf1724e6a507ad0e78dbe31caf9a8aa9a95e39a2be448cd28b",
+      "note": "Five-byte script dispatcher called by direct JAL at 0x15056b94; checks opcode <0xf7 then dispatches table 0x80086730 at 0x1507bd60"
+    },
+    {
+      "vram": 268496704,
+      "origin": "checked-root",
+      "sha256": "547186a03bb6972c4cab8b0f7c7d1d1de7f005b289515fc2b8f1815c102a33fa",
+      "note": "Audio sequence callback materialized at 0x15011bdc/e0, stack +0x1c passed to 0x1000fa64 at 0x15011c20; also scene initializers 0x1500ea4c/0x15011284"
+    },
+    {
+      "vram": 268495616,
+      "origin": "checked-root",
+      "sha256": "6ae231aee606dbff30c65e3768024ff433971d7d1ada76b1c1696c1e588da878",
+      "note": "Audio sequence callback materialized at 0x150111a0/a4 and passed in stack +0x1c at 0x150111c8"
+    },
+    {
+      "vram": 353282308,
+      "origin": "checked-root",
+      "sha256": "1a7c2782894c580035835da27c0d84c3200acd9e9f463dbd481a5bd8c1242310",
+      "note": "Scene callback materialized at 0x15010680/84, stored at 0x800e0940, dispatched by 0x151c45a0 onward"
+    },
+    {
+      "vram": 353285168,
+      "origin": "checked-root",
+      "sha256": "ccb3f7d62f4912e4e5d39720741c824235b9821c57d35cbb35d86ccaae1391bd",
+      "note": "Scene callback materialized at 0x150106b0/b4, stored at 0x800e0930, dispatched at 0x151c1214"
+    },
+    {
+      "vram": 353231660,
+      "origin": "checked-root",
+      "sha256": "c84ecd7e6e17fbe20742eab0407a5f3058a5af14b7619000bba09d10421fda74",
+      "note": "Scene callback materialized at 0x15010904/08, stored at 0x800e0934, read at 0x151c1674"
     }
   ]
 }
