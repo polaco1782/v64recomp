@@ -831,11 +831,27 @@
       ]
     },
     {
+      "vram": 2148476232,
+      "origin": "checked-root",
+      "sha256": "1671bfcbd153b2f944ad9c0b9acf00562d3f2a3746d569efb11cf969350cc2e1",
+      "materialized_sources": [
+        2148476420
+      ]
+    },
+    {
       "vram": 2148476880,
       "origin": "checked-root",
       "sha256": "967a6c80c10b33e7842261579eda6f67cd6d7806412ac203326681afdf4ab446",
       "materialized_sources": [
         2148477484
+      ]
+    },
+    {
+      "vram": 2148477648,
+      "origin": "checked-root",
+      "sha256": "967a6c80c10b33e7842261579eda6f67cd6d7806412ac203326681afdf4ab446",
+      "materialized_sources": [
+        2148478064
       ]
     },
     {
@@ -889,6 +905,22 @@
       ]
     },
     {
+      "vram": 2148493076,
+      "origin": "checked-root",
+      "sha256": "297fe599f08d0cc592769fa2c58c71711025fdbb9ba1449a29c19d775669e905",
+      "materialized_sources": [
+        2148493772
+      ]
+    },
+    {
+      "vram": 2148493860,
+      "origin": "checked-root",
+      "sha256": "37f2f08f906f10d347879cb62d9bf0a763c63565c0bebe5676ee8ccfa0a9af14",
+      "materialized_sources": [
+        2148494424
+      ]
+    },
+    {
       "vram": 2148497284,
       "origin": "checked-root",
       "sha256": "5c212bbb1b75345d7e2b85e3ba80ff8892221e470b3df707edcfbbf8d53a4258"
@@ -897,6 +929,14 @@
       "vram": 2148497676,
       "origin": "checked-root",
       "sha256": "2597f9bc59e4a1363d8e97b03a5f56e6bac453be7674bdea211a3679a0b2d964"
+    },
+    {
+      "vram": 2148507696,
+      "origin": "checked-root",
+      "sha256": "5320eace3c5596dee5f4770aa3618d06480020d542e9125fffe66ca756a0fc1e",
+      "materialized_sources": [
+        2148533188
+      ]
     },
     {
       "vram": 2148508612,

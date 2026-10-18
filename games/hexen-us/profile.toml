@@ -15,9 +15,21 @@ regions = [
   {name = ".support", vram = 0x803ba800, rom_offset = 0x20ff0, size = 0x17280},
 ]
 roots = [{name = "mainproc", vram = 0x8004b4ac}, {name = "gameproc", vram = 0x8004b540}]
-transfers = [{pc = 0x8004b430, expected_word = 0x01400008, kind = "tail", targets = [0x8004b450]}]
+transfers = [
+  {pc = 0x8004b430, expected_word = 0x01400008, kind = "tail", targets = [0x8004b450]},
+  # TraverseIntercepts receives its callback from PathTraverse's sixth argument.
+  # These are all six callbacks passed by the eight ROM call sites of PathTraverse.
+  {pc = 0x800f7b40, expected_word = 0x0280f809, kind = "call", targets = [0x800f4dc4, 0x800f51ec, 0x800f5554, 0x800f5848, 0x800f619c, 0x800f6440]},
+]
 entry_inventory = "startup-entries.json"
 allow_registered_indirect_calls = true
+
+# The script interpreter byte-swaps its opcode, then loads this 102-entry
+# handler table at 80130e70. The following words are zero padding and fixed-point
+# geometry data. Include the full table, including handlers not yet exercised.
+function_tables = [
+  {pc = 0x800dd5e0, expected_word = 0x0320f809, table_vram = 0x80130e70, count = 102, sha256 = "3cb6618896b7b7eda414371a1805792da9fce28f8cf498c5836f105c768e5ac6"},
+]
 
 # Each dispatch count follows its unsigned ROM bounds check.
 jump_tables = [

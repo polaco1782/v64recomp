@@ -155,6 +155,32 @@ Treat pointer scans, stack-prologue scans, and valid-looking MIPS as candidates.
 Review call sites, instruction flow, alignment, section identity, and code/data
 ownership before adding entries. Do not blindly apply another game's analyzer.
 
+Use the maintained command-line tools before writing investigation snippets:
+
+- `tools/disassemble_function.py recomp_s<id>_<address> --game <game>
+  --metadata build/<game>-debug/generated/<game>/symbols.json` resolves a native
+  stack's generated function name and disassembles its verified owned instructions.
+- `tools/inspect_callbacks.py --game <game> --metadata PATH --target ADDRESS`
+  shows direct callers, checked transfers and address materializations, with MIPS
+  context including delay slots. Repeat `--target` to inspect both a callback and
+  the traversal/registration function that receives it. Increase `--before` or
+  `--after` to trace arguments rather than registering only the crashed target.
+- Add `--data SECTION:START:END` to find a callback in a bounded pointer table.
+  Without `--target`, supply `--text SECTION:START:END` to report unowned candidate
+  targets from owned code and the supplied data ranges. Ends are exclusive;
+  establish code/data boundaries first. `--include-owned` also lists known entries
+  when reviewing a complete table; data-range fingerprints are printed too.
+  `--json build/<game>-report/callbacks.json` preserves structured evidence.
+
+Both tools can prepare the pinned ROM with `--game`; use `--rom` only with the
+exact normalized/prepared analysis image. Select `--section` for ambiguous overlay
+addresses and inspect overlapping text mappings separately. Candidate reports do
+not modify inventories or prove callback ABI, table bounds or complete bodies.
+Review the producer and consumer, then add checked roots or the whole verified
+dispatch table and regenerate. When another repeated investigation needs custom
+Python, add a reusable operation under `tools/` and document its command here;
+keep ROM-specific preparation and decisions in the game module/profile.
+
 Checked partial entries bind `rom_sha1`, entry VRAM, origin, and a SHA-256 of the
 first 16 bytes. That prefix identifies an entry; it does not establish full body
 size. Jump-table metadata binds the transfer's `expected_word`, table address,
@@ -255,6 +281,25 @@ insufficient. Check a normal run without capture overhead for crashes, timing,
 audio underruns/resets, and unintended routine output. Record duration, frame/task
 counts, replay, and evidence paths. Do not infer game FPS from helper benchmarks
 or claim full-game support from startup coverage and one playable scene.
+
+For Release apps without an input-replay option, use the shared X11 keyboard
+driver instead of rewriting desktop automation:
+
+```sh
+.venv/bin/python tools/desktop_replay.py \
+  --executable build/<game>-release/bin/<game> --frames 4200 \
+  --input games/<game>/debug/play-through.txt \
+  --output build/<game>-release/acceptance \
+  --capture-at 29 --capture-at 49 --capture-at 65
+```
+
+It sends keys and captures only the window owned by its launched process, writes
+`run.log`/`run.json`, and applies a wall-time limit. Captures require ImageMagick's
+`import`; omit `--capture-at` when it is unavailable. Omit `--input` for an idle or
+attract-mode run. This uses wall time at 60 Hz and maps nonzero analog axes to the
+shared renderer's arrow keys, so it approximates a Debug replay. Inspect the
+captures to confirm menu navigation and actual gameplay; a clean process exit
+alone cannot establish them. Use the game's Debug replay for frame-exact input.
 
 After the game runs, run focused checks for the shared code actually changed and
 smoke an affected existing game. For emitter changes, regenerate Debug/Release,

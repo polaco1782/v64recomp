@@ -35,9 +35,11 @@ These are the investigation tools and when to use them:
 | `tools/generate_game.py` | Run registered game preparation, discovery, translation and CMake source splitting. |
 | `tools/inspect_address.py` | Resolve a guest address to section, byte offset, entry/instruction ownership, gaps, errors and known references. |
 | `tools/disassemble_function.py` | Resolve a generated name such as `recomp_s3_7f068008` through `symbols.json` and disassemble its verified MIPS instructions. |
+| `tools/inspect_callbacks.py` | Find callback address materializations, direct/checked callers and bounded data pointers; show MIPS context, ownership and fingerprints without changing discovery metadata. |
 | `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
 | `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |
 | `tools/controller_replay.py` | Convert existing ROM-bound replay JSON to the debug app's text input format. |
+| `tools/desktop_replay.py` | Replay text inputs as keyboard actions in a launched app's own X11 window; capture Release scenes and record the bounded process result. |
 | Optional MIPS disassembler/decompiler, such as Ghidra | Investigate loaders, BSS bounds, callbacks and data structures. Configure big-endian VR4300/MIPS III semantics and the verified address mapping. |
 
 System tools such as GDB and binutils must be installed on the host. The shared

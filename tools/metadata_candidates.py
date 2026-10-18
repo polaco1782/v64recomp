@@ -41,13 +41,18 @@ def pointer_entries(rom: bytes, metadata: dict, text_ranges: list[dict],
     return [found[address] for address in sorted(found)]
 
 
-def materialized_entries(rom: bytes, metadata: dict, text_ranges: list[dict]) -> list[dict]:
-    """Track LUI/address pairs used to pass or store callback pointers."""
+def materialized_entries(rom: bytes, metadata: dict, text_ranges: list[dict], *,
+                         source_ranges: list[dict] | None = None) -> list[dict]:
+    """Track LUI/address pairs used to pass or store callback pointers.
+
+    Optional source ranges let reports scan owned runs in other sections while
+    keeping candidate targets restricted to the supplied text ranges.
+    """
     text = sorted(text_ranges, key=lambda r: r['vram'])
     starts = [r['vram'] for r in text]
     owned = {pc for f in metadata['functions'] for pc in f['instruction_addresses']}
     found = {}
-    for region in text:
+    for region in source_ranges if source_ranges is not None else text:
         registers = {0: 0}
         pending = None
         for offset in range(0, region['size'], 4):
