@@ -129,8 +129,8 @@ static void process_graphics(void *opaque) {
                    || s->app->interpreter->UCode.dataAddress!=s->data))
         recomp_fail("custom graphics microcode binding is incomplete",s->code);
     s->custom_gbi=custom;
-    if(!custom && (s->app->interpreter->UCode.textAddress!=s->code || s->app->interpreter->UCode.dataAddress!=s->data))
-        s->app->interpreter->gbiManager.deduceGBIInformation(s->ram.data(),s->code,s->data);
+    // Quake alternates F3DEX.NoN and F3DLP.Rej. Let RT64 select the cached
+    // decoder and its variant flags; it prints diagnostics if lookup fails.
     s->app->interpreter->loadUCodeGBI(s->code,s->data,true);
     if(!s->app->interpreter->hleGBI)recomp_fail("RT64 did not recognize the graphics microcode",s->code);
     if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->before.size(),&s->stats.rdp_triangles);

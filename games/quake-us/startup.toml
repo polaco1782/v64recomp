@@ -2,6 +2,8 @@ extends = "profile.toml"
 
 [discovery]
 entry_inventory = "startup-entries.json"
+# Leaf movement-completion callback 0x80002ab8 is registered at 0x80002af8
+# via 0x8001a5d4 and called through entity + 0x1b0 at 0x8001a848.
 allow_registered_indirect_calls = true
 roots = [{name = "gameproc", vram = 0x80049010}]
 

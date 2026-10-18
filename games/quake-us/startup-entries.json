@@ -162,6 +162,11 @@
       "vram": 2147494464
     },
     {
+      "origin": "checked-root",
+      "sha256": "27de507a4bc6932e317a0461d770d300a2178ee58b1555aa7e00e4d67329a073",
+      "vram": 2147494584
+    },
+    {
       "origin": "stack-prologue",
       "sha256": "d8a95e58cebcb19852f0f199b452b708d1de2d2d17b7ece2224d425c9caf479e",
       "vram": 2147494604
