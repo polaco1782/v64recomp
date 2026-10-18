@@ -41,6 +41,12 @@ int main(int argc, char **argv) {
     }
     RecompRendererStats rs=recomp_renderer_stats(game.renderer);
     RecompAudioStats as=recomp_audio_stats(game.audio);
+    RecompThreadSnapshot threads[32];
+    size_t count=recomp_thread_snapshots(&game.runtime,threads,32);
+    for(size_t i=0;i<count && i<32;i++)
+        fprintf(stderr,"Hexen final thread id=%d state=%u pc=%08x ra=%08x sp=%08x\n",
+            threads[i].id,(unsigned)threads[i].state,threads[i].context.pc,
+            (uint32_t)threads[i].context.gpr[31],(uint32_t)threads[i].context.gpr[29]);
     FILE *report=fopen(argv[2],"w");require(report!=NULL,"Hexen report open failed",0);
     fprintf(report,"{\n  \"frames\": %u,\n  \"bss_verified\": %s,\n  \"program_verified\": %s,\n"
         "  \"graphics_tasks\": %" PRIu64 ",\n  \"audio_tasks\": %" PRIu64 ",\n"
@@ -50,5 +56,9 @@ int main(int argc, char **argv) {
         rs.graphics_tasks,as.tasks,as.nonzero_samples,as.peak,as.queue_underruns,as.queue_resets);
     require(fclose(report)==0,"Hexen report write failed",0);
     if(replay)fclose(replay);
+    /* Opt-in snapshot through the shared core reporter, including guest
+     * registers, recent calls and RAM, for a bounded hang investigation. */
+    if(getenv("RECOMP_HEXEN_SNAPSHOT"))
+        recomp_fail("Hexen requested diagnostic snapshot",frame);
     hexen_destroy(&game);return 0;
 }

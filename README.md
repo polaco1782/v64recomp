@@ -70,7 +70,7 @@ an existing destination containing different bytes.
 
 Every game uses `games/<game>/profile.toml`, where `<game>` is `sm64-us`,
 `goldeneye-us`, `shadowman-us`,
-`quake-us`, `duke-us`, `duke-zero-hour-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
+`quake-us`, `duke-us`, `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
 `conker-us` (experimental; see its [port status](games/conker-us/README.md)).
 The imported, normalized files have these filenames and MD5 checksums:
 
@@ -80,6 +80,7 @@ The imported, normalized files have these filenames and MD5 checksums:
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
 | `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |
 | `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
+| `hexen.us.z64` | `eb98f1b8c6898af7417f6882946da9b3` |
 | `nightmare.us.z64` | `4116cf435db315a2481af8d1e9352feb` |
 | `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
 | `perfectdark.us.v11.z64` | `e03b088b6ac9e0080440efed07c1e40f` |
@@ -98,7 +99,7 @@ cmake --build --preset sm64-us-release --target run
 ```
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
-`duke-zero-hour-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
+`duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 
 The equivalent explicit CMake configuration is:

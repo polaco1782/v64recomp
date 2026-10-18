@@ -3508,3 +3508,35 @@ handler = "hook_os_sp_task_load"
 body_size = 0x168
 sha256 = "72faf6c42c2494f3ffbab6b1f099086e64308eb0667ef23e6e672137e63a8cd9"
 expected_words = [0x27bdffd8, 0xafbf0024, 0xafb00014, 0x00808025, 0xafb30020, 0xafb2001c, 0x0c01722c, 0xafb10018]
+
+# Hexen US: 0x80056534; complete linked SDK body.
+[[signatures]]
+symbol = "osPfsInitPak"
+handler = "hook_os_pfs_init_pak"
+body_size = 0xa0
+sha256 = "a967d56a37dee8a77f62cee302aff126ed11dc51d3eadb1da96358fb5aa067f7"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafb00018, 0x00a08025, 0xafa40028, 0x0c01718c, 0xafa60030, 0x8fa40028]
+
+# Hexen US: 0x800565d4; complete linked SDK body.
+[[signatures]]
+symbol = "__osPfsGetStatus"
+handler = "hook_os_pfs_get_status"
+body_size = 0xdc
+sha256 = "08779d4ec8c150e266516bd1acb7c2970bffb3526f2bdd22f4464fd8aa6f478f"
+expected_words = [0x27bdffc0, 0xafbf0014, 0xafa40040, 0xafa50044, 0x0c0154a5, 0x00002025, 0x3c05800d, 0x24a5df50]
+
+# Hexen US: 0x8005f050; complete linked SDK body.
+[[signatures]]
+symbol = "__osContRamRead"
+handler = "hook_os_cont_ram_read"
+body_size = 0x214
+sha256 = "2f86a5203ee9cfc30f513c233ad827366d98443318db4c3304e7a92bae06efdf"
+expected_words = [0x27bdff78, 0xafbf003c, 0xafb60030, 0xafb5002c, 0xafb20020, 0xafb1001c, 0xafb00018, 0x30d0ffff]
+
+# Hexen US: 0x8005f3c0; complete linked SDK body.
+[[signatures]]
+symbol = "__osContRamWrite"
+handler = "hook_os_cont_ram_write"
+body_size = 0x1fc
+sha256 = "c017613f4b81235b01365174dcb5fcfff4a7baaa30c4f07b11a5384675d1d246"
+expected_words = [0x27bdff80, 0x8fae0090, 0xafb70030, 0xafb40024, 0xafb30020, 0xafb10018, 0xafb00014, 0x24010001]

@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "hexen.h"
+#include "audio.h"
 #include "generated.h"
 #include "hexen_config.h"
 #include <openssl/sha.h>
@@ -26,7 +27,7 @@ static void prepare_call(Runtime *rt, uint32_t address) {
             require(recomp_load(rt,a,4)==0,"Hexen boot BSS clear failed",a);
         game->bss_verified=true;
     }
-    if (address == BOOT_MAIN_ENTRY) {
+    if (address == BOOT_MAIN_HANDOFF_CALL) {
         /* The first real thread has taken the token. Join IPL before upper
          * RAM becomes guest graphics/task storage. */
         RecompThreadSnapshot threads[16];
@@ -73,7 +74,12 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     }
 #endif
     require(task->words[0]==1 || task->words[0]==2,"Hexen unsupported RSP task type",task->guest_address);
-    bool ok=task->words[0]==2 ? recomp_audio_submit(g->audio,task) : recomp_renderer_submit(g->renderer,task);
+    RecompTask normalized=*task;
+    if(task->words[0]==1) {
+        require(task->words[13]<=UINT32_MAX/sizeof(uint64_t),"Hexen display-list command count overflow",task->guest_address);
+        normalized.words[13]*=sizeof(uint64_t);
+    }
+    bool ok=task->words[0]==2 ? recomp_audio_submit(g->audio,task) : recomp_renderer_submit(g->renderer,&normalized);
     require(ok,"Hexen RSP task rejected",task->words[4]);
     return true;
 }
@@ -105,7 +111,8 @@ void hexen_init(Hexen *g, const RecompGameOptions *options, const char *wav) {
     g->renderer=recomp_renderer_create_named(rt,options->data,"Hexen");
     require(g->renderer!=NULL,"Hexen renderer initialization failed",0);
     RecompAudioConfig ac={.output_enabled=true,.playback=!options->mute,
-        .prebuffer_ms=160,.microcode=RECOMP_AUDIO_ABI1,.wav_path=wav};
+        .prebuffer_ms=160,.microcode=RECOMP_AUDIO_ABI1,
+        .task_profile=&hexen_audio_task_profile,.wav_path=wav};
     g->audio=recomp_audio_create(rt,&ac);
     require(g->audio!=NULL,"Hexen audio initialization failed",0);
     recomp_thread_create(rt,0x803ff000,-1,BOOT_ENTRY,0,0x803fd000,0);

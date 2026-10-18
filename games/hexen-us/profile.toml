@@ -21,6 +21,12 @@ allow_registered_indirect_calls = true
 
 # Each dispatch count follows its unsigned ROM bounds check.
 jump_tables = [
+  {pc = 0x800d6ecc, expected_word = 0x01c00008, table_vram = 0x80138800, count = 0x6, sha256 = "a0d2234abc82cc2dddb3b4490a23ad932165dcc87a84fc195ecfeb26bfe2af7f"},
+  {pc = 0x800e32bc, expected_word = 0x01c00008, table_vram = 0x80139690, count = 0x8, sha256 = "53245af0b7660528ad0a47465ae5218ebf56fd575c067eb271442a5874c7c630"},
+  {pc = 0x800e87f0, expected_word = 0x03200008, table_vram = 0x80139868, count = 0x5, sha256 = "b363cdd3872b974ca52bf9b3cf31e433f77d5847378c8b7808b8289e50900989"},
+  {pc = 0x800e9868, expected_word = 0x03000008, table_vram = 0x801398a8, count = 0x7, sha256 = "8dd986e2de7f6a26f1e42acdad1d3a6f9ddeb55cbcdcd201b2d2c4c8fb843068"},
+  {pc = 0x800ebf3c, expected_word = 0x03000008, table_vram = 0x801398f8, count = 0x6, sha256 = "e7c3c64546cf1e019e5a319567633d6f05775622583f5b36a83ef48df75ba804"},
+  {pc = 0x800ec1c8, expected_word = 0x01400008, table_vram = 0x80139918, count = 0x5, sha256 = "37db4bc81bb1d9ffa172ab7627351e9eba404825d36b973f0e0c02922939deed"},
   {pc = 0x80053e7c, expected_word = 0x03000008, table_vram = 0x80069c90, count = 0x7, sha256 = "c160652da444258ed94a311a93bb3e3ab37a71030ae39a83e73ef5eb4af7f5c6"},
   {pc = 0x8005bb5c, expected_word = 0x01000008, table_vram = 0x80069d80, count = 0x7, sha256 = "859c51783958fac6111d52be840fd71f9da517e01d2d26f01d50e8b789a7493c"},
   {pc = 0x80061708, expected_word = 0x03200008, table_vram = 0x80069fe0, count = 0x11, sha256 = "56b32506b6c6f85f46893401c835f7567f0f5aad0e38ef52da392d84cd289d35"},
@@ -76,6 +82,8 @@ bss_start = 0x8006b3f0
 bss_end = 0x800cf4e0
 system_entry = 0x8004b450
 main_entry = 0x8004b4ac
+# First call made by mainproc after the scheduler grants it execution.
+main_handoff_call = 0x80053460
 main_id = 1
 main_priority = 2
 main_object = 0x8006b5a0
@@ -105,6 +113,19 @@ thread_tail = 0x800696c0
 run_queue = 0x800696c8
 active_queue = 0x800696cc
 running_thread = 0x800696d0
+
+# P_SetMobjState: sll state_index,4; base 80121090; lw callback,8(record).
+# All 2846 state records are bounded by the following actor-definition array.
+# Every nonzero callback is included; each next-state index is checked too.
+[callbacks.states]
+pc = 0x800f8660
+expected_word = 0x0060f809
+address = 0x80121090
+count = 2846
+stride = 16
+callback_offset = 8
+next_offset = 12
+sha256 = "470a9cb939a0083fc13ac3b5568ba2cb70900f7aebaed3ae4b28802a73317aa2"
 
 [platform]
 vi_clock = 0x80069768

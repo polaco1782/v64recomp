@@ -14,8 +14,30 @@ def prepare(rom: bytes, profile: dict, output: Path):
     if hashlib.sha256(raw).hexdigest() != boot['decoded_sha256']:
         raise RecompError('Hexen decoded program fingerprint mismatch')
     region = dict(name='.game', vram=boot['decoded_address'], rom_offset=len(rom), size=size)
+    states = profile['callbacks']['states']
+    start = states['address'] - boot['decoded_address']
+    end = start + states['count'] * states['stride']
+    if not 0 <= start < end <= len(raw):
+        raise RecompError('Hexen state records outside decoded image')
+    records = raw[start:end]
+    if hashlib.sha256(records).hexdigest() != states['sha256']:
+        raise RecompError('Hexen state callback table fingerprint mismatch')
+    targets = set()
+    for index in range(states['count']):
+        record = records[index * states['stride']:(index + 1) * states['stride']]
+        callback = int.from_bytes(record[states['callback_offset']:states['callback_offset']+4], 'big')
+        next_state = int.from_bytes(record[states['next_offset']:states['next_offset']+2], 'big')
+        if next_state >= states['count']:
+            raise RecompError('Hexen state record has invalid successor')
+        if callback:
+            if callback % 4 or not boot['decoded_address'] <= callback < states['address']:
+                raise RecompError('Hexen state callback outside program text')
+            targets.add(callback)
+    transfer = dict(pc=states['pc'], expected_word=states['expected_word'],
+                    kind='call', targets=sorted(targets))
     return rom + raw, {**profile, 'discovery': {**profile['discovery'],
-        'regions': [*profile['discovery']['regions'], region]}}
+        'regions': [*profile['discovery']['regions'], region],
+        'transfers': [*profile['discovery']['transfers'], transfer]}}
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
