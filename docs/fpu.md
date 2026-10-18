@@ -28,14 +28,18 @@ branches annul their untaken slots. Diagnostics identify a faulting slot's addre
 This first arithmetic backend requires **Linux x86-64 SSE2**, IEEE binary32/64,
 `-fno-fast-math -frounding-math -ffp-contract=off`, and libm. With
 `USE_INTRISICS=1` (the default in `include/recomp.h`), binary arithmetic, square
-roots and comparisons use scalar SSE/SSE2 intrinsics. These operations save
-MXCSR, mask host SSE traps, select guest rounding, disable DAZ/FTZ, collect
+roots, conversions and comparisons use scalar SSE/SSE2 intrinsics. These operations
+save MXCSR, mask host SSE traps, select guest rounding, disable DAZ/FTZ, collect
 exceptions, and restore MXCSR and errno before returning. The x87 environment
 remains untouched. These are individual guest operations, preserving their
 exception order and register dependencies.
 
-Conversions retain full `fenv` isolation because they can call libm. Setting
-`USE_INTRISICS=0` selects the C/libm and `fenv` implementation for all operations.
+Conversions select guest rounding through MXCSR, including the per-instruction
+override for `ROUND`, `TRUNC`, `CEIL` and `FLOOR`. Integer conversions use the SSE
+Invalid flag to detect range traps; the returned integer alone cannot distinguish
+a valid minimum integer from SSE's invalid-conversion replacement. Setting
+`USE_INTRISICS=0` selects the C/libm and full `fenv` implementation for all
+operations.
 Coroutines can therefore keep different guest rounding modes without changing
 host callbacks or other guest threads. Tests compare both modes across rounding,
 sticky flags, NaNs, subnormals, guest traps, FR=0/1 registers, and restoration of

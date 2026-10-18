@@ -247,7 +247,50 @@ void mips_fp_convert(MipsContext *ctx, unsigned fd, unsigned fs,
         if (to == MIPS_FP_W || to == MIPS_FP_L) finish(ctx, FP_E);
         finish(ctx, flags); write_bits(ctx, fd, to, quiet_nan(to)); return;
     }
-    /* Conversions can call libm, so retain complete host fenv isolation. */
+#if USE_INTRISICS
+    FpEnvironment env = begin(ctx, mode, true);
+    if (from == MIPS_FP_W || from == MIPS_FP_L) {
+        uint64_t signed_bits = from == MIPS_FP_W ? mips_s32(bits) : bits;
+        volatile int64_t integer = (signed_bits & UINT64_C(0x8000000000000000))
+            ? -(int64_t)(~signed_bits) - 1 : (int64_t)signed_bits;
+        /* Convert directly to the destination precision to avoid double rounding. */
+        if (to == MIPS_FP_S) {
+            volatile float value = _mm_cvtss_f32(_mm_cvtsi64_ss(_mm_setzero_ps(), integer));
+            bits = float_bits(value);
+        } else if (to == MIPS_FP_D) {
+            volatile double value = _mm_cvtsd_f64(_mm_cvtsi64_sd(_mm_setzero_pd(), integer));
+            bits = double_bits(value);
+        } else recomp_fail("invalid integer FP conversion", ctx->pc);
+    } else if (to == MIPS_FP_W || to == MIPS_FP_L) {
+        if (from == MIPS_FP_S) {
+            volatile float source = as_float((uint32_t)bits);
+            volatile int64_t integer = to == MIPS_FP_W ? _mm_cvtss_si32(_mm_set_ss(source))
+                                                     : _mm_cvtss_si64(_mm_set_ss(source));
+            bits = to == MIPS_FP_W ? (uint32_t)integer : (uint64_t)integer;
+        } else {
+            volatile double source = as_double(bits);
+            volatile int64_t integer = to == MIPS_FP_W ? _mm_cvtsd_si32(_mm_set_sd(source))
+                                                     : _mm_cvtsd_si64(_mm_set_sd(source));
+            bits = to == MIPS_FP_W ? (uint32_t)integer : (uint64_t)integer;
+        }
+    } else if (to == MIPS_FP_S) {
+        volatile double source = as_double(bits);
+        volatile float value = _mm_cvtss_f32(_mm_cvtsd_ss(_mm_setzero_ps(), _mm_set_sd(source)));
+        bits = float_bits(value);
+    } else {
+        volatile float source = as_float((uint32_t)bits);
+        volatile double value = _mm_cvtsd_f64(_mm_cvtss_sd(_mm_setzero_pd(), _mm_set_ss(source)));
+        bits = double_bits(value);
+    }
+    flags = end(ctx, &env);
+    if (to == MIPS_FP_W || to == MIPS_FP_L) {
+        /* Invalid conversion returns INT_MIN on SSE, which is also a valid
+         * result. Use the exception flag to distinguish a guest range trap. */
+        if (flags & FP_V) finish(ctx, FP_E);
+        finish(ctx, flags);
+    } else bits = result(ctx, bits, to, flags);
+#else
+    /* The C fallback can call libm and requires complete host fenv isolation. */
     FpEnvironment env = begin(ctx, mode, false);
     if (from == MIPS_FP_L) {
         /* Decode two's complement without out-of-range signed casts. Convert
@@ -265,7 +308,9 @@ void mips_fp_convert(MipsContext *ctx, unsigned fd, unsigned fs,
     double source;
     if (from == MIPS_FP_W) {
         /* Defined two's-complement decoding, without out-of-range casts. */
-        source = (double)(bits & UINT32_C(0x7fffffff)) - ((bits & UINT32_C(0x80000000)) ? 2147483648.0 : 0.0);
+        int64_t integer = (int64_t)(bits & UINT32_C(0x7fffffff))
+                        - ((bits & UINT32_C(0x80000000)) ? INT64_C(2147483648) : 0);
+        source = (double)integer;
     } else source = from == MIPS_FP_S ? (double)as_float((uint32_t)bits) : as_double(bits);
     if (to == MIPS_FP_W || to == MIPS_FP_L) {
         volatile double x = source, rounded = rint(x);
@@ -281,6 +326,7 @@ void mips_fp_convert(MipsContext *ctx, unsigned fd, unsigned fs,
         flags = end(ctx, &env);
         bits = result(ctx, bits, to, flags);
     }
+#endif
     write_bits(ctx, fd, to, bits);
 }
 

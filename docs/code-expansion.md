@@ -201,11 +201,12 @@ does not make the service itself free.
 ### Use targeted host instructions while preserving semantics
 
 The current x86-64 floating-point backend uses scalar SSE/SSE2 intrinsics for
-supported arithmetic, square roots and comparisons when `USE_INTRISICS=1`
+supported arithmetic, square roots, conversions and comparisons when `USE_INTRISICS=1`
 (the existing option spelling). It saves/restores MXCSR and implements the
-supported guest rounding and exception behavior. Conversions retain broader
-`fenv` isolation. This is individual-operation acceleration, not automatic SIMD
-vectorization of the game's loops. See [floating-point semantics](fpu.md).
+supported guest rounding and exception behavior. `USE_INTRISICS=0` selects the
+C/libm implementation with full `fenv` isolation. This is individual-operation
+acceleration, not automatic SIMD vectorization of the game's loops.
+See [floating-point semantics](fpu.md).
 
 Release presets currently select `RECOMP_OPT_LEVEL=3`. Explicit configurations
 default that option to `2`; [`cmake/Game.cmake`](../cmake/Game.cmake) accepts
