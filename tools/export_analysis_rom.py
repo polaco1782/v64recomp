@@ -12,7 +12,8 @@ from common import RecompError, load_metadata, load_profile, load_rom
 from generate_game import GAMES, PROJECT
 
 
-def export_analysis_rom(game: str, metadata: Path, output: Path) -> None:
+def load_analysis_rom(game: str, metadata: Path) -> tuple[bytes, dict]:
+    """Prepare and verify the discovery image without changing build outputs."""
     base = PROJECT / 'games' / game
     profile = load_profile(base / 'profile.toml')
     identity = profile['game']
@@ -25,7 +26,11 @@ def export_analysis_rom(game: str, metadata: Path, output: Path) -> None:
     with tempfile.TemporaryDirectory(prefix='v64-analysis-') as tmp:
         if hasattr(generator, 'prepare'):
             rom, _ = generator.prepare(rom, profile, Path(tmp))
-    load_metadata(metadata, rom)
+    return rom, load_metadata(metadata, rom)
+
+
+def export_analysis_rom(game: str, metadata: Path, output: Path) -> None:
+    rom, _ = load_analysis_rom(game, metadata)
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists():
         if output.read_bytes() != rom:

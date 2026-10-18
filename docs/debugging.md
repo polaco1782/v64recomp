@@ -77,6 +77,19 @@ SM64's inspection scripts inspect task traces, ROM assets, display lists and
 interior captures; OOT's callback analyzer proposes roots for checked inventories.
 The shared crash inspector reads both release and debug reports. Use the
 matching executable and generated sources to resolve addresses accurately.
+
+To display the original MIPS for a generated function, run:
+
+```sh
+.venv/bin/python tools/disassemble_function.py recomp_s3_7f068008
+```
+
+The tool searches generated `symbols.json` files under `build/`, identifies the
+game and verifies the ROM bytes before disassembly. It uses the game's preparation
+hook for compressed code and prints only instructions owned by that function.
+Use `--game goldeneye-us` to select a game, or `--metadata PATH` to select an exact
+build's `symbols.json`. `--rom PATH` accepts an already prepared analysis image.
+
 Every game uses the same core failure calls: `recomp_fail(message, address)` and
 `recomp_game_require(condition, message, address)`. The shared ROM loader installs
 the reporter in both modes, including positional diagnostic launches. Reports

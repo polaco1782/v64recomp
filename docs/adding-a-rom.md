@@ -34,6 +34,7 @@ These are the investigation tools and when to use them:
 | `tools/translate.py` | Audit instructions and targets; write `coverage.json`, optionally emit C. |
 | `tools/generate_game.py` | Run registered game preparation, discovery, translation and CMake source splitting. |
 | `tools/inspect_address.py` | Resolve a guest address to section, byte offset, entry/instruction ownership, gaps, errors and known references. |
+| `tools/disassemble_function.py` | Resolve a generated name such as `recomp_s3_7f068008` through `symbols.json` and disassemble its verified MIPS instructions. |
 | `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
 | `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |
 | `tools/controller_replay.py` | Convert existing ROM-bound replay JSON to the debug app's text input format. |
