@@ -13,7 +13,7 @@ def main() -> None:
     parser.add_argument('output',type=Path)
     parser.add_argument('--game',required=True,choices=GAMES)
     args=parser.parse_args()
-    profile=load_profile(PROJECT/'games'/args.game/('full.toml' if args.game=='sm64-us' else 'startup.toml'))
+    profile=load_profile(PROJECT/'games'/args.game/'profile.toml')
     document=json.loads(args.source.read_text())
     if document.get('format_version')!=1 or document.get('rom_sha1')!=profile['game']['rom_sha1']:
         raise RecompError('controller replay belongs to a different ROM/version')

@@ -104,11 +104,25 @@ struct Runtime {
     bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
     uint32_t interrupt_mask; /* Logical SDK CPU/RCP interrupt mask. */
     RecompPageMapping page_mappings[32];
+#ifdef RECOMP_DEBUG
+    /* Shared crash history; guest execution is serialized by the scheduler. */
+    uint32_t recent_calls[128];
+    unsigned recent_call_next, recent_call_count;
+#endif
 };
 
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t,
                          const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
+static inline void recomp_record_call(Runtime *rt, uint32_t address) {
+#ifdef RECOMP_DEBUG
+    rt->recent_calls[rt->recent_call_next] = address;
+    rt->recent_call_next = (rt->recent_call_next + 1) % 128;
+    if (rt->recent_call_count < 128) rt->recent_call_count++;
+#else
+    (void)rt; (void)address;
+#endif
+}
 RecompFunction recomp_lookup(Runtime *, uint32_t);
 static inline uint32_t recomp_relocated_address(Runtime *rt, uint32_t section, uint32_t address) {
     return rt->relocated_address ? rt->relocated_address(rt, section, address) : address;
@@ -137,6 +151,7 @@ _Noreturn void recomp_fail(const char *, uint32_t);
 
 /* Known targets still require loaded-section validation and pager preparation. */
 static inline void recomp_prepare_direct_call(Runtime *rt, uint32_t address, uint32_t section) {
+    recomp_record_call(rt, address);
     if (section >= rt->section_count || !rt->section_loaded[section])
         recomp_fail("unregistered or unloaded function", address);
     if (rt->prepare_call) rt->prepare_call(rt, address);

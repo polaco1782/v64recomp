@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 static const char *crash_dir;
+static uint8_t rom_sha1[20];
 static void directory(const char *path) {
     char buffer[4096];
     recomp_game_require(strlen(path)<sizeof(buffer), "game directory path too long", 0);
@@ -107,18 +108,34 @@ static void failure(const RecompFailureInfo *info,void *opaque) {
     ssize_t n=readlink("/proc/self/exe",executable,sizeof(executable)-1);executable[n>=0?n:0]=0;
     fputs("{\"format_version\":1,\"executable\":",f);quoted(f,executable);
     fputs(",\"game\":{\"name\":",f);quoted(f,RECOMP_GAME_ID);
-    fputs("},\"failure\":{\"message\":",f);quoted(f,info->message);
+    fputs("},\"rom_sha1\":\"",f);
+    for(unsigned i=0;i<20;i++)fprintf(f,"%02x",rom_sha1[i]);
+    fputs("\",\"failure\":{\"message\":",f);quoted(f,info->message);
     fprintf(f,",\"address\":\"0x%08x\",\"requested_bytes\":%zu,\"ram_range\":%s},\"threads\":[",
         info->address,info->requested_bytes,info->ram_range?"true":"false");
     RecompThreadSnapshot threads[64];size_t count=recomp_thread_snapshots(rt,threads,64);
     if(count>64)count=64;
     for(size_t i=0;i<count;i++) {
         RecompThreadSnapshot *t=&threads[i];
-        fprintf(f,"%s{\"id\":%d,\"state\":%u,\"priority\":%d,\"current\":%s,\"last_tracked_pc\":\"0x%08x\",\"gpr\":[",
-            i?",":"",t->id,(unsigned)t->state,t->priority,t->current?"true":"false",t->context.pc);
+        fprintf(f,"%s{\"object\":\"0x%08x\",\"id\":%d,\"state\":%u,\"priority\":%d,\"current\":%s,\"last_tracked_pc\":\"0x%08x\","
+            "\"hi\":\"0x%016" PRIx64 "\",\"lo\":\"0x%016" PRIx64 "\",\"fcr31\":\"0x%08x\",\"fpu_fr1\":%s,\"gpr\":[",
+            i?",":"",t->object,t->id,(unsigned)t->state,t->priority,t->current?"true":"false",t->context.pc,
+            t->context.hi,t->context.lo,t->context.fcr31,t->context.fpu_fr1?"true":"false");
         for(unsigned j=0;j<32;j++)fprintf(f,"%s\"0x%016" PRIx64 "\"",j?",":"",t->context.gpr[j]);
+        fputs("],\"fpr\":[",f);
+        for(unsigned j=0;j<32;j++)fprintf(f,"%s\"0x%08x\"",j?",":"",t->context.fpr[j]);
+        fputs("],\"fpr_high\":[",f);
+        for(unsigned j=0;j<32;j++)fprintf(f,"%s\"0x%08x\"",j?",":"",t->context.fpr_high[j]);
         fputs("]}",f);
     }
+    fputs("],\"loaded_sections\":[",f);
+    for(size_t i=0;i<rt->section_count;i++)fprintf(f,"%s%s",i?",":"",rt->section_loaded[i]?"true":"false");
+    fputs("],\"recent_calls\":[",f);
+#ifdef RECOMP_DEBUG
+    unsigned first=(rt->recent_call_next+128-rt->recent_call_count)%128;
+    for(unsigned i=0;i<rt->recent_call_count;i++)
+        fprintf(f,"%s\"0x%08x\"",i?",":"",rt->recent_calls[(first+i)%128]);
+#endif
     fputs("],\"native_stack\":[",f);
     for(size_t i=0;i<info->native_frame_count;i++) {
         Dl_info d={0};(void)dladdr(info->native_frames[i],&d);
@@ -134,6 +151,11 @@ static void failure(const RecompFailureInfo *info,void *opaque) {
     fprintf(stderr,"Crash report %s: %s\n",okay?"written":"incomplete",path);
 }
 uint8_t *recomp_game_rom(Runtime *rt,const RecompGameOptions *o,size_t bytes,const uint8_t sha1[20]) {
+    /* Positional diagnostic entry points may bypass recomp_game_options(). */
+    if(o->crash_dir)crash_dir=o->crash_dir;
+    if(!crash_dir)crash_dir=RECOMP_DEFAULT_CRASH;
+    directory(crash_dir);
+    memcpy(rom_sha1,sha1,sizeof(rom_sha1));
     recomp_set_failure_handler(failure,rt);
     FILE *f=fopen(o->rom,"rb");recomp_game_require(f!=NULL,"cannot open game ROM",0);
     uint8_t *rom=malloc(bytes);recomp_game_require(rom!=NULL,"cannot allocate game ROM",0);

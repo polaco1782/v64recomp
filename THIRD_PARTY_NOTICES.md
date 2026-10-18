@@ -43,7 +43,7 @@ the source; the full accompanying notice and GPL text are preserved in
 GLideN64's notice credits Sergey Lipskiy and the glN64, Glide64, and GLideHQ
 contributors. See the preserved notice for the complete credits.
 
-Conker's graphics adapter in `games/conker-us/release/graphics.cpp` also uses
+Conker's graphics adapter in `games/conker-us/graphics.cpp` also uses
 GLideN64's `F3DEX2CBFD.cpp` and `gSP.cpp` as references for the CBFD command and
 lighting behavior, under GPL version 2 or later. The accompanying notice and
 license are linked above.

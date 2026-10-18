@@ -38,7 +38,7 @@ CMake selects independent `release/app.c` and `debug/app.c` frontends. Replay,
 captures and reports live in `debug/app.c`; both frontends link the shared
 bootstrap, native services and frame loop in `perfectdark.c`.
 
-`release/generate.py` expands the RareZip library, data and game pages only for
+`generate.py` expands the RareZip library, data and game pages only for
 static translation. The executable retains the original cartridge image and
 runs the translated original bootstrap, inflater and 8 MiB loader. Complete
 decoded-image hashes are checked before their translated functions become
@@ -46,9 +46,9 @@ available. Layout references come from the matching `ntsc-final` version of
 [the Perfect Dark decompilation](https://github.com/n64decomp/perfect_dark).
 
 Common SDK calls are recognized by complete function-body hashes in the shared
-`tools/native_hooks.toml` catalog. `services.toml` contains only Perfect Dark's
-boot mapping, inflater handoff, obfuscated cartridge read and idle checkpoint.
-`dispatches.toml` checks the original switch and AI handler tables. The model
+`tools/native_hooks.toml` catalog. `profile.toml` contains Perfect Dark's
+boot mapping, inflater handoff, obfuscated cartridge read and idle checkpoint,
+alongside checked original switch and AI handler tables. The model
 assembly's shared epilogue and nonlocal helper returns have explicit, checked
 translation metadata. Native audio uses the pinned NAudio/MP3 RSP-HLE decoder
 and verifies the task's microcode images.

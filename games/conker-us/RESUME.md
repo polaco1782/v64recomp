@@ -118,7 +118,7 @@ Raw discovery, without the explicit failing runtime boundaries:
   entries, followed by six different helper callbacks at `0x8008a670`.
   Three draw tables at `0x8008a688`, `0x8008a7b0`, `0x8008a8d8` clamp to 74.
 - `0x150adaf0` decodes animation bytecode; operand/opcode jump tables are checked
-  in `startup.toml`. Valid opcode slots are 1..30, followed by a separate C
+  in `profile.toml`. Valid opcode slots are 1..30, followed by a separate C
   callback table at `0x800886a4`. Do not mistake adjacent callbacks for local
   opcode labels.
 - The callback wrappers `0x150ae0f8/108/118/12c` tail-enter `0x150ae140`.
@@ -179,20 +179,20 @@ is verified before activating the prepared sections at `0x10005be0`.
 
 Original RareZip blob: ROM `0x42450`; 508 page offsets at `0x42454`, XOR
 `0x8039ccca`. There are 507 pages (0x1000 bytes, final 0x130). Compressed game data:
-ROM `0x188328..0x19c7d8`. See `release/generate.py` for decoded image hashes.
+ROM `0x188328..0x19c7d8`. See `generate.py` for decoded image hashes.
 
 Scheduler tail/run/active/running globals: `0x8002bdf0/f8/fc`, `0x8002be00`;
 first thread object `0x800318b0`; main `0x80031ae0`. Tick clock 46875000;
 VI period 781250. Timer sentinel `0x80042990`, list `0x8002bd70`, current time
 `0x800429b0`, base counter `0x800429b8`, VI count `0x800429bc`.
 
-`release/graphics.cpp` fingerprints the actual F3DEXBG.NoN program and initialized
+`graphics.cpp` fingerprints the actual F3DEXBG.NoN program and initialized
 DMEM before binding its custom RT64 GBI. Text is ROM `0x36e90..0x38330`;
 DMEM `0x3f410..0x3fb90`. Earlier matching prefixes are a different variant.
 Ordinary F3DEX2/RDP operations use RT64; custom vertices, lighting, normals,
 coordinate modifiers and four-triangle commands use the game adapter.
 
-`release/audio.h` fingerprints NAudio CBFD boot/text/data. Task type 2 uses the
+`audio.h` fingerprints NAudio CBFD boot/text/data. Task type 2 uses the
 existing CBFD audio decoder. Its unused NULL yield buffer can retain size 0x400;
 provided pointers, graphics buffers and audio resume remain strictly checked.
 

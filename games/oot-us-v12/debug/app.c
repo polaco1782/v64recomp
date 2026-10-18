@@ -1,9 +1,9 @@
 #define main recomp_debug_main
 #define _GNU_SOURCE
-#include "runtime.h"
+#include "game.h"
+#define require recomp_game_require
 #include "generated.h"
 #include "oot_config.h"
-#include <dlfcn.h>
 #include <openssl/evp.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -19,8 +19,6 @@
 static bool bss_cleared, main_verified;
 static RecompThreadSnapshot initial_main;
 static const char *report_path;
-static uint32_t recent_calls[128];
-static unsigned call_cursor;
 static uint64_t now_ns;
 static bool reached_task;
 static RecompTask first_task;
@@ -65,16 +63,12 @@ static void pace(Runtime *rt, uint64_t deadline) {
     }
 }
 
-static void require(bool condition, const char *message, uint32_t address) {
-    if (!condition) recomp_fail(message, address);
-}
 static void check_zero(Runtime *rt, uint32_t start, uint32_t end) {
     for (uint32_t a = start; a < end; a += 4)
         require(recomp_load(rt, a, 4) == 0, "Ocarina of Time BSS was not cleared", a);
 }
 #include "hooks.h"
 static void prepare_call(Runtime *rt, uint32_t address) {
-    recent_calls[call_cursor++ % 128] = address;
     if (LOG_OOT_CALLS) fprintf(stderr, "Ocarina of Time call 0x%08x\n", address);
     oot_prepare_call(rt,address);
     if (address == BOOT_SYSTEM_ENTRY) {
@@ -129,60 +123,6 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
 
 /* IPL does not return to the entry stub after handing control to libultra. */
 
-static void quoted(FILE *f, const char *s) {
-    fputc('"', f);
-    for (const unsigned char *p=(const unsigned char *)s; *p; p++) {
-        if (*p=='"' || *p=='\\') fputc('\\', f);
-        if (*p<32) fprintf(f, "\\u%04x", *p); else fputc(*p, f);
-    }
-    fputc('"', f);
-}
-
-static void failure(const RecompFailureInfo *info, void *opaque) {
-    Runtime *rt = opaque;
-    char path[2048], ram_path[2048];
-    if (snprintf(path, sizeof(path), "%s.crash.json", report_path) >= (int)sizeof(path)
-            || snprintf(ram_path, sizeof(ram_path), "%s.rdram.bin", report_path) >= (int)sizeof(ram_path)) return;
-    FILE *ram = fopen(ram_path, "wb");
-    if (ram) { (void)fwrite(rt->rdram, 1, rt->rdram_size, ram); fclose(ram); }
-    FILE *f = fopen(path, "w");
-    if (!f) return;
-    fputs("{\"format_version\":1,\"failure\":{\"message\":", f);
-    quoted(f, info->message);
-    fprintf(f, ",\"address\":\"0x%08x\",\"requested_bytes\":%zu,\"ram_range\":%s},"
-               "\"game\":{\"name\":\"Ocarina of Time\"},\"recent_calls\":[", info->address,
-               info->requested_bytes, info->ram_range ? "true" : "false");
-    unsigned retained = call_cursor < 128 ? call_cursor : 128;
-    for (unsigned i = 0; i < retained; i++)
-        fprintf(f, "%s\"0x%08x\"", i ? "," : "", recent_calls[(call_cursor-retained+i)%128]);
-    fputs("],\"threads\":[", f);
-    RecompThreadSnapshot threads[16];
-    size_t count = recomp_thread_snapshots(rt, threads, 16);
-    for (size_t i = 0; i < count; i++) {
-        fprintf(f, "%s{\"id\":%d,\"state\":%u,\"priority\":%d,\"current\":%s,\"last_tracked_pc\":\"0x%08x\",\"gpr\":[",
-                i ? "," : "", threads[i].id, (unsigned)threads[i].state, threads[i].priority,
-                threads[i].current ? "true" : "false", threads[i].context.pc);
-        for (unsigned j = 0; j < 32; j++) fprintf(f, "%s\"0x%016" PRIx64 "\"", j ? "," : "", threads[i].context.gpr[j]);
-        fputs("]}", f);
-    }
-    fputs("],\"native_stack\":[", f);
-    for (size_t i = 0; i < info->native_frame_count; i++) {
-        Dl_info d = {0};
-        (void)dladdr(info->native_frames[i], &d);
-        fprintf(f, "%s{\"address\":\"0x%" PRIxPTR "\",\"module_base\":\"0x%" PRIxPTR "\",\"module\":",
-                i ? "," : "", (uintptr_t)info->native_frames[i], (uintptr_t)d.dli_fbase);
-        quoted(f, d.dli_fname ? d.dli_fname : ""); fputs(",\"symbol\":", f);
-        quoted(f, d.dli_sname ? d.dli_sname : ""); fputc('}', f);
-    }
-    fputs("],\"task_words\":[", f);
-    RecompTask task;
-    if (recomp_task_snapshot(rt, &task))
-        for (unsigned i=0; i<16; i++) fprintf(f, "%s%u", i ? "," : "", task.words[i]);
-    fputs("],\"rdram\":{\"storage\":\"word-swapped\",\"path\":", f);
-    quoted(f, ram_path); fputs("}}\n", f);
-    fclose(f);
-    fprintf(stderr, "Ocarina of Time crash report: %s\n", path);
-}
 int main(int argc, char **argv) {
     if (argc != 5) { fprintf(stderr, "usage: %s NORMALIZED_ROM REPORT FRAMES RENDERER_DATA\n", argv[0]); return 2; }
     char *end;
@@ -192,23 +132,16 @@ int main(int argc, char **argv) {
     unsigned long capture_every = interval ? strtoul(interval, &end, 10) : 0;
     require(!interval || (*interval && !*end && capture_every <= UINT32_MAX), "Ocarina of Time invalid capture interval", 0);
     report_path = argv[2];
-    FILE *f = fopen(argv[1], "rb");
-    require(f != NULL, "cannot open Ocarina of Time ROM", 0);
-    uint8_t *rom = malloc(BOOT_ROM_SIZE);
-    require(rom != NULL, "cannot allocate Ocarina of Time ROM", 0);
-    bool read = fread(rom, 1, BOOT_ROM_SIZE, f) == BOOT_ROM_SIZE;
-    int extra = fgetc(f), closed = fclose(f);
-    require(read && extra == EOF && closed == 0, "Ocarina of Time ROM read/size mismatch", 0);
     Runtime rt;
     require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count,
                                recomp_boot_sections, recomp_section_count), "Ocarina of Time runtime init failed", 0);
-    recomp_set_failure_handler(failure, &rt);
+    RecompGameOptions options={.rom=argv[1]};
+    uint8_t *rom=recomp_game_rom(&rt,&options,BOOT_ROM_SIZE,boot_sha1);
     rt.prepare_call = prepare_call;
 #if BOOT_STARTUP
     rt.canonical_function_address=oot_canonical;
     rt.relocated_address=oot_relocated;
 #endif
-    require(recomp_rom_attach(&rt, rom, BOOT_ROM_SIZE, boot_sha1), "Ocarina of Time ROM identity mismatch", 0);
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (uint32_t a = BOOT_BSS_START; a <= BOOT_BSS_END; a += 4) recomp_store(&rt, a, 0xa5a5a5a5, 4);
     for (size_t i = 0; i < sizeof(boot_parameters)/sizeof(boot_parameters[0]); i++)
@@ -303,7 +236,7 @@ int main(int argc, char **argv) {
     for (size_t i = 0; i < count; i++) if (threads[i].object == BOOT_MAIN_OBJECT) main_thread = &threads[i];
     require(main_verified && main_thread != NULL && main_thread->id == BOOT_MAIN_ID,
             "Ocarina of Time application thread ABI mismatch", BOOT_MAIN_ENTRY);
-    f = fopen(report_path, "w");
+    FILE *f = fopen(report_path, "w");
     require(f != NULL, "cannot open Ocarina of Time report", 0);
     fprintf(f, "{\"jpeg_tasks\":%u,", jpeg_tasks);
     fprintf(f, "\"target_fps\":%u,\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64 ",",
@@ -323,14 +256,13 @@ int main(int argc, char **argv) {
             graphics_tasks, presentations, rs.sp_callbacks, rs.dp_callbacks, rs.graphics_tasks_without_dp, window_closed ? "true" : "false",
             as.tasks, as.frames, as.peak, as.queue_underruns, as.queue_resets, ios.reads_completed, ios.queries_completed);
     fputs("}\n", f);
-    closed = fclose(f);
+    int closed = fclose(f);
     require(written > 0 && closed == 0, "cannot write Ocarina of Time report", 0);
     puts(BOOT_STARTUP ? "Ocarina of Time submitted its original RSP tasks."
                      : "Ocarina of Time native bootstrap reached its original application thread.");
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
     if (input_script) fclose(input_script);
-    recomp_set_failure_handler(NULL, NULL);
     recomp_runtime_destroy(&rt);
     free(rom);
     return 0;

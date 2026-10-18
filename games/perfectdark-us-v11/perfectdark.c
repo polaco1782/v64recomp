@@ -127,5 +127,5 @@ void perfectdark_step(PerfectDark *game,const RecompPad *pad) {
 void perfectdark_stop(PerfectDark *game) {
     fprintf(stderr,"Perfect Dark: %u graphics tasks, %u audio tasks\n",game->graphics_tasks,game->audio_tasks);
     recomp_audio_destroy(game->audio);recomp_renderer_destroy(game->renderer);
-    recomp_set_failure_handler(NULL,NULL);recomp_runtime_destroy(&game->runtime);free(game->rom);
+    recomp_runtime_destroy(&game->runtime);free(game->rom);
 }

@@ -11,7 +11,7 @@ find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
 set(RECOMP_GENERATED "${CMAKE_BINARY_DIR}/generated/${RECOMP_GAME}")
 file(GLOB_RECURSE RECOMP_GENERATOR_INPUTS CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/tools/*.py" "${CMAKE_SOURCE_DIR}/tools/*.toml"
-    "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.json" "${RECOMP_GAME_DIR}/release/*.py")
+    "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.json" "${RECOMP_GAME_DIR}/*.py")
 # Generate during configure to discover the exact set of split CPU sources.
 # The content cache makes repeat configures cheap and detects deleted outputs.
 message(STATUS "Checking ${RECOMP_GAME} CPU source generation")
@@ -38,14 +38,18 @@ add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_GENERATED_HEADERS}
     COMMENT "Checking ${RECOMP_GAME} CPU source generation" USES_TERMINAL VERBATIM)
 set(RECOMP_LOCAL "${CMAKE_SOURCE_DIR}/local")
 configure_file("${CMAKE_SOURCE_DIR}/cmake/game_defaults.h.in" "${RECOMP_GENERATED}/game_defaults.h" @ONLY)
-set(RECOMP_APP "release/app.c")
+set(RECOMP_CONFIG_DIR "release")
+set(RECOMP_CONFIG_SOURCES ${RECOMP_GAME_RELEASE_SOURCES})
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(RECOMP_APP "debug/app.c")
+    set(RECOMP_CONFIG_DIR "debug")
+    set(RECOMP_CONFIG_SOURCES ${RECOMP_GAME_DEBUG_SOURCES})
 endif()
+set(RECOMP_APP "${RECOMP_CONFIG_DIR}/app.c")
 add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/${RECOMP_APP}" ${RECOMP_CPU_SOURCES}
-    "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES})
+    "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES} ${RECOMP_CONFIG_SOURCES})
 set_target_properties(${RECOMP_GAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}" "${RECOMP_GAME_DIR}/release")
+target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}"
+    "${RECOMP_GAME_DIR}" "${RECOMP_GAME_DIR}/${RECOMP_CONFIG_DIR}")
 target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_RT64 RECOMP_WITH_AUDIO)
 target_compile_options(${RECOMP_GAME} PRIVATE
     "$<$<CONFIG:Debug>:-O0;-g3>" "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL};-g1>"
@@ -55,7 +59,6 @@ target_link_options(${RECOMP_GAME} PRIVATE -rdynamic)
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_renderer recomp_audio)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
-    target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GAME_DIR}/debug")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_DEBUG)
     target_sources(${RECOMP_GAME} PRIVATE "${CMAKE_SOURCE_DIR}/runtime/debug_game.c")
 endif()

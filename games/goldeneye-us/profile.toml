@@ -1,16 +1,32 @@
+# GoldenEye startup overrides; common OS calls use tools/native_hooks.toml.
+# Partial startup profile. Checked entries permit registry-based callbacks;
+# unvisited bytes and unsupported functions remain reported.
 # GoldenEye US region, pinned to the exact ROM supplied for this project.
 # All addresses/fingerprints are checked against that ROM; no ELF/map is required.
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 hooks = [
   {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "hook_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
-  {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "hook_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0x00e00008]},
+  {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "hook_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0xe00008]},
   {symbol = "initTLBPrepareContext", vram = 0x70001bb0, kind = "replace_function", handler = "hook_ge_prepare_context", expected_words = [0x24080002, 0x40883000, 0x24080000]},
   {symbol = "osPiRawStartDma", vram = 0x7000cf90, kind = "replace_function", handler = "hook_ge_pi_raw_dma", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
-  {symbol = "osPiGetStatus", vram = 0x7000d070, kind = "replace_function", handler = "hook_ge_pi_status", expected_words = [0x3c0ea460, 0x03e00008, 0x8dc20010]},
+  {symbol = "osPiGetStatus", vram = 0x7000d070, kind = "replace_function", handler = "hook_ge_pi_status", expected_words = [0x3c0ea460, 0x3e00008, 0x8dc20010]},
   {symbol = "osInitialize", vram = 0x7000d080, kind = "replace_function", handler = "hook_ge_os_initialize", expected_words = [0x27bdffc0, 0xafbf001c, 0x240e0001]},
-  {symbol = "osInvalICache", vram = 0x7000d350, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x00000000, 0x240b4000]},
+  {symbol = "osInvalICache", vram = 0x7000d350, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x0, 0x240b4000]},
   {symbol = "osUnmapTLB", vram = 0x7000d3d0, kind = "replace_function", handler = "hook_ge_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000]},
+  {symbol = "osViRepeatLine", vram = 0x7000e260, kind = "replace_function", handler = "hook_ge_vi_repeat_line", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xc00617c, 0xafb00018, 0x93ae002b, 0x408025, 0x11c00007, 0x0, 0x3c0f8003, 0x8def8044, 0x95f80000, 0x37190040]},
+  {symbol = "__osGetTLBHi", vram = 0x7000e880, kind = "replace_function", handler = "hook_ge_tlb_hi", expected_words = [0x40840000, 0x0, 0x42000001]},
+  {symbol = "osSetIntMask", vram = 0x7000dd30, kind = "replace_function", handler = "hook_ge_int_mask", expected_words = [0x400c6000, 0x3182ff01, 0x3c088002]},
+  {symbol = "osInvalDCache", vram = 0x70010b20, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a0001f, 0x0, 0x240b2000]},
+  {symbol = "osWritebackDCache", vram = 0x70010bd0, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x0, 0x240b2000]},
+  {symbol = "osDpGetCounters", vram = 0x7000e3c0, kind = "replace_function", handler = "hook_ge_dp_counters", expected_words = [0x3c0ea410, 0x8dcf0010, 0x3c18a410]},
+  {symbol = "osDpSetStatus", vram = 0x7000e4e0, kind = "replace_function", handler = "hook_ge_dp_status", expected_words = [0x3c0ea410, 0x3e00008, 0xadc4000c]},
+  {symbol = "osViGetCurrentFramebuffer", vram = 0x7000e410, kind = "replace_function", handler = "hook_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0xc00617c]},
+  {symbol = "osViGetNextFramebuffer", vram = 0x7000e450, kind = "replace_function", handler = "hook_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0xc00617c]},
+  {symbol = "__osSetCompare", vram = 0x7001f8e0, kind = "replace_function", handler = "hook_ge_set_compare", expected_words = [0x40845800, 0x3e00008, 0x0]},
+]
+checkpoints = [
+  {pc = 0x7000071c, expected_word = 0x1000ffff, kind = "yield", reason = "Yield the original GoldenEye idle loop"},
 ]
 
 [game]
@@ -37,10 +53,19 @@ roots = [
   {name = "inflate_decompressfile", vram = 0x7020141c},
   {name = "mainproc", vram = 0x7000089c},
   {name = "game_text_start", vram = 0x7f000000},
+  {name = "idleproc", vram = 0x70000718},
+  {name = "rmonMain", vram = 0x7000cea0},
+  {name = "scheduler_thread", vram = 0x70000d00},
+  {name = "tlbRandomGetNext", vram = 0x70001b10},
 ]
 transfers = [
-  {pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80000450]},
-  {pc = 0x70000500, expected_word = 0x00e00008, kind = "tail", targets = [0x7020141c]},
+  {pc = 0x80000430, expected_word = 0x1400008, kind = "tail", targets = [0x80000450]},
+  {pc = 0x70000500, expected_word = 0xe00008, kind = "tail", targets = [0x7020141c]},
+]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+fallthroughs = [
+  {pc = 0x7f057ea8, expected_word = 0x460a6300, target = 0x7f057eac, reason = "Original cosine wrapper adds its phase then falls into the sine implementation"},
 ]
 
 [bootstrap]
@@ -58,6 +83,10 @@ compressed_data_size = 0x11c00
 data_address = 0x80020d90
 data_size = 0x3c550
 data_sha256 = "1348c78dda4bdeaec6a8abcf793fb4c501600f32af162ecb4f49f6b0c10507d8"
+timer_sentinel = 0x80068df0
+idle_entry = 0x70000718
+idle_thread_id = 0x1
+idle_words = [0xafa40000, 0x1000ffff, 0x0]
 
 [bootstrap.parameters]
 0x80000300 = 0x1
@@ -67,3 +96,60 @@ data_sha256 = "1348c78dda4bdeaec6a8abcf793fb4c501600f32af162ecb4f49f6b0c10507d8"
 0x80000310 = 0x17d6
 0x80000314 = 0x1
 0x80000318 = 0x400000
+
+[runtime]
+thread_tail = 0x80027720
+run_queue = 0x80027728
+active_queue = 0x8002772c
+running_thread = 0x80027730
+event_table = 0x80066a10
+
+[platform]
+clock_rate = 0x80026980
+final_rom = 0x800657e0
+vi_clock = 0x8002804c
+timer_list = 0x80027fd0
+current_time = 0x80068e10
+base_counter = 0x80068e18
+vi_intr_count = 0x80068e1c
+app_nmi_buffer = 0x8000031c
+
+[pager]
+virtual_base = 0x7f000000
+rom_offset = 0x34b30
+virtual_pages = 0x80
+slots = 0x5a
+management_table = 0x8005dbf0
+slot_table = 0x8005e3f0
+buffer_pointer = 0x8005e4a8
+random_state = 0x800230e0
+miss_count = 0x800230d0
+current_slot = 0x800230d4
+
+# Read-only acceptance probes. The original getter instructions bind these
+# addresses to this ROM; no game state is patched by the native driver.
+[inspection]
+stage_address = 0x80048364
+stage_reader = 0x7f0bdf04
+stage_words = [0x3c028005, 0x3e00008, 0x8c428364]
+difficulty_address = 0x80048384
+difficulty_reader = 0x7f0bfc10
+difficulty_words = [0x3c028005, 0x3e00008, 0x8c428384]
+dam_stage = 0x21
+title_stage = 0x5a
+
+# Optional session-only override of the frontend unlock query. The switch
+# table identifies exactly the 23 normal Cheat Options; debug/button codes
+# keep their original behavior and no save-completion bits are changed.
+[cheats]
+entry = 0x7f009848
+entry_words = [0x248effff, 0x27bdffe8, 0x2dc1004a, 0x102000b8, 0xafbf0014, 0xe7080, 0x3c018005, 0x2e0821, 0x8c2e18a0, 0x1c00008, 0x0]
+table_address = 0x800518a0
+table_count = 0x4a
+table_sha256 = "064e37379802b1f1dc7fd423e4921ada5164b3c61b48cd2a03819c65b3728f32"
+unavailable_target = 0x7f009874
+unavailable_words = [0x100000b2, 0x1025]
+allowed_ids = [0x2, 0x3, 0xa, 0xb, 0xc, 0xe, 0xf, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22]
+levels_address = 0x80036fb4
+levels_reader = 0x7f09100c
+levels_words = [0x3c028003, 0x3e00008, 0x8c426fb4]

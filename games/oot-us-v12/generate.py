@@ -25,3 +25,12 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append('static const uint8_t oot_code_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};')
     (output / 'oot_config.h').write_text('\n'.join(lines))
 
+
+
+def finalize_metadata(rom, metadata, profile):
+    for function in metadata['functions']:
+        sites=profile.get('oot_relocations',{}).get(function['section'])
+        if sites is not None:
+            function['relocatable']=True
+            owned=set(function['instruction_addresses'])
+            function['relocation_pcs']=[pc for pc in sites if pc in owned]

@@ -305,7 +305,6 @@ void conker_stop(Conker *game) {
 #endif
     recomp_audio_destroy(game->audio);
     recomp_renderer_destroy(game->renderer);
-    recomp_set_failure_handler(NULL, NULL);
     recomp_runtime_destroy(&game->runtime);
     free(game->rom);
 }

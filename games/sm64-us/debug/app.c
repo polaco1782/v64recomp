@@ -4,7 +4,7 @@
 #endif
 #define _POSIX_C_SOURCE 200809L
 #include "generated.h"
-#include "runtime.h"
+#include "game.h"
 #include "game_config.h"
 #include <inttypes.h>
 #include <math.h>
@@ -21,7 +21,7 @@ static bool audio_playback;
 #include <time.h>
 static RecompRenderer *renderer;
 static unsigned rendered_tasks, presentations;
-#define CHECK(x) do { if(!(x)) { fprintf(stderr,"FAIL: %s (line %d)\n",#x,__LINE__);exit(1); } } while(0)
+#define CHECK(x) recomp_game_require((x), "SM64 check failed: " #x, 0)
 static uint64_t ns;
 static uint64_t scheduler_ns, wall_origin, clock_origin;
 static uint64_t playback_origin;
@@ -169,7 +169,6 @@ static void set_input(Runtime *rt) {
     }
     CHECK(recomp_input_set(rt,0,&input));
 }
-#include "crash_report.h"
 int main(int argc,char **argv) {
     CHECK(argc==6 || (argc==7 && !strcmp(argv[6],"--cheat-menu")));
     bool cheat_menu=argc==7;
@@ -179,11 +178,10 @@ int main(int argc,char **argv) {
     CHECK(!cheat_menu || (!goal && !strcmp(mode,"live")));
     capture_output=goal || (getenv("RECOMP_CAPTURE") && !strcmp(getenv("RECOMP_CAPTURE"),"1"));
     trace=capture_output?artifact("task_trace.jsonl","w"):fopen("/dev/null","w");CHECK(trace);
-    FILE *f=fopen(argv[1],"rb");CHECK(f);uint8_t *rom=malloc(GAME_ROM_SIZE);CHECK(rom);
-    CHECK(fread(rom,1,GAME_ROM_SIZE,f)==GAME_ROM_SIZE && fgetc(f)==EOF && !fclose(f));
     Runtime rt;CHECK(recomp_runtime_init(&rt,GAME_RAM_SIZE,recomp_functions,recomp_function_count,NULL,recomp_section_count));
-    recomp_set_failure_handler(report_crash,&rt);
-    CHECK(recomp_rom_attach(&rt,rom,GAME_ROM_SIZE,game_sha1));CHECK(recomp_boot_load(&rt,game_boot_loads,sizeof(game_boot_loads)/sizeof(game_boot_loads[0])));
+    RecompGameOptions options={.rom=argv[1]};
+    uint8_t *rom=recomp_game_rom(&rt,&options,GAME_ROM_SIZE,game_sha1);
+    CHECK(recomp_boot_load(&rt,game_boot_loads,sizeof(game_boot_loads)/sizeof(game_boot_loads[0])));
     /* This signed-byte flag belongs to the loaded main data, outside the BSS
      * cleared by guest startup. The original title script selects the menu. */
     if(cheat_menu) {
@@ -241,16 +239,16 @@ int main(int argc,char **argv) {
     finish_audio();
     CHECK(!fclose(trace));printf("PASS: %s: %u world / %u playable frames, displacement %.3f, peak height %.3f.\n",route_mode()?"Castle lobby":"Castle Grounds",world_frames,play_frames,distance,max_height);
     capture_renderer();
-    RecompViState vi=recomp_vi_state(&rt);CHECK(!vi.black && vi.framebuffer);f=artifact("native_framebuffer.ppm","wb");fputs("P6\n320 240\n255\n",f);
+    RecompViState vi=recomp_vi_state(&rt);CHECK(!vi.black && vi.framebuffer);FILE *f=artifact("native_framebuffer.ppm","wb");fputs("P6\n320 240\n255\n",f);
     uint32_t fb=recomp_ram_address(&rt,vi.framebuffer,320*240*2);
     for(unsigned n=0;n<320*240;n++) { unsigned c=(unsigned)recomp_load(&rt,fb+n*2,2);CHECK(fputc((int)((c>>11)&31)*255/31,f)!=EOF);CHECK(fputc((int)((c>>6)&31)*255/31,f)!=EOF);CHECK(fputc((int)((c>>1)&31)*255/31,f)!=EOF); }CHECK(!fclose(f));
     recomp_renderer_destroy(renderer);
-    recomp_runtime_destroy(&rt);recomp_set_failure_handler(NULL,NULL);free(rom);return 0;
+    recomp_runtime_destroy(&rt);free(rom);return 0;
 cancelled:
     if(capture_output)capture_renderer();
     fprintf(trace,"{\"type\":\"performance\",\"scheduler_ns\":%" PRIu64 ",\"live_clock\":%s,\"play_frames\":%u,\"elapsed_live_ns\":%" PRIu64 "}\n",
         scheduler_ns,live_clock?"true":"false",play_frames,live_clock?monotonic_ns()-wall_origin:0);
     fputs("{\"type\":\"cancelled\"}\n",trace);CHECK(!fclose(trace));
     finish_audio();
-    recomp_renderer_destroy(renderer);recomp_runtime_destroy(&rt);recomp_set_failure_handler(NULL,NULL);free(rom);puts("SM64 window closed.");return 0;
+    recomp_renderer_destroy(renderer);recomp_runtime_destroy(&rt);free(rom);puts("SM64 window closed.");return 0;
 }

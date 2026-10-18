@@ -74,3 +74,14 @@ SM64's inspection scripts inspect task traces, ROM assets, display lists and
 interior captures; OOT's callback analyzer proposes roots for checked inventories.
 The shared crash inspector reads both release and debug reports. Use the
 matching executable and generated sources to resolve addresses accurately.
+Every game uses the same core failure calls: `recomp_fail(message, address)` and
+`recomp_game_require(condition, message, address)`. The shared ROM loader installs
+the reporter in both modes, including positional diagnostic launches. Reports
+and RAM dumps go under `local/crashes/<game>/` by default; `--crash-dir` selects
+another directory through the common command-line interface.
+
+The core writes ROM identity, failure details, loaded-section state, guest thread
+registers (GPRs, FPRs, HI/LO and FPU control), task words, native stack frames and
+a word-swapped RAM dump. Debug dispatch also retains the last 128 guest-call
+addresses without needing a game-specific trace hook or `--trace-calls`.
+Game code does not provide its own failure callback or crash-report serializer.

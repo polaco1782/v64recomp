@@ -1,16 +1,14 @@
 /* Native equivalent of GoldenEye's ROM page cache and TLB miss handling. */
 #include "pager.h"
+#include "game.h"
 #include <string.h>
 
 enum { PAGE_BYTES = 0x2000, MANAGEMENT_BYTES = 16 };
-static void checked(bool ok, const char *message, uint32_t address) {
-    if (!ok) recomp_fail(message, address);
-}
 
 void goldeneye_pager_install(Runtime *rt, GoldenEyePager *pager, const GoldenEyePagerConfig *c) {
-    checked(rt && pager && c && !rt->resolve_address && !rt->prepare_call && rt->rom,
+    recomp_game_require(rt && pager && c && !rt->resolve_address && !rt->prepare_call && rt->rom,
             "GoldenEye pager installation conflict", 0);
-    checked(c->virtual_base % PAGE_BYTES == 0 && c->virtual_pages && c->virtual_pages <= 128
+    recomp_game_require(c->virtual_base % PAGE_BYTES == 0 && c->virtual_pages && c->virtual_pages <= 128
             && c->slots && c->slots <= 90 && (uint64_t)c->virtual_base + c->virtual_pages * PAGE_BYTES <= UINT32_MAX
             && c->rom_offset <= rt->rom_size && c->virtual_pages * PAGE_BYTES <= rt->rom_size - c->rom_offset,
             "GoldenEye pager configuration invalid", c->virtual_base);
@@ -45,7 +43,7 @@ static void forget_tlb(Runtime *rt, uint32_t virtual_address) {
 static uint32_t page(Runtime *rt, GoldenEyePager *pager, unsigned index) {
     const GoldenEyePagerConfig *c = &pager->config;
     uint32_t base = (uint32_t)recomp_load(rt, c->buffer_pointer, 4);
-    checked(base >= 0x80000000 && base < 0xa0000000 && base % PAGE_BYTES == 0,
+    recomp_game_require(base >= 0x80000000 && base < 0xa0000000 && base % PAGE_BYTES == 0,
             "GoldenEye page cache used before initialization", base);
     recomp_ram_address(rt, base, c->slots * PAGE_BYTES);
     uint32_t entry = c->management_table + index * MANAGEMENT_BYTES;
@@ -53,7 +51,7 @@ static uint32_t page(Runtime *rt, GoldenEyePager *pager, unsigned index) {
     unsigned slot;
     if (context & 2) {
         slot = (unsigned)recomp_load(rt, entry + 4, 4);
-        checked(slot < c->slots && recomp_load(rt, c->slot_table + slot * 2, 1) == 0
+        recomp_game_require(slot < c->slots && recomp_load(rt, c->slot_table + slot * 2, 1) == 0
                 && recomp_load(rt, c->slot_table + slot * 2 + 1, 1) == index,
                 "GoldenEye page cache tables disagree", entry);
         pager->hits++;
@@ -63,7 +61,7 @@ static uint32_t page(Runtime *rt, GoldenEyePager *pager, unsigned index) {
         uint32_t owner = c->slot_table + slot * 2;
         if (recomp_load(rt, owner, 1) == 0) {
             unsigned old = (unsigned)recomp_load(rt, owner + 1, 1);
-            checked(old < c->virtual_pages, "GoldenEye cache slot owner invalid", owner);
+            recomp_game_require(old < c->virtual_pages, "GoldenEye cache slot owner invalid", owner);
             recomp_store(rt, c->management_table + old * MANAGEMENT_BYTES, 1, 4);
             forget_tlb(rt, c->virtual_base + old * PAGE_BYTES);
             pager->evictions++;
@@ -80,7 +78,7 @@ static uint32_t page(Runtime *rt, GoldenEyePager *pager, unsigned index) {
         pager->loads++;
     }
     uint32_t physical = (base & 0x1fffffff) + slot * PAGE_BYTES;
-    checked(context == 1 || !(context & 2) || ((context >> 6) << 12) == physical,
+    recomp_game_require(context == 1 || !(context & 2) || ((context >> 6) << 12) == physical,
             "GoldenEye cache physical address mismatch", entry);
     uint32_t virtual_address = c->virtual_base + index * PAGE_BYTES;
     /* Resident cache pages outlive CPU TLB entries. Reinstall on a native
@@ -113,9 +111,9 @@ bool goldeneye_pager_resolve(Runtime *rt, uint32_t address, size_t bytes, bool w
     const GoldenEyePagerConfig *c = &pager->config;
     if (address < c->virtual_base || (uint64_t)address >= (uint64_t)c->virtual_base + c->virtual_pages * PAGE_BYTES)
         return false;
-    checked(!write, "GoldenEye write to ROM code page requires explicit support", address);
+    recomp_game_require(!write, "GoldenEye write to ROM code page requires explicit support", address);
     uint32_t offset = address - c->virtual_base;
-    checked(bytes <= c->virtual_pages * PAGE_BYTES - offset,
+    recomp_game_require(bytes <= c->virtual_pages * PAGE_BYTES - offset,
             "GoldenEye virtual code span out of range", address);
     unsigned index = offset / PAGE_BYTES;
     uint32_t first = page(rt, pager, index);
@@ -124,7 +122,7 @@ bool goldeneye_pager_resolve(Runtime *rt, uint32_t address, size_t bytes, bool w
      * helpers resolve individual spans and work across nonadjacent slots. */
     size_t span = PAGE_BYTES - offset % PAGE_BYTES;
     for (unsigned next=index+1; span<bytes; next++, span+=PAGE_BYTES)
-        checked(page(rt, pager, next) == first + (next-index) * PAGE_BYTES,
+        recomp_game_require(page(rt, pager, next) == first + (next-index) * PAGE_BYTES,
                 "GoldenEye noncontiguous cached virtual span", address);
     return true;
 }

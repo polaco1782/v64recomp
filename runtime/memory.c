@@ -101,10 +101,12 @@ void recomp_runtime_destroy(Runtime *rt) {
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);
+    if (failure_userdata == rt) recomp_set_failure_handler(NULL, NULL);
     *rt = (Runtime){0};
 }
 
 RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
+    recomp_record_call(rt, address);
     address = recomp_canonical_function_address(rt, address);
     RecompFunction result = NULL;
     size_t first = 0, end = rt->function_count;

@@ -15,9 +15,9 @@ cmake --build --preset oot-us-v12-debug -j 4
 ./build/oot-us-v12-debug/bin/oot-us-v12 --help
 ```
 
-`release/` contains the playable app and required game adapters. `debug/` contains
-the original trace/capture harness and inspection tools. Profiles and inventories
-in this directory are shared by both builds. Generated C stays under the selected
+`release/` contains the playable app and Release-only sources. `debug/` contains
+the original trace/capture harness and inspection tools. Shared headers, adapters,
+`generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
 build directory, and private ROM/save data stays in `local/`.
 
 Both builds target **60 FPS** using RT64 frame interpolation. Gameplay and audio

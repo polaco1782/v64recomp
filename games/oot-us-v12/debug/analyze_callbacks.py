@@ -9,7 +9,7 @@ PROJECT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT/'tools'))
 from common import RecompError, load_metadata, load_profile, load_rom, write_json
 from metadata_candidates import materialized_entries, pointer_entries
-sys.path.insert(0,str(PROJECT/'games/oot-us-v12/release'))
+sys.path.insert(0,str(PROJECT/'games/oot-us-v12'))
 from prepare import prepare
 
 
@@ -20,7 +20,7 @@ def main() -> None:
     parser.add_argument('--apply', action='store_true', help='add candidates to the partial entry inventory; validate with --report-only afterward')
     args = parser.parse_args()
     base = Path(__file__).resolve().parent.parent
-    profile = load_profile(base/'startup.toml')
+    profile = load_profile(base/'profile.toml')
     game = profile['game']
     rom, _ = load_rom(game['rom'], game['rom_sha1'], game['rom_size'])
     args.output.parent.mkdir(parents=True, exist_ok=True)

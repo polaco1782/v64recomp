@@ -65,17 +65,29 @@ Do not introduce an external source tree as a build dependency for symbol lookup
 
 Keep game-specific files under `games/<game>/`. Put shared services in `runtime/`,
 `include/`, `backends/`, or `tools/` only when their behavior is actually shared.
+Follow the required filenames and source placement in [AGENTS.md](AGENTS.md).
+Use the same structure for every new game; older layouts and external reference
+projects do not override it. Keep all headers, shared adapters and generation
+helpers in the game's parent folder. Reserve `debug/` and `release/` for their
+own entry points and configuration-specific sources or diagnostic inputs.
 
 Create the files the port needs:
 
-- `profile.toml`: exact ROM identity, load map, and bootstrap configuration.
-- `startup.toml`: profile extensions, checked discovery roots/transfers and policy.
+- `profile.toml`: exact ROM identity, load map, bootstrap configuration, checked
+  discovery roots/transfers, hooks and policy. Use one complete profile per game.
 - `startup-entries.json`: ROM-bound partial function-entry inventory when needed.
-- `release/generate.py`: configuration emission and optional preparation/metadata
+- `generate.py`: configuration emission and optional preparation/metadata
   hooks, following `tools/generate_game.py`'s current interface.
-- `release/app.c` and any required adapters/audio profiles: the playable runtime.
+- Parent-folder headers, adapters and audio profiles shared by both builds.
+- `release/app.c`: the playable runtime and any Release-only sources.
 - `debug/app.c`: bounded diagnostics, replay, captures, and startup checks.
 - `CMakeLists.txt` and `README.md`: build integration and accurate game instructions.
+
+Do not split the profile into additional TOML files or introduce an inheritance
+chain. Export `write_config(profile, metadata, output, startup)` from the
+parent-folder `generate.py`, with optional hooks as documented in
+[adding a ROM](docs/adding-a-rom.md). Keep game-specific generation logic there
+rather than adding game-ID branches to the shared driver.
 
 Register the ID in root `CMakeLists.txt`'s `RECOMP_GAMES` and
 `tools/generate_game.py`'s `GAMES`. Add Release/Debug configure and build presets
@@ -83,6 +95,11 @@ in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
 entries. Follow `cmake/Game.cmake` for ROM/save defaults, additional sources,
 generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
+List shared translation units in `RECOMP_GAME_SOURCES`; use
+`RECOMP_GAME_DEBUG_SOURCES` / `RECOMP_GAME_RELEASE_SOURCES` for additional
+mode-specific sources. Neither mode may include or compile files from the other
+mode's folder. Check source lists, tool paths and docs against this layout before
+handing off the port.
 
 CMake is the user-facing build/run selector. Python handles generation and
 analysis. Do not recreate obsolete per-game Python build/launch wrappers.
@@ -90,6 +107,12 @@ Share required runtime adapters between Release and Debug. Keep normal Release
 play quiet, with correctness checks and crash reporting; keep routine traces,
 captures, reports, and diagnostic probes in Debug. Persistent translation fixes
 belong in checked metadata or generator code, never in generated C.
+All games use `recomp_fail(message, address)` or
+`recomp_game_require(condition, message, address)` for fatal errors.
+`recomp_game_rom()` installs the common core crash reporter in both modes,
+including positional debug launches. Do not implement per-game failure callbacks
+or crash writers; extend the shared reporter when additional common diagnostics
+are needed. Guest-call history is recorded by core dispatch in Debug.
 
 ## 3. Discover functions and triage missing symbols
 
@@ -104,8 +127,9 @@ Read both `symbols.json` and `coverage.json`. Inspect per-function errors,
 metadata issues, unsupported instructions, ownership conflicts, and unresolved
 transfers rather than only summary counts. Use `tools/discover.py`,
 `tools/translate.py`, `tools/code_inventory.py`, and `tools/common.py` to confirm
-the accepted schemas. Use the extended startup profile when it supplies required
-registered-call policy; metadata from it cannot necessarily use the base profile.
+the accepted schemas. Use the same complete `games/<game>/profile.toml` throughout
+discovery, translation and runtime configuration so registered-call policy and
+checked metadata remain consistent.
 
 Distinguish a missing semantic name from a missing executable target. A verified
 address-based function name is sufficient for translation. For each blocker,

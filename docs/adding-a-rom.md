@@ -87,7 +87,7 @@ investigate, not proof that a region is executable code. Check branches, delay
 slots, callers and loaders together.
 
 For compressed/paged code, implement deterministic preparation in
-`games/newgame-us/release/generate.py`, exporting:
+`games/newgame-us/generate.py`, exporting:
 
 ```python
 def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
@@ -96,8 +96,8 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
     ...
 ```
 
-Examples are OOT's [Yaz0/overlay preparation](../games/oot-us-v12/release/prepare.py)
-and Perfect Dark's [RareZip preparation](../games/perfectdark-us-v11/release/generate.py).
+Examples are OOT's [Yaz0/overlay preparation](../games/oot-us-v12/prepare.py)
+and Perfect Dark's [RareZip preparation](../games/perfectdark-us-v11/generate.py).
 Preparation may append decoded sections to the analysis image. Their reported
 offsets then refer to that image, not to compressed cartridge offsets. Keep the
 original normalized cartridge as the runtime ROM and reproduce the game's actual
@@ -136,15 +136,9 @@ layout. `game.fpu_fr` defaults to 0; use 1 only when the game uses independent
 The runtime `[bootstrap]` fields are consumed by your game's config generator;
 they are not a universal loader that automatically boots every profile.
 
-Create `games/newgame-us/startup.toml`:
-
-```toml
-extends = "profile.toml"
-```
-
-Add checked roots/tables there as the investigation advances. Profile inheritance
-appends roots, transfers, tables, hooks, boundaries and checkpoints; avoid adding
-the same entry again in both parent and child.
+Add checked roots, transfers, tables, hooks, boundaries and checkpoints directly
+to this same `profile.toml` as the investigation advances. Every game uses one
+complete profile for ROM import, source generation and diagnostic tools.
 
 Once the new profile has the correct `game.rom`, size and hash:
 
@@ -161,10 +155,10 @@ For a flat image whose mappings are already present in the profile:
 
 ```sh
 .venv/bin/python tools/discover.py \
-  --profile games/newgame-us/startup.toml \
+  --profile games/newgame-us/profile.toml \
   --output build/newgame-us-report/symbols.json
 .venv/bin/python tools/translate.py \
-  --profile games/newgame-us/startup.toml \
+  --profile games/newgame-us/profile.toml \
   --metadata build/newgame-us-report/symbols.json \
   --output build/newgame-us-report --report-only
 ```
@@ -236,7 +230,7 @@ tail call or saved return. A checked switch table needs its instruction `pc`,
 count from the bounds check, not from how many following words resemble pointers.
 `jump_tables` describes local computed jumps; `function_tables` describes indirect
 calls. Explicit `transfers` handles proven fixed target sets and return patterns.
-The existing [Duke startup metadata](../games/duke-us/startup.toml) provides examples.
+The existing [Duke startup metadata](../games/duke-us/profile.toml) provides examples.
 
 `allow_registered_indirect_calls` permits runtime lookup only with a checked
 code/entry inventory. It does not discover missing entries or make arbitrary
@@ -246,38 +240,54 @@ reaching it remains a porting failure to investigate.
 
 ## 7. Add the native application and CMake integration
 
-Use this layout, retaining all game-specific state under its directory:
+Use this required layout for every game, retaining all game-specific state under
+its directory. [AGENTS.md](../AGENTS.md) defines the repository-wide rules for
+models adding or extending ports:
 
 ```text
 games/newgame-us/
   README.md
   profile.toml
-  startup.toml
+  generate.py
+  audio.h
+  ...                       # shared headers, loaders, hooks and adapters
   startup-entries.json       # when checked callback roots are available
   CMakeLists.txt
   release/
-    generate.py
     app.c
-    ...                     # required loaders, hooks and task profiles
+    ...                     # additional Release-only sources
   debug/
     app.c
     ...                     # replay inputs and diagnostic-only code
 ```
 
+Keep one complete `profile.toml`; do not add game profile inheritance chains or
+alternative profile filenames. Keep all headers and shared adapters in the parent
+directory. Each configuration has its own `app.c` and may use the parent folder;
+it must not include or compile files from the other configuration's folder.
+
 Read an existing app for structure, then replace its ROM-specific assumptions.
 [Duke's release app](../games/duke-us/release/app.c) is a compact example, but its
 thread addresses, timing calibration and audio profile are Duke-specific.
 
-1. Export `write_config(profile, metadata, output, startup)` from `release/generate.py`.
+1. Export `write_config(profile, metadata, output, startup)` from `generate.py`.
    It writes the header consumed by your apps: pinned identity, boot addresses,
    runtime globals and any adapter descriptors. Add `prepare`,
    `finalize_metadata` or `configure_translation` only when needed, with checks.
    The shared driver calls preparation before discovery, finalization before
    saving metadata, and translation configuration only for actual generation.
+   An optional `write_report(rom, profile, metadata, report, output)` writes
+   game-specific analysis after translation in both generation and report mode.
+   Set `REQUIRE_COMPLETE_INVENTORY = True` only for a complete CPU inventory;
+   this retains the translator's discovery-issue and unresolved-boundary checks.
 2. Initialize `Runtime` with the generated registry and boot-section states,
    verify/attach the original ROM through `recomp_game_rom`, load the verified
    initial CPU bytes, and supply the measured boot parameters. Reproduce BSS
    initialization without erasing thread objects or active runtime state.
+   The ROM helper installs the shared crash reporter. Use `recomp_fail(message,
+   address)` or `recomp_game_require(condition, message, address)` for all fatal
+   errors in either mode; keep crash serialization and diagnostic capture in
+   the core rather than adding a game-specific handler.
 3. Configure clock, scheduler, platform, IO and task services using the measured
    guest globals. Choose synthetic boot-thread storage outside guest-owned data,
    stacks and framebuffers, and retire it before the game reuses that RAM.
@@ -289,8 +299,8 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    input/window operations on their owner thread. Join workers before teardown.
 6. Add a debug app with startup assertions and useful reports/captures. Check its
    `--help`; per-game diagnostic argument parsing is not supplied just by creating
-   a file under `debug/`. Preserve the shared crash handler or register a handler
-   with the existing report schema.
+   a file under `debug/`. Use the same shared crash handler as Release; core
+   dispatch retains the last 128 guest-call addresses in Debug.
 
 The minimal game `CMakeLists.txt` is:
 
@@ -298,12 +308,17 @@ The minimal game `CMakeLists.txt` is:
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/newgame.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/newgame-us.eeprom")
 # Set RECOMP_GAME_SOURCES here if the adapter needs additional translation units.
+# Use parent-folder paths for shared sources, e.g. set(RECOMP_GAME_SOURCES pager.c).
+# Optional RECOMP_GAME_DEBUG_SOURCES / RECOMP_GAME_RELEASE_SOURCES select extra
+# configuration-only sources using debug/ or release/ paths. app.c is automatic.
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 ```
 
 Use the actual save medium/path; add required target libraries after the include.
 Register `newgame-us` in **both** root `CMakeLists.txt`'s `RECOMP_GAMES` and
-`tools/generate_game.py`'s `GAMES`. The driver uses `startup.toml` for non-SM64 games.
+`tools/generate_game.py`'s `GAMES`. The driver uses `profile.toml` and `generate.py`
+in every game's parent directory. Shared headers belong there too; CMake includes
+that directory and the selected configuration directory in both builds.
 Explicit CMake configurations then work without presets:
 
 ```sh
@@ -433,8 +448,8 @@ Keep the exact executable, generated sources, metadata, log, JSON and `.rdram.bi
 together before rebuilding. `inspect_crash.py` uses recorded module paths and
 `addr2line`; moved/replaced binaries cannot reliably resolve the old stack.
 Its legacy "last tracked call/FP location" label refers to the saved guest PC;
-the tracking precision depends on the build. Inspect JSON `recent_calls` where
-the game's handler supplies it.
+the tracking precision depends on the build. Debug reports include `recent_calls`
+from shared dispatch; Release leaves that history empty.
 
 For a live diagnosis:
 
@@ -519,7 +534,7 @@ overlapped memory reused for a framebuffer. `recomp_worker_merge` correctly dete
 conflicting writes. A stopped guest thread still had scheduler-synchronized state;
 stopping it did not release the RAM. The fix retires it from `oot_prepare_call`
 at `0x80005f20`, before graphics submission, with a debug guard that it is dead.
-See [the hook](../games/oot-us-v12/release/hooks.h) and
+See [the hook](../games/oot-us-v12/hooks.h) and
 [debug task checks](../games/oot-us-v12/debug/app.c). This illustrates the chain:
 failure byte → guest alias → object ownership → writer/lifetime → earlier retirement.
 

@@ -23,7 +23,7 @@ source table. This permits the game to prepare the following task's coefficients
 while synthesis runs. Source coefficients remain CPU-owned across filter execution.
 
 Games provide pinned task addresses and boot/text/data microcode hashes through
-`games/<game>/release/audio.h`. The shared adapter validates these fingerprints and each
+`games/<game>/audio.h`. The shared adapter validates these fingerprints and each
 command's RAM/DMEM ranges, alignment and supported flags. Unknown microcodes,
 commands and unsupported resampling flags fail explicitly. Revision, license and
 local changes are in [third_party/rsp-hle/README.md](../third_party/rsp-hle/README.md).

@@ -26,7 +26,7 @@ def startup_data(rom: bytes, boot: dict) -> bytes:
     return result
 
 
-def write_boot_config(profile: dict, metadata: dict, output: Path) -> None:
+def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
     game, boot = profile['game'], profile['bootstrap']
     if (boot['initial_rom_offset'] < 0 or boot['initial_load_size'] <= 0
             or boot['initial_rom_offset'] + boot['initial_load_size'] > game['rom_size']
@@ -71,7 +71,7 @@ def write_boot_config(profile: dict, metadata: dict, output: Path) -> None:
 
 def checked_dispatches(rom: bytes, profile: dict) -> None:
     """Bind frozen local jump targets to the ROM's initialized data tables."""
-    project = Path(__file__).resolve().parents[3]
+    project = Path(__file__).resolve().parents[2]
     document=json.loads((project/'games/goldeneye-us/dispatches.json').read_text())
     if document.get('format_version')!=1 or document.get('rom_sha1')!=profile['game']['rom_sha1']:
         raise RecompError('GoldenEye dispatch inventory belongs to another ROM')
@@ -136,3 +136,25 @@ def validate_cheats(rom: bytes, profile: dict) -> None:
     if (hashlib.sha256(table).hexdigest()!=cheats['table_sha256'] or ids!=cheats['allowed_ids']
             or len(ids)!=23 or not all(0<i<64 for i in ids)):
         raise RecompError('GoldenEye cheat table/options fingerprint mismatch')
+
+
+def prepare(rom, profile, output):
+    validate_idle_loop(rom,profile)
+    validate_inspection(rom,profile)
+    validate_cheats(rom,profile)
+    checked_dispatches(rom,profile)
+    return rom, profile
+
+
+def configure_translation(rom, metadata, profile, output):
+    from common import write_json
+    from translate import translate
+    audit=translate(rom,metadata,profile,output,report_only=True)
+    functions={(f['section'],f['vram']):f for f in metadata['functions']}
+    for function in audit['functions']:
+        if function['status']!='unsupported':continue
+        original=functions[function['section'],function['vram']];offset=original['rom_offset']
+        profile.setdefault('boundaries',[]).append(dict(symbol=original['name'],vram=original['vram'],
+            kind='unsupported_function',reason='Pending GoldenEye conversion: '+function['errors'][0]['reason'],
+            expected_words=[int.from_bytes(rom[offset:offset+4],'big')]))
+    write_json(output/'pending-boundaries.json',{'complete_conversion':False,'boundaries':profile.get('boundaries',[])})

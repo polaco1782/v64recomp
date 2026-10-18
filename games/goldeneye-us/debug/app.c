@@ -3,7 +3,6 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include "runtime.h"
 #include "game.h"
 #define require recomp_game_require
 #include "recomp_audio.h"
@@ -28,7 +27,6 @@ static RecompFunctionEntry cheat_override;
 #include "pager.h"
 #include "generated.h"
 #include "goldeneye_boot_config.h"
-#include <dlfcn.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,8 +47,6 @@ static uint64_t monotonic_ns(void) {
     require(clock_gettime(CLOCK_MONOTONIC,&t)==0,"GoldenEye wall clock unavailable",0);
     return (uint64_t)t.tv_sec*UINT64_C(1000000000)+(uint64_t)t.tv_nsec;
 }
-static uint32_t recent_calls[128];
-static unsigned call_cursor;
 static bool reached_graphics;
 static RecompTask first_graphics;
 static const char *report_path;
@@ -113,7 +109,6 @@ static void read_next_input(void) {
 }
 
 static void prepare_call(Runtime *rt, uint32_t address) {
-    recent_calls[call_cursor++ % 128]=address;
     if (LOG_GOLDENEYE_CALLS) fprintf(stderr,"GoldenEye call 0x%08x\n",address);
     goldeneye_pager_prepare_call(rt,address);
 }
@@ -165,69 +160,18 @@ static bool submit(Runtime *rt,void *unused,const RecompTask *task) {
     return true;
 }
 
-static void quoted(FILE *file,const char *text) {
-    fputc('"',file);
-    for(const unsigned char *p=(const unsigned char *)text;*p;p++) {
-        if(*p=='"'||*p=='\\')fputc('\\',file);
-        if(*p<32)fprintf(file,"\\u%04x",*p);else fputc(*p,file);
-    }
-    fputc('"',file);
-}
-static void failure(const RecompFailureInfo *info,void *opaque) {
-    Runtime *rt=opaque;char path[2048],ram_path[2048];
-    if(snprintf(path,sizeof(path),"%s.crash.json",report_path)>=(int)sizeof(path)
-       ||snprintf(ram_path,sizeof(ram_path),"%s.rdram.bin",report_path)>=(int)sizeof(ram_path))return;
-    FILE *f=fopen(ram_path,"wb");if(f){(void)fwrite(rt->rdram,1,rt->rdram_size,f);fclose(f);}
-    f=fopen(path,"w");if(!f)return;
-    fputs("{\"format_version\":1,\"failure\":{\"message\":",f);quoted(f,info->message);
-    fprintf(f,",\"address\":\"0x%08x\",\"requested_bytes\":%zu,\"ram_range\":%s},"
-              "\"game\":{\"name\":\"GoldenEye startup\"},\"threads\":[",
-              info->address,info->requested_bytes,info->ram_range?"true":"false");
-    RecompThreadSnapshot threads[16];size_t count=recomp_thread_snapshots(rt,threads,16);
-    if(count>16)count=16;
-    for(size_t i=0;i<count;i++) {
-        const RecompThreadSnapshot *t=&threads[i];
-        fprintf(f,"%s{\"id\":%d,\"priority\":%d,\"current\":%s,\"state\":%u,"
-                  "\"last_tracked_pc\":\"0x%08x\",\"gpr\":[",i?",":"",t->id,t->priority,
-                  t->current?"true":"false",(unsigned)t->state,t->context.pc);
-        for(unsigned j=0;j<32;j++)fprintf(f,"%s\"0x%016" PRIx64 "\"",j?",":"",t->context.gpr[j]);
-        fputs("]}",f);
-    }
-    fputs("],\"native_stack\":[",f);
-    for(size_t i=0;i<info->native_frame_count;i++) {
-        Dl_info d={0};(void)dladdr(info->native_frames[i],&d);
-        fprintf(f,"%s{\"address\":\"0x%" PRIxPTR "\",\"module_base\":\"0x%" PRIxPTR "\",\"module\":",
-                i?",":"",(uintptr_t)info->native_frames[i],(uintptr_t)d.dli_fbase);
-        quoted(f,d.dli_fname?d.dli_fname:"");fputs(",\"symbol\":",f);quoted(f,d.dli_sname?d.dli_sname:"");fputc('}',f);
-    }
-    fputs("],\"recent_calls\":[",f);
-    unsigned retained=call_cursor<128?call_cursor:128;
-    for(unsigned i=0;i<retained;i++)fprintf(f,"%s\"0x%08x\"",i?",":"",recent_calls[(call_cursor-retained+i)%128]);
-    fputs("],\"task_words\":[",f);
-    RecompTask task;
-    if(recomp_task_snapshot(rt,&task))for(unsigned i=0;i<16;i++)fprintf(f,"%s%u",i?",":"",task.words[i]);
-    fprintf(f,"],\"pager\":{\"loads\":%" PRIu64 ",\"evictions\":%" PRIu64 ",\"calls\":%" PRIu64 "},"
-              "\"rdram\":{\"storage\":\"word-swapped\",\"path\":",pager.loads,pager.evictions,pager.calls);
-    quoted(f,ram_path);fputs("}}\n",f);fclose(f);
-    fprintf(stderr,"GoldenEye crash report: %s\n",path);
-}
-
 int main(int argc,char **argv) {
     if(argc!=5 && (argc!=6 || strcmp(argv[5],"--cheat-menu"))){fprintf(stderr,"usage: %s ROM DATA_CAPTURE STARTUP_REPORT FRAMES [--cheat-menu]\n",argv[0]);return 2;}
     cheat_menu=argc==6;
     char *end;unsigned long frames=strtoul(argv[4],&end,10);
     if(*end || frames>36000)return 2;
     data_output=argv[2];report_path=argv[3];
-    FILE *f=fopen(argv[1],"rb");require(f!=NULL,"cannot open GoldenEye ROM",0);
-    uint8_t *rom=malloc(BOOT_ROM_SIZE);require(rom!=NULL,"cannot allocate GoldenEye ROM",0);
-    bool read=fread(rom,1,BOOT_ROM_SIZE,f)==BOOT_ROM_SIZE;int extra=fgetc(f),closed=fclose(f);
-    require(read && extra==EOF && closed==0,"GoldenEye ROM read failed",0);
     Runtime rt;
     require(recomp_runtime_init(&rt,BOOT_RAM_SIZE,recomp_functions,recomp_function_count,
                                recomp_boot_sections,recomp_section_count),"GoldenEye runtime init failed",0);
     if(cheat_menu)install_cheat_menu(&rt);
-    recomp_set_failure_handler(failure,&rt);
-    require(recomp_rom_attach(&rt,rom,BOOT_ROM_SIZE,boot_sha1),"GoldenEye ROM identity mismatch",0);
+    RecompGameOptions options={.rom=argv[1]};
+    uint8_t *rom=recomp_game_rom(&rt,&options,BOOT_ROM_SIZE,boot_sha1);
     char renderer_data[2048];
     require(snprintf(renderer_data,sizeof(renderer_data),"%s.rt64",report_path)<(int)sizeof(renderer_data),"GoldenEye render path too long",0);
     renderer=recomp_renderer_create_named(&rt,renderer_data,"GoldenEye 007");
@@ -289,7 +233,7 @@ int main(int argc,char **argv) {
     require(reached_graphics || window_closed,"GoldenEye startup exceeded its graphics budget",BOOT_MAIN_ENTRY);
     char ram_dump[2048];
     require(snprintf(ram_dump,sizeof(ram_dump),"%s.rdram.bin",report_path)<(int)sizeof(ram_dump),"GoldenEye RAM capture path too long",0);
-    f=fopen(ram_dump,"wb");require(f!=NULL,"cannot create GoldenEye RAM capture",0);
+    FILE *f = fopen(ram_dump,"wb");require(f!=NULL,"cannot create GoldenEye RAM capture",0);
     require(fwrite(rt.rdram,1,rt.rdram_size,f)==rt.rdram_size && fclose(f)==0,"cannot write GoldenEye RAM capture",0);
     f=fopen(report_path,"w");require(f!=NULL,"cannot open GoldenEye startup report",0);
     fprintf(f,"{\"main_state\":\"%s\","
@@ -319,7 +263,6 @@ int main(int argc,char **argv) {
         mission_audio_underruns,as.frequency,as.prebuffer_frames,as.min_queued_bytes,max_drain_ns,
         mission_frames,first_mission_vi,mission_difficulty,(unsigned)recomp_load(&rt,GE_INSPECT_STAGE_ADDRESS,4),rs.rdp_triangles,rs.submit_ns,rs.present_ns);
     fputs("}\n",f);require(fclose(f)==0,"cannot close GoldenEye startup report",0);
-    recomp_set_failure_handler(NULL,NULL);
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
     recomp_runtime_destroy(&rt);free(rom);

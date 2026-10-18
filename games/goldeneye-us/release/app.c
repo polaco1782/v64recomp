@@ -98,6 +98,6 @@ int main(int argc,char **argv) {
         next_present+=16666667;recomp_game_sleep(next_present);
     }
     recomp_audio_destroy(audio);recomp_renderer_destroy(renderer);
-    recomp_set_failure_handler(NULL,NULL);recomp_runtime_destroy(&rt);free(rom);
+    recomp_runtime_destroy(&rt);free(rom);
     return 0;
 }

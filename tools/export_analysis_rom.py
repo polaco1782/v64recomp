@@ -14,11 +14,11 @@ from generate_game import GAMES, PROJECT
 
 def export_analysis_rom(game: str, metadata: Path, output: Path) -> None:
     base = PROJECT / 'games' / game
-    profile = load_profile(base / ('full.toml' if game == 'sm64-us' else 'startup.toml'))
+    profile = load_profile(base / 'profile.toml')
     identity = profile['game']
     rom, _ = load_rom(identity['rom'], identity['rom_sha1'], identity['rom_size'])
-    sys.path.insert(0, str(base / 'release'))
-    spec = importlib.util.spec_from_file_location('game_generate', base / 'release/generate.py')
+    sys.path.insert(0, str(base))
+    spec = importlib.util.spec_from_file_location('game_generate', base / 'generate.py')
     generator = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(generator)
     # Some prepare hooks also emit headers. Keep those out of the real build.

@@ -1,5 +1,20 @@
 # Retire the synthetic IPL thread after transferring to the first OS thread.
-hooks = [{symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "hook_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafbf001c, 0xafb20018, 0x0c020458, 0xafb10014, 0x96030010]}]
+hooks = [
+  {symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "hook_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc020458, 0xafb10014, 0x96030010]},
+]
+boundaries = [
+  {symbol = "func_800903b8", vram = 0x800903b8, kind = "unsupported_function", reason = "Unused internal RSP hardware restart helper", expected_words = [0x3c04a404, 0x34840010]},
+  {symbol = "func_80080d7c", vram = 0x80080d7c, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x3e09021, 0x3c0a8013]},
+  {symbol = "func_80080e6c", vram = 0x80080e6c, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x3c05800a, 0x8ca536b0]},
+  {symbol = "func_80080fcc", vram = 0x80080fcc, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x3c04800a, 0xc0203ef]},
+  {symbol = "func_800816e0", vram = 0x800816e0, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x40026000, 0x3e00008]},
+  {symbol = "func_80081780", vram = 0x80081780, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x40846000, 0x0]},
+  {symbol = "func_80081790", vram = 0x80081790, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x40085000, 0x2409001f]},
+  {symbol = "func_80081ab0", vram = 0x80081ab0, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x40026800, 0x3e00008]},
+  {symbol = "func_80082430", vram = 0x80082430, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x40845800, 0x3e00008]},
+  {symbol = "func_800824a0", vram = 0x800824a0, kind = "unsupported_function", reason = "Unused libultra privileged internal; public services use native handlers", expected_words = [0x40085000, 0x310900ff]},
+]
+
 # Exact US revision. Plain SDK services use the shared native catalog.
 [game]
 name = "Nightmare Creatures (US)"
@@ -12,8 +27,54 @@ code_sections = [".main"]
 boot_sections = [".main"]
 
 [discovery]
-regions = [{name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0xa46f0}]
-roots = [{name = "mainproc", vram = 0x8006eb90}]
+regions = [
+  {name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0xa46f0},
+]
+roots = [
+  {name = "mainproc", vram = 0x8006eb90},
+  {name = "gameproc", vram = 0x8006ec30},
+]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+fallthroughs = [
+  {pc = 0x80090394, expected_word = 0xac850000, target = 0x80090398, reason = "Shared RSP status wait helper"},
+]
+jump_tables = [
+  {pc = 0x8001b86c, expected_word = 0x400008, table_vram = 0x80000830, count = 0xa, sha256 = "ab9b5fae9019776dd9dae37ea8561f26880c343089879c20323f04a90ef5bb92"},
+  {pc = 0x8001c5a8, expected_word = 0x400008, table_vram = 0x80000918, count = 0x21, sha256 = "faaf4b3ab3024fff6f2842d53066998d7c7fdebb4b17e80e6506a88e6bebd502"},
+  {pc = 0x80030954, expected_word = 0x400008, table_vram = 0x80000aa0, count = 0x15, sha256 = "dc76f7ed906dabcdff42ac4a21bad69d0477722607d64f1f8ba91fe55c89f35a"},
+  {pc = 0x8003b4cc, expected_word = 0x400008, table_vram = 0x80001828, count = 0x8, sha256 = "67909f0219f9b6340dac097d5c166b6411bdddc76f053b61e897be63a30613e9"},
+  {pc = 0x8003b55c, expected_word = 0x400008, table_vram = 0x80001848, count = 0x8, sha256 = "083255a2f20c66c12938e5d8dc219bf0116c843c06f345abd03e351b0586fea0"},
+  {pc = 0x8003b5f8, expected_word = 0x400008, table_vram = 0x80001868, count = 0x8, sha256 = "a7de14350e3e7bc2fcea4efd3b5d35a04180f281203f9d967e7f1ce853823f89"},
+  {pc = 0x8003b690, expected_word = 0x400008, table_vram = 0x80001888, count = 0x8, sha256 = "8544baa4ff1fbe316243f3565124bb016960af32a69b9fb9350fa06a92738f58"},
+  {pc = 0x8003b734, expected_word = 0x400008, table_vram = 0x800018a8, count = 0x8, sha256 = "7e11a919532275e552c6ef90e17e5a73db6e8438313662b1c7359883d822d109"},
+  {pc = 0x8003b7f0, expected_word = 0x400008, table_vram = 0x800018c8, count = 0x8, sha256 = "ce668825c9c7b5a856f91041313e575e0580eece725d60c5128fcc2acd22a6af"},
+  {pc = 0x8003b8b0, expected_word = 0x400008, table_vram = 0x800018e8, count = 0x8, sha256 = "358930c5e66cb26f51d6d6400c354a7df6cd78b7ffcf93a3c2da400b3f8de665"},
+  {pc = 0x8003b968, expected_word = 0x400008, table_vram = 0x80001908, count = 0x8, sha256 = "2e8644c090e89a73cb0d5fed7f95019b9f3c8c94ba064536caa96ad24ceffc36"},
+  {pc = 0x8003e4ac, expected_word = 0x400008, table_vram = 0x800019f0, count = 0x14, sha256 = "619b584cd35741dc8f30b45c06029352b6718a8f68ec1c84149e24a8ec07115c"},
+  {pc = 0x8003e528, expected_word = 0x400008, table_vram = 0x80001a40, count = 0x14, sha256 = "cb44d3eeef8fc2f7d31d73e7cfa69d0f782116585aeb0def5eed71910ede52c6"},
+  {pc = 0x8003e5a0, expected_word = 0x400008, table_vram = 0x80001a90, count = 0x14, sha256 = "506e2895322c13aff69239ab35cf6c1a79c0b02af0c526eb8bb1c12b6f579ca4"},
+  {pc = 0x8003e624, expected_word = 0x400008, table_vram = 0x80001ae0, count = 0x14, sha256 = "c8d2b504eee9da4eeaeaafe7faf079fa7de036bdd81ecb18ad962539656a92d9"},
+  {pc = 0x8003e69c, expected_word = 0x400008, table_vram = 0x80001b30, count = 0x14, sha256 = "cf0377d4788f8b6c52603667e65f654555cffe76283d03ec99137052560eee79"},
+  {pc = 0x8003e724, expected_word = 0x400008, table_vram = 0x80001b80, count = 0x14, sha256 = "7a019e699de8d97cdf2c6d72df9eecc4144c321bb40dd64044be4919286f7359"},
+  {pc = 0x8003e79c, expected_word = 0x400008, table_vram = 0x80001bd0, count = 0x14, sha256 = "7c5210ad33109bf5daa91c80925ab7eb89a944a80952474d7441b904878aeb80"},
+  {pc = 0x8003e824, expected_word = 0x400008, table_vram = 0x80001c20, count = 0x14, sha256 = "cca0708f187d499352aa67baa457d919f94b6cce3cfa7b8c27d9abb58ad79e4b"},
+  {pc = 0x8003e8a4, expected_word = 0x400008, table_vram = 0x80001c70, count = 0x14, sha256 = "4533abc0e7ef0be456548066f438f1d318bdeaa3109bd2562fedc013a9c953d2"},
+  {pc = 0x8003e920, expected_word = 0x400008, table_vram = 0x80001cc0, count = 0x14, sha256 = "0a1ec6a9b4ee5f9aaede59a601500f5891bce8cd059943a1130a88c577469a82"},
+  {pc = 0x8003e99c, expected_word = 0x400008, table_vram = 0x80001d10, count = 0x14, sha256 = "710fc7ebaa13a865c7df894565dbb0c2900c942717195822cd76f3c36e335c47"},
+  {pc = 0x800445ec, expected_word = 0x400008, table_vram = 0x80002850, count = 0x64, sha256 = "d339bc3523d69f6a58ec32dca788ae22bc2d4b7d968fda384bbf08dd538170a6"},
+  {pc = 0x80056360, expected_word = 0x400008, table_vram = 0x80002ad0, count = 0xc, sha256 = "78cabff14876249c73974d26c09572d9ae5a9395fd50773e2c49f3056338cc49"},
+  {pc = 0x8006c21c, expected_word = 0x400008, table_vram = 0x80002d90, count = 0x10, sha256 = "99f13f5b69d028bd4a137e9f466550427cf1ef6ec0fad936f9171add94eafd93"},
+  {pc = 0x80082c08, expected_word = 0x400008, table_vram = 0x800034d0, count = 0x9, sha256 = "0431d3c7ea56a6e75e3af99c930195e52f6145329a301dc1a5187dfaa34be1b8"},
+  {pc = 0x80083f38, expected_word = 0x400008, table_vram = 0x80003538, count = 0x6, sha256 = "bbf0d52a6fd3031d537bf5a3777330db1625045f94ab5d76cb4d0edc908397ab"},
+  {pc = 0x800852f4, expected_word = 0x400008, table_vram = 0x80003570, count = 0x11, sha256 = "9a99ff86bb6d82d678c51a7e19a5caa29c83e1fa3a8140c8049baad2c2a514b8"},
+  {pc = 0x800862b4, expected_word = 0x400008, table_vram = 0x80003668, count = 0x9, sha256 = "92e99ad9b03808ecb02205cdf6ae1222e9b2bbc658e8f135f46ea3767c8626d4"},
+  {pc = 0x80086720, expected_word = 0x400008, table_vram = 0x80003690, count = 0x8, sha256 = "033a5ac7d29d94cbda1999c1396c8bc1a0603784647c21a3f779804163011b54"},
+  {pc = 0x8008db3c, expected_word = 0x400008, table_vram = 0x80003700, count = 0x7, sha256 = "6a5d712188c199a1ec9281cd8785ae97d32c5347ce988aa84825ce06842f923f"},
+  {pc = 0x8008e854, expected_word = 0x400008, table_vram = 0x80003720, count = 0x18, sha256 = "b89e1faf717ea35bdabc5d4ad71bc00b241a203cda793c36e2c1071567a1d33b"},
+  {pc = 0x800917e0, expected_word = 0x400008, table_vram = 0x800037b8, count = 0x54, sha256 = "4d9c52fa76da214a836a9cdbf0add5987120ec2c031736a0942be6cb33142adf"},
+  {pc = 0x80093518, expected_word = 0x400008, table_vram = 0x80003980, count = 0x7, sha256 = "a5717188a530f8ceb990e04acb3f593e3096cd6b6c840d047b84fa52749a8804"},
+]
 
 [bootstrap]
 initial_rom_offset = 0x1000
@@ -23,11 +84,11 @@ bss_start = 0x800a4af0
 bss_end = 0x80136720
 system_entry = 0x8006eb30
 main_entry = 0x8006eb90
-main_id = 1
-main_priority = 10
+main_id = 0x1
+main_priority = 0xa
 main_object = 0x800bf090
 main_stack = 0x800bfa40
-counter_hz = 46875000
+counter_hz = 0x2cb4178
 thread_tail = 0x800a36a0
 run_queue = 0x800a36a8
 active_queue = 0x800a36ac
@@ -36,10 +97,10 @@ vi_clock = 0x800a3678
 clock_rate = 0x800a3670
 
 [bootstrap.parameters]
-0x80000300 = 1
-0x80000304 = 0
+0x80000300 = 0x1
+0x80000304 = 0x0
 0x80000308 = 0xb0000000
-0x8000030c = 0
+0x8000030c = 0x0
 0x80000310 = 0x17d6
-0x80000314 = 1
+0x80000314 = 0x1
 0x80000318 = 0x800000

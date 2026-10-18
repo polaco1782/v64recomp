@@ -2,6 +2,7 @@
 // src/uCodes/F3DEX2CBFD.cpp and src/gSP.cpp (GPL-2.0-or-later).
 // RT64 supplies the ordinary F3DEX2/RDP state and rendering operations.
 #include "graphics.h"
+#include "game.h"
 #include "runtime.h"
 #include "gbi/rt64_gbi_f3dex2.h"
 #include "gbi/rt64_gbi_rdp.h"
@@ -28,11 +29,8 @@ struct ConkerGBI {
     size_t ram_size = 0;
 } cbfd;
 
-void check(bool ok, const char *message, uint32_t value) {
-    if (!ok) recomp_fail(message, value);
-}
 void bounds(uint32_t address, size_t bytes) {
-    check(address <= cbfd.ram_size && bytes <= cbfd.ram_size - address,
+    recomp_game_require(address <= cbfd.ram_size && bytes <= cbfd.ram_size - address,
           "Conker graphics buffer outside RDRAM", address);
 }
 uint8_t byte(RT64::State *s, uint32_t address) { return s->RDRAM[address ^ 3]; }
@@ -61,7 +59,7 @@ void move_word(RT64::State *s, RT64::DisplayList **dl) {
     const uint32_t w0 = (*dl)->w0, w1 = (*dl)->w1;
     switch ((w0 >> 16) & 255) {
     case G_MW_NUMLIGHT:
-        check(w1 % 48 == 0 && w1 / 48 < cbfd.lights.size(), "Conker invalid light count", w1);
+        recomp_game_require(w1 % 48 == 0 && w1 / 48 < cbfd.lights.size(), "Conker invalid light count", w1);
         cbfd.light_count = w1 / 48;
         break;
     case G_MW_CLIP: case G_MW_SEGMENT: case G_MW_FOG: case G_MW_PERSPNORM:
@@ -71,7 +69,7 @@ void move_word(RT64::State *s, RT64::DisplayList **dl) {
         // Bit 3 selects an unused coordinate form in this microcode.
         if (w0 & 8) return;
         unsigned index = (w0 >> 1) & 3, part = w0 & 0x30;
-        check(index < 3 && part != 0x30, "Conker invalid coordinate modifier", w0);
+        recomp_game_require(index < 3 && part != 0x30, "Conker invalid coordinate modifier", w0);
         for (unsigned i = 0; i < 2; i++) {
             uint16_t value = uint16_t(w1 >> (i ? 0 : 16));
             if (part == 0) cbfd.coordinates[index + i] = int16_t(value);
@@ -95,14 +93,14 @@ void move_mem(RT64::State *s, RT64::DisplayList **dl) {
         break;
     case F3DEX2_G_MV_LIGHT: {
         unsigned offset = (w0 >> 5) & 0x3fff, index = offset / 48;
-        check(offset % 48 == 0, "Conker invalid light offset", w0);
+        recomp_game_require(offset % 48 == 0, "Conker invalid light offset", w0);
         if (index < 2) {
             bounds(address, 16);
             s->rsp->setLookAt(index, (*dl)->w1);
             break;
         }
         index -= 2;
-        check(index < cbfd.lights.size(), "Conker light index outside array", index);
+        recomp_game_require(index < cbfd.lights.size(), "Conker light index outside array", index);
         bounds(address, 40);
         Light &light = cbfd.lights[index];
         light.color = hlslpp::float3(byte(s, address), byte(s, address + 1), byte(s, address + 2)) / 255.0f;
@@ -130,7 +128,7 @@ void tri4(RT64::State *s, RT64::DisplayList **dl) {
 void vertex(RT64::State *s, RT64::DisplayList **dl) {
     auto *rsp = s->rsp.get();
     uint32_t count = ((*dl)->w0 >> 12) & 255, end = ((*dl)->w0 >> 1) & 127;
-    check(count && count <= end, "Conker invalid vertex range", (*dl)->w0);
+    recomp_game_require(count && count <= end, "Conker invalid vertex range", (*dl)->w0);
     uint32_t first = end - count, address = rsp->fromSegmentedMasked((*dl)->w1);
     bounds(address, count * sizeof(RT64::RSP::Vertex));
     uint32_t &mode = rsp->geometryModeStack[rsp->geometryModeStackSize - 1];
@@ -197,7 +195,7 @@ void vertex(RT64::State *s, RT64::DisplayList **dl) {
     if (!generated_uv.empty()) {
         auto &queue = *s->ext.workloadQueue;
         auto &uv = queue.workloads[queue.writeCursor].drawData.tcFloats;
-        check(uv.size() >= count * 2, "Conker missing generated texture coordinates", address);
+        recomp_game_require(uv.size() >= count * 2, "Conker missing generated texture coordinates", address);
         size_t base = uv.size() - count * 2;
         for (uint32_t i = 0; i < count; i++) for (unsigned axis = 0; axis < 2; axis++)
             uv[base + i * 2 + axis] = generated_uv[i][axis];
@@ -209,7 +207,7 @@ bool fingerprint(RT64::State *s, uint32_t address, size_t bytes, const char *hex
     for (size_t i = 0; i < bytes; i++) canonical[i] = byte(s, address + uint32_t(i));
     std::array<uint8_t, 32> digest{};
     unsigned length = 0;
-    check(EVP_Digest(canonical.data(), bytes, digest.data(), &length, EVP_sha256(), nullptr) && length == 32,
+    recomp_game_require(EVP_Digest(canonical.data(), bytes, digest.data(), &length, EVP_sha256(), nullptr) && length == 32,
           "Conker graphics fingerprint failed", address);
     constexpr char digits[] = "0123456789abcdef";
     for (unsigned i = 0; i < digest.size(); i++)
@@ -223,7 +221,7 @@ bool conker_bind_microcode(void *opaque, size_t ram_size, uint32_t code, uint32_
     cbfd.ram_size = ram_size;
     // Complete text is at cartridge 0x36e90..0x38330. Initialized DMEM is
     // 0x3f410..0x3fb90; the remaining 0x80 bytes hold mutable task parameters.
-    check(fingerprint(interpreter->state, code, 0x14a0, "55a64255ef5c60046c3e88bb73891f72ee095e0005b4b748f78f5ff296b35cfa") &&
+    recomp_game_require(fingerprint(interpreter->state, code, 0x14a0, "55a64255ef5c60046c3e88bb73891f72ee095e0005b4b748f78f5ff296b35cfa") &&
           fingerprint(interpreter->state, data, 0x780, "eded3bafe0d2ea7f1c3b7d2d0633fb38854b200b98763af8d355781e170b3fe8"),
           "Conker unrecognized graphics microcode", code);
     // The intro reads a CI8 render target as RGBA16 without a TLUT. RT64's

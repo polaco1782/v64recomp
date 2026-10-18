@@ -61,15 +61,15 @@ an existing destination containing different bytes.
 ```sh
 # Super Mario 64 US
 .venv/bin/python tools/import_rom.py \
-  --profile games/sm64-us/full.toml --rom '/path/to/Super Mario 64.v64'
+  --profile games/sm64-us/profile.toml --rom '/path/to/Super Mario 64.v64'
 
 # Ocarina of Time US V1.2
 .venv/bin/python tools/import_rom.py \
   --profile games/oot-us-v12/profile.toml --rom '/path/to/Ocarina of Time.n64'
 ```
 
-SM64 uses `games/sm64-us/full.toml`; the other supported games use
-`games/<game>/profile.toml`, where `<game>` is `goldeneye-us`, `shadowman-us`,
+Every game uses `games/<game>/profile.toml`, where `<game>` is `sm64-us`,
+`goldeneye-us`, `shadowman-us`,
 `quake-us`, `duke-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
 `conker-us` (experimental; see its [port status](games/conker-us/README.md)).
 The imported, normalized files have these filenames and MD5 checksums:
@@ -116,9 +116,10 @@ compilation. Use `-DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF` to build shared li
 
 ## Release and debug
 
-`games/<game>/release/` holds the playable app, audio profiles and required game
-adapters, such as paging, graphics extensions and overlay loading. Both modes
-use these adapters and the same checked ROM metadata in the game's root.
+`games/<game>/` holds `profile.toml`, `generate.py`, headers, audio profiles and
+shared game adapters, such as paging, graphics extensions and overlay loading.
+Both modes use these adapters and the same checked ROM metadata.
+`games/<game>/release/` holds `app.c` and any additional Release-only sources.
 Release retains correctness checks and crash reporting. It writes no routine
 reports, WAVs, screenshots, RAM captures or call traces during normal play.
 
@@ -166,7 +167,7 @@ Rice/GLideN64 PNGs while playing. A native worker builds `textures.rtz` and
 then requests an RT64 reload. Original ZIPs and source images are kept. See
 [native texture scanning](texture_scan/README.md) for usage.
 
-Release failures routed through `recomp_fail` write a uniquely named JSON report
+Failures in either mode routed through `recomp_fail` write a uniquely named JSON report
 and RDRAM snapshot to `local/crashes/<game>/`. Reports include native stack
 addresses, guest thread registers/last tracked PCs and the latest task. Keep the
 executable and its generated sources when investigating a crash:
@@ -205,9 +206,10 @@ The technical documentation covers each part:
 
 ## Layout
 
-- `games/<game>/release/`: playable app and required game adapters/generation inputs.
+- `games/<game>/`: shared headers, adapters, `generate.py` and `profile.toml`.
+- `games/<game>/release/`: playable app and Release-only sources.
 - `games/<game>/debug/`: trace apps, captures/replays and inspection tools.
-- `games/<game>/*.toml`, `*.json`: shared pinned ROM profiles and checked inventories.
+- `games/<game>/*.json`: checked ROM inventories and game-specific metadata.
 - `runtime/`, `include/`, `backends/`: shared runtime and rendering/audio services.
 - `cmake/`, `CMakePresets.json`: game selection, generation, build and run integration.
 - `tools/`: shared ROM import, discovery, translation and crash inspection tools.
