@@ -28,7 +28,7 @@ services cover these groups:
 | Cartridge transfers | `osPiStartDma`, `osEPiStartDma`, `osPiRawReadIo` | Copy verified ROM data into guest RAM, service supported cartridge/save accesses and deliver completion messages. |
 | Video | `osCreateViManager`, `osViSetMode`, `osViSwapBuffer` | Maintain VI configuration, framebuffer swaps and retrace events used by the game and native renderer. |
 | RSP tasks and audio output | `osSpTaskLoad`, `osSpTaskStartGo`, `osAiSetFrequency`, `osAiSetNextBuffer`, `osAiGetLength` | Validate task descriptors, dispatch graphics/audio work, model the AI DMA FIFO and publish supported completion events. |
-| Controllers and saves | `osContStartReadData`, `osContGetReadData`, `osEepromLongRead`, `osEepromLongWrite` | Expose native input through guest controller structures and SI events; persist configured EEPROM devices. SRAM uses the cartridge-transfer service. |
+| Controllers and saves | `osContStartReadData`, `osContGetReadData`, `osPfsInitPak`, `osPfsIsPlug`, `__osContRamRead`, `__osContRamWrite`, `osEepromRead`, `osEepromWrite`, `osEepromLongRead`, `osEepromLongWrite` | Expose native input through guest controller structures and SI events; persist configured EEPROM and Controller Pak devices. SRAM uses the cartridge-transfer service. |
 | Cache maintenance | `osWritebackDCache`, `osInvalDCache`, `osInvalICache` | Validate supported ranges while coherent host memory supplies CPU/backend visibility. |
 | Common memory/string routines | `memcpy`, `memset`, `bcopy`, `bzero`, `bcmp`, `strlen`, `strchr` | Operate on guest addresses while preserving byte order, return values and each routine's overlap behavior. |
 
@@ -39,6 +39,32 @@ playback. These backends execute supported task operations separately from the
 recompiled CPU code. Game-specific adapters handle custom startup, paging,
 graphics extensions and overlay relocation. Device and task coverage remains
 specific to each port; see [game support](status.md).
+
+## Controller Pak saves
+
+`RecompIOConfig.pak_mask` selects ports with a 32 KiB Controller Pak;
+`pak_paths[4]` supplies an optional raw `.mpk` image for each port. A null path
+keeps that Pak in memory. A new disk image receives the standard ID copies,
+inode tables and empty 16-note directory, with 123 free 256-byte pages. Existing
+images must be exactly 32768 bytes. Writes use a temporary file, `fsync` and
+rename; a failed write reports `PFS_ERR_CONTRFAIL` and keeps the previous
+in-memory contents. EEPROM and Pak files must have separate paths.
+
+`osPfsInitPak` initializes the guest's 0x68-byte `OSPfs` handle. Controller
+initialization, queries and `osPfsIsPlug` report the configured accessories.
+The verified `__osContRamRead`, `__osContRamWrite` and `__osPfsGetStatus`
+boundaries access the device directly, so file allocation, lookup, reads,
+writes and deletion still run through the game's translated libultra code.
+The [SDK file API](https://ultra64.ca/files/documentation/online-manuals/man-v5-2/allman52/n64man/os/osPfsReadWriteFile.htm)
+uses 32-byte transfers within allocated notes. Only single-bank Controller
+Paks are supported. Initialization reports damaged IDs or inconsistent
+filesystems instead of automatically repairing or formatting existing saves.
+
+Duke Nukem 64, Nightmare Creatures, Quake 64 and Shadow Man configure a Pak on
+controller port 1. Their Release applications save to
+`local/saves/<game-id>.mpk`; `--save FILE` overrides that path. Their Debug
+applications use `<ROM-path>.mpk`. Other games keep their existing save-device
+configuration. Gameplay save/load acceptance remains to be tested.
 
 ## Preserving scheduling and completion behavior
 

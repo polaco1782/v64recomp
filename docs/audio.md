@@ -11,6 +11,12 @@ a private RAM snapshot. The host merges task-modified bytes before publishing
 the SP event; unrelated guest writes are retained, and conflicting writes fail
 explicitly. No CPU or RSP instruction interpreter is linked.
 
+The native PI manager services accepted cartridge DMA submissions on the owner
+thread before returning to guest code. Deferring those transfers until a later
+scheduler poll can let an audio task snapshot stale sample data; Quake's streamed
+ADPCM samples exposed this ordering bug. DMA completion messages are posted after
+the copy, before the submitting guest resumes.
+
 Zelda FILTER setup copies coefficients into an RSP-local cache. Filter execution
 updates that cache and the 32-byte guest filter state, preserving the CPU-owned
 source table. This permits the game to prepare the following task's coefficients

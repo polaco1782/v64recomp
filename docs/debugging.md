@@ -1,5 +1,9 @@
 # Native debugging
 
+For a new game, start with [adding a ROM and debugging a new port](adding-a-rom.md).
+It covers mapping discovery, missing host/guest symbols, GDB, memory corruption
+and the shared diagnostic scripts under `tools/`.
+
 Configure `cmake --preset <game>-debug` and build that preset. The binary is
 `build/<game>-debug/bin/<game>`; use `--help` for options. Debug app sources live
 under `games/<game>/debug/`, and generated sources under the build's `generated/`.
@@ -19,6 +23,10 @@ call site and host thread; OS entries include the cumulative call count. Set
 `RECOMP_DEBUG_FULL=1` to print every sampled event. Save operations and thread
 lifecycle events always print. These diagnostics are compiled out of Release.
 For example: `build/quake-us-debug/bin/quake-us --frames 300 2>/tmp/quake-debug.log`.
+
+Set `RECOMP_DEBUG_QUEUE=0x800bea10` to trace every successful send, receive and
+blocking wait for one guest message queue. The trace includes the message,
+remaining count, caller thread and guest PC; cached/uncached aliases match.
 
 Generated Debug code updates `ctx->pc` before every translated MIPS instruction,
 including branches, jumps, nops, and executed delay slots. Annulled branch-likely

@@ -33,6 +33,9 @@ register through `recomp_load`; its physical, KSEG0 and KSEG1 addresses use the
 same polled native DMA state as the SDK hook. Other direct hardware accesses
 remain unsupported.
 An unknown routine without an explicit override keeps its translated CPU code.
+EEPROM services include the blocking eight-byte `osEepromRead`/`osEepromWrite`
+calls as well as the long transfers. The single-block ABI has three arguments;
+an unrelated value in the fourth argument register does not change its size.
 To disable automatic recognition, a profile can set:
 
 ```toml

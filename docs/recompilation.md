@@ -55,6 +55,14 @@ Computed local jumps can select a target from a switch table. Profiles can suppl
 checked targets and jump tables, and registered indirect calls can resolve
 against the compiled function registry at runtime.
 
+Handwritten assembly can materialize a local return address before jumping or
+conditionally branching into a shared helper. `discovery.tail_continuations`
+binds the transfer's `pc` and `expected_word` to a `resume_pc` in the caller.
+After the helper returns, generated code verifies RA and resumes that label.
+Conditional transfers apply this only on the taken path; branch-likely delay
+slots remain annulled on the untaken path. Checked `fallthroughs` describe the
+equivalent continuation when execution falls into a separate helper entry.
+
 Files such as [Duke's startup-entries.json](../games/duke-us/startup-entries.json)
 provide checked function starts for partial conversions:
 
