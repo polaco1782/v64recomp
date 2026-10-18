@@ -510,7 +510,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             log_emission('Memory %s s%s 0x%08x: %s -> %s',
                          function['name'], function['section'], instruction.pc, instruction.assembly, statement,
                          verbose=True)
-        return [location(instruction.pc, indent), *([indent + statement] if statement else [])]
+        return [f'{indent}/* {instruction.pc:08x}: {instruction.assembly} */',
+                location(instruction.pc, indent), *([indent + statement] if statement else [])]
 
     def call_location(indent: str) -> str:
         return location(i.pc, indent)
@@ -581,23 +582,26 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         log_call(address, 'Tail/branch call')
         return [call_location(indent), *emit_call(address, indent, resume=False), f"{indent}return;"]
 
+    prologue = lines
+    blocks = []
+    delay_slots = {i.pc + 4 for i in instructions if i.delay}
     for index, i in enumerate(instructions):
-        lines.extend([f"L_{i.pc:08x}:", f"    /* {i.pc:08x}: {i.assembly} */"])
+        lines = [f"L_{i.pc:08x}:"]
+        blocks.append((i.pc, lines))
         if not i.delay:
             lines.extend(emit_body(i))
-            if 'instruction_addresses' in function:
-                checked = fallthrough_transfers.get(i.pc)
-                if checked:
-                    lines.extend(checked_fallthrough(checked, '    '))
-                else:
-                    if i.pc + 4 in addresses:
-                        if index + 1 == len(instructions) or instructions[index + 1].pc != i.pc + 4:
-                            lines.append(jump(i.pc + 4))
-                    else:
-                        lines.append(fallthrough(i.pc))
+            checked = fallthrough_transfers.get(i.pc)
+            if checked:
+                lines.extend(checked_fallthrough(checked, '    '))
+            elif i.pc + 4 in addresses:
+                if index + 1 == len(instructions) or instructions[index + 1].pc != i.pc + 4:
+                    lines.append(jump(i.pc + 4))
+            else:
+                lines.append(fallthrough(i.pc))
             continue
 
         slot = instructions[index + 1]
+        lines.append(f"    /* {i.pc:08x}: {i.assembly} */")
         lines.append(location(i.pc))
         lines.append('    {')
         if i.opcode not in ('j', 'jal', 'jr', 'jalr'):
@@ -700,8 +704,14 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             lines.extend(transfer(target(i)))
         lines.append('    }')
 
-    last_pc = instructions[-1].pc if instructions else function['vram']
-    lines.extend([fallthrough(last_pc), '}'])
-    # Only control-flow destinations need labels. Delay slots remain separately
-    # addressable, and call/branch continuations still jump over their inline copy.
+    lines = prologue
+    for pc, block in blocks:
+        # Transfers already execute their slot inline and leave via return/goto.
+        # Keep a standalone copy only when another path explicitly enters it.
+        if pc not in delay_slots or f'L_{pc:08x}:' in used_labels:
+            lines.extend(block)
+    if not instructions:
+        lines.append(fallthrough(function['vram']))
+    lines.append('}')
+    # Only control-flow destinations need labels.
     return '\n'.join(line for line in lines if not line.startswith('L_') or line in used_labels)
