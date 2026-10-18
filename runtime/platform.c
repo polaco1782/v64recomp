@@ -108,10 +108,8 @@ static void code_loaded(Runtime *rt, uint32_t address, uint32_t offset, uint32_t
     }
 }
 
-static void poll_platform(Runtime *rt) {
+static void service_pi(Runtime *rt) {
     RecompPlatform *p = platform(rt);
-    uint64_t now = recomp_count64(rt);
-    if (p->initialized) poll_ai(rt);
     if (p->pi_created) {
         /* The native PI service replaces the privileged manager thread. */
         for (unsigned i = 0; i < 256; i++) {
@@ -164,6 +162,37 @@ static void poll_platform(Runtime *rt) {
             if (queue) (void)recomp_queue_send(rt, queue, mb, RECOMP_MESG_NOBLOCK, false);
         }
     }
+}
+
+typedef struct PiSubmission {
+    uint32_t message;
+    int32_t result;
+} PiSubmission;
+
+static void submit_pi_on_host(Runtime *rt, void *opaque) {
+    PiSubmission *submission = opaque;
+    uint32_t mb = submission->message;
+    submission->result = recomp_queue_send(rt, platform(rt)->pi_queue, mb, RECOMP_MESG_NOBLOCK,
+                                          recomp_load(rt, mb + 2, 1) == 1);
+    /* The native service replaces the high-priority PI manager. Run it before
+     * returning to guest code: waiting until a scheduler checkpoint can let an
+     * SP task snapshot sample buffers whose ROM transfers are still queued.
+     * Enqueue and service on the owner so queue wakeups cannot preempt between
+     * them or reenter the service while it is updating a transfer. */
+    if (!submission->result) service_pi(rt);
+}
+
+static int32_t submit_pi(Runtime *rt, uint32_t mb) {
+    PiSubmission submission = {.message = mb};
+    recomp_on_host(rt, submit_pi_on_host, &submission);
+    return submission.result;
+}
+
+static void poll_platform(Runtime *rt) {
+    RecompPlatform *p = platform(rt);
+    uint64_t now = recomp_count64(rt);
+    if (p->initialized) poll_ai(rt);
+    service_pi(rt);
     if (!p->vi.manager_created || now < p->next_vi) return;
     uint64_t due = (now - p->next_vi) / p->config.vi_period_ticks + 1;
     if (due > (UINT64_MAX - p->next_vi) / p->config.vi_period_ticks || due > UINT64_MAX - p->vi.retraces)
@@ -401,8 +430,7 @@ void hook_os_epi_start_dma(Runtime *rt, MipsContext *ctx) {
             || (!sram && base!=UINT32_C(0xb0000000))) { result(ctx, -1); return; }
     recomp_ram_address(rt, mb, 24);
     recomp_store(rt, mb, 15+direction, 2); recomp_store(rt, mb+20, handle, 4);
-    result(ctx, recomp_queue_send(rt, p->pi_queue, mb, RECOMP_MESG_NOBLOCK,
-                                 recomp_load(rt, mb+2, 1) == 1));
+    result(ctx, submit_pi(rt, mb));
 }
 void hook_os_create_vi_manager(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
@@ -496,7 +524,7 @@ void hook_os_pi_start_dma(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, mb, 11, 2); recomp_store(rt, mb + 2, (uint8_t)arg(ctx, 1), 1);
     recomp_store(rt, mb + 4, queue, 4); recomp_store(rt, mb + 8, address, 4);
     recomp_store(rt, mb + 12, arg(ctx, 3), 4); recomp_store(rt, mb + 16, size, 4);
-    result(ctx, recomp_queue_send(rt, p->pi_queue, mb, RECOMP_MESG_NOBLOCK, arg(ctx, 1) == 1));
+    result(ctx, submit_pi(rt, mb));
 }
 void hook_os_pi_raw_read_io(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
