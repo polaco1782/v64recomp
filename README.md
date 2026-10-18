@@ -126,6 +126,9 @@ reports, WAVs, screenshots, RAM captures or call traces during normal play.
 tools. Debug includes full symbols, unoptimized game code, call tracing, captures,
 gameplay probes, RT64's F1 inspector and F6 wireframe.
 It retains the existing diagnostic startup behavior and checks.
+RT64 and its bundled dependencies use optimized `RelWithDebInfo` compiler flags
+inside Debug builds; game code, the shared runtime and native adapters retain
+their Debug flags.
 
 ```sh
 cmake --preset quake-us-debug
