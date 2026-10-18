@@ -189,6 +189,48 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "duke-zero-hour-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/duke-zero-hour-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "duke-zero-hour-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "duke-zero-hour-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/duke-zero-hour-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "duke-zero-hour-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "hexen-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/hexen-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "hexen-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "hexen-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/hexen-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "hexen-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -263,6 +305,22 @@
     {
       "name": "conker-us-debug",
       "configurePreset": "conker-us-debug"
+    },
+    {
+      "name": "duke-zero-hour-us-release",
+      "configurePreset": "duke-zero-hour-us-release"
+    },
+    {
+      "name": "duke-zero-hour-us-debug",
+      "configurePreset": "duke-zero-hour-us-debug"
+    },
+    {
+      "name": "hexen-us-release",
+      "configurePreset": "hexen-us-release"
+    },
+    {
+      "name": "hexen-us-debug",
+      "configurePreset": "hexen-us-debug"
     }
   ]
 }

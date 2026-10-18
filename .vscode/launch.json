@@ -189,6 +189,48 @@
         }
       ],
       "preLaunchTask": "Build Debug: Conker US"
+    },
+    {
+      "name": "Debug: Duke Nukem Zero Hour US",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/duke-zero-hour-us-debug/bin/duke-zero-hour-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Duke Nukem Zero Hour US"
+    },
+    {
+      "name": "Debug: Hexen US",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/hexen-us-debug/bin/hexen-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Hexen US"
     }
   ]
 }

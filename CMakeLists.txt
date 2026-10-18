@@ -15,7 +15,7 @@ configure_file(licenses/Mupen64Plus-rsp-hle.txt "${CMAKE_BINARY_DIR}/bin/license
 
 # One native game per build tree. Use a separate directory for each mode.
 set(RECOMP_GAME "sm64-us" CACHE STRING "Game to build, or none for shared libraries")
-set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us)
+set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us)
 set_property(CACHE RECOMP_GAME PROPERTY STRINGS none ${RECOMP_GAMES})
 if(NOT RECOMP_GAME STREQUAL "none" AND NOT RECOMP_GAME IN_LIST RECOMP_GAMES)
     message(FATAL_ERROR "Unknown RECOMP_GAME=${RECOMP_GAME}. Choose: ${RECOMP_GAMES};none")

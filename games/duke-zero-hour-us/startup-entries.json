@@ -1,0 +1,3459 @@
+{
+  "format_version": 1,
+  "rom_sha1": "de4db292cc6cf5dd1dd1d3c9700cf8e5c3078410",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2147486160,
+      "origin": "checked-root",
+      "sha256": "d357a00523421ce647e5c3994b0da36c68cf9318d96ee69633320cb2828876b2"
+    },
+    {
+      "vram": 2147491648,
+      "origin": "checked-root",
+      "sha256": "af685906f2239b8bcb262d515113543f382668327d5e0becca819a98d7adaacc",
+      "materialized_sources": [
+        2149332500,
+        2149344316,
+        2149352904
+      ]
+    },
+    {
+      "vram": 2147491756,
+      "origin": "checked-root",
+      "sha256": "7bb4384549bc36ec1ecac0eb7cbf9b22012bc52f8b56c0137f64d31901f564c9",
+      "materialized_sources": [
+        2149325376
+      ]
+    },
+    {
+      "vram": 2147493192,
+      "origin": "checked-root",
+      "sha256": "c1d8ea115fb8cb30fb85199077216355bcdb9a98e2cb76c1ec83b453109618a1"
+    },
+    {
+      "vram": 2147496440,
+      "origin": "checked-root",
+      "sha256": "79600a1cefad906e575b02265e16c91383be22ae287f31bdffb5b12dd885e0b8",
+      "materialized_sources": [
+        2147495252
+      ]
+    },
+    {
+      "vram": 2147702800,
+      "origin": "checked-root",
+      "sha256": "aa34e6d115b314902e82e5871171a9e2f12d786cd2732babbd04727ff71c2a7c",
+      "script_call_rom_offsets": [
+        1073232,
+        1074348,
+        1075656,
+        1084280,
+        1085212,
+        1086256,
+        1086924,
+        1088372,
+        1091768,
+        1094180,
+        1108352,
+        1118096,
+        1121508,
+        1132424,
+        1137184,
+        1143464
+      ]
+    },
+    {
+      "vram": 2147703124,
+      "origin": "checked-root",
+      "sha256": "aa34e6d115b314902e82e5871171a9e2f12d786cd2732babbd04727ff71c2a7c",
+      "script_call_rom_offsets": [
+        1078284,
+        1078696,
+        1079256,
+        1079888,
+        1080616,
+        1083064,
+        1103248,
+        1109376,
+        1118580
+      ]
+    },
+    {
+      "vram": 2147703448,
+      "origin": "checked-root",
+      "sha256": "1b78509a86bf9fbe790a2323ef7f78ec4b302f1bb94c3467642573bf17565f4c",
+      "script_call_rom_offsets": [
+        1091472,
+        1091960,
+        1092148,
+        1092380,
+        1093740,
+        1093776,
+        1118956,
+        1119032,
+        1120104
+      ]
+    },
+    {
+      "vram": 2147704208,
+      "origin": "checked-root",
+      "sha256": "1b78509a86bf9fbe790a2323ef7f78ec4b302f1bb94c3467642573bf17565f4c",
+      "script_call_rom_offsets": [
+        1078452,
+        1079028,
+        1079112,
+        1080380,
+        1081012,
+        1081092,
+        1081868,
+        1081952,
+        1087828,
+        1102436,
+        1102736,
+        1103060,
+        1104032,
+        1104524,
+        1104852,
+        1113324,
+        1121732,
+        1133416,
+        1140448
+      ]
+    },
+    {
+      "vram": 2147704448,
+      "origin": "checked-root",
+      "sha256": "1b78509a86bf9fbe790a2323ef7f78ec4b302f1bb94c3467642573bf17565f4c",
+      "script_call_rom_offsets": [
+        1079324,
+        1082776,
+        1083196,
+        1089236,
+        1089716,
+        1095384,
+        1095500,
+        1107792,
+        1144428
+      ]
+    },
+    {
+      "vram": 2147704752,
+      "origin": "checked-root",
+      "sha256": "1b78509a86bf9fbe790a2323ef7f78ec4b302f1bb94c3467642573bf17565f4c",
+      "script_call_rom_offsets": [
+        1079800,
+        1081484,
+        1082228,
+        1083000,
+        1083472,
+        1089132,
+        1102780,
+        1104076,
+        1104608,
+        1107928,
+        1143908,
+        1144564,
+        1144788,
+        1144924,
+        1145096,
+        1145332
+      ]
+    },
+    {
+      "vram": 2147704992,
+      "origin": "checked-root",
+      "sha256": "1b78509a86bf9fbe790a2323ef7f78ec4b302f1bb94c3467642573bf17565f4c",
+      "script_call_rom_offsets": [
+        1118908
+      ]
+    },
+    {
+      "vram": 2147705332,
+      "origin": "checked-root",
+      "sha256": "a6bbd4a9beda0aade20b7e8b2180c1c80f0182288c4062bddbc4bf9cdba52f60",
+      "script_call_rom_offsets": [
+        1109708
+      ]
+    },
+    {
+      "vram": 2147752296,
+      "origin": "checked-root",
+      "sha256": "bbbbcca5d7310995d411b537f760981e5324564da676928c6c0f37dadeeb7053",
+      "pointer_sources": [
+        2148396860
+      ]
+    },
+    {
+      "vram": 2147753232,
+      "origin": "checked-root",
+      "sha256": "38d3e4cd346011f543b6171cd1e77939ed05bc4c4a96289458a2545270e801ee",
+      "pointer_sources": [
+        2148397100
+      ]
+    },
+    {
+      "vram": 2147754060,
+      "origin": "checked-root",
+      "sha256": "ba99a875cf4a3dce570230ec12bd6b103df938112ee6c6c74d3d5fcbb1fac71c",
+      "pointer_sources": [
+        2148396928
+      ]
+    },
+    {
+      "vram": 2147754132,
+      "origin": "checked-root",
+      "sha256": "9b84999db9cd94b6efae42dc0bc9279d59349f5e17756a3e94fc18525300fde2",
+      "pointer_sources": [
+        2148396932
+      ]
+    },
+    {
+      "vram": 2147754184,
+      "origin": "checked-root",
+      "sha256": "f7dc16e4ec630e216254402f3b10e070505aef1a16bb5405e808a5605dad04d3",
+      "pointer_sources": [
+        2148397116
+      ]
+    },
+    {
+      "vram": 2147754360,
+      "origin": "checked-root",
+      "sha256": "f2b6f016aa4e845334d4ccdf8d1691513537c65ee32c195491da00da94ec90c8",
+      "pointer_sources": [
+        2148397088
+      ]
+    },
+    {
+      "vram": 2147754512,
+      "origin": "checked-root",
+      "sha256": "8544cb590ebd51162366ef09c30b783e26703b40a1fd74dc9a9c6d330206d62a",
+      "pointer_sources": [
+        2148397112
+      ]
+    },
+    {
+      "vram": 2147754684,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148396908
+      ]
+    },
+    {
+      "vram": 2147754880,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397164
+      ]
+    },
+    {
+      "vram": 2147755060,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148396992
+      ]
+    },
+    {
+      "vram": 2147755416,
+      "origin": "checked-root",
+      "sha256": "38c69c8dd3c53e814ba975af10c1ce50a1e1babd9e09a6605fad517538969008",
+      "pointer_sources": [
+        2148396884
+      ]
+    },
+    {
+      "vram": 2147756128,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148396996
+      ]
+    },
+    {
+      "vram": 2147756308,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148396868
+      ]
+    },
+    {
+      "vram": 2147756468,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148397000
+      ]
+    },
+    {
+      "vram": 2147756652,
+      "origin": "checked-root",
+      "sha256": "3e84902989920b4748039d92eb3a681a7cd303bce071ba3301bf776a34097e27",
+      "pointer_sources": [
+        2148396872
+      ]
+    },
+    {
+      "vram": 2147756772,
+      "origin": "checked-root",
+      "sha256": "3e84902989920b4748039d92eb3a681a7cd303bce071ba3301bf776a34097e27",
+      "pointer_sources": [
+        2148396904
+      ]
+    },
+    {
+      "vram": 2147756864,
+      "origin": "checked-root",
+      "sha256": "3e84902989920b4748039d92eb3a681a7cd303bce071ba3301bf776a34097e27",
+      "pointer_sources": [
+        2148397184
+      ]
+    },
+    {
+      "vram": 2147756952,
+      "origin": "checked-root",
+      "sha256": "fdcbb95395b411acb50cdcc6b1aacecfc89348089e7dd0037481b336f7322c3e",
+      "pointer_sources": [
+        2148396944
+      ]
+    },
+    {
+      "vram": 2147757080,
+      "origin": "checked-root",
+      "sha256": "fdcbb95395b411acb50cdcc6b1aacecfc89348089e7dd0037481b336f7322c3e",
+      "pointer_sources": [
+        2148397180
+      ]
+    },
+    {
+      "vram": 2147760116,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148396900
+      ]
+    },
+    {
+      "vram": 2147760240,
+      "origin": "checked-root",
+      "sha256": "73e1fe2d457786b8014cde15d949abf7551b95025999bbf78e7b48ffb35ce7e9",
+      "pointer_sources": [
+        2148396880,
+        2148396888,
+        2148396892,
+        2148396896,
+        2148396916,
+        2148396920,
+        2148396936,
+        2148397040,
+        2148397044,
+        2148397048,
+        2148397076,
+        2148397136,
+        2148397168,
+        2148397172
+      ]
+    },
+    {
+      "vram": 2147760248,
+      "origin": "checked-root",
+      "sha256": "ab1137c212726770ae2794d876a938285c7547a8f7ab293ff06042fb78e81739",
+      "pointer_sources": [
+        2148396864
+      ]
+    },
+    {
+      "vram": 2147760276,
+      "origin": "checked-root",
+      "sha256": "f52694dad81942d4a7f2b15bf0d59acfc7dbb53b6a1075dc6ae6a94755b8bc42",
+      "pointer_sources": [
+        2148396988
+      ]
+    },
+    {
+      "vram": 2147760440,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148397124
+      ]
+    },
+    {
+      "vram": 2147760592,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148397188
+      ]
+    },
+    {
+      "vram": 2147760756,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148396948
+      ]
+    },
+    {
+      "vram": 2147760912,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148396952
+      ]
+    },
+    {
+      "vram": 2147761068,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397024
+      ]
+    },
+    {
+      "vram": 2147761320,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148396980
+      ]
+    },
+    {
+      "vram": 2147761508,
+      "origin": "checked-root",
+      "sha256": "b665a890d46785bf07aae910f6d829cff7e4da57a8ac8054f27cd8d171dd242b",
+      "pointer_sources": [
+        2148397120
+      ]
+    },
+    {
+      "vram": 2147761636,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148396876
+      ]
+    },
+    {
+      "vram": 2147761788,
+      "origin": "checked-root",
+      "sha256": "6b06c347b23d1641b473df67078368eb2153de3d452b1a97bde829707e68115f",
+      "pointer_sources": [
+        2148397140
+      ]
+    },
+    {
+      "vram": 2147761980,
+      "origin": "checked-root",
+      "sha256": "6b06c347b23d1641b473df67078368eb2153de3d452b1a97bde829707e68115f",
+      "pointer_sources": [
+        2148397192
+      ]
+    },
+    {
+      "vram": 2147762176,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148396912
+      ]
+    },
+    {
+      "vram": 2147762464,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148397176
+      ]
+    },
+    {
+      "vram": 2147762748,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148397144
+      ]
+    },
+    {
+      "vram": 2147762904,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148396984
+      ]
+    },
+    {
+      "vram": 2147763092,
+      "origin": "checked-root",
+      "sha256": "38c69c8dd3c53e814ba975af10c1ce50a1e1babd9e09a6605fad517538969008",
+      "pointer_sources": [
+        2148396956
+      ]
+    },
+    {
+      "vram": 2147764308,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148396960
+      ]
+    },
+    {
+      "vram": 2147764416,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148396964
+      ]
+    },
+    {
+      "vram": 2147764556,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148396968
+      ]
+    },
+    {
+      "vram": 2147764700,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397004
+      ]
+    },
+    {
+      "vram": 2147764856,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397008
+      ]
+    },
+    {
+      "vram": 2147765048,
+      "origin": "checked-root",
+      "sha256": "9f3e632b6fddb2ba747fb3c5e58b4b2b28f0ccbd80aeefa16e817bcafef05927",
+      "pointer_sources": [
+        2148396972
+      ]
+    },
+    {
+      "vram": 2147766172,
+      "origin": "checked-root",
+      "sha256": "5ee9b40add28d92b0f11a2442d486ebf8f070c965b4c441aede42d3e1fd15b7b",
+      "pointer_sources": [
+        2148397052
+      ]
+    },
+    {
+      "vram": 2147766496,
+      "origin": "checked-root",
+      "sha256": "f32b8a1d542eebceca2f005ae369f6a0b1730b638dbd4faaf9014a530c3a3d63",
+      "pointer_sources": [
+        2148397092
+      ]
+    },
+    {
+      "vram": 2147766824,
+      "origin": "checked-root",
+      "sha256": "5ee9b40add28d92b0f11a2442d486ebf8f070c965b4c441aede42d3e1fd15b7b",
+      "pointer_sources": [
+        2148397068
+      ]
+    },
+    {
+      "vram": 2147767484,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148396976
+      ]
+    },
+    {
+      "vram": 2147767624,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397148
+      ]
+    },
+    {
+      "vram": 2147767812,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397016
+      ]
+    },
+    {
+      "vram": 2147767952,
+      "origin": "checked-root",
+      "sha256": "95db8311519f93f08a7f50bbec1485e7cd0870a6a173c720b1ff3fcb6e1e02a8",
+      "pointer_sources": [
+        2148397032
+      ]
+    },
+    {
+      "vram": 2147768068,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397020
+      ]
+    },
+    {
+      "vram": 2147768252,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397128
+      ]
+    },
+    {
+      "vram": 2147768444,
+      "origin": "checked-root",
+      "sha256": "07eda61e76f9ce7576942b7a8f088c25ed29d16c1efd08142f4b619c048c8700",
+      "pointer_sources": [
+        2148397132
+      ]
+    },
+    {
+      "vram": 2147768528,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397152
+      ]
+    },
+    {
+      "vram": 2147768712,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397156
+      ]
+    },
+    {
+      "vram": 2147768904,
+      "origin": "checked-root",
+      "sha256": "07eda61e76f9ce7576942b7a8f088c25ed29d16c1efd08142f4b619c048c8700",
+      "pointer_sources": [
+        2148397160
+      ]
+    },
+    {
+      "vram": 2147768988,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148397036
+      ]
+    },
+    {
+      "vram": 2147769092,
+      "origin": "checked-root",
+      "sha256": "db7cc0b74ef480e69e926ac081c7107837e0bddf06121e6f4a152a0f05bf5e62",
+      "pointer_sources": [
+        2148397064
+      ]
+    },
+    {
+      "vram": 2147769188,
+      "origin": "checked-root",
+      "sha256": "38c69c8dd3c53e814ba975af10c1ce50a1e1babd9e09a6605fad517538969008",
+      "pointer_sources": [
+        2148397072
+      ]
+    },
+    {
+      "vram": 2147769412,
+      "origin": "checked-root",
+      "sha256": "5f09a53f138636a3f43e4079bd8b3d782481b4b584b4af8133a77a3320952280",
+      "pointer_sources": [
+        2148397080
+      ]
+    },
+    {
+      "vram": 2147769528,
+      "origin": "checked-root",
+      "sha256": "5f09a53f138636a3f43e4079bd8b3d782481b4b584b4af8133a77a3320952280",
+      "pointer_sources": [
+        2148397108
+      ]
+    },
+    {
+      "vram": 2147769652,
+      "origin": "checked-root",
+      "sha256": "5f09a53f138636a3f43e4079bd8b3d782481b4b584b4af8133a77a3320952280",
+      "pointer_sources": [
+        2148397084
+      ]
+    },
+    {
+      "vram": 2147769768,
+      "origin": "checked-root",
+      "sha256": "884c4ee04677caae3d164edf02f1ff9d8ae372afc70c8692c2df410819397a37",
+      "pointer_sources": [
+        2148397060
+      ]
+    },
+    {
+      "vram": 2147771540,
+      "origin": "checked-root",
+      "sha256": "b665a890d46785bf07aae910f6d829cff7e4da57a8ac8054f27cd8d171dd242b",
+      "pointer_sources": [
+        2148397012
+      ]
+    },
+    {
+      "vram": 2147791936,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397028
+      ]
+    },
+    {
+      "vram": 2147794464,
+      "origin": "checked-root",
+      "sha256": "f9b1bc4a0dec45520c687c22d0c615f157f1ee6fb6900f36375b5d243b612b48",
+      "pointer_sources": [
+        2148397096
+      ]
+    },
+    {
+      "vram": 2147794504,
+      "origin": "checked-root",
+      "sha256": "b665a890d46785bf07aae910f6d829cff7e4da57a8ac8054f27cd8d171dd242b",
+      "pointer_sources": [
+        2148396940
+      ]
+    },
+    {
+      "vram": 2147814420,
+      "origin": "checked-root",
+      "sha256": "4ad0fc2f2bc91edc40fbe6c6075e4edc4059001c3685971498eab09163ac079b",
+      "script_call_rom_offsets": [
+        1124840,
+        1125900,
+        1126404
+      ]
+    },
+    {
+      "vram": 2147835584,
+      "origin": "checked-root",
+      "sha256": "f5609a309d83c55397d32ffb7550813631327a28094b3ddee848fc48b5672fe1",
+      "script_call_rom_offsets": [
+        1120072
+      ]
+    },
+    {
+      "vram": 2147836884,
+      "origin": "checked-root",
+      "sha256": "4dbbd9d03c777caa49bf030724e5acf411718108048c9ac65c16c462c9a844fb",
+      "script_call_rom_offsets": [
+        1120116
+      ]
+    },
+    {
+      "vram": 2147845224,
+      "origin": "checked-root",
+      "sha256": "d81547c8761c80f0c880c2700172757c0ae63af7698d7ca1bf52a0ae12688012",
+      "pointer_sources": [
+        2148397104
+      ]
+    },
+    {
+      "vram": 2147847748,
+      "origin": "checked-root",
+      "sha256": "8ec0c75205b2a0853346e91b79a82a5f1d94b41fdcf6930c25998c7095a25432",
+      "script_call_rom_offsets": [
+        1115900,
+        1140152,
+        1141592,
+        1141604
+      ]
+    },
+    {
+      "vram": 2147848512,
+      "origin": "checked-root",
+      "sha256": "37c70dcb66566f991751d8ef77b0e359dd4193af044ccc1c3a33b1a4d33f5a9e",
+      "script_call_rom_offsets": [
+        1086068,
+        1086400,
+        1097300,
+        1107044,
+        1111772,
+        1115324,
+        1124000,
+        1131984
+      ]
+    },
+    {
+      "vram": 2147848548,
+      "origin": "checked-root",
+      "sha256": "0685285a59b5e04981f7b1ba34f4cc50bf01262bac309c2288075fd80ed1b296",
+      "script_call_rom_offsets": [
+        1076500,
+        1076768,
+        1087980,
+        1088028,
+        1095772,
+        1095820,
+        1101324,
+        1101372,
+        1110344,
+        1110648,
+        1114060,
+        1114108,
+        1122352,
+        1122400,
+        1145156,
+        1145392
+      ]
+    },
+    {
+      "vram": 2147848684,
+      "origin": "checked-root",
+      "sha256": "ed8e2638e0e303d701402f00ee5d164f9ac01769c4495568b450ddc325d5ddb2",
+      "script_call_rom_offsets": [
+        1073528,
+        1073676,
+        1087148,
+        1094276,
+        1094424,
+        1098004,
+        1098152,
+        1108712,
+        1108752,
+        1111980,
+        1112152,
+        1112192,
+        1120948,
+        1121084,
+        1143264,
+        1143316
+      ]
+    },
+    {
+      "vram": 2147848836,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "script_call_rom_offsets": [
+        1115812
+      ]
+    },
+    {
+      "vram": 2147848988,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1132676
+      ]
+    },
+    {
+      "vram": 2147849032,
+      "origin": "checked-root",
+      "sha256": "08d33ee5c9de9cbfdb933fb3108c4463ecea3b3a70c88b4b6b8956ad7c1376b7",
+      "script_call_rom_offsets": [
+        1109256,
+        1109440,
+        1111328,
+        1118660,
+        1119088,
+        1129352,
+        1136332
+      ]
+    },
+    {
+      "vram": 2147849312,
+      "origin": "checked-root",
+      "sha256": "b2623ec6e140f088a2a1028556592f0dd0b229643c6cb36a753c28439d249a16",
+      "script_call_rom_offsets": [
+        1121768,
+        1133440
+      ]
+    },
+    {
+      "vram": 2147849640,
+      "origin": "checked-root",
+      "sha256": "f2d4cb71ba0cd19db8e84dcae3db83c009b585c74ede5ec17d960439a182af45",
+      "script_call_rom_offsets": [
+        1084088,
+        1084148,
+        1084628,
+        1084696,
+        1084820,
+        1084928,
+        1084980,
+        1085444,
+        1085512,
+        1085608,
+        1085676,
+        1089296,
+        1090428,
+        1090776,
+        1091108,
+        1096212,
+        1096264,
+        1096628,
+        1096724,
+        1096808,
+        1096860,
+        1097184,
+        1097280,
+        1105076,
+        1105236,
+        1105296,
+        1105724,
+        1105792,
+        1105896,
+        1106004,
+        1106056,
+        1106432,
+        1106500,
+        1106596,
+        1106652,
+        1111096,
+        1111148,
+        1111632,
+        1111728,
+        1114244,
+        1114304,
+        1114672,
+        1114776,
+        1114872,
+        1114924,
+        1115200,
+        1115296,
+        1116180,
+        1117036,
+        1122880,
+        1122940,
+        1123320,
+        1123424,
+        1123508,
+        1123560,
+        1123876,
+        1123972,
+        1126588,
+        1126648,
+        1126940,
+        1127060,
+        1127216,
+        1131204,
+        1131256,
+        1132088,
+        1133956,
+        1134008,
+        1134324,
+        1138588,
+        1139056,
+        1139368,
+        1139808,
+        1140108,
+        1140740,
+        1141036,
+        1141064,
+        1141980,
+        1142408
+      ]
+    },
+    {
+      "vram": 2147850240,
+      "origin": "checked-root",
+      "sha256": "e0d88ae6cead876e7696ae3fa536c0a3788a866db947f7e896f97eac64ac8210",
+      "script_call_rom_offsets": [
+        1084052,
+        1084892,
+        1088896,
+        1089984,
+        1096188,
+        1096784,
+        1105052,
+        1105200,
+        1105968,
+        1111060,
+        1114208,
+        1114836,
+        1116132,
+        1117012,
+        1122856,
+        1123484,
+        1126564,
+        1126880,
+        1131180,
+        1133932,
+        1138528,
+        1139316,
+        1139592,
+        1140000,
+        1140708,
+        1141000,
+        1141924,
+        1142352
+      ]
+    },
+    {
+      "vram": 2147850604,
+      "origin": "checked-root",
+      "sha256": "191a8451da25882967562db847e8f26ee1b56fceb47c97885f1bcaaf15a1ad90",
+      "script_call_rom_offsets": [
+        1084536,
+        1085352,
+        1085892,
+        1089408,
+        1090528,
+        1096536,
+        1097092,
+        1105160,
+        1105632,
+        1106340,
+        1106868,
+        1111540,
+        1114580,
+        1115108,
+        1116684,
+        1117104,
+        1123228,
+        1123784,
+        1126700,
+        1127084,
+        1127304,
+        1131764,
+        1134068,
+        1138964,
+        1139480,
+        1139888,
+        1140264,
+        1140816,
+        1141228,
+        1142264,
+        1142504
+      ]
+    },
+    {
+      "vram": 2147850944,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1084568,
+        1085384,
+        1089440,
+        1090644,
+        1096568,
+        1097124,
+        1105664,
+        1106372,
+        1111572,
+        1114612,
+        1115140,
+        1123260,
+        1123816,
+        1131796,
+        1134100,
+        1138732,
+        1139020
+      ]
+    },
+    {
+      "vram": 2147851024,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "script_call_rom_offsets": [
+        1087380,
+        1096104,
+        1112420,
+        1113952,
+        1133748
+      ]
+    },
+    {
+      "vram": 2147851336,
+      "origin": "checked-root",
+      "sha256": "f723feb6b0bc5d90eb5e83637b1bd85a971b439d64f1981a64aa6ff9dad1fcb9",
+      "script_call_rom_offsets": [
+        1095396,
+        1095512
+      ]
+    },
+    {
+      "vram": 2147851784,
+      "origin": "checked-root",
+      "sha256": "4756848f866a8e4c151480f6b946c9ae67bda02380434027dd7ef95d42737c73",
+      "script_call_rom_offsets": [
+        1119284
+      ]
+    },
+    {
+      "vram": 2147853228,
+      "origin": "checked-root",
+      "sha256": "191a8451da25882967562db847e8f26ee1b56fceb47c97885f1bcaaf15a1ad90",
+      "script_call_rom_offsets": [
+        1077740,
+        1088172,
+        1095980,
+        1101704,
+        1110680,
+        1114140,
+        1122572
+      ]
+    },
+    {
+      "vram": 2147854336,
+      "origin": "checked-root",
+      "sha256": "b72449f179007ac99832dcc828d9927f53851e1879768b4c744def1770272abc",
+      "script_call_rom_offsets": [
+        1104472
+      ]
+    },
+    {
+      "vram": 2147854484,
+      "origin": "checked-root",
+      "sha256": "835b7ac97cc314875dc89c712a22cfe519a3e33210db8717d0943eae4274cf12",
+      "script_call_rom_offsets": [
+        1073664,
+        1087136,
+        1094412,
+        1098140,
+        1108700,
+        1112140,
+        1121072,
+        1143304
+      ]
+    },
+    {
+      "vram": 2147854504,
+      "origin": "checked-root",
+      "sha256": "c6f27542abd0c73acc764445e5d81c7cef1ef2de9c8e777a1dc599ca768df2b1",
+      "script_call_rom_offsets": [
+        1089164,
+        1090576,
+        1107488,
+        1107632,
+        1113256,
+        1128672,
+        1130332,
+        1130464
+      ]
+    },
+    {
+      "vram": 2147854828,
+      "origin": "checked-root",
+      "sha256": "0b1963e9bea4a1e53c437eafd8d27d23bab1ccdfb95ad14592cb77243949e0cc",
+      "script_call_rom_offsets": [
+        1073264,
+        1073288
+      ]
+    },
+    {
+      "vram": 2147854896,
+      "origin": "checked-root",
+      "sha256": "da1fc9e059b45f1f92b960a4fea12e9ee7622060f6d1404069ef681f29f36605",
+      "script_call_rom_offsets": [
+        1121948,
+        1122784
+      ]
+    },
+    {
+      "vram": 2147855400,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1124288,
+        1125120,
+        1126088
+      ]
+    },
+    {
+      "vram": 2147855640,
+      "origin": "checked-root",
+      "sha256": "fc3452dd10105812449306c39364c9a1e27c70f55ab5da59a258e898d749b01a",
+      "script_call_rom_offsets": [
+        1124164,
+        1125040,
+        1125964
+      ]
+    },
+    {
+      "vram": 2147855896,
+      "origin": "checked-root",
+      "sha256": "591eca6a819a4ee690c775e33d6892662f7dbb0857029c7233f90ff1d659970f",
+      "script_call_rom_offsets": [
+        1124572,
+        1125504,
+        1126420
+      ]
+    },
+    {
+      "vram": 2147856280,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "script_call_rom_offsets": [
+        1124316,
+        1125260,
+        1126116
+      ]
+    },
+    {
+      "vram": 2147856740,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1124460,
+        1125428,
+        1126260
+      ]
+    },
+    {
+      "vram": 2147856876,
+      "origin": "checked-root",
+      "sha256": "4ec605ca3be7ad0a8ee58db651f10bcd7bb2ef02ae9af34a567e9f9109a35175",
+      "script_call_rom_offsets": [
+        1124892,
+        1125928
+      ]
+    },
+    {
+      "vram": 2147857116,
+      "origin": "checked-root",
+      "sha256": "74072b9e92f2a88fb5639560627df559f764af0e49bb45af815fb233f8817693",
+      "script_call_rom_offsets": [
+        1124828,
+        1125912,
+        1126348,
+        1126392
+      ]
+    },
+    {
+      "vram": 2147857288,
+      "origin": "checked-root",
+      "sha256": "7e1ba5dceda3032a489df14175d714debe67a956d33ba66af8a308f51ce5c555",
+      "script_call_rom_offsets": [
+        1124816,
+        1126336,
+        1126380
+      ]
+    },
+    {
+      "vram": 2147857344,
+      "origin": "checked-root",
+      "sha256": "4e4f59517f75ca616f203decfa1a32ea419076a4b28e83fc1b7c8aaabe07282c",
+      "script_call_rom_offsets": [
+        1126928
+      ]
+    },
+    {
+      "vram": 2147857764,
+      "origin": "checked-root",
+      "sha256": "13449e4fba9724862e8d7c12560e5063ee50e14d298a8bad154d0fb892d78423",
+      "script_call_rom_offsets": [
+        1127872
+      ]
+    },
+    {
+      "vram": 2147857864,
+      "origin": "checked-root",
+      "sha256": "7a54ccc90a29fa8e88e371d2cc96ce2fa81f4982722665c7aaadc37e38789ada",
+      "script_call_rom_offsets": [
+        1127072,
+        1127280,
+        1127472,
+        1127512,
+        1127628,
+        1127804
+      ]
+    },
+    {
+      "vram": 2147858476,
+      "origin": "checked-root",
+      "sha256": "7c4aa6b6d2f1f99d703e5c0fab08df987fe06777167beab980f3a731a87feedd",
+      "script_call_rom_offsets": [
+        1124984,
+        1125216,
+        1125800
+      ]
+    },
+    {
+      "vram": 2147858600,
+      "origin": "checked-root",
+      "sha256": "e35a4a796c182bed9330a3449219d6d646d30d4cc7804c45ef0044d2033be95e",
+      "script_call_rom_offsets": [
+        1125160,
+        1125744
+      ]
+    },
+    {
+      "vram": 2147858680,
+      "origin": "checked-root",
+      "sha256": "267cc6e68c8671f9d5a6a30f093aa527077e3fb46faed10c74e164bcb135bc1f",
+      "script_call_rom_offsets": [
+        1125148,
+        1125732
+      ]
+    },
+    {
+      "vram": 2147858776,
+      "origin": "checked-root",
+      "sha256": "ae12e794eeb2e8a653d281fd58bd7839cbbcc26fd22de17531a3c54d1b737d40",
+      "script_call_rom_offsets": [
+        1088492
+      ]
+    },
+    {
+      "vram": 2147859004,
+      "origin": "checked-root",
+      "sha256": "2aa4bc51531027f60d6b1f6a007312cdfb4247d4548c6f064a297a83d24f8336",
+      "script_call_rom_offsets": [
+        1088504,
+        1088628,
+        1088772
+      ]
+    },
+    {
+      "vram": 2147859116,
+      "origin": "checked-root",
+      "sha256": "4e4f59517f75ca616f203decfa1a32ea419076a4b28e83fc1b7c8aaabe07282c",
+      "script_call_rom_offsets": [
+        1125248,
+        1125832
+      ]
+    },
+    {
+      "vram": 2147859336,
+      "origin": "checked-root",
+      "sha256": "5b1bfb4f20ef94a11a8108a4278202570d9b8a170b98d12a44fdcc056bb83bce",
+      "script_call_rom_offsets": [
+        1107608,
+        1128768,
+        1128832,
+        1130440,
+        1130548,
+        1130620
+      ]
+    },
+    {
+      "vram": 2147859752,
+      "origin": "checked-root",
+      "sha256": "f79417cf4602cd4d32f96c137670200b9e44db00d8a42d47a3ada49cf339a250",
+      "script_call_rom_offsets": [
+        1077252,
+        1078376,
+        1078592,
+        1078964,
+        1079180,
+        1079736,
+        1080120,
+        1080356,
+        1080524,
+        1080908,
+        1081124,
+        1081776,
+        1082032,
+        1082556,
+        1082692,
+        1082720,
+        1083292,
+        1083604,
+        1083668,
+        1083936,
+        1083960,
+        1086520,
+        1086604,
+        1087748,
+        1088640,
+        1088800,
+        1101100,
+        1102108,
+        1102236,
+        1102412,
+        1102552,
+        1102712,
+        1102876,
+        1103036,
+        1103192,
+        1103508,
+        1103568,
+        1103640,
+        1103724,
+        1103776,
+        1103928,
+        1103980,
+        1104292,
+        1104408,
+        1104460,
+        1104584,
+        1104828,
+        1104932,
+        1105020,
+        1105148
+      ]
+    },
+    {
+      "vram": 2147860440,
+      "origin": "checked-root",
+      "sha256": "d5217336b3869579a2afffe829bd7b4cfa3deb53889125469b1f772fdf3bd01a",
+      "script_call_rom_offsets": [
+        1088980,
+        1089616,
+        1089756,
+        1090088,
+        1090764,
+        1090940,
+        1091096
+      ]
+    },
+    {
+      "vram": 2147860892,
+      "origin": "checked-root",
+      "sha256": "c907241d1b349aeea8b07fe13702dd46c1e2d70db471501b6ae541c8d6730a1b",
+      "script_call_rom_offsets": [
+        1074312,
+        1074636,
+        1075824,
+        1077508,
+        1084188,
+        1084464,
+        1084524,
+        1084860,
+        1085156,
+        1085340,
+        1085748,
+        1085880,
+        1086012,
+        1086108,
+        1086220,
+        1086888,
+        1098432,
+        1098712,
+        1099780,
+        1105336,
+        1105560,
+        1105620,
+        1105936,
+        1106192,
+        1106328,
+        1106724,
+        1106856,
+        1106988,
+        1107084,
+        1107148,
+        1134564,
+        1134800,
+        1135152
+      ]
+    },
+    {
+      "vram": 2147860980,
+      "origin": "checked-root",
+      "sha256": "f3988bbbc68ca094a10c274fa6dff78276d0e7b76c751484c0d34f492c6a204f",
+      "script_call_rom_offsets": [
+        1091484,
+        1091984,
+        1092160,
+        1092392,
+        1093752,
+        1093788,
+        1116376,
+        1124556,
+        1127416,
+        1127904,
+        1145968
+      ]
+    },
+    {
+      "vram": 2147861068,
+      "origin": "checked-root",
+      "sha256": "c9eebe718e2e2be0b37ea26d900bdefd1e6c1e0c77ac075337ebfc930b2927cc",
+      "script_call_rom_offsets": [
+        1116428,
+        1129564
+      ]
+    },
+    {
+      "vram": 2147861684,
+      "origin": "checked-root",
+      "sha256": "b1de9702983de4eada50bfa0726ab95106a6b498e06e807c7317f636bca5dc55",
+      "script_call_rom_offsets": [
+        1073488,
+        1094236,
+        1097964,
+        1108636,
+        1111940,
+        1120896
+      ]
+    },
+    {
+      "vram": 2147861780,
+      "origin": "checked-root",
+      "sha256": "022932b58d270e79cc1d0d3f1c5d959c3fc981ea259e76ddd507cd5b8f2e6055",
+      "script_call_rom_offsets": [
+        1073456,
+        1087040,
+        1088480,
+        1094204,
+        1097932,
+        1108604,
+        1113908,
+        1120864
+      ]
+    },
+    {
+      "vram": 2147861816,
+      "origin": "checked-root",
+      "sha256": "c503b44dd296d61067fa7f44aff76a129106686009ab2d93b96f2bf022a3879c",
+      "script_call_rom_offsets": [
+        1140672
+      ]
+    },
+    {
+      "vram": 2147861832,
+      "origin": "checked-root",
+      "sha256": "60b73419668a1f37d059d84b3eff3e9a70d770de78909f71b7d2fe6c38bd3f21",
+      "script_call_rom_offsets": [
+        1093000
+      ]
+    },
+    {
+      "vram": 2147861872,
+      "origin": "checked-root",
+      "sha256": "33db3c859643428a530cd77e0056ea881e9dcddd5ebcc4a132d4f61450492a05",
+      "script_call_rom_offsets": [
+        1109952
+      ]
+    },
+    {
+      "vram": 2147861904,
+      "origin": "checked-root",
+      "sha256": "325af790b0a2218f7e4d500027ef2fa5de54472f087b4be6d2ab343456d28477",
+      "script_call_rom_offsets": [
+        1108060,
+        1117816,
+        1117892,
+        1118000,
+        1118012,
+        1118052
+      ]
+    },
+    {
+      "vram": 2147862084,
+      "origin": "checked-root",
+      "sha256": "9c16efc0b11f2d89ab919493b0a9c052186a174e0f2493f5cc714ca410943631",
+      "script_call_rom_offsets": [
+        1118076
+      ]
+    },
+    {
+      "vram": 2147862244,
+      "origin": "checked-root",
+      "sha256": "3b7f4bf0c7ec544992af243ff5ff037487c70efbd6994ada851a2df1b0b26eb9",
+      "script_call_rom_offsets": [
+        1074384,
+        1075692,
+        1076408,
+        1084316,
+        1085248,
+        1086292,
+        1086960,
+        1088408,
+        1095724,
+        1096372,
+        1097036,
+        1097528,
+        1098492,
+        1099724,
+        1101276,
+        1105424,
+        1106272,
+        1107356,
+        1110092,
+        1111440,
+        1113920,
+        1114444,
+        1115052,
+        1115648,
+        1120060,
+        1122184,
+        1123080,
+        1123728,
+        1124116
+      ]
+    },
+    {
+      "vram": 2147862620,
+      "origin": "checked-root",
+      "sha256": "628e56e1e876273b61bd7efee104290f7db49f4bfc533c38a172aa0252686b44",
+      "script_call_rom_offsets": [
+        1126980,
+        1127176,
+        1127524,
+        1127640,
+        1127764,
+        1131316,
+        1131420,
+        1131520
+      ]
+    },
+    {
+      "vram": 2147862816,
+      "origin": "checked-root",
+      "sha256": "d7727484f4287fdf2e5af09ca4d90a0afe5325892876261c10873646ca224b32",
+      "script_call_rom_offsets": [
+        1100504,
+        1141876
+      ]
+    },
+    {
+      "vram": 2147862884,
+      "origin": "checked-root",
+      "sha256": "5f813b88679fbe80d97159b01bba8804f8d10c565fbd41a2be8e1660cbb913ec",
+      "script_call_rom_offsets": [
+        1091380,
+        1100104,
+        1142036,
+        1142224
+      ]
+    },
+    {
+      "vram": 2147862972,
+      "origin": "checked-root",
+      "sha256": "b6e95e4bfa02fea9662b3537d07ea85e00667eaf4be5ac8d880887707b75e49b",
+      "script_call_rom_offsets": [
+        1089384
+      ]
+    },
+    {
+      "vram": 2147863064,
+      "origin": "checked-root",
+      "sha256": "f50c720758235d3eb37a8f94c17578883852c57d87c88d86dd8dadff60f0e4ce",
+      "script_call_rom_offsets": [
+        1099844
+      ]
+    },
+    {
+      "vram": 2147863080,
+      "origin": "checked-root",
+      "sha256": "c6f35b70e6c869d1bae0889ec99680ce4f6d5166f422a427638763bc2039900b",
+      "script_call_rom_offsets": [
+        1108524
+      ]
+    },
+    {
+      "vram": 2147863124,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1130736
+      ]
+    },
+    {
+      "vram": 2147863176,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1089284,
+        1090416
+      ]
+    },
+    {
+      "vram": 2147863220,
+      "origin": "checked-root",
+      "sha256": "7e1ba5dceda3032a489df14175d714debe67a956d33ba66af8a308f51ce5c555",
+      "script_call_rom_offsets": [
+        1089396,
+        1090516
+      ]
+    },
+    {
+      "vram": 2147863264,
+      "origin": "checked-root",
+      "sha256": "fbce6efed340fd8cfbb5b6b654003e87b4fd967c6f6eccccad48ed2723bd4d4d",
+      "script_call_rom_offsets": [
+        1088856,
+        1089924
+      ]
+    },
+    {
+      "vram": 2147863492,
+      "origin": "checked-root",
+      "sha256": "26c7f175cd2ba107fcf80cf5514404a7b2db9b8f6a43c4ced210619d1dd7b263",
+      "script_call_rom_offsets": [
+        1132740,
+        1132872,
+        1133048,
+        1133184
+      ]
+    },
+    {
+      "vram": 2147865192,
+      "origin": "checked-root",
+      "sha256": "576d9d5ba5e50cf45a9067e2929adcd9fbd56fe00d1f2a4130e28090f7009056",
+      "script_call_rom_offsets": [
+        1132580
+      ]
+    },
+    {
+      "vram": 2147865500,
+      "origin": "checked-root",
+      "sha256": "17c33e5cfd62be54d69acfee036a01d0ae36c2e8d6a50c6ac033a00d28a1e271",
+      "script_call_rom_offsets": [
+        1124276,
+        1126076,
+        1127008,
+        1127204,
+        1127552,
+        1127668,
+        1127792
+      ]
+    },
+    {
+      "vram": 2147865532,
+      "origin": "checked-root",
+      "sha256": "b72449f179007ac99832dcc828d9927f53851e1879768b4c744def1770272abc",
+      "script_call_rom_offsets": [
+        1073996,
+        1074136,
+        1074252,
+        1075768,
+        1076628,
+        1076944,
+        1077644,
+        1077920,
+        1144760,
+        1145016
+      ]
+    },
+    {
+      "vram": 2147865648,
+      "origin": "checked-root",
+      "sha256": "b72449f179007ac99832dcc828d9927f53851e1879768b4c744def1770272abc",
+      "script_call_rom_offsets": [
+        1131304,
+        1134056
+      ]
+    },
+    {
+      "vram": 2147865764,
+      "origin": "checked-root",
+      "sha256": "b72449f179007ac99832dcc828d9927f53851e1879768b4c744def1770272abc",
+      "script_call_rom_offsets": [
+        1136136,
+        1136620,
+        1136812
+      ]
+    },
+    {
+      "vram": 2147865880,
+      "origin": "checked-root",
+      "sha256": "82ca67b80803072aefc9a6a9b95f58fbd478f595a4fe1f08537dbea462eb8f13",
+      "script_call_rom_offsets": [
+        1140224
+      ]
+    },
+    {
+      "vram": 2147866068,
+      "origin": "checked-root",
+      "sha256": "bbbbba14f6bc2e95d49348f6141fb6f64e7a44f2b36ac3843b8985a6e2efe1fa",
+      "script_call_rom_offsets": [
+        1085736,
+        1106712
+      ]
+    },
+    {
+      "vram": 2147866432,
+      "origin": "checked-root",
+      "sha256": "f7d9cddc2d37948541da6fa68a2c1a10d403633c8d0f13f6327ca7a38e88ba17",
+      "script_call_rom_offsets": [
+        1124300,
+        1125136,
+        1126100
+      ]
+    },
+    {
+      "vram": 2147866684,
+      "origin": "checked-root",
+      "sha256": "d4d2debe73fe466e9e2f1b986b8020050ee3b80d29442537a3981d69bc456ed1",
+      "script_call_rom_offsets": [
+        1136716,
+        1138188,
+        1145600
+      ]
+    },
+    {
+      "vram": 2147867844,
+      "origin": "checked-root",
+      "sha256": "3fe31d82ef112073b39b7584032a796a8988b313a9359adeb711a641fd6034c0",
+      "script_call_rom_offsets": [
+        1078852,
+        1116440,
+        1132244,
+        1132348,
+        1134228,
+        1135236,
+        1135836,
+        1136044,
+        1138372,
+        1141372,
+        1142164,
+        1146168,
+        1147312
+      ]
+    },
+    {
+      "vram": 2147867888,
+      "origin": "checked-root",
+      "sha256": "a671cbc4038def36392f640313d81c65c74b2919f0d4f2ddd9b7b8510e29185f",
+      "script_call_rom_offsets": [
+        1135288
+      ]
+    },
+    {
+      "vram": 2147867904,
+      "origin": "checked-root",
+      "sha256": "577cf25c9cc25fa97b48ec7d485deb951e6cd18f3dda5f61c7e2e4e5214b304b",
+      "script_call_rom_offsets": [
+        1134280,
+        1136096
+      ]
+    },
+    {
+      "vram": 2147867924,
+      "origin": "checked-root",
+      "sha256": "1092557a958316770830c85795761b1265b674584eb6a2291475e076f1b3ace7",
+      "script_call_rom_offsets": [
+        1135312
+      ]
+    },
+    {
+      "vram": 2147868060,
+      "origin": "checked-root",
+      "sha256": "3fe31d82ef112073b39b7584032a796a8988b313a9359adeb711a641fd6034c0",
+      "script_call_rom_offsets": [
+        1116480,
+        1116896,
+        1132400,
+        1139836,
+        1141424,
+        1142176,
+        1142436
+      ]
+    },
+    {
+      "vram": 2147868108,
+      "origin": "checked-root",
+      "sha256": "3fe31d82ef112073b39b7584032a796a8988b313a9359adeb711a641fd6034c0",
+      "script_call_rom_offsets": [
+        1117280
+      ]
+    },
+    {
+      "vram": 2147868148,
+      "origin": "checked-root",
+      "sha256": "22fbb774fa703ab516e816bfa6f06387b5e0340f0f92768fa4812a3557092d24",
+      "script_call_rom_offsets": [
+        1135784,
+        1135876
+      ]
+    },
+    {
+      "vram": 2147868524,
+      "origin": "checked-root",
+      "sha256": "1d00f7a8761d70bddc3be10abfb3d92bb1f28c2c867ef4e762d0f3294dafc519",
+      "script_call_rom_offsets": [
+        1121352
+      ]
+    },
+    {
+      "vram": 2147868628,
+      "origin": "checked-root",
+      "sha256": "9a895784f5642628a3cd75cd5a8d1b5f3a061eb359953416c48bd6a63acbb1d5",
+      "script_call_rom_offsets": [
+        1075032,
+        1099100
+      ]
+    },
+    {
+      "vram": 2147868672,
+      "origin": "checked-root",
+      "sha256": "ea2e8f61bdfafef5f21e037b247384e0abcc7652899d7b266bbbf0ebca8e55e0",
+      "script_call_rom_offsets": [
+        1129372
+      ]
+    },
+    {
+      "vram": 2147868896,
+      "origin": "checked-root",
+      "sha256": "e1372d962e17df7d5d8d49fe973cba5add867eede4b9876b117efcddf5287994",
+      "script_call_rom_offsets": [
+        1127916
+      ]
+    },
+    {
+      "vram": 2147869224,
+      "origin": "checked-root",
+      "sha256": "65c531ccf24f975d8e38391f78d170f72cd960666e228733ceab4b86975c6dbc",
+      "script_call_rom_offsets": [
+        1127860
+      ]
+    },
+    {
+      "vram": 2147869320,
+      "origin": "checked-root",
+      "sha256": "57ad736eeaa726921fb03e6bd8df369a42d4957220c14448838c6cdbae85ad82",
+      "script_call_rom_offsets": [
+        1077112,
+        1101008
+      ]
+    },
+    {
+      "vram": 2147869340,
+      "origin": "checked-root",
+      "sha256": "42f5ed55126b637187562e5779b9cdf9bb0ca75d5158cad66aaacfac739853ea",
+      "script_call_rom_offsets": [
+        1077192,
+        1101052
+      ]
+    },
+    {
+      "vram": 2147869872,
+      "origin": "checked-root",
+      "sha256": "570fa272f0464e23b5db369a0d22494f45b17213fd825c73011481c12cb80fe7",
+      "script_call_rom_offsets": [
+        1138552
+      ]
+    },
+    {
+      "vram": 2147870076,
+      "origin": "checked-root",
+      "sha256": "bf70b3a2cdfb5bcd2d34f69a639b5b6fe720129069c03324f4797fae3e9063e5",
+      "script_call_rom_offsets": [
+        1139104
+      ]
+    },
+    {
+      "vram": 2147870212,
+      "origin": "checked-root",
+      "sha256": "da7bd0edad297047039e635a6dfea40474400bccb35d3a6cd92c6a1ab083ef22",
+      "script_call_rom_offsets": [
+        1139132
+      ]
+    },
+    {
+      "vram": 2147870488,
+      "origin": "checked-root",
+      "sha256": "572b1f6672137ff7a726491866dfd3cca79fc1360d6cbad56c27bf95416338f3",
+      "script_call_rom_offsets": [
+        1116824,
+        1142900
+      ]
+    },
+    {
+      "vram": 2147870576,
+      "origin": "checked-root",
+      "sha256": "ba3933a00d6264a874b0a161dbdc88c47c971bd71072e21481a9cbed054a969d",
+      "script_call_rom_offsets": [
+        1138804,
+        1138872
+      ]
+    },
+    {
+      "vram": 2147870636,
+      "origin": "checked-root",
+      "sha256": "589cbe4ca47db66523e82c1dbefe3aa1e8104998abbe2076817d92b2a568091c",
+      "script_call_rom_offsets": [
+        1138468
+      ]
+    },
+    {
+      "vram": 2147871192,
+      "origin": "checked-root",
+      "sha256": "0338ce61d1c526968aafa011fe49ff5877d7e9a2014fd865cb090187981daee9",
+      "script_call_rom_offsets": [
+        1078432,
+        1079008,
+        1079092,
+        1080992,
+        1081072,
+        1081284,
+        1081848,
+        1081932,
+        1086572,
+        1087788,
+        1088688
+      ]
+    },
+    {
+      "vram": 2147871236,
+      "origin": "checked-root",
+      "sha256": "dce49e766015e39fa154fad26de0f1d56dd94187fcdc4acccb42a6fe2c94b3e5",
+      "script_call_rom_offsets": [
+        1139408
+      ]
+    },
+    {
+      "vram": 2147871268,
+      "origin": "checked-root",
+      "sha256": "3fe31d82ef112073b39b7584032a796a8988b313a9359adeb711a641fd6034c0",
+      "script_call_rom_offsets": [
+        1139160,
+        1145856,
+        1146584
+      ]
+    },
+    {
+      "vram": 2147871312,
+      "origin": "checked-root",
+      "sha256": "643736abaa02e4f692afeabc016d4d083f58c98246af8e83775144aede293954",
+      "script_call_rom_offsets": [
+        1139796
+      ]
+    },
+    {
+      "vram": 2147871564,
+      "origin": "checked-root",
+      "sha256": "3446eaa24adbb4e4f2c212f3e4bf819a6b07f87a06fbe3554bc1fac367fc4430",
+      "script_call_rom_offsets": [
+        1139188
+      ]
+    },
+    {
+      "vram": 2147871648,
+      "origin": "checked-root",
+      "sha256": "ae899d936fa0b7b1c1a1a3c0be5a39807aea4bdacc14b1ef6de4115233f615df",
+      "script_call_rom_offsets": [
+        1138856,
+        1139396,
+        1140556,
+        1145884
+      ]
+    },
+    {
+      "vram": 2147871828,
+      "origin": "checked-root",
+      "sha256": "3fe31d82ef112073b39b7584032a796a8988b313a9359adeb711a641fd6034c0",
+      "script_call_rom_offsets": [
+        1140460,
+        1140492
+      ]
+    },
+    {
+      "vram": 2147871880,
+      "origin": "checked-root",
+      "sha256": "245c56efba1ec06b411f479900d066e0bc7a3483eca31f4aec40967f5c68aa65",
+      "script_call_rom_offsets": [
+        1140504
+      ]
+    },
+    {
+      "vram": 2147872044,
+      "origin": "checked-root",
+      "sha256": "3fe31d82ef112073b39b7584032a796a8988b313a9359adeb711a641fd6034c0",
+      "script_call_rom_offsets": [
+        1140436
+      ]
+    },
+    {
+      "vram": 2147872084,
+      "origin": "checked-root",
+      "sha256": "d34247a042a62169914a293da1b1cec71434cb8e9f942a9ee285017ce1a03d50",
+      "script_call_rom_offsets": [
+        1141828
+      ]
+    },
+    {
+      "vram": 2147872352,
+      "origin": "checked-root",
+      "sha256": "1d00f7a8761d70bddc3be10abfb3d92bb1f28c2c867ef4e762d0f3294dafc519",
+      "script_call_rom_offsets": [
+        1086344
+      ]
+    },
+    {
+      "vram": 2147872596,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "script_call_rom_offsets": [
+        1109636
+      ]
+    },
+    {
+      "vram": 2147872664,
+      "origin": "checked-root",
+      "sha256": "f957bf8ec12bc7c3715c4af56449ba6eaccab2edb53c0a8c641faad587a4a6bf",
+      "script_call_rom_offsets": [
+        1124248,
+        1126048
+      ]
+    },
+    {
+      "vram": 2147872848,
+      "origin": "checked-root",
+      "sha256": "d5217336b3869579a2afffe829bd7b4cfa3deb53889125469b1f772fdf3bd01a",
+      "script_call_rom_offsets": [
+        1088528,
+        1088652,
+        1088784
+      ]
+    },
+    {
+      "vram": 2147873008,
+      "origin": "checked-root",
+      "sha256": "52fc3422f7d70a0d7e5781ea16ecc160b864bb5479c6634229092860ac66ad69",
+      "script_call_rom_offsets": [
+        1116340,
+        1116672
+      ]
+    },
+    {
+      "vram": 2147873424,
+      "origin": "checked-root",
+      "sha256": "64841e687d96ec25cf7cf865785299dd234a171bea400a21e6598966c9d1efbf",
+      "script_call_rom_offsets": [
+        1142060,
+        1142464
+      ]
+    },
+    {
+      "vram": 2147873624,
+      "origin": "checked-root",
+      "sha256": "7719a9327899d3a7026c83b214133993908c67ad3c401027321c7c1de0386bee",
+      "script_call_rom_offsets": [
+        1142748
+      ]
+    },
+    {
+      "vram": 2147873676,
+      "origin": "checked-root",
+      "sha256": "ff21582891b288aa3bb58393b7e608cdc2add6df92f7c1b02abd2abd32672a44",
+      "script_call_rom_offsets": [
+        1143116
+      ]
+    },
+    {
+      "vram": 2147874144,
+      "origin": "checked-root",
+      "sha256": "eacce5c504fef9f9c913bd98cafda3bb181d7ad07ecab3e37209482c036acacd",
+      "script_call_rom_offsets": [
+        1143104
+      ]
+    },
+    {
+      "vram": 2147874472,
+      "origin": "checked-root",
+      "sha256": "3eedaadbea9316eb71eaf70de85bac3c95beada4495921a29e7938e522a85086",
+      "script_call_rom_offsets": [
+        1091972,
+        1092172,
+        1092404,
+        1100492,
+        1118924,
+        1118944,
+        1119100,
+        1119196
+      ]
+    },
+    {
+      "vram": 2147874524,
+      "origin": "checked-root",
+      "sha256": "eb5628b1581b82bde8dd3f69793070d682256478ac1d1c8cb28baab0d4eccb25",
+      "script_call_rom_offsets": [
+        1108920,
+        1108988,
+        1109076
+      ]
+    },
+    {
+      "vram": 2147874608,
+      "origin": "checked-root",
+      "sha256": "ee31835a1a9fee4fb75279d5494ba8633f56d02ad28f1de43feede8b214504f4",
+      "script_call_rom_offsets": [
+        1145676
+      ]
+    },
+    {
+      "vram": 2147874792,
+      "origin": "checked-root",
+      "sha256": "c4c2b362871455df568a7a77d47b71781955f2ee1d962fd0165552ddda964183",
+      "script_call_rom_offsets": [
+        1145752
+      ]
+    },
+    {
+      "vram": 2147874812,
+      "origin": "checked-root",
+      "sha256": "e9635f1c59c9d92fa5718382ea05b02ea3297e7ef7930b09a09870ff968c7f87",
+      "script_call_rom_offsets": [
+        1145844
+      ]
+    },
+    {
+      "vram": 2147874976,
+      "origin": "checked-root",
+      "sha256": "fdc254abb5350f7f6cf402fa1b1360321232973f274eb6c263ac5b597c71bc8a",
+      "script_call_rom_offsets": [
+        1145896
+      ]
+    },
+    {
+      "vram": 2147874984,
+      "origin": "checked-root",
+      "sha256": "00b1637e775648c60e29110c2bae62667a16f60aaf56ef2d4ac4ca2060819674",
+      "script_call_rom_offsets": [
+        1146136,
+        1146216,
+        1146264,
+        1146320,
+        1146432,
+        1146480,
+        1146552,
+        1146916,
+        1146984,
+        1147016,
+        1147472,
+        1147552
+      ]
+    },
+    {
+      "vram": 2147875056,
+      "origin": "checked-root",
+      "sha256": "cfa8ec23b9a42a80dcb9f3be7619a2eacbcbc60d243681cd50555fe51187b434",
+      "script_call_rom_offsets": [
+        1147260
+      ]
+    },
+    {
+      "vram": 2147875188,
+      "origin": "checked-root",
+      "sha256": "b0e7389948efa1b5e120f1fa3f057bb5f1ef054e745ffed3ce08392a1872458e",
+      "script_call_rom_offsets": [
+        1132180
+      ]
+    },
+    {
+      "vram": 2147875208,
+      "origin": "checked-root",
+      "sha256": "f7d9cddc2d37948541da6fa68a2c1a10d403633c8d0f13f6327ca7a38e88ba17",
+      "script_call_rom_offsets": [
+        1137660
+      ]
+    },
+    {
+      "vram": 2147875336,
+      "origin": "checked-root",
+      "sha256": "50a1fd1099c6827de6c2c505561d2166bcf4a953238fae6352cdbd6f6926f990",
+      "script_call_rom_offsets": [
+        1143620,
+        1143772,
+        1144384
+      ]
+    },
+    {
+      "vram": 2147875424,
+      "origin": "checked-root",
+      "sha256": "f9b1bc4a0dec45520c687c22d0c615f157f1ee6fb6900f36375b5d243b612b48",
+      "script_call_rom_offsets": [
+        1135340,
+        1135392
+      ]
+    },
+    {
+      "vram": 2147875464,
+      "origin": "checked-root",
+      "sha256": "6152161f705509a236d590a4c23abadfbb7bb937fd93fa797d7aca2ce254fa8d",
+      "script_call_rom_offsets": [
+        1138844
+      ]
+    },
+    {
+      "vram": 2147875836,
+      "origin": "checked-root",
+      "sha256": "5227ddc1dde3d4082965aafcb053a7982c76227c1f13ad8cfefd9f0baf672739",
+      "script_call_rom_offsets": [
+        1076704,
+        1077020,
+        1077996
+      ]
+    },
+    {
+      "vram": 2147875872,
+      "origin": "checked-root",
+      "sha256": "eab620e111dba5f807e2e6b9f67974aaa6c0c6b3df99d183bb18ec9547c86035",
+      "script_call_rom_offsets": [
+        1076724,
+        1077040,
+        1078016
+      ]
+    },
+    {
+      "vram": 2147875892,
+      "origin": "checked-root",
+      "sha256": "3bd1d8147d536f1ee764865372811fe551cbf1249595410fce5b4c820e1dd5ba",
+      "script_call_rom_offsets": [
+        1132048
+      ]
+    },
+    {
+      "vram": 2147876060,
+      "origin": "checked-root",
+      "sha256": "7d0b06a341e5cf56dfa95147a80248e0e2551fa216fd3ff82d70c7931cb22f63",
+      "script_call_rom_offsets": [
+        1108512
+      ]
+    },
+    {
+      "vram": 2147876152,
+      "origin": "checked-root",
+      "sha256": "4e5e8cda9f63f7a63800ee661522f1cd8df0a42a7e0926ddffbad341a0c2d126",
+      "script_call_rom_offsets": [
+        1138264
+      ]
+    },
+    {
+      "vram": 2147876172,
+      "origin": "checked-root",
+      "sha256": "dccf32b456ed6dca113eec3a9bf5b8bd4a498854734faad63024234b5644df1d",
+      "script_call_rom_offsets": [
+        1138452
+      ]
+    },
+    {
+      "vram": 2147876192,
+      "origin": "checked-root",
+      "sha256": "911f9bb29385b31b5e41159bfd84284dd49415168d55eaf93d6a42fbfcf0aac7",
+      "script_call_rom_offsets": [
+        1110008
+      ]
+    },
+    {
+      "vram": 2147951796,
+      "origin": "checked-root",
+      "sha256": "6313bcde7ae36eb4a3038c3c992e4c5e2b4c2a39586ae0c5b56fa312a06ebd76",
+      "pointer_sources": [
+        2148398544
+      ]
+    },
+    {
+      "vram": 2147953340,
+      "origin": "checked-root",
+      "sha256": "6313bcde7ae36eb4a3038c3c992e4c5e2b4c2a39586ae0c5b56fa312a06ebd76",
+      "pointer_sources": [
+        2148398548
+      ]
+    },
+    {
+      "vram": 2147954892,
+      "origin": "checked-root",
+      "sha256": "a4c1d10fd90434ba12924ca7e6c04f13ad2b39646bba81bfce05d14da5782a7b",
+      "pointer_sources": [
+        2148398528
+      ]
+    },
+    {
+      "vram": 2147956336,
+      "origin": "checked-root",
+      "sha256": "9d8a79633e3f7779109b48d82caf1feb8d29407314a575c6ee0ec850d528c36d",
+      "pointer_sources": [
+        2148398532
+      ]
+    },
+    {
+      "vram": 2147958284,
+      "origin": "checked-root",
+      "sha256": "830b40368c301aaae8df58a71066a4e9bd6da89f591b4317b61fe61f181a2aa6",
+      "pointer_sources": [
+        2148398536
+      ]
+    },
+    {
+      "vram": 2147959744,
+      "origin": "checked-root",
+      "sha256": "ddef3362eeebe47046e0ea77a403c3b10c269f181cf61e7ea86c73285d7d6517",
+      "pointer_sources": [
+        2148398640
+      ]
+    },
+    {
+      "vram": 2147960420,
+      "origin": "checked-root",
+      "sha256": "5207ac48b6d9cdb17b33d14dbc1270d7788b199432023aaaae3b2f749d5c3b22",
+      "pointer_sources": [
+        2148398552
+      ]
+    },
+    {
+      "vram": 2147961256,
+      "origin": "checked-root",
+      "sha256": "de0967cc1bdb3aac0aa2af9bbe0d6ecb47da826f95f4fe58b4fd29bd1eef9cff",
+      "pointer_sources": [
+        2148398556
+      ]
+    },
+    {
+      "vram": 2147961968,
+      "origin": "checked-root",
+      "sha256": "3b28a9d2c8dd77a59692d1364b827df4396b3c96777ff97c39464c57d5d2e6a6",
+      "pointer_sources": [
+        2148398564
+      ]
+    },
+    {
+      "vram": 2147963776,
+      "origin": "checked-root",
+      "sha256": "3b28a9d2c8dd77a59692d1364b827df4396b3c96777ff97c39464c57d5d2e6a6",
+      "pointer_sources": [
+        2148398648
+      ]
+    },
+    {
+      "vram": 2147964592,
+      "origin": "checked-root",
+      "sha256": "30e2beda9caa6d80659aaa26fa88b11c8a81d2f77ea2ac20f342a80f7fb6136a",
+      "pointer_sources": [
+        2148398652
+      ]
+    },
+    {
+      "vram": 2147965340,
+      "origin": "checked-root",
+      "sha256": "30e2beda9caa6d80659aaa26fa88b11c8a81d2f77ea2ac20f342a80f7fb6136a",
+      "pointer_sources": [
+        2148398684
+      ]
+    },
+    {
+      "vram": 2147966088,
+      "origin": "checked-root",
+      "sha256": "ea2e8f61bdfafef5f21e037b247384e0abcc7652899d7b266bbbf0ebca8e55e0",
+      "pointer_sources": [
+        2148398656
+      ]
+    },
+    {
+      "vram": 2147966504,
+      "origin": "checked-root",
+      "sha256": "230f81388df1caf226d2b29ae3330d15fce630c049953ec295108a2527fe48e6",
+      "pointer_sources": [
+        2148398660
+      ]
+    },
+    {
+      "vram": 2147967300,
+      "origin": "checked-root",
+      "sha256": "09e4fae9cb644ad6b46c3707f27f4b06674f07d953ace6b3d04453ace136e8db",
+      "pointer_sources": [
+        2148398672
+      ]
+    },
+    {
+      "vram": 2147967844,
+      "origin": "checked-root",
+      "sha256": "8aae215d907d62466ff7dfab29180d0af2a3f32b7713a5eb4702944cba451dc7",
+      "pointer_sources": [
+        2148398568
+      ]
+    },
+    {
+      "vram": 2147968860,
+      "origin": "checked-root",
+      "sha256": "3b28a9d2c8dd77a59692d1364b827df4396b3c96777ff97c39464c57d5d2e6a6",
+      "pointer_sources": [
+        2148398572
+      ]
+    },
+    {
+      "vram": 2147970068,
+      "origin": "checked-root",
+      "sha256": "94440842fecd1155ce6d74163f3ff7843e5a4ebeb45ae360073646a02dccfd0a",
+      "pointer_sources": [
+        2148398580
+      ]
+    },
+    {
+      "vram": 2147971872,
+      "origin": "checked-root",
+      "sha256": "aa179ae3d81a82b5a8115294ccda7548eb601f691872160ebe62e62caf97ee62",
+      "pointer_sources": [
+        2148398688
+      ]
+    },
+    {
+      "vram": 2147972616,
+      "origin": "checked-root",
+      "sha256": "aa179ae3d81a82b5a8115294ccda7548eb601f691872160ebe62e62caf97ee62",
+      "pointer_sources": [
+        2148398692
+      ]
+    },
+    {
+      "vram": 2147973384,
+      "origin": "checked-root",
+      "sha256": "17bca3d9db1793017a2e7fabd44b532a0cafd76fce43262e1fe3b09e519aa87b",
+      "pointer_sources": [
+        2148398608
+      ]
+    },
+    {
+      "vram": 2147973808,
+      "origin": "checked-root",
+      "sha256": "3b28a9d2c8dd77a59692d1364b827df4396b3c96777ff97c39464c57d5d2e6a6",
+      "pointer_sources": [
+        2148398636
+      ]
+    },
+    {
+      "vram": 2147974256,
+      "origin": "checked-root",
+      "sha256": "01d28b88df687b5786af8a6ab68fcd4a9009a72479267d3263827c1ae5fc4a36",
+      "pointer_sources": [
+        2148398632
+      ]
+    },
+    {
+      "vram": 2147974784,
+      "origin": "checked-root",
+      "sha256": "3b28a9d2c8dd77a59692d1364b827df4396b3c96777ff97c39464c57d5d2e6a6",
+      "pointer_sources": [
+        2148398616
+      ]
+    },
+    {
+      "vram": 2147975340,
+      "origin": "checked-root",
+      "sha256": "00fccfde1e6c139e91afe9bdc5ae20ed1d867315cf9231e21069c3c2c0826e05",
+      "pointer_sources": [
+        2148398604
+      ]
+    },
+    {
+      "vram": 2147975936,
+      "origin": "checked-root",
+      "sha256": "6bb7c5f65c304d37c17e9e0ed70babf29b1b534253e572fd2efaf19e2fa24bfb",
+      "pointer_sources": [
+        2148398628
+      ]
+    },
+    {
+      "vram": 2147976548,
+      "origin": "checked-root",
+      "sha256": "30e2beda9caa6d80659aaa26fa88b11c8a81d2f77ea2ac20f342a80f7fb6136a",
+      "pointer_sources": [
+        2148398668
+      ]
+    },
+    {
+      "vram": 2147977508,
+      "origin": "checked-root",
+      "sha256": "3b28a9d2c8dd77a59692d1364b827df4396b3c96777ff97c39464c57d5d2e6a6",
+      "pointer_sources": [
+        2148398624
+      ]
+    },
+    {
+      "vram": 2147978096,
+      "origin": "checked-root",
+      "sha256": "86687a551aea2278b1d78284c99f508343b45671d12239bdf2f3a6dd06ac0f25",
+      "pointer_sources": [
+        2148398644
+      ]
+    },
+    {
+      "vram": 2147978664,
+      "origin": "checked-root",
+      "sha256": "86687a551aea2278b1d78284c99f508343b45671d12239bdf2f3a6dd06ac0f25",
+      "pointer_sources": [
+        2148398680
+      ]
+    },
+    {
+      "vram": 2147979140,
+      "origin": "checked-root",
+      "sha256": "1cde17ef6dab0e5f6d9beeebc0577ccef3224e6693673a3a256a7b90048df2d6",
+      "pointer_sources": [
+        2148398620
+      ]
+    },
+    {
+      "vram": 2147979688,
+      "origin": "checked-root",
+      "sha256": "ecdda236bd461f651c60d1c5b56a558329c48b029847b092256859a7e22aefbb",
+      "pointer_sources": [
+        2148398664
+      ]
+    },
+    {
+      "vram": 2147980188,
+      "origin": "checked-root",
+      "sha256": "bc280c80f48d2f9e6291ad4840c89a0358bba83eb4fe9f2a25e20687d8e545b8",
+      "pointer_sources": [
+        2148398700
+      ]
+    },
+    {
+      "vram": 2148004064,
+      "origin": "checked-root",
+      "sha256": "4a8f2ac2d5fecfdab40fe2866aacd5c285ee170ea48f63ea3569ed5ab9c8445c"
+    },
+    {
+      "vram": 2148007112,
+      "origin": "checked-root",
+      "sha256": "445338bc14b249d15a1fd3bf551c97622c8aded898b522486906a4cfe82ac469"
+    },
+    {
+      "vram": 2148008220,
+      "origin": "checked-root",
+      "sha256": "c21c9a28daf193fb655f895a08a193ccb16faea4add075e947de7d005737cbef"
+    },
+    {
+      "vram": 2148008812,
+      "origin": "checked-root",
+      "sha256": "a9dc6cfaf9a23fa0ce14ca328c5d227b6a5a6eb100fffc92f49e5213b260dc9f",
+      "pointer_sources": [
+        2148399588
+      ]
+    },
+    {
+      "vram": 2148017224,
+      "origin": "checked-root",
+      "sha256": "6b1e29a0f8735cfff9092723ee687e0039a9d2d8fa00480a1ecaddf442b57439"
+    },
+    {
+      "vram": 2148018464,
+      "origin": "checked-root",
+      "sha256": "36b8410bfec58d4066251921b52f5df50c42402e9b1769c90690e0bd2f04dccf"
+    },
+    {
+      "vram": 2148019104,
+      "origin": "checked-root",
+      "sha256": "2a5e5cfec4857295a8c80cfd7178fa5cdd00a346060f28c1f980079ed6827f2e"
+    },
+    {
+      "vram": 2148022332,
+      "origin": "checked-root",
+      "sha256": "501923bbda4682cf676ce55de1f8dc1de6ed55da08a4714fb444c65793113e32"
+    },
+    {
+      "vram": 2148032560,
+      "origin": "checked-root",
+      "sha256": "80f6624bb98094b5d221d5147aab3f174eeb7fc2c44d2f93614f95ca7c022bf7"
+    },
+    {
+      "vram": 2148032616,
+      "origin": "checked-root",
+      "sha256": "01f5214d3cc2c75d81b32282da14f45fa8355fd3894927c239d0845b70d95d10"
+    },
+    {
+      "vram": 2148157824,
+      "origin": "checked-root",
+      "sha256": "f34414089d370cff8b8b0126d9845e534c0f73c6fce26bb9b283d92d3ad0ee03",
+      "pointer_sources": [
+        2148407744
+      ]
+    },
+    {
+      "vram": 2148162380,
+      "origin": "checked-root",
+      "sha256": "34c83e32e95d6f4e1d19a64e087ec78964f8d6d3ab1ce3ee14c9cc4568c9317e"
+    },
+    {
+      "vram": 2148169876,
+      "origin": "checked-root",
+      "sha256": "c852bd7ffe93b0fe0df9adc9c25e24e5402575fc00d05a8a4c4cb66df5d77a23",
+      "pointer_sources": [
+        2148407680
+      ]
+    },
+    {
+      "vram": 2148169908,
+      "origin": "checked-root",
+      "sha256": "f34414089d370cff8b8b0126d9845e534c0f73c6fce26bb9b283d92d3ad0ee03",
+      "pointer_sources": [
+        2148407684
+      ]
+    },
+    {
+      "vram": 2148169956,
+      "origin": "checked-root",
+      "sha256": "97d8c13990406e15213144e144e58f7b50b796334d255512e3fded2dcba35b86",
+      "pointer_sources": [
+        2148407688
+      ]
+    },
+    {
+      "vram": 2148169988,
+      "origin": "checked-root",
+      "sha256": "61768b382e30e2733179312778d714072489c64e8f2e822f83123afc725d024c",
+      "pointer_sources": [
+        2148407692
+      ]
+    },
+    {
+      "vram": 2148170000,
+      "origin": "checked-root",
+      "sha256": "41ab2798f68cbd830b0fd7ed531c875cefaf1ee9bbaca9b6ea676537b5ff120a",
+      "pointer_sources": [
+        2148407696
+      ]
+    },
+    {
+      "vram": 2148170296,
+      "origin": "checked-root",
+      "sha256": "788c040704b33f5b6f22ba9e50060cff223dfb8df95c1d4d886ac8ff3a71e4a9",
+      "pointer_sources": [
+        2148407700
+      ]
+    },
+    {
+      "vram": 2148170524,
+      "origin": "checked-root",
+      "sha256": "d5ecab68f560dd1073a242e6c23624dc60b7027655af748c0c04fd44e6bac96f",
+      "pointer_sources": [
+        2148407708
+      ]
+    },
+    {
+      "vram": 2148170544,
+      "origin": "checked-root",
+      "sha256": "4790d997ab2bd28c5e8b213d5a0957e7be4d8767b8fa6962961654a359d0fbb5",
+      "pointer_sources": [
+        2148407704
+      ]
+    },
+    {
+      "vram": 2148170580,
+      "origin": "checked-root",
+      "sha256": "a7fa27e099ef869535cc596c7627e58dccb12e6fc9b3a49166a4fbaa5045a002",
+      "pointer_sources": [
+        2148407712
+      ]
+    },
+    {
+      "vram": 2148170692,
+      "origin": "checked-root",
+      "sha256": "a7fa27e099ef869535cc596c7627e58dccb12e6fc9b3a49166a4fbaa5045a002",
+      "pointer_sources": [
+        2148407716
+      ]
+    },
+    {
+      "vram": 2148170808,
+      "origin": "checked-root",
+      "sha256": "27753023deb12ac39738382a9c8a2e58e8ef3b626314e4987813b4ca554994ae",
+      "pointer_sources": [
+        2148407720
+      ]
+    },
+    {
+      "vram": 2148170824,
+      "origin": "checked-root",
+      "sha256": "21a0005d1b2e440facaa63c3162193c65a45777fb7249bdded3fac31f2e530d1",
+      "pointer_sources": [
+        2148407724
+      ]
+    },
+    {
+      "vram": 2148170872,
+      "origin": "checked-root",
+      "sha256": "ca6e5aa0417afc4a35cc24f609131153c3078825be9c0d507d36077d71d12240",
+      "pointer_sources": [
+        2148407728
+      ]
+    },
+    {
+      "vram": 2148170888,
+      "origin": "checked-root",
+      "sha256": "ebaa6198de4737e3c7ecf57b79782bd1f2778eba010c62f89871a36c9b1137ff",
+      "pointer_sources": [
+        2148407732
+      ]
+    },
+    {
+      "vram": 2148170904,
+      "origin": "checked-root",
+      "sha256": "4a6c63738e562e52e10b48cc1f88a79699463abfad3375faaf9138d8421f09a8",
+      "pointer_sources": [
+        2148407736
+      ]
+    },
+    {
+      "vram": 2148170920,
+      "origin": "checked-root",
+      "sha256": "ae55a1a17c78fdfb9a4447854127cf439bb3a781503816f1c430115189d6f199",
+      "pointer_sources": [
+        2148407740
+      ]
+    },
+    {
+      "vram": 2148171008,
+      "origin": "checked-root",
+      "sha256": "182f63ddb612cdda8cd4583c04f8c9caa364accc7891adb34f1e19fc7958e4db",
+      "pointer_sources": [
+        2148407748
+      ]
+    },
+    {
+      "vram": 2148171024,
+      "origin": "checked-root",
+      "sha256": "34910cb0079ea77ac52c981d5b34283f37850e4c297f78052b7a93a3dfbf6240",
+      "pointer_sources": [
+        2148407752
+      ]
+    },
+    {
+      "vram": 2148171036,
+      "origin": "checked-root",
+      "sha256": "f7f133911ac595ecb15559ca7ab64c2a062ffcdcb03164e575181a65573e9200",
+      "pointer_sources": [
+        2148407756
+      ]
+    },
+    {
+      "vram": 2148171052,
+      "origin": "checked-root",
+      "sha256": "c9d64d8da1e461a386e296c4ccc8de0e6b35b87ba9d9d7ed828800ab973c3296",
+      "pointer_sources": [
+        2148407760
+      ]
+    },
+    {
+      "vram": 2148171064,
+      "origin": "checked-root",
+      "sha256": "0702f310f95ecfebce0b950aa72dc8b0f0c9fa95ad4c1587d01c1b952b243bd4",
+      "pointer_sources": [
+        2148407764
+      ]
+    },
+    {
+      "vram": 2148171172,
+      "origin": "checked-root",
+      "sha256": "c95565e5172d468937301ae422712b2d49eae87aec53ae9352638bc2b42a13fc",
+      "pointer_sources": [
+        2148407768
+      ]
+    },
+    {
+      "vram": 2148171328,
+      "origin": "checked-root",
+      "sha256": "a538b421c4f7cf53c8b7cff849083fd93f54c5369abd5df22f90e33cc0776386",
+      "pointer_sources": [
+        2148407772
+      ]
+    },
+    {
+      "vram": 2148171368,
+      "origin": "checked-root",
+      "sha256": "592dcace9fa61fa25b12a3500b996c209333702103ef75995db7f5e346c34020",
+      "pointer_sources": [
+        2148407776
+      ]
+    },
+    {
+      "vram": 2148171380,
+      "origin": "checked-root",
+      "sha256": "a6d3d1fa916143e4cca7473b054023467e5219d201c6dde3142b3462240a75ae",
+      "pointer_sources": [
+        2148407780
+      ]
+    },
+    {
+      "vram": 2148171396,
+      "origin": "checked-root",
+      "sha256": "13cb861551cfe88daea49b22bed079f5f30b30c4d8324642426f1bfed11d9888",
+      "pointer_sources": [
+        2148407784
+      ]
+    },
+    {
+      "vram": 2148171408,
+      "origin": "checked-root",
+      "sha256": "34c7ac0eb38e9dcf8326f1bae45f4ce60135cf264b05e1795a0575d18295574f",
+      "pointer_sources": [
+        2148407788
+      ]
+    },
+    {
+      "vram": 2148171428,
+      "origin": "checked-root",
+      "sha256": "df05ca67f032e1405f915112bda9f30b08580c32eb1e90c480d7d2e285de8a19",
+      "pointer_sources": [
+        2148407792
+      ]
+    },
+    {
+      "vram": 2148171448,
+      "origin": "checked-root",
+      "sha256": "d87fc0dcfa796c5596a2c43643fa4d5c247dcb5f84cd8ef45e167db46a6bc9ce",
+      "pointer_sources": [
+        2148407796
+      ]
+    },
+    {
+      "vram": 2148171456,
+      "origin": "checked-root",
+      "sha256": "7226c5d4c1e69a843ebbbe366b271c46b400d1a8640dfcd453ff06fc14df6065",
+      "pointer_sources": [
+        2148407800
+      ]
+    },
+    {
+      "vram": 2148171528,
+      "origin": "checked-root",
+      "sha256": "57f3d76a0644ee7bc4887d71c9b77576e694aaedd5ad1bd3bd89af55aee514cc",
+      "pointer_sources": [
+        2148407804
+      ]
+    },
+    {
+      "vram": 2148171540,
+      "origin": "checked-root",
+      "sha256": "dd3308eb585617e7f6830c727fb93afbc5f155e41376d085ab38f95bf8d7149a",
+      "pointer_sources": [
+        2148407808
+      ]
+    },
+    {
+      "vram": 2148171548,
+      "origin": "checked-root",
+      "sha256": "739586ff8c671238119ee618601367bb9ce63c3929c79e6e1852e78f1d5c0a56",
+      "pointer_sources": [
+        2148407812
+      ]
+    },
+    {
+      "vram": 2148171660,
+      "origin": "checked-root",
+      "sha256": "43288ec873b3d0201f4923ce6827f0625f13966b537a6f1be24dd25c05fe110a",
+      "pointer_sources": [
+        2148407816
+      ]
+    },
+    {
+      "vram": 2148171676,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "pointer_sources": [
+        2148407820
+      ]
+    },
+    {
+      "vram": 2148171756,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "pointer_sources": [
+        2148407824
+      ]
+    },
+    {
+      "vram": 2148171836,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "pointer_sources": [
+        2148407828
+      ]
+    },
+    {
+      "vram": 2148171916,
+      "origin": "checked-root",
+      "sha256": "0c5d4970ca0ed79eea132b3e6b1001d9cd90b2597485e54c3018dcf1a9a60d70",
+      "pointer_sources": [
+        2148407832
+      ]
+    },
+    {
+      "vram": 2148171932,
+      "origin": "checked-root",
+      "sha256": "d13822e114e80a80a56dbe57ef70c8ccfb8051933991724179254c9b6f605162",
+      "pointer_sources": [
+        2148407836
+      ]
+    },
+    {
+      "vram": 2148172140,
+      "origin": "checked-root",
+      "sha256": "f3809ddf1a334682667dd5c2b924dce46db7aade21125232c9a36e90431e81d5",
+      "pointer_sources": [
+        2148407840
+      ]
+    },
+    {
+      "vram": 2148172200,
+      "origin": "checked-root",
+      "sha256": "d5f9569255ea4a6468047cc6109cb1ece70b7b9505eda7154e7f41d8ccd36ddd",
+      "pointer_sources": [
+        2148407844
+      ]
+    },
+    {
+      "vram": 2148172216,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "pointer_sources": [
+        2148407848
+      ]
+    },
+    {
+      "vram": 2148172284,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "pointer_sources": [
+        2148407852
+      ]
+    },
+    {
+      "vram": 2148172396,
+      "origin": "checked-root",
+      "sha256": "1ec9d6d4c248ab21239b4a24ffd9fc01d43043135709aeca10df7956d52c6f04",
+      "pointer_sources": [
+        2148407856
+      ]
+    },
+    {
+      "vram": 2148175268,
+      "origin": "checked-root",
+      "sha256": "f8993cf71d1b2af52a4ddd436bdfb3d4719f75519039314f48d3f7748e11d3b6"
+    },
+    {
+      "vram": 2148175280,
+      "origin": "checked-root",
+      "sha256": "4a1e5b2811f7f27605254993908736584ed57b147eee4d189ffb48307a0035a6"
+    },
+    {
+      "vram": 2148175804,
+      "origin": "checked-root",
+      "sha256": "e7f1837935ed44fc2a8f1cb7ea634a03aad86ac1c12e1969793bcb47a0e7319e",
+      "pointer_sources": [
+        2148408400
+      ]
+    },
+    {
+      "vram": 2148175904,
+      "origin": "checked-root",
+      "sha256": "d7ea1363a999d50434a0ca56e48f49a784cdf1de5645de43cd226855482c945b",
+      "pointer_sources": [
+        2148408404
+      ]
+    },
+    {
+      "vram": 2148176000,
+      "origin": "checked-root",
+      "sha256": "a44ca93fede78028fa8941ea34e3a91283cb6328f1331898943f9f3df8d286a8",
+      "pointer_sources": [
+        2148408408
+      ]
+    },
+    {
+      "vram": 2148176536,
+      "origin": "checked-root",
+      "sha256": "b7b607a60baec818173673c590a913ececc24457880d42c77013ded90e9fb041"
+    },
+    {
+      "vram": 2148189232,
+      "origin": "checked-root",
+      "sha256": "008e6bde1905e87bcb9ed46078c1ed53272fa2ea205f187447b5d718bdb8ffdf"
+    },
+    {
+      "vram": 2148190324,
+      "origin": "checked-root",
+      "sha256": "0f7a14db1a7e3b9cfb965976beb4d09b8a0d92362b99170edd52c3f3d764f703"
+    },
+    {
+      "vram": 2148192064,
+      "origin": "checked-root",
+      "sha256": "8ade0bb2188abb47bf647b7c0ac15299eafa90bc4b67176c860c5aa030c9e2a7"
+    },
+    {
+      "vram": 2148192368,
+      "origin": "checked-root",
+      "sha256": "48217327a7d7258a5dcc44d9297005edfe3975fd50a212a328a629998b52eed4"
+    },
+    {
+      "vram": 2148192736,
+      "origin": "checked-root",
+      "sha256": "352a1c53a16567325fb87b2141556b651ea9862514fa8b9edfc89a203ec95ee5"
+    },
+    {
+      "vram": 2148197384,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72"
+    },
+    {
+      "vram": 2148198008,
+      "origin": "checked-root",
+      "sha256": "0bd714c0340c315599f80f76a11eb9e8cc57114bc27ca707e6fef5f8d59827d4"
+    },
+    {
+      "vram": 2148202448,
+      "origin": "checked-root",
+      "sha256": "5058027c6687eb6ade8f14df4501c52f73fe31e78d5eb06ff3b6bc3307515165"
+    },
+    {
+      "vram": 2148205696,
+      "origin": "checked-root",
+      "sha256": "452c151e71c4b1887aa3cd25ab9ec49b58f2f3f27e24e1f406a894e9ba688911"
+    },
+    {
+      "vram": 2148206600,
+      "origin": "checked-root",
+      "sha256": "06d528b9a8cbb78e3ac0ff463742723ec7be6844c0714f1b9dcd5fb6675b75f0"
+    },
+    {
+      "vram": 2148208672,
+      "origin": "checked-root",
+      "sha256": "11aac89453644d34a7b47ae544c7073288661792bd1c54c8feb334229a5dbbc2"
+    },
+    {
+      "vram": 2149330840,
+      "origin": "checked-root",
+      "sha256": "499e90d994ce51a7d1c0038cd79fa7f414a876f0d014160f139b08888aecc791",
+      "pointer_sources": [
+        2149362684,
+        2149363984,
+        2149364012,
+        2149364776,
+        2149364804,
+        2149364832,
+        2149364932,
+        2149364988,
+        2149365016,
+        2149365628,
+        2149365800,
+        2149365828,
+        2149365856,
+        2149365928,
+        2149365956,
+        2149365984
+      ]
+    },
+    {
+      "vram": 2149331596,
+      "origin": "checked-root",
+      "sha256": "6434b8666a1b1255f07fe8ac26f68c17d4a3bbc78647bc77d47917bee25cced9",
+      "pointer_sources": [
+        2149363404,
+        2149363432,
+        2149363460,
+        2149363488
+      ]
+    },
+    {
+      "vram": 2149332352,
+      "origin": "checked-root",
+      "sha256": "6289ea5fb30f36d341cb6fb31cd5c97e10315186018aa615c049a308f79ca931",
+      "pointer_sources": [
+        2149363756
+      ]
+    },
+    {
+      "vram": 2149332444,
+      "origin": "checked-root",
+      "sha256": "5845125a9b3a0c1977976a3c9ae5adf4ec1c555def1a428823073bc28c22f29f",
+      "pointer_sources": [
+        2149363856,
+        2149363884
+      ]
+    },
+    {
+      "vram": 2149332708,
+      "origin": "checked-root",
+      "sha256": "03febfc05abebee3e6df9db9ebac701615caec0bdd6a12ecc189019643c2a2f3",
+      "pointer_sources": [
+        2149362388,
+        2149362416,
+        2149362444,
+        2149362472
+      ]
+    },
+    {
+      "vram": 2149332828,
+      "origin": "checked-root",
+      "sha256": "e5c544320471737c43ff525bee20d5504b535ac344efa2e8589a4a26ec2c03a7",
+      "materialized_sources": [
+        2149334280
+      ]
+    },
+    {
+      "vram": 2149333108,
+      "origin": "checked-root",
+      "sha256": "dfe486e3e5c7e06e8f4b8d15f39f7a752260968c07cea5e6b11dab3cfbfc398e",
+      "pointer_sources": [
+        2149365384
+      ]
+    },
+    {
+      "vram": 2149333160,
+      "origin": "checked-root",
+      "sha256": "7cd6b4bfac25184c1e009d1f1e638e1183f47383e404c1943df7ddda7c356d5e",
+      "pointer_sources": [
+        2149365356,
+        2149365600,
+        2149365700,
+        2149365772,
+        2149365900
+      ]
+    },
+    {
+      "vram": 2149333212,
+      "origin": "checked-root",
+      "sha256": "8150c23f8ed30f17aabad00b1452a54778aca84dbea721e28e81f8b7ec56e75f",
+      "pointer_sources": [
+        2149365456,
+        2149365728
+      ]
+    },
+    {
+      "vram": 2149333292,
+      "origin": "checked-root",
+      "sha256": "ee04ea9e26e343467a2230cadaf2454ee8882024c96cb5a533c1341404ce7bbd",
+      "pointer_sources": [
+        2149365428
+      ]
+    },
+    {
+      "vram": 2149333364,
+      "origin": "checked-root",
+      "sha256": "0bbb5d86b21c259ed29d93f550dbf65a01ef7eff3e4980c73c8a37ff19e2cee5",
+      "pointer_sources": [
+        2149365528
+      ]
+    },
+    {
+      "vram": 2149333404,
+      "origin": "checked-root",
+      "sha256": "0bbb5d86b21c259ed29d93f550dbf65a01ef7eff3e4980c73c8a37ff19e2cee5",
+      "pointer_sources": [
+        2149365500
+      ]
+    },
+    {
+      "vram": 2149333444,
+      "origin": "checked-root",
+      "sha256": "5845125a9b3a0c1977976a3c9ae5adf4ec1c555def1a428823073bc28c22f29f",
+      "pointer_sources": [
+        2149366056
+      ]
+    },
+    {
+      "vram": 2149333580,
+      "origin": "checked-root",
+      "sha256": "5845125a9b3a0c1977976a3c9ae5adf4ec1c555def1a428823073bc28c22f29f",
+      "pointer_sources": [
+        2149366028
+      ]
+    },
+    {
+      "vram": 2149334536,
+      "origin": "checked-root",
+      "sha256": "38139e2943735c49afa67bb9074f225285c04fc1793263039fd152a78b6e6cc8",
+      "materialized_sources": [
+        2147489656,
+        2149352988,
+        2149357912
+      ]
+    },
+    {
+      "vram": 2149344608,
+      "origin": "checked-root",
+      "sha256": "eb7db621c74c5019f4ddddfb6c02b92577acf1f1e77781ae3ed691a4fc0bee20",
+      "materialized_sources": [
+        2147485440
+      ]
+    },
+    {
+      "vram": 2149346468,
+      "origin": "checked-root",
+      "sha256": "43c948b7ce93add94121cea7de4b45340a25c7606f450a9c1e1330cc52196696",
+      "pointer_sources": [
+        2149366168
+      ]
+    },
+    {
+      "vram": 2149346500,
+      "origin": "checked-root",
+      "sha256": "cbcd112c8aa8b370c4644fe865185a0baeb7337c55341324272b58a17d7fcf8a",
+      "pointer_sources": [
+        2149366196
+      ]
+    },
+    {
+      "vram": 2149346532,
+      "origin": "checked-root",
+      "sha256": "2d7d274f11f905d108979bb1dfbf8c482a9fc453087b24b5423b7418c7875c18",
+      "pointer_sources": [
+        2149366224
+      ]
+    },
+    {
+      "vram": 2149346560,
+      "origin": "checked-root",
+      "sha256": "44b7a811c2178b6ff8d7edf539fe7c4c353a4b778217f0c338586fb610a6a2c2",
+      "pointer_sources": [
+        2149366252
+      ]
+    },
+    {
+      "vram": 2149346596,
+      "origin": "checked-root",
+      "sha256": "511f399e8437cc7b02f74f51ea66c8834059b7a5c3edd19f8b97c2c19d01cfbf",
+      "pointer_sources": [
+        2149366280
+      ]
+    },
+    {
+      "vram": 2149346624,
+      "origin": "checked-root",
+      "sha256": "c4a2c7cd89870b81969f888600f4f7a735f901eef4f0efc545bff4b5448c2d21",
+      "pointer_sources": [
+        2149366308
+      ]
+    },
+    {
+      "vram": 2149346652,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366336
+      ]
+    },
+    {
+      "vram": 2149346692,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366364
+      ]
+    },
+    {
+      "vram": 2149346732,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366392
+      ]
+    },
+    {
+      "vram": 2149346772,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366420
+      ]
+    },
+    {
+      "vram": 2149346812,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366448
+      ]
+    },
+    {
+      "vram": 2149346852,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366476
+      ]
+    },
+    {
+      "vram": 2149346892,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366504
+      ]
+    },
+    {
+      "vram": 2149346932,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366532
+      ]
+    },
+    {
+      "vram": 2149346972,
+      "origin": "checked-root",
+      "sha256": "4d1e521664274c357f674932bd11c81bd444bf53e810bf091729d8b59f81530b",
+      "pointer_sources": [
+        2149366560
+      ]
+    },
+    {
+      "vram": 2149347452,
+      "origin": "checked-root",
+      "sha256": "4add56129794ba331b8f50990109f501a90e439f1707dad1a4795e99b9122bab",
+      "pointer_sources": [
+        2149366896
+      ]
+    },
+    {
+      "vram": 2149347564,
+      "origin": "checked-root",
+      "sha256": "d6dad21f8bc2a93e0c14197eaae488a5f8844409ca939fd77b47eea2c9f3142f",
+      "pointer_sources": [
+        2149366924
+      ]
+    },
+    {
+      "vram": 2149348724,
+      "origin": "checked-root",
+      "sha256": "183bdaff2fa43318f59ef00ebcd303fd254987ba75ac2ea150487a1351f30ab3",
+      "materialized_sources": [
+        2149341912
+      ]
+    },
+    {
+      "vram": 2149353040,
+      "origin": "checked-root",
+      "sha256": "db9b46cbe690af57b5ef8868f6719a6358a913a65b9ee1ac48512898fe0288d2",
+      "materialized_sources": [
+        2149331612
+      ]
+    },
+    {
+      "vram": 2149354976,
+      "origin": "checked-root",
+      "sha256": "3b3fe51a529f2cea061a02e92af1e38594edcc27023489e6a5476c90fd1f19bf",
+      "pointer_sources": [
+        2149362260
+      ]
+    },
+    {
+      "vram": 2149357480,
+      "origin": "checked-root",
+      "sha256": "f445607eadb7ea96a057584fadba9173c3e88038e24f99c04cfde822f4bebbad",
+      "pointer_sources": [
+        2149364960
+      ]
+    },
+    {
+      "vram": 2149357560,
+      "origin": "checked-root",
+      "sha256": "5cd716dd1da37ae2bab283593d924f20c2f1cc4df78b9dd617f56e3655d6d8b1",
+      "materialized_sources": [
+        2147489584
+      ]
+    },
+    {
+      "vram": 2149358344,
+      "origin": "checked-root",
+      "sha256": "51638cd3fca9d5f466f8ef92d098b409542dc6c57b1c974967ff2c3a498b425c",
+      "materialized_sources": [
+        2149331676,
+        2149331772,
+        2149332020,
+        2149340040
+      ]
+    },
+    {
+      "vram": 2149358376,
+      "origin": "checked-root",
+      "sha256": "1c60fe978ca3976577038b420049b0dc844308f62a25c9f1c365ce44c050b956",
+      "materialized_sources": [
+        2147489568
+      ]
+    }
+  ]
+}

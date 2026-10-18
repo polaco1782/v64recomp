@@ -288,6 +288,70 @@
       "problemMatcher": [
         "$gcc"
       ]
+    },
+    {
+      "label": "Configure Debug: Duke Nukem Zero Hour US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "duke-zero-hour-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Duke Nukem Zero Hour US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "duke-zero-hour-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Duke Nukem Zero Hour US",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Configure Debug: Hexen US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "hexen-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Hexen US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "hexen-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Hexen US",
+      "problemMatcher": [
+        "$gcc"
+      ]
     }
   ]
 }

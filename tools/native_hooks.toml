@@ -2876,3 +2876,635 @@ handler = "hook_os_pfs_init_pak"
 body_size = 0x1d0
 sha256 = "25d5d7de5c33be55c95d576dea60e196b3e5d674ed77c4012fd305d25cd6ce0c"
 expected_words = [0x27bdff90, 0xafb1005c, 0x00808821, 0xafb20060, 0x00a09021, 0xafb30064, 0x00c09821, 0xafbf0068]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osCreateMesgQueue"
+handler = "hook_os_create_mesg_queue"
+body_size = 0x24
+sha256 = "a523b029d0b99b7ef84b1b075a567230221d58732a4b7996a18ca9995cd5aa22"
+expected_words = [0x3c02800e, 0x244224a0, 0xac820000, 0xac820004, 0xac800008, 0xac80000c, 0xac860010, 0x03e00008]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osGetThreadPri"
+handler = "hook_os_get_thread_pri"
+body_size = 0x18
+sha256 = "b4989933ac60cad2064cb4624725567756ec94dde0d27235577df2277cfdeea7"
+expected_words = [0x14800003, 0x00000000, 0x3c04800e, 0x8c8424b0, 0x03e00008, 0x8c820004]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSpTaskStartGo"
+handler = "hook_os_sp_task_start_go"
+body_size = 0x2c
+sha256 = "b686f0369b7f87a9428ea868598455b45e5aa0317da8f851e3f28061e13e93d8"
+expected_words = [0x27bdffe8, 0xafbf0010, 0x0c02e528, 0x00000000, 0x1440fffd, 0x00000000, 0x0c02e534, 0x24040125]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSpTaskYield"
+handler = "hook_os_sp_task_yield"
+body_size = 0x1c
+sha256 = "d7a2a1e61a1e03994e4c08c477e281ed05d93170d22fb759b872ee49fda5eb5c"
+expected_words = [0x27bdffe8, 0xafbf0010, 0x0c02e534, 0x24040400, 0x8fbf0010, 0x03e00008, 0x27bd0018]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osViBlack"
+handler = "hook_os_vi_black"
+body_size = 0x5c
+sha256 = "b0cfb68a9f75dab4de60fb0dfed179e5862edb41634b48296f948cffb1a72966"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02d438, 0x00808021, 0x321000ff, 0x12000006, 0x00402021]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osViSetEvent"
+handler = "hook_os_vi_set_event"
+body_size = 0x58
+sha256 = "bdf5034965efccdb4f592b1682830f6e6e54f09a982c59ab06e0bd1b5bf86adf"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x00a08821, 0xafb20018, 0xafbf001c, 0x0c02d438]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osViSwapBuffer"
+handler = "hook_os_vi_swap_buffer"
+body_size = 0x44
+sha256 = "7af819e1ae069a32d8085a4630046be6c9d0d54cc88e23f118026171ac734660"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02d438, 0x00808021, 0x3c04800e, 0x8c843a64, 0x94830000]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSetIntMask"
+handler = "hook_os_set_int_mask"
+body_size = 0xa0
+sha256 = "0d87d89e2a2b9f6a3d4a72cc50851cd600bc0ca5577cdbaa7c18dd976a37a5a9"
+expected_words = [0x400c6000, 0x3182ff01, 0x3c08800e, 0x250839e0, 0x8d0b0000, 0x2401ffff, 0x01614026, 0x3108ff00]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osCreateThread"
+handler = "hook_os_create_thread"
+body_size = 0xd0
+sha256 = "82e74c344089be2b3a0bd4f11738756013e7cf9a04f22206d0d0ebeb34dce4fd"
+expected_words = [0x27bdffe8, 0xafb00010, 0x00808021, 0x00e04821, 0x000747c3, 0x3c04800b, 0x24844de8, 0x00801821]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSetThreadPri"
+handler = "hook_os_set_thread_pri"
+body_size = 0xc8
+sha256 = "3e44757bc9a6fdf535b208d2b48d01a2337dfccbcecb5a8254d4500dd3d7fc2e"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x00a08821, 0xafbf001c, 0x0c02d438, 0xafb20018]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osStartThread"
+handler = "hook_os_start_thread"
+body_size = 0x118
+sha256 = "44d434814bd9f240eb11075245686f80e8f0d17296c48bbbef3b9339e41ef350"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafbf001c, 0xafb20018, 0x0c02d438, 0xafb10014, 0x96030010]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osRecvMesg"
+handler = "hook_os_recv_mesg"
+body_size = 0x124
+sha256 = "416eeacbe69e1854e9ee24eee464f56766268bf0f0f4feb1a56e9b4c05aa3cd1"
+expected_words = [0x27bdffd8, 0xafb00010, 0x00808021, 0xafb40020, 0x00a0a021, 0xafb10014, 0x00c08821, 0xafbf0024]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSendMesg"
+handler = "hook_os_send_mesg"
+body_size = 0x130
+sha256 = "9db0f32e50e238aff19395218c042d80e2c937d50d8a7de7d32815f20650671d"
+expected_words = [0x27bdffd0, 0xafb00010, 0x00808021, 0xafb50024, 0x00a0a821, 0xafb20018, 0x00c09021, 0xafbf0028]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osViSetMode"
+handler = "hook_os_vi_set_mode"
+body_size = 0x4c
+sha256 = "410e83b954e986a988db9a0002df5872adc499fe23c4ac3a66c108b5c5bb0442"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02d438, 0x00808021, 0x3c04800e, 0x8c843a64, 0xac900008]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSpTaskYielded"
+handler = "hook_os_sp_task_yielded"
+body_size = 0x4c
+sha256 = "ff13651ada8b72a54405e735cde0d9967f070ce59584ae30f59f22b03364902a"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02e530, 0x00808021, 0x00022202, 0x30420080, 0x10400006]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osGetTime"
+handler = "hook_os_get_time"
+body_size = 0x84
+sha256 = "cbc409a224f0d780efcc0884db5fa9d8edab16715f0d18e77a1d25b40333c361"
+expected_words = [0x27bdffd8, 0xafbf0024, 0xafb40020, 0xafb3001c, 0xafb20018, 0xafb10014, 0x0c02d438, 0xafb00010]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osContInit"
+handler = "hook_os_cont_init"
+body_size = 0x19c
+sha256 = "83bee617aa56205c66759182caad7f0f05aca3fa10d5c2eb923098352c634051"
+expected_words = [0x3c02800e, 0x8c4224f0, 0x27bdff80, 0xafb40070, 0x0080a021, 0xafb50074, 0x00a0a821, 0xafb60078]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osViSetSpecialFeatures"
+handler = "hook_os_vi_set_special_features"
+body_size = 0x164
+sha256 = "cde4e6f72382b63db51ab6effca4d7d3688f654a782c0c3c8cbf97395ae306a5"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02d438, 0x00808021, 0x00403021, 0x32020001, 0x10400007]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osPiStartDma"
+handler = "hook_os_pi_start_dma"
+body_size = 0xa8
+sha256 = "a70a183c787059eea876cf15d22b2c6dbb8b030cc9f1b84381c5e87aa4cb7127"
+expected_words = [0x27bdffe8, 0xafb00010, 0x00808021, 0x8fa40028, 0x3c02800e, 0x8c4227d0, 0x8fa8002c, 0x8fa30030]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osPiGetCmdQueue"
+handler = "hook_os_pi_get_cmd_queue"
+body_size = 0x20
+sha256 = "a788059d884bca49a4740f43cddda9aca86ef65cb3d67e3bd6930fec4798d842"
+expected_words = [0x3c03800e, 0x8c6327d0, 0x10600003, 0x00001021, 0x3c02800e, 0x8c4227d8, 0x03e00008, 0x00000000]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osVirtualToPhysical"
+handler = "hook_os_virtual_to_physical"
+body_size = 0x54
+sha256 = "f92aa9443fb223a7c9bc8880b8047e8303926c14fad0e9bb014244e57035cca8"
+expected_words = [0x27bdffe8, 0x3c031fff, 0x3463ffff, 0x3c028000, 0x00821023, 0x0062102b, 0x1040000a, 0xafbf0010]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSpTaskLoad"
+handler = "hook_os_sp_task_load"
+body_size = 0x20c
+sha256 = "07a244c1744be2b37340efb65712ccfe9fa39b4c30170ece8c778660e5b01631"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x3c118010, 0x2631cb40, 0x02202821, 0xafbf0018]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osAiSetNextBuffer"
+handler = "hook_os_ai_set_next_buffer"
+body_size = 0x94
+sha256 = "8cfb9c853dc1dd8dc1657dfb8071de6bb186e43a22ff91a46d8d9b50954c50b0"
+expected_words = [0x3c02800e, 0x904224e0, 0x27bdffe0, 0xafb10014, 0x00a08821, 0xafb00010, 0x00808021, 0x10400002]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osSetTimer"
+handler = "hook_os_set_timer"
+body_size = 0x94
+sha256 = "a01dfa0cacfabaa76183a40ae2f4d1d14c2ea43bc2d789bec87822ae6a334a4f"
+expected_words = [0x27bdffe8, 0x8fa20028, 0x8fa3002c, 0xafb00010, 0x00808021, 0xafbf0014, 0xae000000, 0xae000004]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osContStartReadData"
+handler = "hook_os_cont_start_read"
+body_size = 0x88
+sha256 = "161fb706fef89bbdbc44186ddd0a3e71754f3c3350520a8469152b27a5370bf9"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02d819, 0x00808021, 0x3c038019, 0x90637de4, 0x24020001]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osContGetReadData"
+handler = "hook_os_cont_get_read"
+body_size = 0x9c
+sha256 = "b242e7051330a68b8fe57572cc08d4ab308978684efb938a151f468ea81b8ba3"
+expected_words = [0x27bdfff0, 0x00804821, 0x3c028013, 0x9042fd84, 0x3c088011, 0x25087df0, 0x1840001d, 0x00003821]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osJamMesg"
+handler = "hook_os_jam_mesg"
+body_size = 0x134
+sha256 = "612d1c7da19ff7f647bcd911adb606cc6285d3b2e6d61f7c4b14d594b0146d3f"
+expected_words = [0x27bdffd0, 0xafb00010, 0x00808021, 0xafb50024, 0x00a0a821, 0xafb20018, 0x00c09021, 0xafbf0028]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "__osDisableInt"
+handler = "hook_os_disable_int"
+body_size = 0x70
+sha256 = "81e4d32851e9a916f56a48baeeb8e18e17733fac8a375da229784a3c2a0c6860"
+expected_words = [0x3c0a800e, 0x254a39e0, 0x8d4b0000, 0x316bff00, 0x40086000, 0x2401fffe, 0x01014824, 0x40896000]
+
+# Zero Hour US SDK variant; verified complete body, relocated SDK calls/globals.
+[[signatures]]
+symbol = "osInitialize"
+handler = "hook_os_initialize"
+body_size = 0x228
+sha256 = "6ec27f9125fc6dcca89e517bd4dbea5e00808d9336eacc40aa2fd8e691e8da58"
+expected_words = [0x27bdffe0, 0x24020001, 0xafbf0018, 0x3c01801b, 0x0c02d4f4, 0xac22e8ec, 0x3c042000, 0x0c02d558]
+
+# Zero Hour US SDK variant; verified complete osCreatePiManager body.
+[[signatures]]
+symbol = "osCreatePiManager"
+handler = "hook_os_create_pi_manager"
+body_size = 0x190
+sha256 = "6d88bdcaa20fbd85d07f2c0ea923fa03ec67a3f74cb8864c24ed1b70991bf823"
+expected_words = [0x27bdffc8, 0xafb00018, 0x00808021, 0xafb5002c, 0x00a0a821, 0xafb40028, 0x3c14800e, 0x269427d0]
+
+# Zero Hour US SDK variant; verified complete osCreateViManager body.
+[[signatures]]
+symbol = "osCreateViManager"
+handler = "hook_os_create_vi_manager"
+body_size = 0x1a0
+sha256 = "e4c6862ce732002e26a17044a322064990c0473fcfee2abe3333c7dbb8c8cc70"
+expected_words = [0x27bdffd0, 0xafb40028, 0x3c14800e, 0x26942800, 0xafbf002c, 0xafb30024, 0xafb20020, 0xafb1001c]
+
+# Zero Hour US SDK variant; verified complete osSetEventMesg body.
+[[signatures]]
+symbol = "osSetEventMesg"
+handler = "hook_os_set_event_mesg"
+body_size = 0xac
+sha256 = "b7a1a773d33f7e65a1db28b05d6ab96cdbb5f01533c2508c39e92321e408ee8e"
+expected_words = [0x27bdffd8, 0xafb00010, 0x00808021, 0xafb10014, 0x00a08821, 0xafb20018, 0x00c09021, 0xafbf0020]
+
+# Zero Hour US SDK variant; verified complete osCartRomInit body.
+[[signatures]]
+symbol = "osCartRomInit"
+handler = "hook_os_cart_rom_init"
+body_size = 0x178
+sha256 = "0f508e2245bc58d297d6185a620d39040e209552da990026a2c6354f4329aa94"
+expected_words = [0x27bdffe0, 0xafbf0018, 0xafb10014, 0x0c02d85d, 0xafb00010, 0x3c02800e, 0x8c4227c0, 0x1040004d]
+
+# Zero Hour US SDK variant; verified complete osAiSetFrequency body.
+[[signatures]]
+symbol = "osAiSetFrequency"
+handler = "hook_os_ai_set_frequency"
+body_size = 0x118
+sha256 = "2d8d15850f6dc418025aaf5f0fb7d4fc20c6d23bb8e6a73c8f81f9ba2cd0480a"
+expected_words = [0x44841000, 0x00000000, 0x468010a1, 0x3c01800e, 0xc42439d8, 0x46802120, 0x04830005, 0x46201020]
+
+# Zero Hour US SDK variant; verified complete osEPiStartDma body.
+[[signatures]]
+symbol = "osEPiStartDma"
+handler = "hook_os_epi_start_dma"
+body_size = 0x94
+sha256 = "1439b55858bd82ee62875d517b917c2fc8fcfa6e68a700381f0ecfbbb83a60e4"
+expected_words = [0x3c02800e, 0x8c4227d0, 0x27bdffe8, 0xafb00010, 0x00a08021, 0x14400003, 0xafbf0014, 0x0802b895]
+
+# Zero Hour US SDK variant; verified complete osAiGetStatus body.
+[[signatures]]
+symbol = "osAiGetStatus"
+handler = "hook_os_ai_get_status"
+body_size = 0x10
+sha256 = "ca2590df63a0994d2295be9346906b5706c52e06e06a133776138a7b7929c473"
+expected_words = [0x3c02a450, 0x3442000c, 0x03e00008, 0x8c420000]
+
+# Zero Hour US SDK variant; verified complete osEepromProbe body.
+[[signatures]]
+symbol = "osEepromProbe"
+handler = "hook_os_eeprom_probe"
+body_size = 0x74
+sha256 = "e056df9ec5b19744c4d373fdef7a794fed39e7c6163307568db8cdf2305fe47d"
+expected_words = [0x27bdffe0, 0xafb00018, 0xafbf001c, 0x0c02d819, 0x00808021, 0x02002021, 0x0c02c7c8, 0x27a50010]
+
+# Zero Hour US SDK variant; verified complete osContStartQuery body.
+[[signatures]]
+symbol = "osContStartQuery"
+handler = "hook_os_cont_start_query"
+body_size = 0x80
+sha256 = "201733f4720c5c120484a43759985af1c94a444ae9b488095fae285a47abcc51"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c02d819, 0x00808021, 0x3c028019, 0x90427de4, 0x1040000b]
+
+# Zero Hour US SDK variant; verified complete osContGetQuery body.
+[[signatures]]
+symbol = "osContGetQuery"
+handler = "hook_os_cont_get_query"
+body_size = 0x20
+sha256 = "823e89b2261400e913b6043217591d66892460aab5ef6be73f9b0bb14ad05152"
+expected_words = [0x27bdffe0, 0xafbf0018, 0x00802821, 0x0c02b7bf, 0x27a40010, 0x8fbf0018, 0x03e00008, 0x27bd0020]
+
+# Zero Hour US SDK variant; verified complete osMotorInit body.
+[[signatures]]
+symbol = "osMotorInit"
+handler = "hook_os_motor_init"
+body_size = 0x248
+sha256 = "b70858d98a53d9a364b05c24897e14e87bf663a04703e08ad6f46e71bdbf03f2"
+expected_words = [0x27bdff88, 0xafb00060, 0x00808021, 0xafb20068, 0x00a09021, 0xafb10064, 0x00c08821, 0x02402021]
+
+# Zero Hour US SDK variant; verified complete __osContRamRead body.
+[[signatures]]
+symbol = "__osContRamRead"
+handler = "hook_os_cont_ram_read"
+body_size = 0x1fc
+sha256 = "b58cda682202881c83062826e1ca9cca8ff303544ee3552e8bad126166ee2f97"
+expected_words = [0x27bdffb0, 0xafb40038, 0x0080a021, 0xafb30034, 0x00a09821, 0xafb5003c, 0x24150002, 0xafb00028]
+
+# Zero Hour US SDK variant; verified complete __osContRamWrite body.
+[[signatures]]
+symbol = "__osContRamWrite"
+handler = "hook_os_cont_ram_write"
+body_size = 0x21c
+sha256 = "54229e3f69d11562eb655d7689842f777c1fcdea8366727c1545a54ecee51c0b"
+expected_words = [0x27bdffb8, 0x8fa20058, 0xafb60038, 0x0080b021, 0xafb3002c, 0x00a09821, 0xafb20028, 0x3c12801b]
+
+# Zero Hour US SDK variant; verified complete osPfsInitPak body.
+[[signatures]]
+symbol = "osPfsInitPak"
+handler = "hook_os_pfs_init_pak"
+body_size = 0x1f8
+sha256 = "fca2780eb9ace0501a78b01e345d22af2846b1472e43e943a1a0c86a0923385a"
+expected_words = [0x27bdff90, 0xafb20060, 0x00809021, 0xafb1005c, 0x00a08821, 0xafb30064, 0x00c09821, 0xafbf0068]
+
+# Hexen US: 0x80052f20; complete linked SDK body.
+[[signatures]]
+symbol = "osInitialize"
+handler = "hook_os_initialize"
+body_size = 0x2a0
+sha256 = "2771826c4ebe8f23c73e0314de0c242d9778599a7cba6c47fc886030321787db"
+expected_words = [0x27bdffc0, 0xafbf001c, 0x240e0001, 0x3c01800d, 0xafb00018, 0xafa00038, 0x0c0167d4, 0xac2eba40]
+
+# Hexen US: 0x800531c0; complete linked SDK body.
+[[signatures]]
+symbol = "osCreateThread"
+handler = "hook_os_create_thread"
+body_size = 0x144
+sha256 = "94c63caf4539af378cbfa56b4ce1ad7b89f5e74003ee52c635381c3426668164"
+expected_words = [0x27bdffd8, 0xafa40028, 0xafa5002c, 0x8fae002c, 0x8faf0028, 0xafbf001c, 0xafa60030, 0xafa70034]
+
+# Hexen US: 0x80053310; complete linked SDK body.
+[[signatures]]
+symbol = "osStartThread"
+handler = "hook_os_start_thread"
+body_size = 0x150
+sha256 = "4a890977f4ec17eee7821096fc4a0d8ec185571272e01e51c35e1960dd05839d"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafb10018, 0x0c016d90, 0xafb00014, 0x8fae0028, 0x24010001]
+
+# Hexen US: 0x80053460; complete linked SDK body.
+[[signatures]]
+symbol = "osCreatePiManager"
+handler = "hook_os_create_pi_manager"
+body_size = 0x188
+sha256 = "96cbb6b84b27462b60318d313aa2ef67a9b86b97bba18341761be2a80601c525"
+expected_words = [0x27bdffd0, 0x3c0e8007, 0x8dce8900, 0xafbf001c, 0xafa40030, 0xafa50034, 0xafa60038, 0x15c00056]
+
+# Hexen US: 0x800535f0; complete linked SDK body.
+[[signatures]]
+symbol = "osCreateViManager"
+handler = "hook_os_create_vi_manager"
+body_size = 0x188
+sha256 = "a9aceb54ff615f773d7bc5ea7183142fa644501f0553785b217b086c5640817a"
+expected_words = [0x3c0e8007, 0x8dce8920, 0x27bdffd0, 0xafbf001c, 0x15c00059, 0xafa40030, 0x0c016f44, 0x00000000]
+
+# Hexen US: 0x80053950; complete linked SDK body.
+[[signatures]]
+symbol = "osSetThreadPri"
+handler = "hook_os_set_thread_pri"
+body_size = 0xe0
+sha256 = "457baf67d9a870fa555c611dd8f0289bef1ea3001be414504a1d353516282c65"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0x0c016d90, 0xafb00018, 0x8fae0028, 0x00408025]
+
+# Hexen US: 0x80053a30; complete linked SDK body.
+[[signatures]]
+symbol = "osCreateMesgQueue"
+handler = "hook_os_create_mesg_queue"
+body_size = 0x2c
+sha256 = "c27ff6ae7dbc9609b156fa2096f39921c365fe5b70db21bdf910d03e99bf9942"
+expected_words = [0x3c0e8007, 0x3c0f8007, 0x25ce96c0, 0x25ef96c0, 0xac8e0000, 0xac8f0004, 0xac800008, 0xac80000c]
+
+# Hexen US: 0x80053a60; complete linked SDK body.
+[[signatures]]
+symbol = "osViSetEvent"
+handler = "hook_os_vi_set_event"
+body_size = 0x6c
+sha256 = "ff9ebaaa95904555999c75e738c4f3363365385302882ca5add2fb1aef748cc6"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0x0c016d90, 0xafb00018, 0x3c0f8007]
+
+# Hexen US: 0x80053ad0; complete linked SDK body.
+[[signatures]]
+symbol = "osSetEventMesg"
+handler = "hook_os_set_event_mesg"
+body_size = 0x68
+sha256 = "7b6565d03626d623d0f350065aa59b74878dacbee356d92f26815af04c66a774"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0x0c016d90, 0xafb00018, 0x8fae0028]
+
+# Hexen US: 0x80053b80; complete linked SDK body.
+[[signatures]]
+symbol = "osViSetMode"
+handler = "hook_os_vi_set_mode"
+body_size = 0x68
+sha256 = "583910caa736cb4c1ede44dc6532fa7e6acad322e85126ed419d98940780871a"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c016d90, 0xafb00018, 0x3c0f8007, 0x8def9764, 0x8fae0028]
+
+# Hexen US: 0x80053bf0; complete linked SDK body.
+[[signatures]]
+symbol = "osViSwapBuffer"
+handler = "hook_os_vi_swap_buffer"
+body_size = 0x50
+sha256 = "8f37273798df3cd4ef51a5f414c17622761b96ba9fc12626ddb75d955218293b"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c016d90, 0xafa40020, 0x3c0f8007, 0x8def9764, 0x8fae0020, 0xafa2001c]
+
+# Hexen US: 0x80053c40; complete linked SDK body.
+[[signatures]]
+symbol = "osContSetCh"
+handler = "hook_os_cont_set_ch"
+body_size = 0x64
+sha256 = "ddc18d2b0ca9546cfaaf257dc9ef2aa0d67840f9e91aad46385b4804ffdd9840"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c01718c, 0xafa0001c, 0x93ae0023, 0x29c10005, 0x14200005]
+
+# Hexen US: 0x800545f0; complete linked SDK body.
+[[signatures]]
+symbol = "osViSetSpecialFeatures"
+handler = "hook_os_vi_set_special_features"
+body_size = 0x1b8
+sha256 = "cd7074171498d0da656561c4b184b47f1479839f595c0e17fbe75d812e70f2e7"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c016d90, 0xafb00018, 0x8fae0028, 0x00408025, 0x31cf0001]
+
+# Hexen US: 0x800549a0; complete linked SDK body.
+[[signatures]]
+symbol = "osContInit"
+handler = "hook_os_cont_init"
+body_size = 0x1f8
+sha256 = "6d50d5b4cc8797f4404e9555806c839cb1af74ad08b60e88e94db9041a547f7b"
+expected_words = [0x27bdff80, 0x3c0e8007, 0x8dce9670, 0xafbf0024, 0xafa40080, 0xafa50084, 0xafa60088, 0x11c00003]
+
+# Hexen US: 0x80054d60; complete linked SDK body.
+[[signatures]]
+symbol = "osContStartReadData"
+handler = "hook_os_cont_start_read"
+body_size = 0xc4
+sha256 = "3794055026a7d3d832866bac1d53e65de26ea00c0525c77015ab21840fdcecd4"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c01718c, 0xafa0001c, 0x3c0e800d, 0x91cedf00, 0x24010001]
+
+# Hexen US: 0x80054e24; complete linked SDK body.
+[[signatures]]
+symbol = "osContGetReadData"
+handler = "hook_os_cont_get_read"
+body_size = 0xa8
+sha256 = "aa98dd766286bff3b205f59db0765e9de232e3346d8c80b372899116a16fa774"
+expected_words = [0x3c0f800d, 0x91efdf01, 0x3c0e800d, 0x27bdfff0, 0x25cedec0, 0xafae000c, 0x19e00021, 0xafa00000]
+
+# Hexen US: 0x80054fc0; complete linked SDK body.
+[[signatures]]
+symbol = "osRecvMesg"
+handler = "hook_os_recv_mesg"
+body_size = 0x138
+sha256 = "cbb6c1e4b0edcedba980a8eb471ae251182a42e6f0cda180373ea1b8befad1f8"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018, 0x0c016d90, 0xafb00014]
+
+# Hexen US: 0x80055430; complete linked SDK body.
+[[signatures]]
+symbol = "osPiStartDma"
+handler = "hook_os_pi_start_dma"
+body_size = 0x10c
+sha256 = "a38165e47703eb3b69db3278dd3569dcc464d75d6039025f1e97d8507e04aaa1"
+expected_words = [0x27bdffd8, 0x3c0e8007, 0x8dce8900, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafa70034]
+
+# Hexen US: 0x800555c0; complete linked SDK body.
+[[signatures]]
+symbol = "osSendMesg"
+handler = "hook_os_send_mesg"
+body_size = 0x14c
+sha256 = "eb5d4cbc66726899074ac8a8fd3cd30799964ba006ebf0954bc8ee2e58eeef7a"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafa5003c, 0xafa60040, 0xafb20020, 0xafb1001c, 0x0c016d90]
+
+# Hexen US: 0x80055740; complete linked SDK body.
+[[signatures]]
+symbol = "osVirtualToPhysical"
+handler = "hook_os_virtual_to_physical"
+body_size = 0x7c
+sha256 = "0b7b5a9b01908439f95c24452850738e98f6da2a288beda3cbfb5823819292d1"
+expected_words = [0x27bdffe8, 0xafa40018, 0x8fae0018, 0x3c018000, 0xafbf0014, 0x01c1082b, 0x14200007, 0x3c01a000]
+
+# Hexen US: 0x80058c40; complete linked SDK body.
+[[signatures]]
+symbol = "osAiSetFrequency"
+handler = "hook_os_ai_set_frequency"
+body_size = 0x160
+sha256 = "ef28e52eda11e5b618f209a827718bdd36e4a8a5c82722b660175f289c2b1f91"
+expected_words = [0x3c0e8007, 0x8dce9768, 0x44844000, 0x27bdfff0, 0x448e2000, 0x468042a0, 0x04810005, 0x468021a0]
+
+# Hexen US: 0x80058ec0; complete linked SDK body.
+[[signatures]]
+symbol = "osAiSetNextBuffer"
+handler = "hook_os_ai_set_next_buffer"
+body_size = 0xa8
+sha256 = "f7082feabea0324779ab420a3df30bca764ecb2f294b84edc3020a58f9fb3a91"
+expected_words = [0x27bdffe0, 0x3c0f8007, 0x91ef9690, 0xafa40020, 0x8fae0020, 0xafbf0014, 0xafa50024, 0x11e00003]
+
+# Hexen US: 0x80059980; complete linked SDK body.
+[[signatures]]
+symbol = "osGetTime"
+handler = "hook_os_get_time"
+body_size = 0x84
+sha256 = "921f6435ad744c61f718bcff79c1dbd311b35538d0054d9eef80215adeb9c29a"
+expected_words = [0x27bdffc8, 0xafbf001c, 0x0c016d90, 0xafb00018, 0x0c017174, 0x00408025, 0xafa20034, 0x3c0f800d]
+
+# Hexen US: 0x8005b780; complete linked SDK body.
+[[signatures]]
+symbol = "osGetThreadPri"
+handler = "hook_os_get_thread_pri"
+body_size = 0x18
+sha256 = "c749827b9ab1e3ac875cabe9c226c9107950743acfce49eec8dbe0d6fa06ad7a"
+expected_words = [0x14800003, 0x00000000, 0x3c048007, 0x8c8496d0, 0x03e00008, 0x8c820004]
+
+# Hexen US: 0x8005c6a0; complete linked SDK body.
+[[signatures]]
+symbol = "osViBlack"
+handler = "hook_os_vi_black"
+body_size = 0x70
+sha256 = "53a4fc4406c59c22828d4718749e8a9b49545d84bd44b29d3c4c873d10ddb691"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0x0c016d90, 0xafb00018, 0x93ae002b, 0x00408025, 0x11c00007]
+
+# Hexen US: 0x8005c710; complete linked SDK body.
+[[signatures]]
+symbol = "osSetIntMask"
+handler = "hook_os_set_int_mask"
+body_size = 0xa0
+sha256 = "5510bbff2d854f73e7bf4b070375f9bf27e75758ddc464aade71f060d58883b6"
+expected_words = [0x400c6000, 0x3182ff01, 0x3c088007, 0x250888ec, 0x8d0b0000, 0x2401ffff, 0x01614026, 0x3108ff00]
+
+# Hexen US: 0x8005c7b0; complete linked SDK body.
+[[signatures]]
+symbol = "osSpTaskYielded"
+handler = "hook_os_sp_task_yielded"
+body_size = 0x80
+sha256 = "6a91e3f18e20f2a2fb85360f9ca3abee07d877d4432b1aa76e9d1065c2741e7d"
+expected_words = [0x27bdffe0, 0xafbf0014, 0x0c01882c, 0xafa40020, 0xafa2001c, 0x8fae001c, 0x31cf0100, 0x11e00004]
+
+# Hexen US: 0x8005cb24; complete linked SDK body.
+[[signatures]]
+symbol = "osSpTaskStartGo"
+handler = "hook_os_sp_task_start_go"
+body_size = 0x40
+sha256 = "9a0482455ad333321a0e2a95e4d1b4f2af50285734c92038d41d9258220277a6"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c01892c, 0xafa40018, 0x10400005, 0x00000000, 0x0c01892c, 0x00000000]
+
+# Hexen US: 0x8005cc20; complete linked SDK body.
+[[signatures]]
+symbol = "osSpTaskYield"
+handler = "hook_os_sp_task_yield"
+body_size = 0x20
+sha256 = "6d964e1acb4e4b5312d19d495ac10eec177ff155675adde130aaa7ee3d700ffe"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c0188f4, 0x24040400, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]
+
+# Hexen US: 0x8005cc40; complete linked SDK body.
+[[signatures]]
+symbol = "osSetTimer"
+handler = "hook_os_set_timer"
+body_size = 0xd4
+sha256 = "f3c1b0813c9d2128dcf0adaecbd485324c375b8c9f051437a380cb5be09ab8f3"
+expected_words = [0x27bdffe0, 0xafa40020, 0x8fae0020, 0xafbf0014, 0xafa60028, 0xafa7002c, 0xadc00000, 0x8faf0020]
+
+# Hexen US: 0x8005cdd0; complete linked SDK body.
+[[signatures]]
+symbol = "osJamMesg"
+handler = "hook_os_jam_mesg"
+body_size = 0x150
+sha256 = "f1759efe41184f0ee4d898eaf8394629f32f5860652dd677bc5283a54efec495"
+expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c, 0xafa60030, 0xafb10018, 0x0c016d90, 0xafb00014]
+
+# Hexen US: 0x8005cf20; complete linked SDK body.
+[[signatures]]
+symbol = "osPiGetCmdQueue"
+handler = "hook_os_pi_get_cmd_queue"
+body_size = 0x28
+sha256 = "95a96576e9f13f342632cb39edc6471b34b540a347def06c2aecf94d0b18576d"
+expected_words = [0x3c0e8007, 0x8dce8900, 0x15c00003, 0x00000000, 0x03e00008, 0x00001025, 0x3c028007, 0x8c428908]
+
+# Hexen US: 0x80061db0; complete linked SDK body.
+[[signatures]]
+symbol = "osDestroyThread"
+handler = "hook_os_destroy_thread"
+body_size = 0xf8
+sha256 = "1771a29235eeca896b1d9ff11d99ffbbe8cc33ed10dcb7dfec4f5e99a19cc168"
+expected_words = [0x27bdffc8, 0xafbf0024, 0xafa40038, 0xafb20020, 0xafb1001c, 0x0c016d90, 0xafb00018, 0x8fae0038]
+
+# Hexen US: 0x80062050; complete linked SDK body.
+[[signatures]]
+symbol = "osYieldThread"
+handler = "hook_os_yield_thread"
+body_size = 0x4c
+sha256 = "793eecfb48ea8fe50761d51495feecfd1ac6a18c5891813a5cf24691f61dcda7"
+expected_words = [0x27bdffd8, 0xafbf001c, 0x0c016d90, 0xafb00018, 0x3c0f8007, 0x8def96d0, 0x240e0002, 0x3c048007]
+
+# Hexen US: 0x80055100; complete linked SDK body.
+[[signatures]]
+symbol = "osPfsIsPlug"
+handler = "hook_os_pfs_is_plug"
+body_size = 0x194
+sha256 = "b87e8c52b94a8d9db614c1ff77ad90d19ea867154637665484f1bd38bcf2d943"
+expected_words = [0x27bdff90, 0xafbf003c, 0xafb5002c, 0xafb20020, 0xafb1001c, 0x00809025, 0xafbe0038, 0xafb70034]
+
+# Hexen US: 0x8005c9bc; complete linked SDK body.
+[[signatures]]
+symbol = "osSpTaskLoad"
+handler = "hook_os_sp_task_load"
+body_size = 0x168
+sha256 = "72faf6c42c2494f3ffbab6b1f099086e64308eb0667ef23e6e672137e63a8cd9"
+expected_words = [0x27bdffd8, 0xafbf0024, 0xafb00014, 0x00808025, 0xafb30020, 0xafb2001c, 0x0c01722c, 0xafb10018]

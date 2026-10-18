@@ -70,12 +70,13 @@ an existing destination containing different bytes.
 
 Every game uses `games/<game>/profile.toml`, where `<game>` is `sm64-us`,
 `goldeneye-us`, `shadowman-us`,
-`quake-us`, `duke-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
+`quake-us`, `duke-us`, `duke-zero-hour-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
 `conker-us` (experimental; see its [port status](games/conker-us/README.md)).
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
 | --- | --- |
+| `duke-zero-hour.us.z64` | `026789d47db5fe202a76f89797b33ac7` |
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
 | `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |
 | `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
@@ -97,7 +98,7 @@ cmake --build --preset sm64-us-release --target run
 ```
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
-`nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
+`duke-zero-hour-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 
 The equivalent explicit CMake configuration is:
