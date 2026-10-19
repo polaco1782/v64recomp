@@ -1,6 +1,7 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
 import hashlib, json, zlib
+import re
 from common import RecompError
 
 
@@ -52,9 +53,26 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.extend(f'    .{name}=UINT32_C(0x{value:x}),' for name,value in profile['pager'].items())
         lines.extend(['};', 'static const RecompPlatformConfig ge_platform_config = {'])
         lines.extend(f'    .{name}=UINT32_C(0x{value:x}),' for name,value in profile['platform'].items())
-        lines.extend(['    .vi_period_ticks=BOOT_VI_PERIOD_TICKS,', '};',
-                      'static const RecompSchedulerConfig ge_scheduler_config = {'])
-        lines.extend(f'    .{name}=UINT32_C(0x{value:x}),' for name,value in profile['runtime'].items())
+        lines.extend(['    .vi_period_ticks=BOOT_VI_PERIOD_TICKS,', '};'])
+        names = profile['runtime'].get('thread_names', [])
+        entries = {function['vram'] for function in metadata['functions']}
+        seen = set()
+        if names:
+            lines.append('static const RecompThreadName ge_thread_names[] = {')
+            for item in names:
+                entry, name = item['entry'], item['name']
+                if (type(entry) is not int or entry not in entries or entry in seen
+                        or not isinstance(name, str) or not re.fullmatch(r'n64-[a-z0-9-]{1,11}', name)):
+                    raise RecompError('invalid or duplicate GoldenEye thread name/entry')
+                seen.add(entry)
+                lines.append(f'    {{UINT32_C(0x{entry:x}), {json.dumps(name)}}},')
+            lines.append('};')
+        lines.append('static const RecompSchedulerConfig ge_scheduler_config = {')
+        lines.extend(f'    .{name}=UINT32_C(0x{value:x}),' for name,value in profile['runtime'].items()
+                     if name != 'thread_names')
+        if names:
+            lines.extend(['    .thread_names=ge_thread_names,',
+                          '    .thread_name_count=sizeof(ge_thread_names)/sizeof(ge_thread_names[0]),'])
         lines.extend(['};', ''])
         game_section=next(s for s in metadata['sections'] if s['name']=='.game')
         lines.append(f'#define BOOT_GAME_SECTION {game_section["id"]}')

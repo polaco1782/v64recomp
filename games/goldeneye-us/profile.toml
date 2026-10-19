@@ -103,6 +103,14 @@ run_queue = 0x80027728
 active_queue = 0x8002772c
 running_thread = 0x80027730
 event_table = 0x80066a10
+# Entry addresses verified at the ROM's osCreateThread call sites.
+thread_names = [
+  {entry = 0x7000089c, name = "n64-main"},
+  {entry = 0x70000718, name = "n64-idle"},
+  {entry = 0x70000d00, name = "n64-scheduler"},
+  {entry = 0x70001f7c, name = "n64-sound"},
+  {entry = 0x70004f54, name = "n64-controller"},
+]
 
 [platform]
 clock_rate = 0x80026980

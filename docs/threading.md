@@ -1,11 +1,22 @@
 # Native threading
 
-Each libultra thread has a named `n64-<id>` pthread, a native stack and its own
+Each libultra thread has a named pthread, a native stack and its own
 `MipsContext`. A scheduler mutex and condition variables transfer an execution
 token between the host and one guest thread. Priorities, FIFO ordering among
 ready threads of equal priority, message queues and guest OSThread structures
 remain managed by the shared runtime. Host scheduling priorities are not used
 to implement libultra priorities.
+
+Games can provide an entry-address-to-name table through
+`RecompSchedulerConfig.thread_names` and `thread_name_count`. Names must fit
+Linux's 15-byte limit; the table and strings must outlive the scheduler. The
+name is applied when the pthread starts, in both Release and Debug. Matching
+uses the original guest entry address, so guest IDs remain available to the
+emulated OS and diagnostics. Unknown entries retain the `n64-<id>` fallback.
+GoldenEye emits its checked profile's labels as `n64-main`, `n64-idle`,
+`n64-scheduler`, `n64-sound` and `n64-controller`. The translated sound thread
+is distinct from the `n64-audio` DSP worker. Rebuild and restart to see new names
+in `top -H` or perf; existing processes retain their original names.
 
 Blocking queue operations and stopped threads park their pthread without losing
 the translated C call stack. Destroying a parked thread wakes it for exit and

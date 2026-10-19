@@ -6,6 +6,7 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 typedef struct NativeQueue NativeQueue;
@@ -312,6 +313,12 @@ static void *enter(void *opaque) {
     recomp_set_failure_handler(guest_failure, t->runtime);
     char name[16];
     snprintf(name, sizeof(name), "n64-%d", t->id);
+    for (size_t i = 0; i < s->config.thread_name_count; i++) {
+        if (s->config.thread_names[i].entry == t->context.pc) {
+            snprintf(name, sizeof(name), "%s", s->config.thread_names[i].name);
+            break;
+        }
+    }
     pthread_setname_np(pthread_self(), name);
     pthread_mutex_lock(&s->mutex);
     RECOMP_LOG("thread", "entered pthread id=%" PRId32 " entry=0x%08" PRIx32, t->id, t->context.pc);
@@ -390,6 +397,14 @@ static void checkpoint(Runtime *rt, bool force_yield) {
 
 bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
     if (rt->scheduler || !config || !config->thread_tail || config->thread_tail % 4) return false;
+    if (config->thread_name_count && !config->thread_names) return false;
+    for (size_t i = 0; i < config->thread_name_count; i++) {
+        const RecompThreadName *name = &config->thread_names[i];
+        if (!name->entry || name->entry % 4 || !name->name || !name->name[0]
+            || strlen(name->name) >= 16) return false;
+        for (size_t j = 0; j < i; j++)
+            if (config->thread_names[j].entry == name->entry) return false;
+    }
     if (config->stop_before_count && !config->stop_before_entries) return false;
     recomp_ram_address(rt, config->thread_tail, 8);
     if (config->idle_thread) {

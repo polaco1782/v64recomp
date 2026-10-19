@@ -45,6 +45,11 @@ void recomp_worker_destroy(RecompWorker *);
 /* Merge only worker-modified RAM bytes; reject conflicting guest writes. */
 void recomp_worker_merge(Runtime *, const uint8_t *before, const uint8_t *after);
 
+typedef struct RecompThreadName {
+    uint32_t entry; /* Original guest entry address, independent of guest ID. */
+    const char *name; /* Native pthread name: 1..15 bytes, excluding the NUL. */
+} RecompThreadName;
+
 typedef struct RecompSchedulerConfig {
     uint32_t thread_tail; /* Guest address of an eight-byte tail sentinel. */
     uint32_t run_queue, active_queue, running_thread, event_table; /* Optional guest globals. */
@@ -55,6 +60,8 @@ typedef struct RecompSchedulerConfig {
     size_t stop_before_count; /* Additional checked demo/debugger boundaries. */
     bool fpu_fr1; /* SDK uses 0x230-byte threads with 32 independent 64-bit FPRs. */
     uint32_t idle_thread; /* Optional priority-zero idle thread: return to the host instead of spinning. */
+    const RecompThreadName *thread_names; /* Optional game-owned table; must outlive the scheduler. */
+    size_t thread_name_count;
 } RecompSchedulerConfig;
 
 /* Runtime access is serialized between the owner and one guest pthread. Guest code must

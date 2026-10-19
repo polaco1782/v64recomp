@@ -141,6 +141,11 @@ It retains the existing diagnostic startup behavior and checks.
 Both modes reuse RT64's optimized `RelWithDebInfo` build by default. Game code,
 the shared runtime and native adapters retain their selected configuration flags.
 
+For thread CPU usage and sampled function call stacks, see
+[CPU profiling](docs/profiling.md). `tools/profile_execution.py` attaches to a
+running game and saves thread counters and optional perf reports under
+`build/profiles/`.
+
 ```sh
 cmake --preset quake-us-debug
 cmake --build --preset quake-us-debug -j 4

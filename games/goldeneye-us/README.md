@@ -20,5 +20,10 @@ the original trace/capture harness and inspection tools. Shared headers, adapter
 `generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
 build directory, and private ROM/save data stays in `local/`.
 
+Guest pthreads use the profile's entry-based names: `n64-main`, `n64-idle`,
+`n64-scheduler`, `n64-sound` and `n64-controller`. `n64-sound` runs translated
+sound code; `n64-audio` is the separate native DSP worker. See
+[CPU profiling](../../docs/profiling.md) for thread counters and function samples.
+
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).
