@@ -207,6 +207,46 @@ are under `build/profiles/memory-optimization/`. GoldenEye Release completed an
 startup smoke check does not establish gameplay performance or full-game
 regression coverage.
 
+### Inline variable-address RAM loads, 2026-10-18
+
+Release `recomp_load8/16/32/64` now inline the direct-RAM path even when the
+guest address is computed at runtime. The address classification and byte/word
+ordering are unchanged. ROM, MMIO, physical addresses and mapped/custom-pager
+addresses still go through the shared helpers. Debug keeps alignment/range
+diagnostics. This does not add page translation caches or change stores.
+
+On the same host, Clang `-O3` load-loop microbenchmarks measured these medians:
+
+| Width | Previous | Inline variable path |
+| --- | --- | --- |
+| 8-bit | 1.569 ns/load | 0.642 ns/load |
+| 16-bit | 1.098 ns/load | 0.688 ns/load |
+| 32-bit | 1.302 ns/load | 0.566 ns/load |
+| 64-bit | 1.308 ns/load | 0.565 ns/load |
+
+Each result is the median of five 12-million-load loops over 1,024 computed,
+aligned addresses in a warmed 64 KiB RAM region, alternating KSEG0/KSEG1 aliases.
+Separate translation units compiled against the previous/current headers call
+the same runtime library. Physical-address fallback loops remained approximately
+unchanged (about 13–15 ns/load). Disassembly confirmed that direct 32-bit reads
+execute inline; the shared helper is called on the fallback branch.
+
+GoldenEye's 35 generated CPU objects grew from **9,224,565 to 11,059,040 bytes of
+`.text` (+19.89%)**, using the existing Release preset. The larger instruction
+footprint is a material tradeoff: these focused timings do not establish an
+overall gameplay improvement, and a same-scene CPU/frame-time comparison is
+still needed after restarting the rebuilt game.
+
+Release and Debug each passed 159,368 load comparisons covering all widths,
+physical/KSEG aliases, native page mappings, custom backing with unusual
+alignment, ROM reads and PI MMIO dispatch. Failure checks retained out-of-range
+diagnostics and Debug alignment failures. The fixtures used Address and
+UndefinedBehavior Sanitizers; LeakSanitizer was disabled for the sandbox.
+Release and Debug runtime builds passed. Evidence is under
+`build/profiles/inline-loads/`. GoldenEye Release also completed an 1,800-frame
+startup run with the intro visibly rendered and no runtime failure; full
+gameplay performance remains unmeasured.
+
 References: [perf record](https://man7.org/linux/man-pages/man1/perf-record.1.html),
 [perf report](https://man7.org/linux/man-pages/man1/perf-report.1.html),
 [Linux thread CPU counters](https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html).

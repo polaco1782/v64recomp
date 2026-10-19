@@ -170,6 +170,13 @@ guest register zero, eliminate redundant expressions and keep intermediate
 values in host registers where aliasing and calls permit it. The SM64 example
 shows constant propagation across two original instructions.
 
+Release fixed-width loads inline the small direct-RAM path for both constant
+and variable guest addresses. Mapped addresses, ROM and MMIO retain shared
+readers; Debug retains the checked path. This avoids calls for common RAM reads
+at the cost of repeating the address test/load sequence in generated functions.
+The [profiling measurements](profiling.md#inline-variable-address-ram-loads-2026-10-18)
+record both helper timing and the resulting generated-code growth.
+
 Wrapping arithmetic uses explicit unsigned operations and width/sign-extension
 rules. Trapping signed arithmetic can use compiler overflow builtins. This
 expresses guest semantics without relying on undefined signed overflow or

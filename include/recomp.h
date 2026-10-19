@@ -201,20 +201,20 @@ uint16_t recomp_load16_shared(Runtime *, uint32_t);
 uint32_t recomp_load32_shared(Runtime *, uint32_t);
 uint64_t recomp_load64_shared(Runtime *, uint32_t);
 
-/* Inline known RAM addresses; share variable-address loads to keep generated
- * .text compact. The shared helpers also have width-specific RAM fast paths.
- * Debug always uses the checked reader, including for constant addresses. */
+/* Keep ordinary RAM loads inline even when their address is computed at runtime.
+ * ROM/MMIO and mapped addresses retain the shared fallback. Debug always uses
+ * the checked reader, including for constant addresses. */
 static inline uint8_t recomp_load8(Runtime *rt, uint32_t address) {
-#if !defined(RECOMP_DEBUG) && (defined(__GNUC__) || defined(__clang__))
-    if (__builtin_constant_p(address) && recomp_direct_ram_read(address))
+#ifndef RECOMP_DEBUG
+    if (recomp_direct_ram_read(address))
         return rt->rdram[(address & UINT32_C(0x1fffffff)) ^ 3];
 #endif
     return recomp_load8_shared(rt, address);
 }
 
 static inline uint16_t recomp_load16(Runtime *rt, uint32_t address) {
-#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG) && (defined(__GNUC__) || defined(__clang__))
-    if (__builtin_constant_p(address) && recomp_direct_ram_read(address)) {
+#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
+    if (recomp_direct_ram_read(address)) {
         uint16_t value;
         memcpy(&value, rt->rdram + ((address & UINT32_C(0x1fffffff)) ^ 2), 2);
         return value;
@@ -224,8 +224,8 @@ static inline uint16_t recomp_load16(Runtime *rt, uint32_t address) {
 }
 
 static inline uint32_t recomp_load32(Runtime *rt, uint32_t address) {
-#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG) && (defined(__GNUC__) || defined(__clang__))
-    if (__builtin_constant_p(address) && recomp_direct_ram_read(address)) {
+#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
+    if (recomp_direct_ram_read(address)) {
         uint32_t value;
         memcpy(&value, rt->rdram + (address & UINT32_C(0x1fffffff)), 4);
         return value;
@@ -235,8 +235,8 @@ static inline uint32_t recomp_load32(Runtime *rt, uint32_t address) {
 }
 
 static inline uint64_t recomp_load64(Runtime *rt, uint32_t address) {
-#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG) && (defined(__GNUC__) || defined(__clang__))
-    if (__builtin_constant_p(address) && recomp_direct_ram_read(address)) {
+#if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
+    if (recomp_direct_ram_read(address)) {
         uint64_t value;
         memcpy(&value, rt->rdram + (address & UINT32_C(0x1fffffff)), 8);
         return (value << 32) | (value >> 32);
