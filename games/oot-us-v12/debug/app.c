@@ -47,21 +47,6 @@ static uint64_t monotonic_ns(void) {
     if (clock_gettime(CLOCK_MONOTONIC, &ts)) recomp_fail("Ocarina of Time host clock failed", 0);
     return (uint64_t)ts.tv_sec*UINT64_C(1000000000)+(uint64_t)ts.tv_nsec;
 }
-static void pace(Runtime *rt, uint64_t deadline) {
-    while (monotonic_ns() < deadline) {
-        /* VI and AI are independent of host presentation. Keep servicing them
-         * during the remaining frame interval so retraces do not bunch up and
-         * get discarded by the original audio manager. */
-        RecompRunResult run = recomp_scheduler_run(rt, 32);
-        uint64_t now = monotonic_ns();
-        if (now >= deadline) break;
-        if (run == RECOMP_RUN_BUDGET) continue;
-        uint64_t delta = deadline-now;
-        if (delta > UINT64_C(1000000)) delta=UINT64_C(1000000);
-        struct timespec ts = {(time_t)(delta/1000000000), (long)(delta%1000000000)};
-        nanosleep(&ts, NULL);
-    }
-}
 
 static void check_zero(Runtime *rt, uint32_t start, uint32_t end) {
     for (uint32_t a = start; a < end; a += 4)
@@ -216,7 +201,7 @@ int main(int argc, char **argv) {
             require(recomp_renderer_capture(renderer, capture), "Ocarina of Time frame capture failed", 0);
         }
         next_present += 16666667;
-        pace(&rt, next_present);
+        recomp_game_pace(&rt, next_present);
     }
     require(graphics_tasks || window_closed, "Ocarina of Time did not render a graphics task", 0);
     if (graphics_tasks) {

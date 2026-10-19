@@ -244,6 +244,52 @@ owning layer, regenerate/rebuild, and replay beyond the previous failure point.
 For hangs, inspect runnable/blocked threads, queue ownership, event delivery,
 guest time, busy waits, and worker completion rather than raising budgets alone.
 
+For high CPU usage, use the maintained profiling workflows in
+[CPU profiling](docs/profiling.md). Measure a settled **Release** scene; Debug's
+unoptimized game code and diagnostics change the workload. Attribute costs to
+guest threads, shared runtime, audio, RT64 and driver work before optimizing.
+
+- Apps using the shared command line support the built-in x86-64 Linux sampler,
+  including packaged Steam Deck builds, without Python or `perf`:
+
+  ```sh
+  ./build/<game>-release/bin/<game> \
+    --profile build/<game>-release/profile-scene \
+    --profile-delay 20 --profile-seconds 30
+  ```
+
+  Use a new capture directory with an existing parent. The game continues after
+  the timed capture; without `--profile-seconds`, exit normally to save it.
+  Inspect `hotspots.txt`, `thread-hotspots.txt`, `functions.csv`, `stacks.folded`
+  and `summary.json`. Check sampling failures, drops, overruns and truncated
+  stacks before drawing conclusions. `--profile-hz 49` reduces sampling overhead.
+- To attach to an already running Linux process, use the external tool:
+
+  ```sh
+  python3 tools/profile_execution.py threads --game <game> --duration 30
+  python3 tools/profile_execution.py record --game <game> --duration 30 \
+    --backend perf --output build/profiles/<game>-scene
+  python3 tools/profile_execution.py report build/profiles/<game>-scene --tid <native-tid>
+  ```
+
+  Use `--pid` when the executable name is ambiguous. The `record` default is
+  `--backend auto`, which keeps thread accounting if perf fails; `--backend perf`
+  makes unavailable function sampling an explicit failure. Inspect `summary.json`,
+  `perf-record.log`, `threads.csv`, `perf-self.txt` and `perf-calltree.txt`.
+  A sandbox/PID namespace can hide desktop processes; capture where the PID is
+  visible. Never treat a thread-only fallback as a sampled function profile.
+
+Thread CPU percentages use one logical CPU as 100%; function sample percentages
+describe the selected samples. Self cost excludes callees; inclusive/Children
+cost overlaps and must not be summed. Resolve `recomp_s<section>_<address>` with
+`tools/disassemble_function.py` and the capture's matching generated metadata.
+Keep the matching executable/generated sources. Built-in frame-pointer stacks
+can be incomplete; use perf for DWARF unwinding or kernel attribution.
+For an optimization, record focused correctness checks, helper timings and
+generated CPU `.text` growth as applicable; see [code expansion](docs/code-expansion.md).
+Compare equivalent gameplay scenes and frame times, then measure normal play
+with profiling disabled. Helper speedups alone do not establish game CPU/FPS gains.
+
 For an unsupported graphics/audio task, inspect the captured task bytes before
 changing a microcode profile:
 

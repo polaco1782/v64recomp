@@ -133,13 +133,7 @@ void hexen_step(Hexen *g, const RecompPad *pad) {
     }
 }
 void hexen_pace(Hexen *g, uint64_t deadline) {
-    for(;;) {
-        uint64_t now=recomp_game_monotonic();
-        if(now>=deadline)return;
-        uint64_t wake=now+1000000;
-        recomp_game_sleep(wake<deadline?wake:deadline);
-        hexen_step(g,NULL);
-    }
+    recomp_game_pace(&g->runtime,deadline);
 }
 void hexen_destroy(Hexen *g) {
     recomp_audio_destroy(g->audio);

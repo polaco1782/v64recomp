@@ -37,6 +37,7 @@ int main(int argc,char **argv) {
     RecompClockConfig clock = {.ticks_per_second=BOOT_COUNTER_HZ, .now_ns=guest_time};
     RecompSchedulerConfig scheduler = {.thread_tail=0x800706c0,
         .run_queue=0x800706c8, .active_queue=0x800706cc, .running_thread=0x800706d0,
+        .idle_thread=BOOT_MAIN_OBJECT,
          .stop_before_entry=0};
     RecompPlatformConfig platform = {.vi_period_ticks=781250,
         .vi_clock=0x8006f848, .clock_rate=0x8006f840, .final_rom=0x800db0c0,
@@ -70,7 +71,7 @@ int main(int argc,char **argv) {
         }
         require(recomp_renderer_present(renderer),"presentation failed",0);
         next_present+=16666667;
-        recomp_game_sleep(next_present);
+        recomp_game_pace(&rt,next_present);
     }
     recomp_audio_destroy(audio);recomp_renderer_destroy(renderer);
     recomp_runtime_destroy(&rt);free(rom);

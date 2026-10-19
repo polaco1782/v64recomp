@@ -61,33 +61,6 @@ static void drain(Runtime *rt) {
         if (!work) break;
     }
 }
-static void pace(Runtime *rt, uint64_t deadline) {
-    for (;;) {
-        uint64_t now = monotonic_ns();
-        if (now >= deadline) return;
-        uint64_t wake = deadline;
-        uint64_t event = recomp_platform_next_deadline(rt);
-        uint64_t timer = recomp_clock_next_deadline(rt);
-        if (timer < event) event = timer;
-        if (event != UINT64_MAX) {
-            uint64_t ticks = recomp_count64(rt), hz = recomp_clock_frequency(rt);
-            if (event <= ticks) wake = now;
-            else if (event-ticks < hz) {
-                uint64_t ns = ((event-ticks)*UINT64_C(1000000000)+hz-1)/hz;
-                if (ns < deadline-now) wake = now+ns;
-            }
-        }
-        /* SI and asynchronous RSP workers also need service between VIs.
-         * Keep the owner's idle polling bounded to one millisecond. */
-        if (wake-now > UINT64_C(1000000)) wake = now+UINT64_C(1000000);
-        if (wake > now) {
-            uint64_t delta = wake-now;
-            struct timespec ts = {(time_t)(delta/1000000000), (long)(delta%1000000000)};
-            nanosleep(&ts, NULL);
-        }
-        drain(rt);
-    }
-}
 
 static void check_zero(Runtime *rt, uint32_t start, uint32_t end) {
     for (uint32_t a = start; a < end; a += 4)
@@ -240,7 +213,7 @@ int main(int argc, char **argv) {
         uint64_t now = monotonic_ns();
         if (now > next_present && now-next_present > UINT64_C(16666667))
             next_present = now;
-        pace(&rt, next_present);
+        recomp_game_pace(&rt, next_present);
     }
     require(graphics_tasks || window_closed, "Nightmare Creatures did not render a graphics task", 0);
     if (graphics_tasks) {

@@ -296,7 +296,11 @@ void conker_step(Conker *game, const RecompPad *pad) {
             game->wall_origin = recomp_game_monotonic();
     }
     game->next_ns += 16666667;
-    recomp_game_sleep(game->next_ns);
+    /* Keep the deterministic boot clock until the first graphics handoff. */
+    if (game->wall_origin)
+        recomp_game_pace(rt, game->next_ns);
+    else
+        recomp_game_sleep(game->next_ns);
 }
 void conker_stop(Conker *game) {
 #ifdef RECOMP_DEBUG

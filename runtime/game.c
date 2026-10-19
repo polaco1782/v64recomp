@@ -106,6 +106,32 @@ void recomp_game_sleep(uint64_t deadline) {
     struct timespec ts={(time_t)(deadline/1000000000),(long)(deadline%1000000000)};
     while(clock_nanosleep(CLOCK_MONOTONIC,TIMER_ABSTIME,&ts,NULL)==EINTR){}
 }
+void recomp_game_pace(Runtime *rt,uint64_t deadline) {
+    while(recomp_game_monotonic()<deadline) {
+        RecompRunResult run=recomp_scheduler_run(rt,32);
+        uint64_t now=recomp_game_monotonic();
+        if(now>=deadline)break;
+        if(run==RECOMP_RUN_BUDGET)continue;
+        /* Completed workers and hardware events must wake the guest between
+         * display ticks. A full-frame sleep quantizes them to the host's 60 Hz
+         * loop and can make the game miss the following retrace. */
+        uint64_t wake=deadline-now>UINT64_C(1000000)?now+UINT64_C(1000000):deadline;
+        /* Preserve games' earlier VI/AI/timer wakeups as well as the worker
+         * polling limit. Their guest clocks must already follow wall time. */
+        uint64_t event=recomp_platform_next_deadline(rt);
+        uint64_t timer=recomp_clock_next_deadline(rt);
+        if(timer<event)event=timer;
+        if(event!=UINT64_MAX) {
+            uint64_t ticks=recomp_count64(rt),hz=recomp_clock_frequency(rt);
+            if(event<=ticks)continue;
+            if(event-ticks<hz) {
+                uint64_t ns=((event-ticks)*UINT64_C(1000000000)+hz-1)/hz;
+                if(ns<wake-now)wake=now+ns;
+            }
+        }
+        recomp_game_sleep(wake);
+    }
+}
 static void quoted(FILE *f,const char *s) {
     fputc('"',f);
     for(const unsigned char *p=(const unsigned char *)(s?s:"");*p;p++) {

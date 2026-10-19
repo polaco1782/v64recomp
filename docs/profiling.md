@@ -80,6 +80,61 @@ reduce sampling overhead or raise it up to 1,000 for a short detailed capture.
 Compare equivalent Release scenes, and measure final performance with profiling
 disabled.
 
+## Frame pacing and stutter
+
+CPU sampling does not explain time spent asleep. Set `RECOMP_FRAME_TRACE` to a
+new CSV path to record host presentation requests, graphics submissions, graphics
+and presentation worker jobs, observed graphics completions, and display draw
+callbacks. The parent directory must exist; existing files are rejected.
+
+```sh
+RECOMP_FRAME_TRACE=build/quake-frames.csv ./build/quake-us-release/bin/quake-us
+python3 tools/profile_frames.py build/quake-frames.csv --start 30 --end 50
+```
+
+Exit normally before reading the buffered trace. Window bounds are seconds
+after the first recorded event. Use the same settled scene, replay, build and
+graphics settings for comparisons. `--json` emits the report as JSON.
+
+The report includes median, p95, p99 and maximum intervals/job durations, and
+counts display/presentation/full-sync intervals exceeding 50 ms. `graphics_end`
+has value 1 when the task produced a DP receipt; split tasks without full sync
+have value 0. Graphics begin/submit values are microcode addresses; presentation
+values are VI origins. The receipt delay ends when the host observes the worker
+finish, before RAM merging and guest event delivery.
+
+These timestamps measure **CPU callbacks**, not GPU execution, compositor
+scanout, or unique game frames. A full-sync task is not universally one game
+frame. Display callbacks can repeat a buffer or include interpolation. Use them
+alongside scene captures and task timing; avoid calling their rate game FPS.
+Tracing performs buffered file writes and can affect timing, so also verify
+ordinary play with tracing and sampling disabled.
+
+Frame loops that sleep a whole presentation interval can delay guest VI/AI and
+task servicing even when rendering is cheap. `recomp_game_pace(rt, deadline)`
+runs useful guest work and polls services between display ticks, waking at the
+earlier of a VI/AI/timer deadline or 1 ms when the guest is waiting. Set the
+scheduler's `idle_thread` only after verifying that the corresponding priority-zero ROM
+thread does no useful work. The guest clock must follow wall time before using
+this helper; retain plain sleeping during synthetic-clock bootstrap or
+frame-exact diagnostic runs.
+
+| Games | Pacing policy, Debug and Release |
+| --- | --- |
+| Quake, Ocarina of Time, Nightmare Creatures | Shared `recomp_game_pace` |
+| Hexen, Duke Nukem: Zero Hour | Shared helper through their parent-folder adapters |
+| Perfect Dark, Conker | Shared helper after the first-graphics wall-clock handoff; synthetic bootstrap retained |
+| Duke Nukem 64 | Retains calibration-aware draining, detection of the game's clock-poll loop, and Debug sleep accounting |
+| GoldenEye | Retains its custom idle-body detection and startup clock transition; the default helper would repeatedly dispatch its idle loop |
+| Super Mario 64 | Retains queue-aware draining and frame-exact Debug routes; those paths require the existing scheduler return and frame-count behavior |
+| Shadow Man | Retains its existing loop pending verification of an idle-thread object; a default scheduler drain could otherwise spin on its idle thread |
+
+The additional game migrations were checked by compilation/static review;
+gameplay validation is left to the user. They do not establish a measured
+performance gain for those games. Keep game-specific startup calibration,
+input/replay boundaries, captures and presentation deadline policies in the
+game adapter.
+
 ## External capture with perf
 
 Use `tools/profile_execution.py` on Linux to attach to a running game without

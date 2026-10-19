@@ -41,6 +41,7 @@ struct RecompRenderer {
     uint32_t mi=0, dp_start=0,dp_end=0,dp_current=0,dp_status=0,dp_clock=0,dp_busy=0,dp_pipe=0,dp_tmem=0;
     RecompViRegisters vi{};
     RecompRendererStats stats{};
+    FILE *frame_trace=nullptr;
     std::atomic<uint64_t> display_frames{0}, first_display_ns{0}, last_display_ns{0};
     RecompTextureFiles textureFiles;
     std::unique_ptr<RecompTextures::Scanner> textureScan;
@@ -71,11 +72,17 @@ static RecompRenderer *active_renderer;
 static uint64_t monotonic_ns() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
+static void trace_frame(RecompRenderer *s,const char *event,uint64_t value=0) {
+    if(s->frame_trace && std::fprintf(s->frame_trace,"%llu,%s,%llu\n",
+        static_cast<unsigned long long>(monotonic_ns()),event,static_cast<unsigned long long>(value))<0)
+        recomp_fail("cannot write renderer frame trace",0);
+}
 static void display_draw(plume::RenderCommandList *,plume::RenderFramebuffer *) {
     RecompRenderer *s=active_renderer;
     uint64_t now=monotonic_ns();
     if(s->display_frames.load()==0)s->first_display_ns=now;
     s->last_display_ns=now;s->display_frames++;
+    trace_frame(s,"display");
 }
 static void interrupts() {
     RecompRenderer *s=active_renderer;
@@ -103,6 +110,7 @@ static void service_renderer(Runtime *rt,void *opaque,bool wait) {
     s->busy=false;
     recomp_worker_finish(s->worker);
     if(s->presenting) { s->presenting=false;return; }
+    trace_frame(s,"graphics_receipt");
     recomp_worker_merge(rt,s->before.data(),s->ram.data());
     if(!s->sp_seen || !recomp_task_complete(rt,s->pending.token,RECOMP_SP_DONE))
         recomp_fail("graphics worker missing SP receipt",s->pending.guest_address);
@@ -120,6 +128,7 @@ static void process_graphics(void *opaque) {
     RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
     s->processing=std::this_thread::get_id();
     uint64_t start=monotonic_ns();
+    trace_frame(s,"graphics_begin",s->code);
     bool custom=s->microcode_hook && s->microcode_hook(s->app->interpreter.get(),s->before.size(),s->code,s->data);
     if(!custom && s->custom_gbi) {
         s->app->interpreter->UCode.textAddress=UINT32_MAX;
@@ -138,15 +147,18 @@ static void process_graphics(void *opaque) {
     s->app->processDisplayLists(s->ram.data(),s->list,0,true);
     s->textureFiles.collect(*s->app->textureCache);
     s->stats.submit_ns+=monotonic_ns()-start;
+    trace_frame(s,"graphics_end",s->dp_seen);
 }
 static void process_present(void *opaque) {
     RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
     s->processing=std::this_thread::get_id();
     uint64_t start=monotonic_ns();
+    trace_frame(s,"present_begin",s->vi.origin);
     // SDL filter/window access stays on the host. The worker owns RT64 state.
     s->app->screenApiProfiler.logAndRestart();
     s->app->state->updateScreen(s->app->core.decodeVI(),false);
     s->stats.presentations++;s->stats.present_ns+=monotonic_ns()-start;
+    trace_frame(s,"present_end");
 }
 
 RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,const char *window_title) {
@@ -203,6 +215,11 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
             active_renderer=nullptr;SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
         }
         s->ready=true;
+        if(const char *path=std::getenv("RECOMP_FRAME_TRACE");path && *path) {
+            s->frame_trace=std::fopen(path,"wx");
+            if(!s->frame_trace)recomp_fail("cannot create renderer frame trace",0);
+            std::fprintf(s->frame_trace,"timestamp_ns,event,value\n");
+        }
         // The app clock paces this serialized adapter. Waiting again on the
         // compositor can block guest VI/audio work while acquiring an image.
         s->app->swapChain->setVsyncEnabled(false);
@@ -251,6 +268,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         std::fprintf(stderr,"RT64 setup: %s\n",e.what());
         SDL_SetEventFilter(nullptr,nullptr);
         s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);active_renderer=nullptr;
+        if(s->frame_trace)std::fclose(s->frame_trace);
         SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
     }
 }
@@ -294,6 +312,7 @@ void recomp_renderer_destroy(RecompRenderer *s) {
 #endif
     SDL_Window *window=s->window;
     s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);active_renderer=nullptr;
+    if(s->frame_trace && std::fclose(s->frame_trace))recomp_fail("cannot close renderer frame trace",0);
     if(window)SDL_DestroyWindow(window);
     SDL_Quit();delete s;
 }
@@ -314,12 +333,14 @@ bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
     s->data=recomp_ram_address(s->rt,task->words[6],task->words[7]);
     s->list=recomp_ram_address(s->rt,task->words[12],task->words[13]);
     s->pending=*task;s->token=task->token;s->sp_seen=s->dp_seen=false;
+    trace_frame(s,"graphics_submit",s->code);
     s->busy=recomp_worker_submit(s->worker,process_graphics,s);
     return s->busy;
 }
 bool recomp_renderer_present(RecompRenderer *s) {
     s->check_owner();service_renderer(s->rt,s,true);
     s->sync_vi();SDL_PumpEvents();
+    trace_frame(s,"host_present",s->vi.origin);
 #ifdef RECOMP_DEBUG
     s->app->appWindow->sdlCheckFilterInstallation();
 #endif

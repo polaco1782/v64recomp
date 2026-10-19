@@ -300,6 +300,12 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
 5. Run the scheduler, input, presentation and deadlines from the app loop. Keep SDL
    input/window operations on their owner thread. Join workers before teardown.
+   Once the guest clock follows wall time and its priority-zero idle thread has
+   been verified/configured, prefer `recomp_game_pace(rt, deadline)` between
+   presentations so VI/AI/timers and completed RSP workers remain serviced.
+   Keep synthetic-clock bootstrap, calibration, busy-poll handling and
+   frame-exact diagnostic routes in the adapter when they need different
+   behavior. See the game-by-game [pacing policy](profiling.md#frame-pacing-and-stutter).
 6. Add a debug app with startup assertions and useful reports/captures. Check its
    `--help`; per-game diagnostic argument parsing is not supplied just by creating
    a file under `debug/`. Use the same shared crash handler as Release; core

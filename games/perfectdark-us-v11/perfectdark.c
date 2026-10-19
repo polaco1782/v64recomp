@@ -122,7 +122,10 @@ void perfectdark_step(PerfectDark *game,const RecompPad *pad) {
         game->now_ns+=16666667;
         if(game->graphics_tasks)game->wall_origin=recomp_game_monotonic();
     }
-    game->next_ns+=16666667;recomp_game_sleep(game->next_ns);
+    game->next_ns+=16666667;
+    /* Keep the deterministic boot clock until the first graphics handoff. */
+    if(game->wall_origin)recomp_game_pace(rt,game->next_ns);
+    else recomp_game_sleep(game->next_ns);
 }
 void perfectdark_stop(PerfectDark *game) {
     fprintf(stderr,"Perfect Dark: %u graphics tasks, %u audio tasks\n",game->graphics_tasks,game->audio_tasks);

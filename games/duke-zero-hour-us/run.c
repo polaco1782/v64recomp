@@ -139,12 +139,7 @@ int zero_hour_run(const RecompGameOptions *options, const char *report) {
         }
 #endif
         next_present+=16666667;
-        /* Service task, VI, and AI completions throughout presentation pacing. */
-        while (recomp_game_monotonic()<next_present) {
-            uint64_t wake=recomp_game_monotonic()+1000000;
-            recomp_game_sleep(wake<next_present ? wake : next_present);
-            drain(&rt);
-        }
+        recomp_game_pace(&rt,next_present);
     }
 #ifdef RECOMP_DEBUG
     RecompAudioStats as=recomp_audio_stats(audio);

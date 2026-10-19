@@ -46,15 +46,6 @@ static uint64_t monotonic_ns(void) {
     if (clock_gettime(CLOCK_MONOTONIC, &ts)) recomp_fail("Quake 64 host clock failed", 0);
     return (uint64_t)ts.tv_sec*UINT64_C(1000000000)+(uint64_t)ts.tv_nsec;
 }
-static void pace(uint64_t deadline) {
-    uint64_t now = monotonic_ns();
-    if (deadline > now) {
-        uint64_t delta = deadline-now;
-        struct timespec ts = {(time_t)(delta/1000000000), (long)(delta%1000000000)};
-        nanosleep(&ts, NULL);
-    }
-}
-
 static void check_zero(Runtime *rt, uint32_t start, uint32_t end) {
     for (uint32_t a = start; a < end; a += 4)
         require(recomp_load(rt, a, 4) == 0, "Quake 64 BSS was not cleared", a);
@@ -138,6 +129,7 @@ int main(int argc, char **argv) {
     RecompClockConfig clock = {.ticks_per_second=BOOT_COUNTER_HZ, .now_ns=guest_time};
     RecompSchedulerConfig scheduler = {.thread_tail=0x800706c0,
         .run_queue=0x800706c8, .active_queue=0x800706cc, .running_thread=0x800706d0,
+        .idle_thread=BOOT_MAIN_OBJECT,
         .stop_before_entry=BOOT_STARTUP ? 0 : BOOT_MAIN_ENTRY};
     RecompPlatformConfig platform = {.vi_period_ticks=781250,
         .vi_clock=0x8006f848, .clock_rate=0x8006f840, .final_rom=0x800db0c0,
@@ -199,7 +191,7 @@ int main(int argc, char **argv) {
             require(recomp_renderer_capture(renderer, capture), "Quake 64 frame capture failed", 0);
         }
         next_present += 16666667;
-        pace(next_present);
+        recomp_game_pace(&rt,next_present);
     }
     require(graphics_tasks || window_closed, "Quake 64 did not render a graphics task", 0);
     if (graphics_tasks) {
