@@ -22,6 +22,13 @@ Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
 X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
 Python generates CPU sources during the build. Built games launch directly.
 
+For Steam Deck, use the [container build and portable package](docs/steamdeck.md)
+to compile against glibc 2.36 instead of your host distribution's newer libraries:
+
+```sh
+./tools/build_steamdeck.sh oot-us-v12 4
+```
+
 CMake prefers Clang (`clang`/`clang++`), falling back to GCC (`gcc`/`g++`) when
 the corresponding Clang compiler is unavailable. Explicit `CC`/`CXX`,
 `CMAKE_C_COMPILER`/`CMAKE_CXX_COMPILER`, and toolchain selections take precedence.
@@ -168,7 +175,7 @@ translation fixes belong in the generator or checked metadata.
 
 ## Controls and data
 
-Arrow keys move the stick; A/X/Z are N64 A/B/Z; S is Start; Q/E are L/R;
+Arrow keys move the stick; A/X/Z are N64 A/B/Z; S is Start; C/V are L/R;
 I/J/K/L are C buttons. Escape or window close exits. F5 reloads texture packs
 and toggles original/replacement textures. Packs default to
 `local/textures/<game>/replacements`; `RECOMP_TEXTURE_REPLACEMENTS` overrides this
