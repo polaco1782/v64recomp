@@ -136,7 +136,6 @@ static void process_graphics(void *opaque) {
     if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->before.size(),&s->stats.rdp_triangles);
     if(s->textureCapture)s->textureCapture->beginTask();
     s->app->processDisplayLists(s->ram.data(),s->list,0,true);
-    s->wait_workers();
     s->textureFiles.collect(*s->app->textureCache);
     s->stats.submit_ns+=monotonic_ns()-start;
 }
@@ -147,7 +146,6 @@ static void process_present(void *opaque) {
     // SDL filter/window access stays on the host. The worker owns RT64 state.
     s->app->screenApiProfiler.logAndRestart();
     s->app->state->updateScreen(s->app->core.decodeVI(),false);
-    s->wait_workers();
     s->stats.presentations++;s->stats.present_ns+=monotonic_ns()-start;
 }
 
@@ -284,6 +282,11 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     if(s->textureScan)s->textureScan->stop();
     SDL_SetEventFilter(nullptr,nullptr);
     if(s->ready) { s->wait_workers();s->app->end(); }
+    if(std::getenv("RECOMP_AUDIO_TRACE"))std::fprintf(stderr,
+        "Renderer timing: graphics_tasks=%llu graphics_job_ms=%.3f presentations=%llu present_job_ms=%.3f display_frames=%llu\n",
+        static_cast<unsigned long long>(s->stats.graphics_tasks),s->stats.submit_ns/1000000.0,
+        static_cast<unsigned long long>(s->stats.presentations),s->stats.present_ns/1000000.0,
+        static_cast<unsigned long long>(s->display_frames.load()));
 #ifdef RECOMP_DEBUG
     std::fprintf(stderr,"Textures: %llu PNGs written, %llu replacements used.\n",
                  static_cast<unsigned long long>(s->textureFiles.pngsWritten),

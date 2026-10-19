@@ -261,7 +261,10 @@ static bool open_device(RecompAudio *a,unsigned frequency) {
      * owner-thread synthesis/rendering jitter does not immediately run it dry. */
     a->stats.prebuffer_frames=frequency*a->prebuffer_ms/1000;
     if(a->stats.prebuffer_frames<3u*have.samples)a->stats.prebuffer_frames=3u*have.samples;
-    a->stats.device_open=true;snprintf(a->stats.driver,sizeof(a->stats.driver),"%s",SDL_GetCurrentAudioDriver());return true;
+    a->stats.device_open=true;snprintf(a->stats.driver,sizeof(a->stats.driver),"%s",SDL_GetCurrentAudioDriver());
+    if(a->trace)fprintf(stderr,"Audio trace: driver=%s rate=%d device_period=%u prebuffer_frames=%u\n",
+        a->stats.driver,have.freq,have.samples,a->stats.prebuffer_frames);
+    return true;
 }
 static bool ai_start(Runtime *rt,void *opaque,uint32_t guest,unsigned bytes,unsigned clock,unsigned divisor) {
     RecompAudio *a=opaque;owner(a);(void)rt;
@@ -330,8 +333,9 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
         a->wav=fopen(config->wav_path,"wb+");
         if(!a->wav || !wav_header(a) || fseek(a->wav,44,SEEK_SET)) { if(a->wav)fclose(a->wav);free(a);return NULL; }
     }
-    if(config->trace_path) {
-        a->trace=fopen(config->trace_path,"w");
+    const char *trace_path=config->trace_path?config->trace_path:getenv("RECOMP_AUDIO_TRACE");
+    if(trace_path && *trace_path) {
+        a->trace=fopen(trace_path,"w");
         if(!a->trace) { if(a->wav)fclose(a->wav);free(a);return NULL; }
         fputs("host_ns,frames,rate,queued_bytes,underruns\n",a->trace);
     }
@@ -358,7 +362,11 @@ void recomp_audio_destroy(RecompAudio *a) {
     if(a->device)SDL_CloseAudioDevice(a->device);
     if(a->sdl_audio)SDL_QuitSubSystem(SDL_INIT_AUDIO);
     if(a->wav && (!wav_header(a) || fclose(a->wav)))recomp_fail("audio WAV finalization failed",0);
-    if(a->trace && fclose(a->trace))recomp_fail("audio trace finalization failed",0);
+    if(a->trace) {
+        fprintf(stderr,"Audio trace: buffers=%" PRIu64 " frames=%" PRIu64 " underruns=%" PRIu64 " resets=%" PRIu64 "\n",
+            a->stats.ai_buffers,a->stats.frames,a->stats.queue_underruns,a->stats.queue_resets);
+        if(fclose(a->trace))recomp_fail("audio trace finalization failed",0);
+    }
     free(a);
 }
 void recomp_audio_set_output_enabled(RecompAudio *a,bool enabled) {
