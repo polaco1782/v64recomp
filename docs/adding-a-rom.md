@@ -33,8 +33,10 @@ These are the investigation tools and when to use them:
 | `tools/discover.py` | Follow CPU control flow using explicit load mappings; write `symbols.json`. |
 | `tools/translate.py` | Audit instructions and targets; write `coverage.json`, optionally emit C. |
 | `tools/generate_game.py` | Run registered game preparation, discovery, translation and CMake source splitting. |
+| `tools/package_rom.py` | Create an embedded content image by zeroing verified CPU instructions while preserving cartridge offsets; see [ROM packaging](rom-packaging.md). |
 | `tools/inspect_address.py` | Resolve a guest address to section, byte offset, entry/instruction ownership, gaps, errors and known references. |
 | `tools/disassemble_function.py` | Resolve a generated name such as `recomp_s3_7f068008` through `symbols.json` and disassemble its verified MIPS instructions. |
+| `tools/dump_cpu_code.py` | Export all checked CPU text as a packed binary, disassembly and address manifest, plus the separate IPL3 boot block; see [CPU code dumps](dumping-cpu-code.md). |
 | `tools/inspect_callbacks.py` | Find callback address materializations, direct/checked callers and bounded data pointers; show MIPS context, ownership and fingerprints without changing discovery metadata. |
 | `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
 | `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |

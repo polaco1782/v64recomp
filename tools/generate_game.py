@@ -82,7 +82,8 @@ def generate(game: str, output: Path, report_only: bool) -> None:
     # CMake reconfigures when this source manifest changes.
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
     (output/'sources.cmake').write_text(manifest)
-    outputs=[p.name for p in [*sources,*output.glob('*.h'),output/'sources.cmake']]
+    outputs=[p.name for p in [*sources,*output.glob('*.h'),output/'sources.cmake',
+                             output/'symbols.json',output/'coverage.json']]
     (output/'outputs.json').write_text(json.dumps(outputs))
     # Input changes can leave CPU bytes identical. Preserve their timestamps so
     # build tools only recompile files whose content actually changed.

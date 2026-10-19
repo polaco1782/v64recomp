@@ -16,6 +16,13 @@ rom = "../../local/sm64.us.z64"
 code_sections = [".main", ".engine", ".goddard"]
 boot_sections = [".main"]
 
+[packaging]
+# Native startup loads .main at ROM 0x1000; RT64 only consumes the 64-byte header.
+# The hardware IPL3 block is never executed or loaded by this port.
+discard = [
+  {rom_offset = 0x40, size = 0xfc0, sha256 = "61e88238552c356c23d19409fe5570ee6910419586bc6fc740f638f761adc46e", reason = "IPL3 hardware boot block bypassed by the native bootstrap"},
+]
+
 [discovery]
 max_functions = 0x2000
 max_instructions_per_function = 0x4000

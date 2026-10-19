@@ -6,6 +6,9 @@ turns those functions into a native executable. The original game still controls
 its logic and reads its assets from the ROM. Shared native services implement
 the N64 OS and hardware interactions required by each game.
 
+See the [complete process flow](process-flow.md) for detailed graphs of the build,
+runtime services, graphics/audio workers, packaging and investigation loop.
+
 ```mermaid
 flowchart TD
     ROM[Verified N64 ROM] --> Discovery[Static function discovery]

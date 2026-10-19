@@ -1,5 +1,8 @@
 # Native threading
 
+See the [thread ownership graph and blocking-receive sequence](process-flow.md#thread-ownership-and-concurrency)
+for the scheduler, guest pthreads, processing workers and RT64 presentation flow.
+
 Each libultra thread has a named pthread, a native stack and its own
 `MipsContext`. A scheduler mutex and condition variables transfer an execution
 token between the host and one guest thread. Priorities, FIFO ordering among

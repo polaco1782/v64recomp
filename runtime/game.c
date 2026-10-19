@@ -1,6 +1,9 @@
 #define _GNU_SOURCE
 #include "game.h"
 #include "game_defaults.h"
+#ifdef RECOMP_EMBED_ROM
+#include "embedded_rom.h"
+#endif
 #include "profiler.h"
 #include <dlfcn.h>
 #include <errno.h>
@@ -202,10 +205,25 @@ uint8_t *recomp_game_rom(Runtime *rt,const RecompGameOptions *o,size_t bytes,con
     directory(crash_dir);
     memcpy(rom_sha1,sha1,sizeof(rom_sha1));
     recomp_set_failure_handler(failure,rt);
+#ifdef RECOMP_EMBED_ROM
+    if(!o->rom || !strcmp(o->rom,RECOMP_EMBEDDED_ROM_PATH)) {
+        recomp_game_require(bytes==recomp_embedded_rom_size &&
+            !memcmp(sha1,recomp_embedded_original_sha1,20),"embedded ROM source identity mismatch",0);
+        uint8_t *rom=malloc(bytes);
+        recomp_game_require(rom!=NULL,"cannot allocate embedded ROM",0);
+        memcpy(rom,recomp_embedded_rom,bytes);
+        /* Verify the sanitized payload against its own digest. The original
+         * identity above still binds it to this game's generated native code. */
+        recomp_game_require(recomp_rom_attach(rt,rom,bytes,recomp_embedded_sha1),
+            "embedded ROM content mismatch",0);
+        return rom;
+    }
+#else
     FILE *f=fopen(o->rom,"rb");recomp_game_require(f!=NULL,"cannot open game ROM",0);
     uint8_t *rom=malloc(bytes);recomp_game_require(rom!=NULL,"cannot allocate game ROM",0);
     bool read=fread(rom,1,bytes,f)==bytes;int extra=fgetc(f),closed=fclose(f);
     recomp_game_require(read && extra==EOF && closed==0,"ROM read/size mismatch",0);
     recomp_game_require(recomp_rom_attach(rt,rom,bytes,sha1),"ROM identity mismatch",0);
     return rom;
+#endif
 }

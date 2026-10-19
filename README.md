@@ -105,6 +105,34 @@ cmake --build --preset sm64-us-release --target run
 ./build/sm64-us-release/bin/sm64-us
 ```
 
+To pack the final executable, install [UPX](https://upx.github.io/) and run:
+
+```sh
+cmake --build --preset sm64-us-release --target pack -j 4
+```
+
+The `pack` target builds the game, then uses `upx --best --ultra-brute` and checks
+the packed file with `upx --test`. It writes `bin/packed/sm64-us` in the build
+directory and keeps the original executable. These maximum compression settings
+can take a long time. Packing is optional and works with every game, including
+embedded-ROM builds. If UPX is outside `PATH`, configure with
+`-DRECOMP_UPX_EXECUTABLE=/path/to/upx`.
+
+To include the game's ROM content in the executable with verified CPU code
+zeroed before embedding:
+
+```sh
+cmake --preset sm64-us-release -DRECOMP_EMBED_ROM=ON
+cmake --build --preset sm64-us-release -j 4
+./build/sm64-us-release/bin/sm64-us
+```
+
+The original ROM is required to build, but embedded builds launch without an
+external ROM. `--rom PATH` still loads and verifies an original ROM for comparison.
+`-DRECOMP_EMBED_ROM=OFF` restores external-ROM builds (the default).
+See [ROM content packaging](docs/rom-packaging.md) for supported layouts,
+removal reports and the limits of code stripping.
+
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
 `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
@@ -217,6 +245,7 @@ the native audio backend processes supported sound tasks and sends PCM to SDL.
 
 The technical documentation covers each part:
 
+- [Complete process flow](docs/process-flow.md): graphs covering ROM import, generation, compilation, packaging, runtime services, workers and failure investigation.
 - [Recompilation pipeline](docs/recompilation.md): ROM mappings, discovery, translation and native execution.
 - [Adding a ROM](docs/adding-a-rom.md): step-by-step porting, required tools, missing symbols and crash investigation.
 - [MIPS code expansion and native efficiency](docs/code-expansion.md): measured size ratios, a MIPS → C → x86-64 example and compiler optimizations.

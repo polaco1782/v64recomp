@@ -1,6 +1,11 @@
 /* Local defaults; command-line options override them at launch. */
 #define RECOMP_GAME_ID "@RECOMP_GAME@"
+#define RECOMP_EMBEDDED_ROM_PATH ":embedded:"
+#ifdef RECOMP_EMBED_ROM
+#define RECOMP_DEFAULT_ROM RECOMP_EMBEDDED_ROM_PATH
+#else
 #define RECOMP_DEFAULT_ROM "@RECOMP_ROM@"
+#endif
 #define RECOMP_DEFAULT_DATA "@RECOMP_LOCAL@/rt64/@RECOMP_GAME@"
 #define RECOMP_DEFAULT_SAVE "@RECOMP_SAVE@"
 #define RECOMP_DEFAULT_CRASH "@RECOMP_LOCAL@/crashes/@RECOMP_GAME@"

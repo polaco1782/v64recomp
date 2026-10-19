@@ -14,7 +14,9 @@ typedef struct RecompGameOptions {
 
 /* Defaults are configured by CMake; a built executable needs no Python. */
 int recomp_game_options(int argc, char **argv, RecompGameOptions *options);
-/* Load/verify the ROM and install the common crash reporter for this runtime.
+/* Load/verify external or embedded ROM content; the caller owns the allocation.
+ * Embedded builds default to the sanitized image; --rom selects an original ROM.
+ * Install the common crash reporter for this runtime.
  * Games report fatal errors with recomp_fail() or recomp_game_require(). */
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *options,
                         size_t bytes, const uint8_t sha1[20]);
