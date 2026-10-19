@@ -218,12 +218,12 @@ uint8_t *recomp_game_rom(Runtime *rt,const RecompGameOptions *o,size_t bytes,con
             "embedded ROM content mismatch",0);
         return rom;
     }
-#else
+#endif
     FILE *f=fopen(o->rom,"rb");recomp_game_require(f!=NULL,"cannot open game ROM",0);
     uint8_t *rom=malloc(bytes);recomp_game_require(rom!=NULL,"cannot allocate game ROM",0);
     bool read=fread(rom,1,bytes,f)==bytes;int extra=fgetc(f),closed=fclose(f);
     recomp_game_require(read && extra==EOF && closed==0,"ROM read/size mismatch",0);
     recomp_game_require(recomp_rom_attach(rt,rom,bytes,sha1),"ROM identity mismatch",0);
     return rom;
-#endif
+
 }
