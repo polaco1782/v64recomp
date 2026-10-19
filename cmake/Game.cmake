@@ -93,7 +93,6 @@ if(RECOMP_GAME STREQUAL "goldeneye-us")
 endif()
 add_custom_target(run COMMAND $<TARGET_FILE:${RECOMP_GAME}> ${RECOMP_RUN_ARGS}
     DEPENDS ${RECOMP_GAME} WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" USES_TERMINAL)
-set(RECOMP_UPX_EXECUTABLE "" CACHE FILEPATH "UPX executable (empty searches PATH when packing)")
 add_custom_target(pack
     COMMAND "${CMAKE_COMMAND}"
         "-DINPUT=$<TARGET_FILE:${RECOMP_GAME}>"

@@ -115,7 +115,9 @@ The `pack` target builds the game, then uses `upx --best --ultra-brute` and chec
 the packed file with `upx --test`. It writes `bin/packed/sm64-us` in the build
 directory and keeps the original executable. These maximum compression settings
 can take a long time. Packing is optional and works with every game, including
-embedded-ROM builds. If UPX is outside `PATH`, configure with
+embedded-ROM builds. CMake automatically finds UPX on `PATH` and caches its path
+globally for the build tree, preserving an explicitly configured path.
+If UPX is outside `PATH`, configure with
 `-DRECOMP_UPX_EXECUTABLE=/path/to/upx`.
 
 To include the game's ROM content in the executable with verified CPU code

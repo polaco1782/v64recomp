@@ -30,6 +30,13 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "^(Release|Debug)$")
     message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Release or Debug")
 endif()
 set(RECOMP_RUN_ARGS "" CACHE STRING "Extra executable arguments for the run target (semicolon separated)")
+if(NOT RECOMP_UPX_EXECUTABLE)
+    # Clear empty entries from older configurations so find_program searches.
+    unset(RECOMP_UPX_EXECUTABLE CACHE)
+    unset(RECOMP_UPX_EXECUTABLE)
+    find_program(RECOMP_UPX_EXECUTABLE NAMES upx upx-ucl
+        DOC "Path to UPX executable for the pack target")
+endif()
 set(RECOMP_RENDER_DEFAULT OFF)
 if(NOT RECOMP_GAME STREQUAL "none")
     set(RECOMP_RENDER_DEFAULT ON)
