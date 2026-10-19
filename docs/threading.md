@@ -40,6 +40,11 @@ A task takes a private RAM snapshot at submission. Workers access that snapshot,
 then host task services merge only bytes changed by processing. Unrelated guest
 writes survive; a differing guest write to a changed output byte causes a
 controlled failure. The host publishes SP/DP receipts after committing output.
+The shared snapshot helper loads guest RAM once into both private buffers on
+SSE2 hosts. Merging skips unchanged 64-byte blocks, using SSE2 comparisons when
+`USE_INTRISICS` is enabled, then checks/writes individual changed bytes in their
+original order. Other builds use ordinary copies and block comparisons. Short
+tails do not read beyond the RAM buffer. Both backends use these same helpers.
 Split graphics lists without a DP full sync keep their existing retirement
 behavior. A yield request drains the current HLE list at its completion boundary;
 HLE processing does not support suspending midway through a list.
@@ -51,7 +56,9 @@ failure observer on the main thread.
 
 Full-RAM snapshots and kernel thread handoffs have costs. This implementation
 establishes native threading and processing overlap; comparative CPU and frame
-pacing measurements are still needed before claiming a performance improvement.
+pacing measurements are still needed before claiming an overall gameplay
+performance improvement. See [CPU profiling](profiling.md) for measured memory
+helper improvements and their limits.
 
 Build the shared services with `cmake -S . -B build/host -G Ninja
 -DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF`, then `cmake --build build/host`.

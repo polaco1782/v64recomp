@@ -169,6 +169,44 @@ The capture and filtered per-thread reports are under the ignored directory
 retained there under `executable/` before rebuilding for readable thread names.
 No runtime performance changes were made as part of this measurement.
 
+### Memory helper optimization, 2026-10-18
+
+The subsequent shared-runtime change replaces four-byte merge comparisons with
+64-byte comparisons. SSE2 compares four vectors and skips the block when all
+bytes match; changed blocks still use the original byte-level conflict checks
+and ascending write/failure order. Snapshot creation feeds both private buffers
+from each input vector, avoiding the second full-buffer read. Audio and graphics
+both use `recomp_worker_snapshot`. `USE_INTRISICS=0` retains ordinary copies and
+portable block comparisons.
+
+Local microbenchmarks on the Ryzen 7 5700X, compiled with Clang `-O3`, measured:
+
+| Operation | RAM size | Previous | Optimized |
+| --- | --- | --- | --- |
+| Merge, unchanged | 4 MiB | 0.711 ms | 0.077 ms |
+| Merge, one changed byte per 4 KiB | 4 MiB | 0.706 ms | 0.125 ms |
+| Merge, 32 changed bytes per 4 KiB | 4 MiB | 0.723 ms | 0.129 ms |
+| Create both snapshots | 4 MiB | 0.181 ms | 0.148 ms |
+| Merge, one changed byte per 4 KiB | 8 MiB | 1.425 ms | 0.275 ms |
+| Create both snapshots | 8 MiB | 0.637 ms | 0.508 ms |
+
+These are medians of three runs, each averaging 60 merge or 80 snapshot
+iterations over preallocated, warmed buffers. Merging a completely changed
+buffer was approximately unchanged (4 MiB: 2.576 vs 2.548 ms). This measures the
+helpers, not total game CPU or frame rate; the original gameplay perf capture
+predates these changes.
+
+SIMD and portable helpers each passed 7,000 differential cases under Address
+and UndefinedBehavior Sanitizers, including conflicting writes, conflict
+addresses, partial-write order, unrelated guest writes, equal concurrent output,
+unaligned buffers, short/tail sizes and guard pages. LeakSanitizer was disabled
+because the execution sandbox does not support it. Release and Debug runtime
+builds passed. Benchmark sources/results and the bounded GoldenEye smoke runs
+are under `build/profiles/memory-optimization/`. GoldenEye Release completed an
+1,800-frame run with its intro visibly rendered and no runtime failure. This
+startup smoke check does not establish gameplay performance or full-game
+regression coverage.
+
 References: [perf record](https://man7.org/linux/man-pages/man1/perf-record.1.html),
 [perf report](https://man7.org/linux/man-pages/man1/perf-report.1.html),
 [Linux thread CPU counters](https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html).

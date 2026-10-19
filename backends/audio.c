@@ -431,8 +431,7 @@ bool recomp_audio_submit(RecompAudio *a,const RecompTask *task) {
         a->microcode_checked=true;
     }
     if(a->busy)return false;
-    memcpy(a->before,a->rt->rdram,a->rt->rdram_size);
-    memcpy(a->ram,a->before,a->rt->rdram_size);
+    recomp_worker_snapshot(a->rt,a->before,a->ram);
     a->dsp_rt=*a->rt;a->dsp_rt.rdram=a->ram;a->hle.dram=a->ram;
     a->pending=*task;a->busy=true;
     if(!recomp_worker_submit(a->worker,synthesize,a)) { a->busy=false;return false; }

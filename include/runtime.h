@@ -42,6 +42,8 @@ bool recomp_worker_submit(RecompWorker *, void (*job)(void *), void *);
 bool recomp_worker_ready(RecompWorker *);
 void recomp_worker_finish(RecompWorker *);
 void recomp_worker_destroy(RecompWorker *);
+/* Owner-thread snapshot into two non-overlapping RAM-sized private buffers. */
+void recomp_worker_snapshot(Runtime *, uint8_t *before, uint8_t *after);
 /* Merge only worker-modified RAM bytes; reject conflicting guest writes. */
 void recomp_worker_merge(Runtime *, const uint8_t *before, const uint8_t *after);
 

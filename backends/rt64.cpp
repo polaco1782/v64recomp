@@ -306,8 +306,7 @@ bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
        || !task->words[6] || !task->words[7] || task->words[7]>0x2000
        || task->words[13]%8 || !task->words[13])return false;
     s->sync_vi();
-    std::memcpy(s->before.data(),s->rt->rdram,s->rt->rdram_size);
-    std::memcpy(s->ram.data(),s->before.data(),s->rt->rdram_size);
+    recomp_worker_snapshot(s->rt,s->before.data(),s->ram.data());
     s->code=recomp_ram_address(s->rt,task->words[4],task->words[5]?task->words[5]:0x1000);
     s->data=recomp_ram_address(s->rt,task->words[6],task->words[7]);
     s->list=recomp_ram_address(s->rt,task->words[12],task->words[13]);

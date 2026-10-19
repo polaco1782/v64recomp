@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#if USE_INTRISICS && defined(__SSE2__)
+#include <emmintrin.h>
+#endif
 
 struct RecompWorker {
     pthread_t thread;
@@ -88,14 +91,47 @@ void recomp_worker_destroy(RecompWorker *w) {
     if(!w->joined && pthread_join(w->thread,NULL))recomp_fail("processing worker join failed",0);
     pthread_cond_destroy(&w->changed);pthread_mutex_destroy(&w->mutex);free(w);
 }
+void recomp_worker_snapshot(Runtime *rt,uint8_t *before,uint8_t *after) {
+    size_t i=0;
+#if USE_INTRISICS && defined(__SSE2__)
+    /* Load each guest byte once and feed both private buffers. Guest execution
+     * is parked on the owner while the snapshot is taken. */
+    for(;rt->rdram_size-i>=16;i+=16) {
+        __m128i bytes=_mm_loadu_si128((const __m128i *)(rt->rdram+i));
+        _mm_storeu_si128((__m128i *)(before+i),bytes);
+        _mm_storeu_si128((__m128i *)(after+i),bytes);
+    }
+#endif
+    memcpy(before+i,rt->rdram+i,rt->rdram_size-i);
+    memcpy(after+i,before+i,rt->rdram_size-i);
+}
+static bool block_equal(const uint8_t *before,const uint8_t *after) {
+#if USE_INTRISICS && defined(__SSE2__)
+    __m128i equal=_mm_set1_epi8(-1);
+    for(size_t i=0;i<64;i+=16) {
+        __m128i a=_mm_loadu_si128((const __m128i *)(before+i));
+        __m128i b=_mm_loadu_si128((const __m128i *)(after+i));
+        equal=_mm_and_si128(equal,_mm_cmpeq_epi8(a,b));
+    }
+    return _mm_movemask_epi8(equal)==0xffff;
+#else
+    return !memcmp(before,after,64);
+#endif
+}
 void recomp_worker_merge(Runtime *rt,const uint8_t *before,const uint8_t *after) {
-    /* Compare words first: most of the RAM snapshot is read-only input. */
-    for(size_t i=0;i<rt->rdram_size;i+=4) {
-        if(!memcmp(before+i,after+i,4))continue;
-        for(size_t j=i;j<i+4;j++)if(before[j]!=after[j]) {
+    /* Most input RAM is unchanged. Skip whole cache lines, then retain the
+     * original byte-level conflict checks and ascending write/failure order. */
+    for(size_t i=0;i<rt->rdram_size;) {
+        size_t count=rt->rdram_size-i;
+        if(count>=64) {
+            count=64;
+            if(block_equal(before+i,after+i)) { i+=64;continue; }
+        }
+        for(size_t j=i;j<i+count;j++)if(before[j]!=after[j]) {
             if(rt->rdram[j]!=before[j] && rt->rdram[j]!=after[j])
                 recomp_fail("guest wrote an in-flight task output",(uint32_t)(j^3));
             rt->rdram[j]=after[j];
         }
+        i+=count;
     }
 }

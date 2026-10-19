@@ -244,6 +244,32 @@ owning layer, regenerate/rebuild, and replay beyond the previous failure point.
 For hangs, inspect runnable/blocked threads, queue ownership, event delivery,
 guest time, busy waits, and worker completion rather than raising budgets alone.
 
+For an unsupported graphics/audio task, inspect the captured task bytes before
+changing a microcode profile:
+
+```sh
+.venv/bin/python tools/inspect_rsp_task.py local/crashes/<game>/crash-<id>.json \
+  --rom local/<original-rom>.z64 --commands 32 \
+  --extract build/<game>-report/rsp-task
+```
+
+The tool reads the shared reporter's RDRAM snapshot, converts its recorded byte
+order, bounds-checks physical/KSEG ranges and verifies the supplied ROM identity.
+It prints the complete OSTask, microcode SHA-256 fingerprints, ASCII identifiers,
+exact original-ROM matches and a flat display-list opcode histogram. Use
+`--opcode 0xb5` to filter command rows; `--commands 0` prints only the summary.
+For games such as Hexen whose graphics descriptor stores command counts instead
+of bytes, pass `--list-scale 8` after verifying the submission adapter. Nested
+lists are not followed. Extracted bytes belong in ignored `build/` or `local/`.
+Fingerprint the full verified text/data spans; a microcode name or an address
+alone does not prove compatibility. Check whether RT64 actually implements the
+identified GBI: a database entry can still map to `Unknown` or a stub handler.
+Use the existing microcode hook for a game-specific extension, keep it in the
+game's parent folder, and retain fatal checks for unsupported behavior. Replay
+the triggering feature and transitions back to ordinary graphics, then visually
+inspect the feature's output; accepting a task without rendering its commands
+does not resolve the failure.
+
 Pay particular attention to these runtime boundaries:
 
 - A synthetic IPL thread must not return into a boot `BREAK` or remain owned by

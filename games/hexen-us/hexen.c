@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "hexen.h"
+#include "graphics.h"
 #include "audio.h"
 #include "generated.h"
 #include "hexen_config.h"
@@ -110,6 +111,7 @@ void hexen_init(Hexen *g, const RecompGameOptions *options, const char *wav) {
     require(recomp_io_init(rt,&io) && recomp_tasks_init(rt,&backend),"Hexen IO/tasks initialization failed",0);
     g->renderer=recomp_renderer_create_named(rt,options->data,"Hexen");
     require(g->renderer!=NULL,"Hexen renderer initialization failed",0);
+    recomp_renderer_set_microcode_hook(g->renderer,hexen_bind_microcode);
     RecompAudioConfig ac={.output_enabled=true,.playback=!options->mute,
         .prebuffer_ms=160,.microcode=RECOMP_AUDIO_ABI1,
         .task_profile=&hexen_audio_task_profile,.wav_path=wav};

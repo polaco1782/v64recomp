@@ -22,17 +22,20 @@ cmake --build --preset hexen-us-debug -j 4
 ```
 
 The shared keyboard bindings use `S` for Start, `A` for the N64 A button, `Z` for
-the trigger and arrow keys for the stick. Controller Pak storage uses
+the trigger and arrow keys for the stick. With the default Control Stick scheme,
+`I` (C-Up) toggles the automap; `C`/`V` (L/R) zoom it. These map controls follow
+the [instruction booklet](https://manuals.plus/m/7baa08667bd9411710be5c41d9b90f74bf8673035ef47cbf69759d3703df7af0.pdf).
+Controller Pak storage uses
 `local/saves/hexen-us.mpk`; initialization has been exercised, but persistence of
 an actual game save still needs validation.
 
-The bounded Debug replay selects a fighter, waits through loading, then moves,
-turns and fires. An enemy can kill the player during this route.
+The bounded automap replay selects a fighter, waits through loading, opens the
+map, zooms it, moves, and toggles between the map and 3D gameplay twice.
 
 ```sh
-./build/hexen-us-debug/bin/hexen-us --frames 4200 \
-  --input games/hexen-us/debug/play-through.txt --capture-every 300 \
-  --wav build/hexen-us-debug/play-through.wav
+./build/hexen-us-debug/bin/hexen-us --frames 4500 \
+  --input games/hexen-us/debug/automap.txt --capture-every 120 \
+  --wav build/hexen-us-debug/automap.wav
 ```
 
 The final 70-second Debug run completed with 1,509 graphics tasks, 3,978 audio
@@ -48,10 +51,10 @@ For Release keyboard replay and window captures, use the shared desktop tool:
 
 ```sh
 .venv/bin/python tools/desktop_replay.py \
-  --executable build/hexen-us-release/bin/hexen-us --frames 4200 \
-  --input games/hexen-us/debug/play-through.txt \
-  --output build/hexen-us-release/acceptance-play \
-  --capture-at 29 --capture-at 49 --capture-at 65
+  --executable build/hexen-us-release/bin/hexen-us --frames 4500 \
+  --input games/hexen-us/debug/automap.txt \
+  --output build/hexen-us-release/acceptance-map \
+  --capture-at 56 --capture-at 58 --capture-at 62 --capture-at 65 --capture-at 73
 ```
 
 This requires an X11/Xwayland desktop and ImageMagick `import` for captures.
@@ -66,6 +69,31 @@ state records, the 102 script handlers and six path-traversal callbacks. Missing
 traversal target `0x800f4dc4` and script target `0x800dff00` were fixed at these
 registration sources. Fatal failures and optional `RECOMP_HEXEN_SNAPSHOT=1`
 diagnostics use the shared crash reporter.
+
+The automap uses L3DEX 1.21 at physical `0x66490`. RT64's database identifies
+this version but marks its implementation `Unknown`; its L3DEX2 line handler
+also has no implementation. `graphics.cpp` binds only Hexen's verified L3DEX
+text/data, reuses ordinary F3DEX commands and renders LINE3D segments as
+screen-space triangles through RT64's RDP path. The game retains its colors,
+scissor, combiner and blending. Other microcodes use RT64's normal lookup.
+Unverified lighting, fog, perspective lines and triangle opcodes fail explicitly.
+The full text and data fingerprints match original ROM `0x1c090..0x1d090`
+and `0x20530..0x20d30`; the reported failing task contained 424 lines.
+Both builds passed 75-second desktop runs with visible automap lines and repeated
+returns to 3D gameplay. Release captures also verified zoom in/out and movement
+while the map was open. These focused runs do not establish later hub progression.
+
+Inspect another captured RSP task without writing a snapshot decoder:
+
+```sh
+.venv/bin/python tools/inspect_rsp_task.py local/crashes/hexen-us/crash-<id>.json \
+  --rom local/hexen.us.z64 --list-scale 8 --opcode 0xb5 --commands 20 \
+  --extract build/hexen-us-report/rsp-task
+```
+
+Hexen stores graphics command counts in the task size field, hence the scale of
+eight. The opcode histogram covers the supplied list span, without following
+nested lists. Extracted microcode/display-list bytes remain private build data.
 
 Use the maintained tools to investigate another callback without writing a ROM
 scanner. These commands prepare and verify the analysis image automatically:
