@@ -102,6 +102,19 @@ mkdir -p ~/Games/v64recomp
 tar -xzf oot-us-v12-steamdeck.tar.gz -C ~/Games/v64recomp
 ```
 
+For built-in CPU profiling, from the extracted directory run:
+
+```sh
+./launch.sh --profile deck-profile --profile-delay 20 --profile-seconds 30
+```
+
+Play the scene during the capture window. The game writes `deck-profile/` after
+30 seconds of recording and keeps running. Read `hotspots.txt` for CPU totals
+and hot functions, `thread-hotspots.txt` for the functions within each thread,
+and `stacks.folded` for caller paths. Each capture needs a new directory name.
+No Python, `perf` installation, or sudo is required. See [CPU profiling](profiling.md)
+for sampling limits and report formats.
+
 The selected ROM is already included in the extracted package:
 
 ```text
@@ -140,6 +153,21 @@ The current input backend reads keyboard keys. Configure Steam Input to send:
 The first run can spend time compiling Vulkan pipelines. Check actual play,
 audio, controls, save persistence and frame pacing on the Deck before treating
 the build as accepted.
+
+## Continuous audio gaps
+
+To capture 30 seconds of Release audio timing, run this from the extracted
+package directory and let the window close automatically:
+
+```sh
+RECOMP_AUDIO_TRACE="$PWD/audio.csv" ./launch.sh --frames 1800 > audio.log 2>&1
+```
+
+`audio.log` records the SDL backend, sample rate, device period and final
+underrun/reset counts. `audio.csv` records PCM admission times and queue depth,
+so sample-production timing can be compared with sound-device consumption.
+For a backend comparison, prefix the command with `SDL_AUDIODRIVER=pulseaudio`.
+These environment variables affect only that run.
 
 ## Missing Vulkan surface extensions
 

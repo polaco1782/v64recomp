@@ -35,6 +35,12 @@ Consumed buffers post AI events, with bounded transport retries and the SDK's
 nonblocking behavior for a full guest queue. Host sound-device progress does not
 determine guest completion.
 
+Graphics receipts are published after RT64's display-list interpreter has
+finished guest RAM readbacks and copied the inputs needed by its render queues.
+The adapter does not wait for GPU presentation before releasing the shared RSP
+for audio synthesis. Presentation pacing stays on RT64's queues; texture reload
+and shutdown retain their explicit GPU barriers.
+
 `recomp_ai_set_output` attaches an owner-thread PCM sink. It copies a buffer when
 it becomes active, including promotion of a queued successor. SDL receives signed
 16-bit stereo samples; optional WAV capture stores canonical little-endian PCM.
@@ -52,6 +58,8 @@ the running queue before PCM admission, excluding initial buffering.
 ./build/sm64-us-release/bin/sm64-us --mute
 ./build/sm64-us-debug/bin/sm64-us --frames 180 --mode jump
 ./build/oot-us-v12-debug/bin/oot-us-v12 --audio-trace /tmp/oot-audio.csv
+# Opt-in timing diagnostics also work in Release and packaged builds:
+RECOMP_AUDIO_TRACE=/tmp/oot-audio.csv ./build/oot-us-v12-release/bin/oot-us-v12
 ```
 
 Interactive output uses wall time from startup. Deterministic gameplay checks
@@ -64,6 +72,10 @@ runs bounded scheduler batches during the remaining interval, sleeping at most
 servicing VI/AI and worker completions during pacing prevents that coalescing
 from starving playback. Its debug executable supports `--audio-trace PATH` for a CSV of
 host timestamps, admitted frames, sample rate, SDL queue bytes and underruns.
+`RECOMP_AUDIO_TRACE=PATH` enables the same CSV for any build whose audio config
+does not specify a trace path. When tracing is enabled, stderr also records the
+SDL audio driver, sample rate, device period, prebuffer size and final buffer/
+underrun/reset counts. Without an explicit trace request, playback stays quiet.
 
 Captured ROM scenarios can verify stereo output, bounded clipping and waveform
 changes following input. Desktop playback remains the check for audible quality

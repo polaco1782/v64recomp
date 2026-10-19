@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include "game.h"
 #include "game_defaults.h"
+#include "profiler.h"
 #include <dlfcn.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -26,12 +27,18 @@ static void directory(const char *path) {
 }
 int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
     const char *texture_source=NULL;
+    const char *profile_directory=NULL;
+    unsigned profile_hz=99,profile_delay=0,profile_seconds=0;
     *o=(RecompGameOptions){.rom=RECOMP_DEFAULT_ROM,.data=RECOMP_DEFAULT_DATA,
         .save=RECOMP_DEFAULT_SAVE,.crash_dir=RECOMP_DEFAULT_CRASH};
     for(int i=1;i<argc;i++) {
         const char *arg=argv[i];
         if(!strcmp(arg,"--help")) {
-            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] [--texture-scan [ZIP_OR_DIRECTORY]]\n",argv[0]);
+            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] [--texture-scan [ZIP_OR_DIRECTORY]]\n"
+                "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
+                "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
+                "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
+                "  --profile-seconds N    Stop profiling after N seconds; 0 = until exit (default)\n",argv[0]);
             return 1;
         }
         if(!strcmp(arg,"--mute")){o->mute=true;continue;}
@@ -52,6 +59,17 @@ int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
         else if(!strcmp(arg,"--data"))o->data=value;
         else if(!strcmp(arg,"--save"))o->save=value;
         else if(!strcmp(arg,"--crash-dir"))o->crash_dir=value;
+        else if(!strcmp(arg,"--profile"))profile_directory=value;
+        else if(!strcmp(arg,"--profile-hz") || !strcmp(arg,"--profile-delay") || !strcmp(arg,"--profile-seconds")) {
+            char *end;errno=0;unsigned long n=strtoul(value,&end,10);
+            if(errno || *end || *value<'0' || *value>'9' || n>86400 ||
+               (!strcmp(arg,"--profile-hz") && (!n || n>1000))) {
+                fprintf(stderr,"invalid value for %s: %s\n",arg,value);return -1;
+            }
+            if(!strcmp(arg,"--profile-hz"))profile_hz=(unsigned)n;
+            else if(!strcmp(arg,"--profile-delay"))profile_delay=(unsigned)n;
+            else profile_seconds=(unsigned)n;
+        }
         else if(!strcmp(arg,"--frames")) {
             char *end;errno=0;unsigned long n=strtoul(value,&end,10);
             if(errno || *end || *value<'0' || *value>'9' || n>UINT32_MAX) {
@@ -73,6 +91,7 @@ int recomp_game_options(int argc,char **argv,RecompGameOptions *o) {
         const char *replacements=getenv("RECOMP_TEXTURE_REPLACEMENTS");
         if(!replacements || !*replacements)setenv("RECOMP_TEXTURE_REPLACEMENTS",RECOMP_DEFAULT_TEXTURES,1);
     }
+    if(profile_directory && !recomp_profile_start(profile_directory,profile_hz,profile_delay,profile_seconds))return -1;
     return 0;
 }
 void recomp_game_require(bool condition,const char *message,uint32_t address) {

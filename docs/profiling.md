@@ -1,5 +1,87 @@
 # CPU profiling
 
+## Built-in profiler, including Steam Deck
+
+Every game using the shared command line accepts `--profile NEW_DIRECTORY`.
+It collects process and per-thread CPU totals, hot functions, and sampled call
+stacks inside the executable. It needs no Python, `perf`, root access, or kernel
+permission changes. The built-in sampler currently supports **x86-64 Linux**.
+
+From an extracted Steam Deck package, for example:
+
+```sh
+./launch.sh --profile deck-profile --profile-delay 20 --profile-seconds 30
+```
+
+Reach the scene during the first 20 seconds, then play it for the next 30 seconds.
+The report is written when the capture finishes; the game continues running.
+Increase the delay for a longer startup. The directory's parent must exist, and
+the capture directory must be new. Use a different name for each measurement.
+
+Without `--profile-seconds`, profiling runs until normal exit (Escape or the
+`--frames N` budget). Close normally to save the report; forced termination or a
+crash before the capture ends can lose it. A run that exits before the delay
+expires prints a message and produces no CPU report. No collection runs unless
+`--profile` is supplied.
+
+The capture contains:
+
+| File | Contents |
+| --- | --- |
+| `hotspots.txt` | Process CPU totals, all observed thread totals, and the top 100 functions by self cost |
+| `thread-hotspots.txt` | Top 30 self-cost functions within each sampled thread |
+| `functions.csv` | All resolved functions or unresolved instruction addresses, with self and inclusive sample counts |
+| `threads.csv`, `summary.json` | CPU counters, user/kernel split, sampling errors, overruns, dropped samples, and stack-depth diagnostics |
+| `stacks.folded` | Counted root-to-leaf stacks, grouped by native TID, usable with folded-stack flame graph tools |
+| `samples.jsonl` | Aggregated leaf-to-root stacks with counts, TIDs, native PCs, module paths, and load bases/offsets |
+| `maps.txt`, `maps-end.txt`, `process-status.txt` | Process mappings at capture start/end and initial Linux status |
+
+Start with `hotspots.txt` to identify the busy thread, then find its TID in
+`thread-hotspots.txt`. `recomp_s<section>_<vram>` identifies translated guest
+functions; scheduler, memory, worker, audio, RT64, and driver symbols identify
+native work. Folded stacks retain the caller paths behind those costs. C++ names
+are demangled when libstdc++ is available. The collector also reads native ELF
+symbol tables to name static runtime helpers and RT64's hidden functions. Local
+functions include an address suffix to distinguish identical names. Stripped
+libraries can still appear as module offsets; keep the matching executable and
+libraries to resolve those addresses with `addr2line` or another native symbolizer.
+
+CPU percentages use **one logical CPU = 100%** and can sum above 100%. Process
+user/kernel totals include all process threads, including threads that exit
+between observations. Per-thread counters are polled every 100 ms; short-lived
+threads and the final CPU burst before thread exit may be missed. The signed
+`thread_accounting_gap_seconds` shows process CPU minus the observed thread CPU;
+small negative gaps can result from tick granularity and observation timing.
+This profiles CPU execution, not GPU execution time or time blocked on a GPU.
+
+The default is **99 samples per CPU second per thread**, using per-thread Linux
+CPU timers and a dedicated realtime signal (`SIGRTMIN+4`). Sleeping threads
+consume no sample budget. The collector discovers new threads at each poll and
+excludes itself from sampling, while retaining its CPU counters. Timer overruns,
+ring-buffer drops, resource limits, and individual timer failures are reported,
+so unavailable samples are distinguishable from idle threads. The sampler has
+bounded storage: 1,024 observed thread lifetimes, 65,536 unique instruction
+addresses, 65,536 unique stacks, and 32 frames per stack. CPU totals continue
+when a sampling storage limit is reached. `discarded_stacks`, `thread_limit_hits`
+and `allocation_failures` flag lost detail.
+
+Stacks use interrupted x86-64 registers and bounded, fault-safe reads through
+`/proc/self/mem`; allocation, symbol resolution, and file output run on the
+collector thread. Our generated code, runtime, audio adapter, renderer adapter,
+RT64 and Plume retain frame pointers. Third-party code may omit frame pointers,
+optimized tail calls may disappear, and deep stacks may be truncated. Samples
+include user and kernel CPU time, but kernel work is attributed to the userspace
+instruction where the signal is delivered; they do not provide kernel stacks.
+Use the external perf workflow below for DWARF unwinding or kernel attribution.
+
+Profiling itself consumes CPU: collector work appears as `n64-profiler`, while
+signal-handler work is charged to the sampled thread. Use `--profile-hz 49` to
+reduce sampling overhead or raise it up to 1,000 for a short detailed capture.
+Compare equivalent Release scenes, and measure final performance with profiling
+disabled.
+
+## External capture with perf
+
 Use `tools/profile_execution.py` on Linux to attach to a running game without
 restarting it. Python 3 is sufficient for thread CPU accounting. Install your
 distribution's `perf` package matching the running kernel for function sampling.

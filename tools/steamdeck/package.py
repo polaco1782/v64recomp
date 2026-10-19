@@ -119,6 +119,10 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
         "Map Steam Input to keyboard keys: arrows = stick, A/X/Z = N64 A/B/Z,\n"
         "S = Start, C/V = L/R, I/J/K/L = C up/left/down/right, Escape = exit.\n"
         "The GLIBC-REQUIREMENTS.txt file records every bundled ELF's requirement.\n"
+        "CPU profiling: ./launch.sh --profile deck-profile --profile-delay 20 --profile-seconds 30\n"
+        "Use a new directory name for each capture. The game keeps running after capture.\n"
+        "Read deck-profile/hotspots.txt, thread-hotspots.txt and stacks.folded.\n"
+        "Profiling needs no Python, perf installation or sudo; CPU stacks use frame pointers.\n"
         "Existing saves are excluded. Hardware gameplay is not validated by packaging.\n"
     )
     # Verify loader resolution and startup without initializing Vulkan or a ROM.

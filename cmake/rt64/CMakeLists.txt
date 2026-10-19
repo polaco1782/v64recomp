@@ -15,6 +15,12 @@ if(NOT EXISTS "${RECOMP_RT64_SOURCE}/CMakeLists.txt")
 endif()
 add_subdirectory("${RECOMP_RT64_SOURCE}" rt64 EXCLUDE_FROM_ALL)
 
+# Keep optimized native renderer stacks usable by the built-in CPU sampler.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(rt64 PRIVATE -g1 -fno-omit-frame-pointer)
+    target_compile_options(plume PRIVATE -g1 -fno-omit-frame-pointer)
+endif()
+
 # Export the entire static link graph, including platform libraries and include
 # requirements. Game builds import these targets rather than configuring RT64.
 export(TARGETS texture_hashing rt64 re-spirv nfd libzstd_static plume
