@@ -6,12 +6,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/goldeneye-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --preset goldeneye-us-release
-cmake --build --preset goldeneye-us-release -j 4
+cmake --workflow --preset goldeneye-us-release
 ./build/goldeneye-us-release/bin/goldeneye-us
 
-cmake --preset goldeneye-us-debug
-cmake --build --preset goldeneye-us-debug -j 4
+cmake --workflow --preset goldeneye-us-debug
 ./build/goldeneye-us-debug/bin/goldeneye-us --help
 ```
 

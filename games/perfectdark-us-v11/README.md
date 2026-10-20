@@ -14,16 +14,14 @@ From the project root:
 
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/perfectdark-us-v11/profile.toml --rom '/home/cmartin/Downloads/N64/ROMS/Perfect Dark (U) (V1.1) [!].z64'
-cmake --preset perfectdark-us-v11-release
-cmake --build --preset perfectdark-us-v11-release -j 4
+cmake --workflow --preset perfectdark-us-v11-release
 ./build/perfectdark-us-v11-release/bin/perfectdark-us-v11
 ```
 
 For crash reports, captures and deterministic controller input:
 
 ```sh
-cmake --preset perfectdark-us-v11-debug
-cmake --build --preset perfectdark-us-v11-debug -j 4
+cmake --workflow --preset perfectdark-us-v11-debug
 ./build/perfectdark-us-v11-debug/bin/perfectdark-us-v11 --frames 3700 --save /tmp/perfectdark-bringup.eeprom --input games/perfectdark-us-v11/debug/gameplay-input.txt --capture-every 120
 ```
 

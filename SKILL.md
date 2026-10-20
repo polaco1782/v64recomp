@@ -110,10 +110,11 @@ parent-folder `generate.py`, with optional hooks as documented in
 rather than adding game-ID branches to the shared driver.
 
 Register the ID in root `CMakeLists.txt`'s `RECOMP_GAMES` and
-`tools/generate_game.py`'s `GAMES`. Add Release/Debug configure and build presets
-in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
-entries. Follow `cmake/Game.cmake` for ROM/save defaults, additional sources,
-generated headers, source splitting, and mode selection. Ensure new preparation
+`tools/generate_game.py`'s `GAMES`. Add Release/Debug configure, build and workflow
+presets in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
+entries. Each workflow runs its matching configure and build presets; build
+presets default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
+additional sources, generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
 Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
 game-specific RT64 copy. Its independent build cache is under `build/shared/rt64/`.
@@ -255,8 +256,7 @@ cannot stand in for behavior reached by the acceptance replay.
 Configure and build separate modes once generation is viable:
 
 ```sh
-cmake --preset <game>-debug
-cmake --build --preset <game>-debug -j 4
+cmake --workflow --preset <game>-debug
 ./build/<game>-debug/bin/<game> --frames 300
 ```
 

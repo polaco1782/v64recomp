@@ -16,8 +16,7 @@ From the repository root:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/rayman2-us/profile.toml \
   --rom '/path/to/Rayman 2.z64'
-cmake --preset rayman2-us-debug
-cmake --build --preset rayman2-us-debug -j 4
+cmake --workflow --preset rayman2-us-debug
 ./build/rayman2-us-debug/bin/rayman2-us --frames 360
 ```
 

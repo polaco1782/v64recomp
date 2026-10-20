@@ -18,7 +18,7 @@ RT64's widescreen expansion gives *Ocarina of Time* an ultrawide view of Hyrule.
 
 ## Build and play
 
-Requirements: Python 3.11+, C/C++ compiler, CMake 3.20+, Ninja, OpenSSL 3, SDL2,
+Requirements: Python 3.11+, C/C++ compiler, CMake 3.25+, Ninja, OpenSSL 3, SDL2,
 X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
 Python generates CPU sources during the build. Built games launch directly.
 
@@ -102,12 +102,19 @@ The imported, normalized files have these filenames and MD5 checksums:
 After importing a ROM, build and run its game:
 
 ```sh
-cmake --preset sm64-us-release
-cmake --build --preset sm64-us-release -j 4
+cmake --workflow --preset sm64-us-release
 cmake --build --preset sm64-us-release --target run
 # Or launch the executable directly, from any working directory:
 ./build/sm64-us-release/bin/sm64-us
 ```
+
+Every game has Release and Debug workflows, such as `quake2-us-release` and
+`quake2-us-debug`. A workflow configures the selected build tree, then builds it
+with four compiler jobs. List them with `cmake --workflow --list-presets`.
+For an incremental build with a different job count, use
+`cmake --build --preset quake2-us-release -j 8`. Configure custom `-D` options
+separately with `cmake --preset quake2-us-release -DOPTION=VALUE`; subsequent
+workflows retain cached options that the preset does not override.
 
 To pack the final executable, install [UPX](https://upx.github.io/) and run:
 
@@ -188,8 +195,7 @@ running game and saves thread counters and optional perf reports under
 `build/profiles/`.
 
 ```sh
-cmake --preset quake-us-debug
-cmake --build --preset quake-us-debug -j 4
+cmake --workflow --preset quake-us-debug
 ./build/quake-us-debug/bin/quake-us --frames 300 --capture-every 60
 ./build/quake-us-debug/bin/quake-us --trace-calls
 cmake --build --preset quake-us-debug --target report

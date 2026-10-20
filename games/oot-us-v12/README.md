@@ -6,12 +6,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/oot-us-v12/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --preset oot-us-v12-release
-cmake --build --preset oot-us-v12-release -j 4
+cmake --workflow --preset oot-us-v12-release
 ./build/oot-us-v12-release/bin/oot-us-v12
 
-cmake --preset oot-us-v12-debug
-cmake --build --preset oot-us-v12-debug -j 4
+cmake --workflow --preset oot-us-v12-debug
 ./build/oot-us-v12-debug/bin/oot-us-v12 --help
 ```
 

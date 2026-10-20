@@ -21,8 +21,7 @@ Run from the repository root:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/quake2-us/profile.toml \
   --rom '/path/to/Quake II (U) [!].z64'
-cmake --preset quake2-us-release
-cmake --build --preset quake2-us-release -j 4
+cmake --workflow --preset quake2-us-release
 ./build/quake2-us-release/bin/quake2-us
 ```
 
@@ -31,8 +30,7 @@ for a separate image. Both configurations use the same game adapter and shared
 core crash reporter. Debug has its own entry point, input replay and captures:
 
 ```sh
-cmake --preset quake2-us-debug
-cmake --build --preset quake2-us-debug -j 4
+cmake --workflow --preset quake2-us-debug
 .venv/bin/python tools/controller_replay.py \
   games/quake2-us/debug/gameplay-input.json build/quake2-us-gameplay-input.txt \
   --game quake2-us

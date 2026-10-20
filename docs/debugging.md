@@ -4,7 +4,7 @@ For a new game, start with [adding a ROM and debugging a new port](adding-a-rom.
 It covers mapping discovery, missing host/guest symbols, GDB, memory corruption
 and the shared diagnostic scripts under `tools/`.
 
-Configure `cmake --preset <game>-debug` and build that preset. The binary is
+Configure and build with `cmake --workflow --preset <game>-debug`. The binary is
 `build/<game>-debug/bin/<game>`; use `--help` for options. Debug app sources live
 under `games/<game>/debug/`, and generated sources under the build's `generated/`.
 The original positional diagnostic interfaces are also retained for tools.

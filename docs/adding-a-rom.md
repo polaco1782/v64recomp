@@ -358,8 +358,10 @@ cmake -S . -B build/newgame-us-debug -G Ninja \
 cmake --build build/newgame-us-debug -j 4
 ```
 
-Add Release/Debug configure and build presets to `CMakePresets.json` for the usual
-short commands, and optional VS Code entries in `.vscode/tasks.json` and
+Add Release/Debug configure, build and workflow presets to `CMakePresets.json`.
+Each workflow runs the matching configure and build presets, and build presets
+default to four jobs. Use `cmake --workflow --preset newgame-us-debug` to configure
+and build together (CMake 3.25+). Add optional VS Code entries in `.vscode/tasks.json` and
 `.vscode/launch.json`. Update the root import/game lists and `docs/status.md` with
 the actual milestone. `cmake/Game.cmake` handles generated-source caching/splitting,
 mode-specific app selection, debug flags, and `run`/`report` targets. Configuration

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 6,
   "configurePresets": [
     {
       "name": "sm64-us-release",
@@ -278,107 +278,473 @@
   "buildPresets": [
     {
       "name": "sm64-us-release",
-      "configurePreset": "sm64-us-release"
+      "configurePreset": "sm64-us-release",
+      "jobs": 4
     },
     {
       "name": "sm64-us-debug",
-      "configurePreset": "sm64-us-debug"
+      "configurePreset": "sm64-us-debug",
+      "jobs": 4
     },
     {
       "name": "goldeneye-us-release",
-      "configurePreset": "goldeneye-us-release"
+      "configurePreset": "goldeneye-us-release",
+      "jobs": 4
     },
     {
       "name": "goldeneye-us-debug",
-      "configurePreset": "goldeneye-us-debug"
+      "configurePreset": "goldeneye-us-debug",
+      "jobs": 4
     },
     {
       "name": "shadowman-us-release",
-      "configurePreset": "shadowman-us-release"
+      "configurePreset": "shadowman-us-release",
+      "jobs": 4
     },
     {
       "name": "shadowman-us-debug",
-      "configurePreset": "shadowman-us-debug"
+      "configurePreset": "shadowman-us-debug",
+      "jobs": 4
     },
     {
       "name": "quake-us-release",
-      "configurePreset": "quake-us-release"
+      "configurePreset": "quake-us-release",
+      "jobs": 4
     },
     {
       "name": "quake-us-debug",
-      "configurePreset": "quake-us-debug"
+      "configurePreset": "quake-us-debug",
+      "jobs": 4
     },
     {
       "name": "duke-us-release",
-      "configurePreset": "duke-us-release"
+      "configurePreset": "duke-us-release",
+      "jobs": 4
     },
     {
       "name": "duke-us-debug",
-      "configurePreset": "duke-us-debug"
+      "configurePreset": "duke-us-debug",
+      "jobs": 4
     },
     {
       "name": "nightmare-us-release",
-      "configurePreset": "nightmare-us-release"
+      "configurePreset": "nightmare-us-release",
+      "jobs": 4
     },
     {
       "name": "nightmare-us-debug",
-      "configurePreset": "nightmare-us-debug"
+      "configurePreset": "nightmare-us-debug",
+      "jobs": 4
     },
     {
       "name": "oot-us-v12-release",
-      "configurePreset": "oot-us-v12-release"
+      "configurePreset": "oot-us-v12-release",
+      "jobs": 4
     },
     {
       "name": "oot-us-v12-debug",
-      "configurePreset": "oot-us-v12-debug"
+      "configurePreset": "oot-us-v12-debug",
+      "jobs": 4
     },
     {
       "name": "perfectdark-us-v11-release",
-      "configurePreset": "perfectdark-us-v11-release"
+      "configurePreset": "perfectdark-us-v11-release",
+      "jobs": 4
     },
     {
       "name": "perfectdark-us-v11-debug",
-      "configurePreset": "perfectdark-us-v11-debug"
+      "configurePreset": "perfectdark-us-v11-debug",
+      "jobs": 4
     },
     {
       "name": "conker-us-release",
-      "configurePreset": "conker-us-release"
+      "configurePreset": "conker-us-release",
+      "jobs": 4
     },
     {
       "name": "conker-us-debug",
-      "configurePreset": "conker-us-debug"
+      "configurePreset": "conker-us-debug",
+      "jobs": 4
     },
     {
       "name": "duke-zero-hour-us-release",
-      "configurePreset": "duke-zero-hour-us-release"
+      "configurePreset": "duke-zero-hour-us-release",
+      "jobs": 4
     },
     {
       "name": "duke-zero-hour-us-debug",
-      "configurePreset": "duke-zero-hour-us-debug"
+      "configurePreset": "duke-zero-hour-us-debug",
+      "jobs": 4
     },
     {
       "name": "hexen-us-release",
-      "configurePreset": "hexen-us-release"
+      "configurePreset": "hexen-us-release",
+      "jobs": 4
     },
     {
       "name": "hexen-us-debug",
-      "configurePreset": "hexen-us-debug"
+      "configurePreset": "hexen-us-debug",
+      "jobs": 4
     },
     {
       "name": "rayman2-us-release",
-      "configurePreset": "rayman2-us-release"
+      "configurePreset": "rayman2-us-release",
+      "jobs": 4
     },
     {
       "name": "rayman2-us-debug",
-      "configurePreset": "rayman2-us-debug"
+      "configurePreset": "rayman2-us-debug",
+      "jobs": 4
     },
     {
       "name": "quake2-us-release",
-      "configurePreset": "quake2-us-release"
+      "configurePreset": "quake2-us-release",
+      "jobs": 4
     },
     {
       "name": "quake2-us-debug",
-      "configurePreset": "quake2-us-debug"
+      "configurePreset": "quake2-us-debug",
+      "jobs": 4
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "sm64-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "sm64-us-release"
+        },
+        {
+          "type": "build",
+          "name": "sm64-us-release"
+        }
+      ]
+    },
+    {
+      "name": "sm64-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "sm64-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "sm64-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "goldeneye-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "goldeneye-us-release"
+        },
+        {
+          "type": "build",
+          "name": "goldeneye-us-release"
+        }
+      ]
+    },
+    {
+      "name": "goldeneye-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "goldeneye-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "goldeneye-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "shadowman-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "shadowman-us-release"
+        },
+        {
+          "type": "build",
+          "name": "shadowman-us-release"
+        }
+      ]
+    },
+    {
+      "name": "shadowman-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "shadowman-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "shadowman-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "quake-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "quake-us-release"
+        },
+        {
+          "type": "build",
+          "name": "quake-us-release"
+        }
+      ]
+    },
+    {
+      "name": "quake-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "quake-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "quake-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "duke-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "duke-us-release"
+        },
+        {
+          "type": "build",
+          "name": "duke-us-release"
+        }
+      ]
+    },
+    {
+      "name": "duke-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "duke-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "duke-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "nightmare-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "nightmare-us-release"
+        },
+        {
+          "type": "build",
+          "name": "nightmare-us-release"
+        }
+      ]
+    },
+    {
+      "name": "nightmare-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "nightmare-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "nightmare-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "oot-us-v12-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "oot-us-v12-release"
+        },
+        {
+          "type": "build",
+          "name": "oot-us-v12-release"
+        }
+      ]
+    },
+    {
+      "name": "oot-us-v12-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "oot-us-v12-debug"
+        },
+        {
+          "type": "build",
+          "name": "oot-us-v12-debug"
+        }
+      ]
+    },
+    {
+      "name": "perfectdark-us-v11-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "perfectdark-us-v11-release"
+        },
+        {
+          "type": "build",
+          "name": "perfectdark-us-v11-release"
+        }
+      ]
+    },
+    {
+      "name": "perfectdark-us-v11-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "perfectdark-us-v11-debug"
+        },
+        {
+          "type": "build",
+          "name": "perfectdark-us-v11-debug"
+        }
+      ]
+    },
+    {
+      "name": "conker-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "conker-us-release"
+        },
+        {
+          "type": "build",
+          "name": "conker-us-release"
+        }
+      ]
+    },
+    {
+      "name": "conker-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "conker-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "conker-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "duke-zero-hour-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "duke-zero-hour-us-release"
+        },
+        {
+          "type": "build",
+          "name": "duke-zero-hour-us-release"
+        }
+      ]
+    },
+    {
+      "name": "duke-zero-hour-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "duke-zero-hour-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "duke-zero-hour-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "hexen-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "hexen-us-release"
+        },
+        {
+          "type": "build",
+          "name": "hexen-us-release"
+        }
+      ]
+    },
+    {
+      "name": "hexen-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "hexen-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "hexen-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "rayman2-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "rayman2-us-release"
+        },
+        {
+          "type": "build",
+          "name": "rayman2-us-release"
+        }
+      ]
+    },
+    {
+      "name": "rayman2-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "rayman2-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "rayman2-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "quake2-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "quake2-us-release"
+        },
+        {
+          "type": "build",
+          "name": "quake2-us-release"
+        }
+      ]
+    },
+    {
+      "name": "quake2-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "quake2-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "quake2-us-debug"
+        }
+      ]
     }
   ]
 }

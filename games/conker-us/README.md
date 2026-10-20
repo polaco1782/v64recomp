@@ -25,8 +25,7 @@ From the repository root:
 .venv/bin/python tools/import_rom.py \
   --profile games/conker-us/profile.toml \
   --rom "/home/cmartin/Downloads/N64/ROMS/Conker's Bad Fur Day (U) [!].z64"
-cmake --preset conker-us-debug
-cmake --build --preset conker-us-debug -j 4
+cmake --workflow --preset conker-us-debug
 ./build/conker-us-debug/bin/conker-us --frames 300
 ```
 
