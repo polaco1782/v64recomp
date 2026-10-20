@@ -32,6 +32,26 @@ Use these as implementation references. Derive addresses, fingerprints, RAM size
 microcode, scheduler globals, save type, and timing from the new ROM. Existing
 ports have different completeness levels and are not universal templates.
 
+Use available web search and browsing to find relevant public work before
+reconstructing unfamiliar systems from scratch, and revisit the search when a
+runtime blocker suggests a specific subsystem. Search the game title, platform
+and revision with terms such as `decompilation`, `disassembly`, `symbols`,
+`recomp`, `reverse engineering`, or the failing SDK/microcode/function name.
+Inspect public repositories, symbol maps, port findings, engine/data-format
+tools, emulator implementations and issue discussions for concrete hints.
+Prefer the original project, source code and technical notes over summaries.
+
+Treat external names, addresses, layouts and fixes as hypotheses. Distinguish a
+matching decompilation from a partial disassembly, recompilation attempt or
+another platform's engine reimplementation. Verify the ROM hash/revision, load
+map, instruction bytes, ABI, complete table bounds and runtime behavior relevant
+to each hint before adding roots, hooks or fixes here. A project's function
+count or successful build does not prove complete discovery or playable output.
+Record useful source links and revisions in the game's notes, together with
+what was verified locally; identify cached, inaccessible or unverified findings.
+Keep reference checkouts private under `build/` or `/tmp`, avoid making them
+build dependencies, and do not fetch ROMs or extracted game assets.
+
 ## 1. Identify the ROM and establish the load map
 
 1. Locate the user-provided ROM. Identify its byte order, normalize it, and compute
@@ -196,12 +216,27 @@ configured bytes, with checked coverage and fingerprints.
 
 ## 4. Resolve native services without hiding missing behavior
 
-Reuse `tools/native_hooks.toml` for ordinary SDK OS/library functions. Recognition
+Reuse `tools/symbols.json` for ordinary SDK OS/library functions. Only its
+`native_signatures` authorize native replacements; imported `sdk_signatures`
+and their library caller/callee indexes are identification evidence. Recognition
 requires a complete ROM-body SHA-256; prefix resemblance or a name match is
 insufficient. For a new compiler/SDK variant, establish its boundaries and
 behavior, then add a verified fingerprint using the shared handler. Implement a
 missing common service in the shared runtime. Reserve explicit game hooks for
 custom startup, hardware, loaders, or other game-specific behavior.
+
+For an unidentified SDK routine or hardware-register failure, use
+`tools/inspect_sdk_symbols.py --game <game> --metadata <matching-symbols.json>
+--output <new-build-directory>` before manually reconstructing its name. Read
+`report.txt` / `report.json` for confidence, native-handler coverage, caller
+evidence and direct hardware-access candidates. The default scans discovered
+entries; `--scope sections` also searches unvisited helpers and mixed data/code.
+Use `--section` for overlays and repeat `--symbol` to narrow an investigation.
+CRC matches and the diagnostic `symbols.map` do not authorize roots, renaming or
+native replacements. Distinguish an absent registered handler from an unbound
+variant of an existing handler. Calls inside a replaced native body describe
+the original ROM; inspect the active higher-level boundary before implementing
+low-level helpers. See [the scanner reference](docs/native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps).
 
 Honor the guest ABI: register widths/sign extension, arguments and return values,
 stack layout, guest byte order, OS structures, queue semantics, priorities,

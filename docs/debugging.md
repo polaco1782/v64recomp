@@ -33,6 +33,13 @@ call site and host thread; OS entries include the cumulative call count. Set
 lifecycle events always print. These diagnostics are compiled out of Release.
 For example: `build/quake-us-debug/bin/quake-us --frames 300 2>/tmp/quake-debug.log`.
 
+Set `RECOMP_DEBUG_INPUT=1` to log changes in the controller state supplied by the
+frontend or replay: port, connection, N64 button mask and stick axes. Correlate
+these timestamps with screenshots and SI reads before attributing a missing
+reaction to game logic. This verifies frontend delivery; guest consumption still
+depends on the game's controller polling. Analog controllers can produce many
+changes, so enable it only for a focused input investigation.
+
 Set `RECOMP_DEBUG_QUEUE=0x800bea10` to trace every successful send, receive and
 blocking wait for one guest message queue. The trace includes the message,
 remaining count, caller thread and guest PC; cached/uncached aliases match.
@@ -83,6 +90,21 @@ To display the original MIPS for a generated function, run:
 ```sh
 .venv/bin/python tools/disassemble_function.py recomp_s3_7f068008
 ```
+
+For an unidentified SDK routine or a hardware-register failure, generate a
+diagnostic SDK symbol/handler report against the matching build metadata:
+
+```sh
+.venv/bin/python tools/inspect_sdk_symbols.py --game hexen-us \
+  --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
+  --output build/hexen-us-debug/sdk-symbols
+```
+
+The directory must be new. Read `report.txt`, `report.json`, and `symbols.map`;
+use `--scope sections` when investigating helpers pruned from discovery by a
+higher-level native replacement. Unowned CRC matches remain candidates. Missing
+handlers require behavior review, and calls inside replaced native bodies do
+not establish an active runtime gap. See [SDK report interpretation](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps).
 
 The tool searches generated `symbols.json` files under `build/`, identifies the
 game and verifies the ROM bytes before disassembly. It uses the game's preparation

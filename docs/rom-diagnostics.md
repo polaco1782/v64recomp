@@ -96,6 +96,31 @@ after that investigation. Rebuild and replay the exact trigger beyond the old
 failure, then collect fresh evidence under a new output directory. Successful
 inspection, generation or presentation counts do not establish rendered gameplay.
 
+## SDK identification and missing-handler review
+
+For a hardware-register failure or unidentified SDK routine, generate a symbol
+report using the same verified metadata:
+
+```sh
+.venv/bin/python tools/inspect_sdk_symbols.py --game hexen-us \
+  --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
+  --scope sections --symbol osContReset --symbol __osSiRawStartDma \
+  --symbol __osSiDeviceBusy --output build/hexen-us-report/sdk-reset
+```
+
+Omit `--symbol` to examine all database signatures; omit `--scope sections` for
+the default discovered-entry scan. The report records confidence, ownership,
+actual owned/checked caller references, SDK-inferred callers, native binding
+status, and bounded direct hardware-access evidence. Section-qualified output
+keeps overlays distinct. The diagnostic map excludes ambiguous names.
+
+Check the selected higher-level native boundary before implementing a helper:
+Hexen's `__osSiRawStartDma` still exists in the ROM after `osContReset` is replaced,
+but calls inside that replaced body no longer execute as MIPS. The report labels
+those original-ROM calls. Neither an SDK CRC match nor a missing registered
+handler authorizes a replacement or establishes a gameplay failure. See the
+[scanner reference](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps).
+
 ## Comparing an unrecognized SDK body
 
 `tools/compare_native_hooks.py` supplements the collector when a suspected OS

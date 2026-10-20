@@ -3,22 +3,14 @@ from __future__ import annotations
 
 from functools import lru_cache
 import hashlib
-from pathlib import Path
-import tomllib
 
 from common import RecompError
+from symbol_database import load_database, native_signatures
 
 
 @lru_cache(maxsize=1)
 def catalog() -> tuple[dict, ...]:
-    with Path(__file__).with_suffix('.toml').open('rb') as stream:
-        signatures = tomllib.load(stream)['signatures']
-    for signature in signatures:
-        words = signature['expected_words']
-        size = signature['body_size']
-        if not words or size % 4 or size < len(words) * 4:
-            raise RecompError('invalid shared native hook fingerprint')
-    return tuple(signatures)
+    return native_signatures(load_database())
 
 
 def resolve_native_hooks(rom: bytes, profile: dict) -> list[dict]:

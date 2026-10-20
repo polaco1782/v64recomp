@@ -55,6 +55,16 @@ Mupen64Plus-rsp-hle. Source files specify GPL version 2 or later and retain
 individual copyright notices. The upstream license and author list are
 preserved in [licenses/Mupen64Plus-rsp-hle.txt](licenses/Mupen64Plus-rsp-hle.txt).
 
+## n64sym signature data
+
+The SDK identification signatures and library references in `tools/symbols.json`
+are imported from [shygoo/n64sym](https://github.com/shygoo/n64sym), commit
+`ccf4600f3389f1a84bde23339225cf372fdf7712`. They are distributed under the MIT
+license, copyright (c) 2017-2020 shygoo; the complete notice is preserved in
+[licenses/n64sym.txt](licenses/n64sym.txt). The database retains the source URL,
+revision and source-file SHA-256. Native replacement fingerprints are measured
+independently from the supplied ROMs.
+
 ## Other dependencies
 
 RT64's bundled dependencies retain their licenses under `third_party/rt64/`,

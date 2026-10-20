@@ -88,7 +88,7 @@ by the runtime. SDL sound-device progress does not determine guest AI completion
 
 ## How replacements are selected
 
-[`tools/native_hooks.toml`](../tools/native_hooks.toml) records known SDK/library
+[`tools/symbols.json`](../tools/symbols.json) records known SDK/library
 bodies. Discovery scans the configured ROM regions, uses instruction prefixes
 to find candidates, and requires a **complete-body SHA-256 match** before
 binding a shared handler. Explicit game-profile hooks take precedence for

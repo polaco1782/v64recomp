@@ -11,7 +11,7 @@ endif()
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
 set(RECOMP_GENERATED "${CMAKE_BINARY_DIR}/generated/${RECOMP_GAME}")
 file(GLOB_RECURSE RECOMP_GENERATOR_INPUTS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/tools/*.py" "${CMAKE_SOURCE_DIR}/tools/*.toml"
+    "${CMAKE_SOURCE_DIR}/tools/*.py" "${CMAKE_SOURCE_DIR}/tools/*.toml" "${CMAKE_SOURCE_DIR}/tools/symbols.json"
     "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.json" "${RECOMP_GAME_DIR}/*.py")
 # Generate during configure to discover the exact set of split CPU sources.
 # The content cache makes repeat configures cheap and detects deleted outputs.

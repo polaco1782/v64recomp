@@ -12,6 +12,7 @@ import sys
 from common import RecompError, load_profile, load_rom, load_metadata, write_json
 from discover import discover
 from translate import translate
+from symbol_database import DATABASE
 
 PROJECT = Path(__file__).resolve().parents[1]
 GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us')
@@ -46,7 +47,7 @@ def generate(game: str, output: Path, report_only: bool) -> None:
     rom, _ = load_rom(profile['game']['rom'],profile['game']['rom_sha1'],profile['game']['rom_size'])
     original_rom=rom
     # Cache against ROM, Python implementation, and all checked game metadata.
-    inputs = sorted([*Path(__file__).parent.glob('*.py'),*Path(__file__).parent.glob('*.toml'),
+    inputs = sorted([*Path(__file__).parent.glob('*.py'),*Path(__file__).parent.glob('*.toml'),DATABASE,
                      *base.glob('*.toml'),*base.glob('*.json'),*base.glob('*.py')])
     digest = hashlib.sha256(rom)
     for path in inputs:

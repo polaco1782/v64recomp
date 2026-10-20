@@ -29,6 +29,7 @@ These are the investigation tools and when to use them:
 | GDB | Stop at runtime failures, inspect host and guest state, catch native faults, interrupt hangs, set watchpoints. |
 | `tools/diagnose_rom.py` | Collect verified mapping, coverage, callback, crash and RSP evidence for one ROM issue; see [the model workflow](rom-diagnostics.md). |
 | `tools/compare_native_hooks.py` | Report potential SDK variants for full-body/ABI review against exact catalog bodies in private reference ROMs; never installs hooks. |
+| `tools/inspect_sdk_symbols.py` | Match SDK signatures in the verified analysis image and report names, confidence, caller evidence, hardware-access candidates and native-handler coverage without changing discovery. |
 | GNU binutils: `nm`, `addr2line`, `objdump` | Find missing host symbols and resolve native addresses against the matching executable. |
 | `tools/inspect_rom.py` | Identify a ROM before a profile exists; show normalized hashes, header, bytes, disassembly and range hashes. |
 | `tools/import_rom.py` | Normalize and import a ROM after its profile pins size and SHA-1. |
@@ -200,10 +201,27 @@ Ordinary OS/library routines should use the shared
 prefix and requires the SHA-256 of the **complete routine body**. Do not copy
 another ROM's addresses or accept a matching prologue as identification.
 
+Before manually naming an SDK routine, run the diagnostic symbol scanner:
+
+```sh
+.venv/bin/python tools/inspect_sdk_symbols.py --game newgame-us \
+  --metadata build/newgame-us-report/symbols.json \
+  --output build/newgame-us-report/sdk-symbols
+```
+
+Read `report.txt` and `report.json`; `symbols.map` is a section-qualified map of
+unambiguous identification candidates. The default scans discovered entries.
+`--scope sections` can locate unvisited helpers but also scans data/unowned
+bytes, which must not become roots merely because a CRC matches. A missing
+registered handler is not proof of a bug: inspect hardware behavior and whether
+a higher-level caller already provides a native boundary. See
+[SDK scanning and confidence](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps).
+
 For an unrecognized routine: inspect its entire body and callers, establish the
 ABI and return behavior, check whether the shared runtime already implements it,
-then add the verified compiler/SDK variant to `tools/native_hooks.toml`. A catalog
-record includes `symbol`, `handler`, `body_size`, `sha256` and `expected_words`.
+then add the verified compiler/SDK variant to that symbol's `native_signatures`
+in `tools/symbols.json`. Each native record includes `handler`, `body_size`,
+`sha256` and `expected_words`; the containing key supplies the symbol name.
 Use the range hash from `inspect_rom.py --offset ... --size <full-body-size>`;
 the size must come from analysis. A 16-byte callback fingerprint is insufficient
 for a native replacement. Implement missing shared services in `runtime/` with

@@ -326,7 +326,8 @@ stacks and generated functions. See [CPU profiling](profiling.md).
 | Game mappings and generation hooks | `games/<game>/profile.toml`, `games/<game>/generate.py`, [adding a ROM](adding-a-rom.md) |
 | Generation orchestration | [`tools/generate_game.py`](../tools/generate_game.py), [`cmake/Game.cmake`](../cmake/Game.cmake) |
 | Discovery and translation | [`tools/discover.py`](../tools/discover.py), [`tools/translate.py`](../tools/translate.py), [`tools/emit.py`](../tools/emit.py), [recompilation](recompilation.md) |
-| Native hook matching | [`tools/native_hooks.toml`](../tools/native_hooks.toml), [native hooks](native-hooks.md) |
+| Native hook matching | [`tools/symbols.json`](../tools/symbols.json), [native hooks](native-hooks.md) |
+| Diagnostic SDK symbols and handler coverage | [`tools/inspect_sdk_symbols.py`](../tools/inspect_sdk_symbols.py), [SDK report interpretation](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps) |
 | Optional embedded content | [`tools/package_rom.py`](../tools/package_rom.py), [ROM content packaging](rom-packaging.md) |
 | Optional executable compression | [`cmake/PackUPX.cmake`](../cmake/PackUPX.cmake) |
 | Runtime entry and boot | `games/<game>/debug/app.c` or `release/app.c`, [`runtime/game.c`](../runtime/game.c), [`runtime/bootstrap.c`](../runtime/bootstrap.c) |

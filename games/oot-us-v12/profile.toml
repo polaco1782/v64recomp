@@ -5,7 +5,6 @@ boundaries = [
   {symbol = "func_800035e0", vram = 0x800035e0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40846000, 0x0]},
   {symbol = "func_800035f0", vram = 0x800035f0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40026000, 0x3e00008]},
   {symbol = "func_80003f90", vram = 0x80003f90, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40085000, 0x310900ff]},
-  {symbol = "func_80004230", vram = 0x80004230, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40085000, 0x2409001e]},
   {symbol = "func_80004fc0", vram = 0x80004fc0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40845800, 0x3e00008]},
   {symbol = "func_80005bc0", vram = 0x80005bc0, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40085000, 0x2409001f]},
   {symbol = "func_80005c70", vram = 0x80005c70, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40026800, 0x3e00008]},

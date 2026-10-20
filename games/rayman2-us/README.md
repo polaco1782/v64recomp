@@ -83,7 +83,7 @@ come from these producers:
   in a stack record. `0x800adf44` copies that record to `0x800c95ec..0x800c961c`;
   `0x800ac41c` invokes its first twelve methods to obtain object parameters.
 
-Ordinary SDK calls use full-body fingerprints in `tools/native_hooks.toml`.
+Ordinary SDK calls use full-body fingerprints in `tools/symbols.json`.
 Runtime loaded-section checks and registered indirect-call lookup remain enabled.
 
 ```sh
