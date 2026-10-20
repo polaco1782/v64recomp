@@ -499,7 +499,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         direct_targets = direct_call_targets(registry, hooks)
 
     def location(pc: int, indent: str = '    ') -> str:
-        return f"{indent}RECOMP_TRACK_PC(ctx, UINT32_C(0x{pc:08x}));"
+        return f"{indent}RECOMP_TRACE(runtime, ctx, UINT32_C(0x{pc:08x}));"
 
     def emit_body(instruction: Instruction, indent: str = '    ') -> list[str]:
         relocated = instruction.pc in function.get('relocation_pcs', [])
@@ -514,7 +514,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 location(instruction.pc, indent), *([indent + statement] if statement else [])]
 
     def call_location(indent: str) -> str:
-        return location(i.pc, indent)
+        return f"{indent}RECOMP_TRACK_PC(ctx, UINT32_C(0x{i.pc:08x}));"
 
     def fallthrough(address: int, indent: str = '    ') -> str:
         return f'{indent}recomp_fail("fell off generated function", UINT32_C(0x{address:08x}));'

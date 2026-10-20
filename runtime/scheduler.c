@@ -50,12 +50,35 @@ struct RecompScheduler {
     void *host_userdata;
 #ifdef RECOMP_DEBUG
     uint64_t debug_next_status;
+    uint64_t debug_interrupt_events;
 #endif
 };
 
 static _Thread_local NativeThread *guest_thread;
 
 #ifdef RECOMP_DEBUG
+RecompDebugStats recomp_debug_stats(Runtime *rt) {
+    RecompDebugStats stats = {.ops = rt->debug_ops};
+    if (rt->platform) stats.vis = recomp_vi_state(rt).retraces;
+    if (rt->tasks) {
+        RecompTaskStats tasks = recomp_task_stats(rt);
+        stats.rsp_tasks = tasks.submissions;
+        stats.pending_tasks = tasks.pending_records;
+    }
+    if (rt->debug_audio_snapshot)
+        rt->debug_audio_snapshot(rt->debug_audio_userdata, &stats.audio);
+    if (rt->scheduler) {
+        stats.interrupt_events = rt->scheduler->debug_interrupt_events;
+        for (NativeThread *t = rt->scheduler->threads; t; t = t->next) {
+            if (t->state == RECOMP_DEAD) continue;
+            stats.threads++;
+            if (t->state == RECOMP_READY || t->state == RECOMP_RUNNING) stats.runnable++;
+            if (t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV) stats.waiting++;
+        }
+    }
+    return stats;
+}
+
 static const char *debug_state_name(RecompThreadState state) {
     static const char *const names[] = {"stopped", "ready", "running", "wait_send", "wait_recv", "dead"};
     return names[state];
@@ -356,6 +379,9 @@ static void deliver_events(Runtime *rt) {
         }
         atomic_flag_clear_explicit(&s->pending_lock, memory_order_release);
         if (!present) break;
+#ifdef RECOMP_DEBUG
+        s->debug_interrupt_events++;
+#endif
         if (s->events[event].queue)
             (void)recomp_queue_send(rt, s->events[event].queue->object, s->events[event].message, RECOMP_MESG_NOBLOCK, false);
     }

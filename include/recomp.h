@@ -51,6 +51,9 @@ typedef struct RecompClock RecompClock;
 typedef struct RecompPlatform RecompPlatform;
 typedef struct RecompTasks RecompTasks;
 typedef struct RecompIO RecompIO;
+#ifdef RECOMP_DEBUG
+struct RecompDebugAudioStats;
+#endif
 typedef void (*RecompFunction)(Runtime *, MipsContext *);
 /* Optional native loader for game-specific virtual memory. Return false for
  * addresses it does not own; handled spans must resolve to contiguous RDRAM. */
@@ -108,10 +111,22 @@ struct Runtime {
     RecompPageMapping page_mappings[32];
 #ifdef RECOMP_DEBUG
     /* Shared crash history; guest execution is serialized by the scheduler. */
+    uint64_t debug_ops; /* Executed translated instructions; serialized guest access. */
+    /* Optional owner-thread sampler; never waits for pending audio synthesis. */
+    void *debug_audio_userdata;
+    void (*debug_audio_snapshot)(void *, struct RecompDebugAudioStats *);
     uint32_t recent_calls[128];
     unsigned recent_call_next, recent_call_count;
 #endif
 };
+
+/* Count instructions separately from diagnostic call-site PC restoration. */
+#ifdef RECOMP_DEBUG
+#define RECOMP_TRACE(runtime, context, address) \
+    ((runtime)->debug_ops++, RECOMP_TRACK_PC(context, address))
+#else
+#define RECOMP_TRACE(runtime, context, address) ((void)0)
+#endif
 
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t,
                          const bool *, size_t);

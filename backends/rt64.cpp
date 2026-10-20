@@ -6,6 +6,9 @@
 #include "rhi/rt64_render_hooks.h"
 #include "imgui.h"
 #include "textures.h"
+#ifdef RECOMP_DEBUG
+#include "debug_overlay.h"
+#endif
 #include "../texture_scan/scanner.h"
 #include "../texture_scan/capture.h"
 #define Status int
@@ -36,6 +39,11 @@ struct RecompRenderer {
     bool custom_gbi=false;
     std::thread::id owner=std::this_thread::get_id();
     std::unique_ptr<RT64::Application> app;
+#ifdef RECOMP_DEBUG
+    std::unique_ptr<RecompDebugOverlay> debug_overlay;
+    RecompDebugGeometryStats debug_geometry;
+    uint64_t debug_workload_id=0;
+#endif
     std::vector<uint8_t> ram=std::vector<uint8_t>(8*1024*1024);
     std::array<uint8_t,64> header{};
     std::array<uint8_t,4096> dmem{},imem{};
@@ -79,12 +87,17 @@ static void trace_frame(RecompRenderer *s,const char *event,uint64_t value=0) {
         static_cast<unsigned long long>(monotonic_ns()),event,static_cast<unsigned long long>(value))<0)
         recomp_fail("cannot write renderer frame trace",0);
 }
-static void display_draw(plume::RenderCommandList *,plume::RenderFramebuffer *) {
+static void display_draw(plume::RenderCommandList *list,plume::RenderFramebuffer *) {
     RecompRenderer *s=active_renderer;
     uint64_t now=monotonic_ns();
     if(s->display_frames.load()==0)s->first_display_ns=now;
     s->last_display_ns=now;s->display_frames++;
     trace_frame(s,"display");
+#ifdef RECOMP_DEBUG
+    if(s->debug_overlay)s->debug_overlay->draw(list,s->display_frames.load(),now);
+#else
+    (void)list;
+#endif
 }
 static void interrupts() {
     RecompRenderer *s=active_renderer;
@@ -97,6 +110,16 @@ static void interrupts() {
         if(s->dp_seen)
             recomp_fail("invalid RT64 DP receipt",0);
         s->dp_seen=true;s->stats.dp_callbacks++;
+#ifdef RECOMP_DEBUG
+        // Full sync has flushed every split DL into this submitted workload.
+        // The parser owns the ring cursor; these descriptors are read-only to
+        // the rendering workers. Ignore repeats while the inspector is paused.
+        const auto &workload=s->app->workloadQueue->workloads[s->app->state->lastWorkloadIndex];
+        if(workload.workloadId!=s->debug_workload_id) {
+            s->debug_geometry=recomp_debug_geometry(workload);
+            s->debug_workload_id=workload.workloadId;
+        }
+#endif
     }
     if(bits&1) {
         if(s->sp_seen)
@@ -228,6 +251,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->app->presentQueue->presentWaitEnabled=false;
         s->app->appWindow->sdlWindow=s->window;
 #ifdef RECOMP_DEBUG
+        s->debug_overlay=std::make_unique<RecompDebugOverlay>(*s->app);
         s->app->appWindow->sdlCheckFilterInstallation();
 #endif
         s->textureFiles.configure(*s->app->textureCache);
@@ -270,6 +294,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     } catch(const std::exception &e) {
         std::fprintf(stderr,"RT64 setup: %s\n",e.what());
         SDL_SetEventFilter(nullptr,nullptr);
+#ifdef RECOMP_DEBUG
+        s->debug_overlay.reset();
+#endif
         s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);active_renderer=nullptr;
         if(s->frame_trace)std::fclose(s->frame_trace);
         SDL_DestroyWindow(s->window);SDL_Quit();return nullptr;
@@ -302,6 +329,10 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     s->textureCapture.reset();
     if(s->textureScan)s->textureScan->stop();
     SDL_SetEventFilter(nullptr,nullptr);
+#ifdef RECOMP_DEBUG
+    s->wait_texture_reload();
+    s->debug_overlay.reset();
+#endif
     if(s->ready) { s->wait_workers();s->app->end(); }
     if(std::getenv("RECOMP_AUDIO_TRACE"))std::fprintf(stderr,
         "Renderer timing: graphics_tasks=%llu graphics_job_ms=%.3f presentations=%llu present_job_ms=%.3f display_frames=%llu\n",
@@ -346,6 +377,7 @@ bool recomp_renderer_present(RecompRenderer *s) {
     s->sync_vi();SDL_PumpEvents();
     trace_frame(s,"host_present",s->vi.origin);
 #ifdef RECOMP_DEBUG
+    s->debug_overlay->update(s->rt,{s->debug_geometry,s->stats.graphics_tasks,s->stats.submit_ns});
     s->app->appWindow->sdlCheckFilterInstallation();
 #endif
     s->presenting=true;s->busy=recomp_worker_submit(s->worker,process_present,s);

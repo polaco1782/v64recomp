@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "recomp_audio.h"
+#include "runtime_debug.h"
 #include "hle_internal.h"
 #include "hle_external.h"
 #include "ucodes.h"
@@ -33,6 +34,9 @@ struct RecompAudio {
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile;
     unsigned prebuffer_ms;
+#ifdef RECOMP_DEBUG
+    uint64_t debug_completed_tasks, debug_completed_ns;
+#endif
 };
 static uint64_t timer_ns(void) {
     struct timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))abort();
@@ -316,6 +320,24 @@ static bool ai_start(Runtime *rt,void *opaque,uint32_t guest,unsigned bytes,unsi
     free(pcm);free(wav);return okay;
 }
 static void service_audio(Runtime *,void *,bool);
+#ifdef RECOMP_DEBUG
+static void debug_audio_snapshot(void *opaque,RecompDebugAudioStats *out) {
+    RecompAudio *a=opaque;
+    owner(a);
+    /* Worker-owned stats may be changing. Read only the completion cache and
+     * owner-owned playback fields; sampling must not drain the DSP worker. */
+    *out=(RecompDebugAudioStats){
+        .tasks=a->debug_completed_tasks,.synth_ns=a->debug_completed_ns,
+        .underruns=a->stats.queue_underruns,.available=true,
+        .playback=a->playback && a->enabled,.device_open=a->device && a->stats.frequency,
+        .queue_ms=a->device && a->stats.frequency
+            ? SDL_GetQueuedAudioSize(a->device)*1000.0/(a->stats.frequency*4.0) : 0.0};
+}
+static void debug_audio_completed(RecompAudio *a) {
+    a->debug_completed_tasks=a->stats.tasks;
+    a->debug_completed_ns=a->stats.synth_ns;
+}
+#endif
 RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
     if(!rt || !rt->platform || !config
        || config->prebuffer_ms>200
@@ -350,11 +372,21 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
         a->registered=recomp_task_service_add(rt,service_audio,a);
         if(!a->registered) { recomp_audio_destroy(a);return NULL; }
     }
+#ifdef RECOMP_DEBUG
+    rt->debug_audio_userdata=a;
+    rt->debug_audio_snapshot=debug_audio_snapshot;
+#endif
     return a;
 }
 void recomp_audio_destroy(RecompAudio *a) {
     if(!a)return;
     owner(a);service_audio(a->rt,a,true);
+#ifdef RECOMP_DEBUG
+    if(a->rt->debug_audio_userdata==a) {
+        a->rt->debug_audio_snapshot=NULL;
+        a->rt->debug_audio_userdata=NULL;
+    }
+#endif
     recomp_task_service_remove(a->rt,a);
     recomp_worker_destroy(a->worker);
     free(a->before);free(a->ram);
@@ -407,6 +439,9 @@ static void service_audio(Runtime *rt,void *opaque,bool wait) {
     if(!a->busy || (!wait && !recomp_worker_ready(a->worker)))return;
     a->busy=false;
     recomp_worker_finish(a->worker);
+#ifdef RECOMP_DEBUG
+    debug_audio_completed(a);
+#endif
     recomp_worker_merge(rt,a->before,a->ram);
     if(!recomp_task_complete(rt,a->pending.token,RECOMP_SP_DONE))
         recomp_fail("invalid audio worker completion",a->pending.guest_address);
@@ -415,6 +450,9 @@ void recomp_audio_execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     owner(a);service_audio(a->rt,a,true);
     a->dsp_rt=*a->rt;a->hle.dram=a->rt->rdram;
     execute_abi1(a,list,bytes);
+#ifdef RECOMP_DEBUG
+    debug_audio_completed(a);
+#endif
 }
 static bool microcode_matches(RecompAudio *a,uint32_t address,unsigned bytes,const char *hex) {
     uint8_t *data=malloc(bytes);if(!data)return false;

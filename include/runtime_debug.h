@@ -4,7 +4,26 @@
 #include "recomp.h"
 #include <inttypes.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef RECOMP_DEBUG
+typedef struct RecompDebugAudioStats {
+    uint64_t tasks, synth_ns, underruns;
+    double queue_ms;
+    bool available, playback, device_open;
+} RecompDebugAudioStats;
+
+typedef struct RecompDebugStats {
+    uint64_t ops, interrupt_events, vis, rsp_tasks;
+    size_t pending_tasks;
+    unsigned threads, runnable, waiting;
+    RecompDebugAudioStats audio;
+} RecompDebugStats;
+/* Snapshot only while owning the serialized guest execution token. */
+RecompDebugStats recomp_debug_stats(Runtime *);
+
 /* All logging arguments and counters disappear from release builds. Counters
  * belong to each call site and host thread; guest pthreads execute serially. */
 void recomp_debug_log(const char *category, const char *format, ...)
@@ -36,6 +55,10 @@ bool recomp_debug_current_thread(Runtime *, int32_t *id, uint32_t *object);
 #define RECOMP_WATCH_QUEUE(...) false
 #define RECOMP_LOG_SAMPLED(...) ((void)0)
 #define RECOMP_TRACE_OS(...) ((void)0)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

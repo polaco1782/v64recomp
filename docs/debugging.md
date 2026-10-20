@@ -27,6 +27,33 @@ Controller Pak initialization reports the absent accessory.
 Once per second while the scheduler runs, status lines show thread states, VI
 retraces/framebuffer, input reads, and EEPROM counters.
 
+Rendered Debug builds also show a compact, 12-pixel green overlay at the top
+right, without capturing input. It displays presentation FPS, translated MIPS
+operations per second and total operations, interrupt events processed by the
+scheduler, VI retraces, live guest threads (including runnable and waiting
+counts), and submitted RSP tasks. It also shows triangles and recorded draw
+calls in the latest completed RT64 workload, graphics display-list tasks/second
+(`DL/s`), audio-list tasks/second (`AL/s`), pending RSP tasks, average graphics
+job wall time per DL and synthesis time per AL, audio queue depth
+in milliseconds, and playback underruns. Rates and timings use half-second
+windows. Graphics time includes RT64 backpressure and any GPU waits inside the
+job; it is not a GPU timer or exclusive CPU time. Synthesis time covers DSP
+execution. Neither includes time waiting for the native worker to start a job.
+`frame` means a game workload completed by DP full sync, including preceding
+split display lists, rather than an interpolated display frame. Triangle counts
+exclude rectangle expansion and geometry rejected before RT64 records it; they
+are not a count of triangles visible on screen. Draw counts describe RT64's
+recorded game calls, rather than GPU API draws. DL/AL counts describe RSP tasks,
+rather than nested display-list calls or individual audio commands.
+Audio sampling uses completed synthesis counters without waiting for pending
+work. The queue reads `off` when playback is muted/disabled, `starting` before a
+device/rate is available, and `n/a` when no audio backend is attached.
+Totals accumulate from startup. Operations
+include executed nops and delay slots, exclude annulled slots, and exclude work
+inside native hooks. IRQ events count drained libultra events, even when unbound;
+they are separate from VI retraces, which may coalesce before event delivery.
+The overlay is independent of the F1 inspector and absent from Release builds.
+
 Frequent events print their first eight occurrences and then powers of two per
 call site and host thread; OS entries include the cumulative call count. Set
 `RECOMP_DEBUG_FULL=1` to print every sampled event. Save operations and thread
