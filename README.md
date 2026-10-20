@@ -207,6 +207,11 @@ translation fixes belong in the generator or checked metadata.
 
 ## Controls and data
 
+Gamepads use an analog left stick, right stick for C-buttons, A/X for N64 A/B,
+left trigger for Z, right trigger/bumper for R, and Menu/Start for Start. The
+D-pad remains the N64 D-pad. See [Steam Deck support](docs/steamdeck.md) for the
+selectable Steam Input template and installation instructions.
+
 Arrow keys move the stick; A/X/Z are N64 A/B/Z; S is Start; C/V are L/R;
 I/J/K/L are C buttons. Escape or window close exits. F5 reloads texture packs
 and toggles original/replacement textures. Packs default to

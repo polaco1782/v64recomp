@@ -137,18 +137,55 @@ Mode. Leave forced compatibility tools disabled for this native build; Proton
 is for Windows executables. This package does not target the older Sniper runtime.
 The launcher selects X11/Xwayland, as used by the current RT64 adapter.
 
-The current input backend reads keyboard keys. Configure Steam Input to send:
+The shared SDL gamepad backend reads the left stick as **analog input**, with a
+12% radial deadzone and continuous travel from gentle movement to full speed.
+Keep Steam Input enabled and select its built-in **Gamepad** template for the
+basic controls. Mapping the stick to arrow keys removes analog movement.
 
-| Deck control | Keyboard key | N64 control |
-| --- | --- | --- |
-| Left stick / D-pad | Arrow keys | Stick |
-| A | A | A |
-| X | X | B |
-| Right trigger | Z | Z |
-| Menu | S | Start |
-| Left / right bumper | C / V | L / R |
-| Right stick directions | I / J / K / L | C up / left / down / right |
-| A spare back button | Escape | Exit |
+The package also includes a selectable **v64recomp - N64** Steam Input template.
+From the extracted package in Desktop Mode run:
+
+```sh
+./install-controls.sh
+```
+
+Restart Steam, open the non-Steam game's **Controller settings → current layout
+→ Templates**, select **v64recomp - N64**, then **Apply Layout**. The installer
+detects native/Flatpak Steam and copies only our VDF into its templates directory.
+Use `./install-controls.sh --steam-dir PATH` for a different Steam installation.
+It saves a backup when replacing an edited copy of our template; it does not
+modify other layouts. No sudo or Python is needed on the Deck. Steam updates
+may remove custom templates; rerun the installer if the layout disappears.
+Launch the game's shortcut through Steam in Desktop Mode or Game Mode so Steam
+activates that layout for the Deck controls.
+
+| Deck control | N64 control |
+| --- | --- |
+| Left stick | Analog stick |
+| D-pad | N64 D-pad |
+| A / X | A / B |
+| B / Y | C-down / C-left |
+| Left trigger | Z (OOT targeting) |
+| Right trigger / bumper | R (OOT shield) |
+| Left bumper | L |
+| Menu | Start |
+| Right stick / right trackpad directions | C-buttons |
+| Right stick click | C-up |
+| L4 / R4 | C-up / C-down |
+| L5 / R5 | C-left / C-right |
+| Hold View for 1.5 seconds | Exit normally |
+
+The custom template sets Steam's stick inner deadzone to zero so the app applies
+the deadzone once. C-buttons and triggers use separate press/release thresholds
+to avoid flicker near their activation point. Controllers can be connected or
+removed while running; keyboard controls remain available, and losing window
+focus releases game input. The first recognized gamepad controls port 1.
+See the shipped `steam-input/README.md` for layout details and customization.
+
+The VDF format is checked against Steam's installed Deck Gamepad template;
+installation follows [EmuDeck's template workflow](https://emudeck.github.io/community-creations/steamos/community-creations/#how-to-download-steam-input-profiles).
+The Steam client must still load and apply the layout on the Deck; local tests
+of SDL virtual controllers do not establish physical Deck gameplay acceptance.
 
 The first run can spend time compiling Vulkan pipelines. Check actual play,
 audio, controls, save persistence and frame pacing on the Deck before treating

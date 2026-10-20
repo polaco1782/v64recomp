@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "input.h"
 #include "hle/rt64_application.h"
 #include "hle/rt64_workload_queue.h"
 #include "hle/rt64_present_queue.h"
@@ -50,6 +51,7 @@ struct RecompRenderer {
     bool sp_seen=false,dp_seen=false;
     bool ready=false;
     SDL_Window *window=nullptr;
+    std::unique_ptr<RecompInput,decltype(&recomp_input_destroy)> input{nullptr,recomp_input_destroy};
     explicit RecompRenderer(Runtime *runtime):rt(runtime) {}
     void check_owner() {
         if(owner!=std::this_thread::get_id())recomp_fail("RT64 callback on a non-owner thread",0);
@@ -263,6 +265,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
             recomp_worker_destroy(s->worker);s->worker=nullptr;
             throw std::runtime_error("graphics worker initialization failed");
         }
+        s->input.reset(recomp_input_create());
         return s.release();
     } catch(const std::exception &e) {
         std::fprintf(stderr,"RT64 setup: %s\n",e.what());
@@ -313,6 +316,7 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     SDL_Window *window=s->window;
     s->app.reset();RT64::SetRenderHooks(nullptr,nullptr,nullptr);active_renderer=nullptr;
     if(s->frame_trace && std::fclose(s->frame_trace))recomp_fail("cannot close renderer frame trace",0);
+    s->input.reset();
     if(window)SDL_DestroyWindow(window);
     SDL_Quit();delete s;
 }
@@ -374,6 +378,7 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
 #endif
     }
     *pad={};pad->connected=true;
+    if(!(SDL_GetWindowFlags(s->window)&SDL_WINDOW_INPUT_FOCUS))return true;
 #ifdef RECOMP_DEBUG
     {
         const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
@@ -392,6 +397,7 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
     pad->stick_x=(keys[SDL_SCANCODE_RIGHT]-keys[SDL_SCANCODE_LEFT])*80;
     pad->stick_y=(keys[SDL_SCANCODE_UP]-keys[SDL_SCANCODE_DOWN])*80;
     if(pad->stick_x && pad->stick_y) { pad->stick_x=pad->stick_x*7/10;pad->stick_y=pad->stick_y*7/10; }
+    recomp_input_poll(s->input.get(),pad);
     return true;
 }
 #ifdef RECOMP_DEBUG

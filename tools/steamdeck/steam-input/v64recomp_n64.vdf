@@ -1,0 +1,403 @@
+"controller_mappings"
+{
+    "version" "3"
+    "revision" "1"
+    "title" "v64recomp - N64"
+    "description" "Analog movement; A=N64 A, X=N64 B, left trigger=Z, right trigger=R, right stick=C-buttons. Back buttons: L4=C-up, R4=C-down, L5=C-left, R5=C-right. Hold View for 1.5 seconds to exit."
+    "url" "template://v64recomp_n64.vdf"
+    "export_type" "template"
+    "controller_type" "controller_neptune"
+    "major_revision" "0"
+    "minor_revision" "1"
+    "Timestamp" "0"
+    "group"
+    {
+        "id" "0"
+        "mode" "four_buttons"
+        "inputs"
+        {
+            "button_a"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button A"
+                        }
+                    }
+                }
+            }
+            "button_b"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button B"
+                        }
+                    }
+                }
+            }
+            "button_x"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button X"
+                        }
+                    }
+                }
+            }
+            "button_y"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button Y"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    "group"
+    {
+        "id" "1"
+        "mode" "dpad"
+        "inputs"
+        {
+            "dpad_north"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button DPAD_UP"
+                        }
+                    }
+                }
+            }
+            "dpad_south"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button DPAD_DOWN"
+                        }
+                    }
+                }
+            }
+            "dpad_west"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button DPAD_LEFT"
+                        }
+                    }
+                }
+            }
+            "dpad_east"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button DPAD_RIGHT"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    "group"
+    {
+        "id" "2"
+        "mode" "joystick_move"
+        "inputs"
+        {
+            "click"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button JOYSTICK_LEFT"
+                        }
+                    }
+                }
+            }
+        }
+        "settings"
+        {
+            "deadzone_inner_radius" "0"
+        }
+    }
+    "group"
+    {
+        "id" "3"
+        "mode" "joystick_move"
+        "inputs"
+        {
+            "click"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button JOYSTICK_RIGHT"
+                        }
+                    }
+                }
+            }
+        }
+        "settings"
+        {
+            "deadzone_inner_radius" "0"
+        }
+    }
+    "group"
+    {
+        "id" "4"
+        "mode" "trigger"
+        "inputs"
+        {
+        }
+        "settings"
+        {
+            "output_trigger" "1"
+        }
+    }
+    "group"
+    {
+        "id" "5"
+        "mode" "trigger"
+        "inputs"
+        {
+        }
+        "settings"
+        {
+            "output_trigger" "2"
+        }
+    }
+    "group"
+    {
+        "id" "6"
+        "mode" "switches"
+        "inputs"
+        {
+            "button_escape"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button START"
+                        }
+                    }
+                }
+            }
+            "button_menu"
+            {
+                "activators"
+                {
+                    "Long_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press ESCAPE"
+                        }
+                        "settings"
+                        {
+                            "long_press_time" "1500"
+                        }
+                    }
+                }
+            }
+            "left_bumper"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button SHOULDER_LEFT"
+                        }
+                    }
+                }
+            }
+            "right_bumper"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "xinput_button SHOULDER_RIGHT"
+                        }
+                    }
+                }
+            }
+            "button_back_left_upper"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press I"
+                        }
+                    }
+                }
+            }
+            "button_back_right_upper"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press K"
+                        }
+                    }
+                }
+            }
+            "button_back_left"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press J"
+                        }
+                    }
+                }
+            }
+            "button_back_right"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press L"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    "group"
+    {
+        "id" "7"
+        "mode" "dpad"
+        "inputs"
+        {
+            "dpad_north"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press I"
+                        }
+                    }
+                }
+            }
+            "dpad_south"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press K"
+                        }
+                    }
+                }
+            }
+            "dpad_west"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press J"
+                        }
+                    }
+                }
+            }
+            "dpad_east"
+            {
+                "activators"
+                {
+                    "Full_Press"
+                    {
+                        "bindings"
+                        {
+                            "binding" "key_press L"
+                        }
+                    }
+                }
+            }
+        }
+        "settings"
+        {
+            "requires_click" "0"
+        }
+    }
+    "preset"
+    {
+        "id" "0"
+        "name" "Default"
+        "group_source_bindings"
+        {
+            "0" "button_diamond active"
+            "1" "dpad active"
+            "2" "joystick active"
+            "3" "right_joystick active"
+            "4" "left_trigger active"
+            "5" "right_trigger active"
+            "6" "switch active"
+            "7" "right_trackpad active"
+        }
+    }
+}

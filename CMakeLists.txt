@@ -89,7 +89,7 @@ if(RECOMP_BUILD_RT64)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     include(cmake/SharedRT64.cmake)
     find_package(SDL2 REQUIRED)
-    add_library(recomp_renderer STATIC backends/rt64.cpp backends/textures.cpp
+    add_library(recomp_renderer STATIC backends/rt64.cpp backends/textures.cpp backends/input.c
         texture_scan/scanner.cpp texture_scan/capture.cpp texture_scan/pack.cpp texture_scan/source.cpp)
     target_link_libraries(recomp_renderer PUBLIC recomp_runtime RecompRT64::texture_hashing SDL2::SDL2)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")

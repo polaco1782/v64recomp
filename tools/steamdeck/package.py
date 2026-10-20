@@ -102,6 +102,9 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
     --crash-dir "$here/local/crashes/{game}" "$@"
 ''')
     launcher.chmod(0o755)
+    shutil.copy2(ROOT / "tools/steamdeck/install-controls.sh", destination)
+    (destination / "install-controls.sh").chmod(0o755)
+    shutil.copytree(ROOT / "tools/steamdeck/steam-input", destination / "steam-input")
     shutil.copy2(ROOT / "LICENSE", destination)
     shutil.copy2(ROOT / "THIRD_PARTY_NOTICES.md", destination)
     shutil.copytree(ROOT / "licenses", destination / "licenses")
@@ -116,8 +119,12 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
         "Requires x86_64 Linux with glibc 2.36+, GCC 12+ runtime (GLIBCXX_3.4.30),\n"
         "X11/Xwayland and a Vulkan driver.\n"
         "For Steam Deck, add launch.sh as a non-Steam game with compatibility tools disabled.\n"
-        "Map Steam Input to keyboard keys: arrows = stick, A/X/Z = N64 A/B/Z,\n"
-        "S = Start, C/V = L/R, I/J/K/L = C up/left/down/right, Escape = exit.\n"
+        "Native analog input: select the Gamepad template in Steam Input.\n"
+        "For the v64recomp - N64 template, run ./install-controls.sh and restart Steam.\n"
+        "Then select Controller settings > current layout > Templates > v64recomp - N64.\n"
+        "A/X = N64 A/B; left trigger = Z; right trigger = R; right stick = C-buttons.\n"
+        "Menu = Start; D-pad = N64 D-pad; see steam-input/README.md for all controls.\n"
+        "Keyboard remains available: arrows = stick, A/X/Z = N64 A/B/Z, Escape = exit.\n"
         "The GLIBC-REQUIREMENTS.txt file records every bundled ELF's requirement.\n"
         "CPU profiling: ./launch.sh --profile deck-profile --profile-delay 20 --profile-seconds 30\n"
         "Use a new directory name for each capture. The game keeps running after capture.\n"
