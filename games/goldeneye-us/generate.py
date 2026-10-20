@@ -115,6 +115,19 @@ def validate_idle_loop(rom: bytes, profile: dict) -> None:
     words=[int.from_bytes(rom[offset+i*4:offset+i*4+4],'big') for i in range(3)]
     if words!=boot['idle_words'] or words!=[0xafa40000,0x1000ffff,0]:
         raise RecompError('GoldenEye idle-loop fingerprint mismatch')
+    # Check the complete osCreateThread argument setup before allowing the
+    # scheduler to park this object instead of executing its empty loop.
+    create=0x70000750
+    region=next((s for s in profile['discovery']['regions']
+                 if s['vram']<=create and create+36<=s['vram']+s['size']),None)
+    if region is None:raise RecompError('GoldenEye idle-thread creation outside mapped code')
+    offset=region['rom_offset']+create-region['vram']
+    expected=[0x3c048006,0x3c067000,0x24c60718,0x2484d490,0x24050001,
+              0x00003825,0xafa20010,0x0c00350c,0xafa00014]
+    if (rom[offset:offset+36]!=b''.join(w.to_bytes(4,'big') for w in expected)
+            or profile['runtime']['idle_thread']!=0x8005d490
+            or idle!=0x70000718 or boot['idle_thread_id']!=1):
+        raise RecompError('GoldenEye idle-thread creation fingerprint mismatch')
 
 
 def validate_inspection(rom: bytes, profile: dict) -> None:

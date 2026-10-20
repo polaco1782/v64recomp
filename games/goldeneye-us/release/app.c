@@ -22,24 +22,13 @@ static uint64_t live_guest_origin;
 static uint32_t interrupt_mask=0x3fff01;
 #include "boot_hooks.h"
 #include "services.h"
-static bool idle_only(Runtime *rt) {
-    RecompThreadSnapshot threads[16];
-    size_t count=recomp_thread_snapshots(rt,threads,16);
-    if(count==16 || recomp_task_stats(rt).pending_records)return false;
-    for(size_t i=0;i<count;i++) {
-        const RecompThreadSnapshot *t=&threads[i];
-        if(t->state!=RECOMP_READY && t->state!=RECOMP_RUNNING)continue;
-        if((uint32_t)t->id!=BOOT_IDLE_THREAD_ID || t->priority!=0 || t->context.pc!=BOOT_IDLE_ENTRY)return false;
-    }
-    return true;
-}
 static void drain(Runtime *rt) {
-    /* Retain the 4096-resume ceiling for useful work, but do not spend it on
-     * the verified empty idle loop while every other guest thread is asleep. */
+    /* Retain bounded bootstrap draining. The checked idle-thread object lets
+     * the scheduler return without dispatching the empty ROM loop. */
     for(unsigned batch=0;batch<256;batch++) {
         RecompRunResult run=recomp_scheduler_run(rt,16);
         require(run!=RECOMP_RUN_COMPLETE,"GoldenEye guest threads ended unexpectedly",BOOT_MAIN_ENTRY);
-        if(idle_only(rt))return;
+        if(run==RECOMP_RUN_WAITING && !recomp_task_stats(rt).pending_records)return;
     }
 }
 static uint64_t guest_now(void *opaque) {
@@ -86,7 +75,12 @@ int main(int argc,char **argv) {
     recomp_lookup(&rt,BOOT_ENTRY)(&rt,&boot);
     uint64_t next_present=monotonic_ns();
     for(uint32_t frame=0;!options.frames || frame<options.frames;frame++) {
-        drain(&rt);
+        if(wall_origin) {
+            /* Live work shares the presentation budget with pacing below. A
+             * 4096-resume drain here can consume several display intervals. */
+            RecompRunResult run=recomp_scheduler_run(&rt,32);
+            require(run!=RECOMP_RUN_COMPLETE,"GoldenEye guest threads ended unexpectedly",BOOT_MAIN_ENTRY);
+        } else drain(&rt);
         if(wall_origin)now_ns=guest_now(NULL);
         else {
             now_ns+=16666667;
@@ -95,7 +89,11 @@ int main(int argc,char **argv) {
         RecompPad pad;if(!recomp_renderer_input(renderer,&pad))break;
         require(recomp_input_set(&rt,0,&pad),"GoldenEye controller update failed",0);
         require(recomp_renderer_present(renderer),"GoldenEye presentation failed",0);
-        next_present+=16666667;recomp_game_sleep(next_present);
+        next_present+=16666667;
+        /* VI/AI deadlines and RSP completions must wake guest work between
+         * display ticks, including after asynchronous graphics submission. */
+        if(wall_origin)recomp_game_pace(&rt,next_present);
+        else recomp_game_sleep(next_present);
     }
     recomp_audio_destroy(audio);recomp_renderer_destroy(renderer);
     recomp_runtime_destroy(&rt);free(rom);

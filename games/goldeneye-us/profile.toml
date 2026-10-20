@@ -99,6 +99,8 @@ idle_words = [0xafa40000, 0x1000ffff, 0x0]
 
 [runtime]
 thread_tail = 0x80027720
+# func_70000738 creates this priority-zero thread with idleproc as its entry.
+idle_thread = 0x8005d490
 run_queue = 0x80027728
 active_queue = 0x8002772c
 running_thread = 0x80027730

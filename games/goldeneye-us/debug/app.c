@@ -55,26 +55,12 @@ static uint32_t interrupt_mask=0x3fff01;
 static uint64_t scheduler_batches;
 static unsigned busy_frames;
 
-static bool idle_only(Runtime *rt) {
-    RecompThreadSnapshot threads[16];
-    size_t count=recomp_thread_snapshots(rt,threads,16);
-    if(count==16 || recomp_task_stats(rt).pending_records)return false;
-    for(size_t i=0;i<count;i++) {
-        const RecompThreadSnapshot *t=&threads[i];
-        if(t->state!=RECOMP_READY && t->state!=RECOMP_RUNNING)continue;
-        /* Debug tracks each instruction in the verified three-word idle body. */
-        if((uint32_t)t->id!=BOOT_IDLE_THREAD_ID || t->priority!=0
-                || t->context.pc<BOOT_IDLE_ENTRY || t->context.pc>=BOOT_IDLE_ENTRY+12)return false;
-    }
-    return true;
-}
 static void drain(Runtime *rt) {
-    /* Retain the 4096-resume ceiling for useful work, but do not spend it on
-     * the verified empty idle loop while every other guest thread is asleep. */
+    /* Keep bootstrap bounded; the scheduler parks the verified idle object. */
     for(unsigned batch=0;batch<256;batch++) {
         RecompRunResult run=recomp_scheduler_run(rt,16);scheduler_batches++;
         require(run!=RECOMP_RUN_COMPLETE,"GoldenEye guest threads ended unexpectedly",BOOT_MAIN_ENTRY);
-        if(idle_only(rt))return;
+        if(run==RECOMP_RUN_WAITING && !recomp_task_stats(rt).pending_records)return;
     }
     busy_frames++;
 }
@@ -196,7 +182,10 @@ int main(int argc,char **argv) {
     RecompPad scripted_pad={.connected=true};
     for(unsigned step=0;!frames || step<frames;step++) {
         uint64_t drain_start=monotonic_ns();
-        drain(&rt);
+        if(live_clock) {
+            RecompRunResult run=recomp_scheduler_run(&rt,32);scheduler_batches++;
+            require(run!=RECOMP_RUN_COMPLETE,"GoldenEye guest threads ended unexpectedly",BOOT_MAIN_ENTRY);
+        } else drain(&rt);
         uint64_t drain_ns=monotonic_ns()-drain_start;
         if(drain_ns>max_drain_ns)max_drain_ns=drain_ns;
         // Finish SDK/queue initialization before exposing elapsed host time.
@@ -224,7 +213,9 @@ int main(int argc,char **argv) {
         }
         deadline.tv_nsec+=16666667;
         if(deadline.tv_nsec>=1000000000){deadline.tv_nsec-=1000000000;deadline.tv_sec++;}
-        while(clock_nanosleep(CLOCK_MONOTONIC,TIMER_ABSTIME,&deadline,NULL)==EINTR){}
+        uint64_t next_present=(uint64_t)deadline.tv_sec*UINT64_C(1000000000)+(uint64_t)deadline.tv_nsec;
+        if(live_clock)recomp_game_pace(&rt,next_present);
+        else recomp_game_sleep(next_present);
     }
     if(input_script){fclose(input_script);input_script=NULL;}
     char final_capture[2048];

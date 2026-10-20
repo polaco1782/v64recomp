@@ -123,9 +123,8 @@ frame-exact diagnostic runs.
 | --- | --- |
 | Quake, Ocarina of Time, Nightmare Creatures | Shared `recomp_game_pace` |
 | Hexen, Duke Nukem: Zero Hour | Shared helper through their parent-folder adapters |
-| Perfect Dark, Conker | Shared helper after the first-graphics wall-clock handoff; synthetic bootstrap retained |
+| Perfect Dark, Conker, GoldenEye | Shared helper after the first-graphics wall-clock handoff; synthetic bootstrap retained |
 | Duke Nukem 64 | Retains calibration-aware draining, detection of the game's clock-poll loop, and Debug sleep accounting |
-| GoldenEye | Retains its custom idle-body detection and startup clock transition; the default helper would repeatedly dispatch its idle loop |
 | Super Mario 64 | Retains queue-aware draining and frame-exact Debug routes; those paths require the existing scheduler return and frame-count behavior |
 | Shadow Man | Retains its existing loop pending verification of an idle-thread object; a default scheduler drain could otherwise spin on its idle thread |
 
@@ -134,6 +133,12 @@ gameplay validation is left to the user. They do not establish a measured
 performance gain for those games. Keep game-specific startup calibration,
 input/replay boundaries, captures and presentation deadline policies in the
 game adapter.
+
+GoldenEye configures its ROM-verified priority-zero idle object so the helper
+can wait without dispatching the empty idle loop. Once its clock follows wall
+time, the app runs a small scheduler batch before presentation and services
+the remaining guest work within the pacing deadline. Synthetic-clock startup
+uses a separate drain capped at 4096 scheduler resumes.
 
 ## External capture with perf
 

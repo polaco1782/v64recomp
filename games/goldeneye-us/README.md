@@ -25,5 +25,11 @@ Guest pthreads use the profile's entry-based names: `n64-main`, `n64-idle`,
 sound code; `n64-audio` is the separate native DSP worker. See
 [CPU profiling](../../docs/profiling.md) for thread counters and function samples.
 
+After the first graphics task, both apps service VI/AI deadlines and worker
+completions between presentations through `recomp_game_pace`. Generation checks
+the empty idle loop and its `osCreateThread` argument setup before registering
+the idle object with the scheduler. Synthetic-clock bootstrap keeps its bounded
+drain.
+
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).
