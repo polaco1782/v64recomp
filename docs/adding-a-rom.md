@@ -27,6 +27,8 @@ These are the investigation tools and when to use them:
 | Tool | Purpose |
 | --- | --- |
 | GDB | Stop at runtime failures, inspect host and guest state, catch native faults, interrupt hangs, set watchpoints. |
+| `tools/diagnose_rom.py` | Collect verified mapping, coverage, callback, crash and RSP evidence for one ROM issue; see [the model workflow](rom-diagnostics.md). |
+| `tools/compare_native_hooks.py` | Report potential SDK variants for full-body/ABI review against exact catalog bodies in private reference ROMs; never installs hooks. |
 | GNU binutils: `nm`, `addr2line`, `objdump` | Find missing host symbols and resolve native addresses against the matching executable. |
 | `tools/inspect_rom.py` | Identify a ROM before a profile exists; show normalized hashes, header, bytes, disassembly and range hashes. |
 | `tools/import_rom.py` | Normalize and import a ROM after its profile pins size and SHA-1. |

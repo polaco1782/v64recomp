@@ -309,6 +309,27 @@ void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
     /* SDK initialization consumes its own SI notifications; none are left for the caller. */
     result(ctx, 0);
 }
+void hook_os_cont_reset(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    RecompIO *s = io(rt);
+    if (!s->initialized) recomp_fail("controller reset before osContInit", ctx->pc);
+    uint32_t status = arg(ctx, 1);
+    recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
+    /* Finish an earlier asynchronous transfer without consuming its event or
+     * discarding its input snapshot. Guest execution is serialized once idle. */
+    while (s->stats.read_pending || s->stats.query_pending) recomp_thread_yield(rt);
+    if (s->max_channels) recomp_ram_address(rt, status, s->max_channels * 4);
+    for (unsigned n = 0; n < s->max_channels; n++) {
+        bool connected = s->live[n].connected;
+        recomp_store(rt, status + n * 4 + 3, connected ? 0 : 8, 1);
+        if (connected) {
+            recomp_store(rt, status + n * 4, 5, 2);
+            recomp_store(rt, status + n * 4 + 2, pak_present(s, n) ? 1 : 0, 1);
+        }
+    }
+    /* osContReset waits for and consumes all of its own SI notifications. */
+    result(ctx, 0);
+}
 void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);

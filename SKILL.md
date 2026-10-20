@@ -244,6 +244,18 @@ owning layer, regenerate/rebuild, and replay beyond the previous failure point.
 For hangs, inspect runnable/blocked threads, queue ownership, event delivery,
 guest time, busy waits, and worker completion rather than raising budgets alone.
 
+Start a focused ROM investigation with `tools/diagnose_rom.py --game <game>
+--metadata <matching-symbols.json> --crash <failure.json> --output <new-build-directory>`.
+It verifies the game's analysis image and aggregates coverage, address ownership,
+callback producers, crash state and task fingerprints. Without `--crash`, it
+selects unsupported-transfer PCs from coverage. Read `report.txt` and
+`summary.json`, then the linked evidence files before changing inputs. Explicit
+`--address` and bounded `--data SECTION:START:END` narrow a callback investigation.
+Follow [the model workflow](docs/rom-diagnostics.md), including artifact freshness,
+loaded-section versus missing-entry diagnosis, complete-table verification and
+exact-trigger replay. `tools/compare_native_hooks.py` can suggest unknown SDK
+variants; its masked matches are hypotheses requiring full-body/ABI review.
+
 For high CPU usage, use the maintained profiling workflows in
 [CPU profiling](docs/profiling.md). Measure a settled **Release** scene; Debug's
 unoptimized game code and diagnostics change the workload. Attribute costs to

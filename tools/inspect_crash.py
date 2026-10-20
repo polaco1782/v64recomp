@@ -37,7 +37,7 @@ def guest_location(location: str) -> str | None:
     return last
 
 
-def inspect_crash(path: Path) -> dict:
+def inspect_crash(path: Path, resolve: bool = True) -> dict:
     report=json.loads(path.read_text())
     if report.get('format_version')!=1:raise ValueError('unsupported crash report format')
     failure=report['failure'];game=report['game']
@@ -62,6 +62,9 @@ def inspect_crash(path: Path) -> dict:
         print(f"Last audio command #{audio['command_count']} at {command['address']}: {command['w1']} {command['w2']}")
     print('Native C stack:')
     for frame in report['native_stack']:
+        if not resolve:
+            print(f"  {frame.get('symbol') or '?'} at {frame['address']} ({frame.get('module') or '?'})")
+            continue
         symbol,location=source_location(frame)
         print(f"  {symbol} at {location}")
         guest=guest_location(location)
@@ -72,13 +75,14 @@ def inspect_crash(path: Path) -> dict:
 
 def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('report',type=Path,nargs='?')
+    parser.add_argument('--no-resolve', action='store_true', help='print recorded frames without using possibly rebuilt binaries or sources')
     args=parser.parse_args();path=args.report
     if path is None:
         directory=Path(__file__).resolve().parents[1]
         reports=[p for base in (directory/'local/crashes',directory/'build') for pattern in ('crash-*.json','*.crash.json') for p in base.rglob(pattern)]
         if not reports:raise ValueError(f'no crash reports in {directory}')
         path=max(reports,key=lambda p:p.stat().st_mtime_ns)
-    inspect_crash(path);return 0
+    inspect_crash(path, resolve=not args.no_resolve);return 0
 
 
 if __name__=='__main__':

@@ -352,6 +352,38 @@
       "problemMatcher": [
         "$gcc"
       ]
+    },
+    {
+      "label": "Configure Debug: Rayman 2 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "rayman2-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Rayman 2 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "rayman2-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Rayman 2 US",
+      "problemMatcher": [
+        "$gcc"
+      ]
     }
   ]
 }

@@ -231,6 +231,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "rayman2-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/rayman2-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "rayman2-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "rayman2-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/rayman2-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "rayman2-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -321,6 +342,14 @@
     {
       "name": "hexen-us-debug",
       "configurePreset": "hexen-us-debug"
+    },
+    {
+      "name": "rayman2-us-release",
+      "configurePreset": "rayman2-us-release"
+    },
+    {
+      "name": "rayman2-us-debug",
+      "configurePreset": "rayman2-us-debug"
     }
   ]
 }

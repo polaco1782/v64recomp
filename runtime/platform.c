@@ -318,7 +318,10 @@ void hook_os_ai_set_next_buffer(Runtime *rt, MipsContext *ctx) {
     poll_ai(rt);
     if (p->ai.queued == 2) { p->ai.rejected++; result(ctx, -1); return; }
     uint32_t address = arg(ctx, 0), bytes = arg(ctx, 1);
-    if (address % 8 || bytes % 8 || !bytes || bytes > UINT32_C(0x3fff8))
+    /* A zero AI length does not enqueue DMA. Rayman 2 primes its audio ring
+     * with an empty buffer before the first synthesis task. */
+    if (!bytes) { result(ctx, 0); return; }
+    if (address % 8 || bytes % 8 || bytes > UINT32_C(0x3fff8))
         recomp_fail("unsupported or unaligned AI buffer", ctx->pc);
     recomp_ram_address(rt, address, bytes);
     AiBuffer buffer = {.address=address,.length=bytes,.dac_rate=p->ai.dac_rate};

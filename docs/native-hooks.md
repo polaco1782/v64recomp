@@ -72,3 +72,11 @@ continuous high-priority input thread from starving ordinary game logic; zero
 retains completion at the next scheduler poll. Both reads and queries snapshot
 input when started and publish results and the SI event after the configured
 counter deadline.
+
+`osContReset` is a synchronous native service. It waits for any pending read or
+query to finish without consuming that transfer's SI event, then fills the
+configured channels' `OSContStatus` records from current controller and Pak
+state. A disconnected channel receives the no-response error and retains its
+other fields, matching the SDK decoder. Reset consumes its own completion
+notifications internally, so it leaves no additional SI message for the caller.
+Hexen US's complete `0x80058050..0x80058148` body is recognized by the catalog.

@@ -207,8 +207,13 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     uint32_t code_limit = task.words[0] == 1 ? 8192 : 4096;
     if (task.words[3]>4096 || task.words[5]>code_limit)
         recomp_fail("SP microcode source exceeds backend bounds",object);
-    if (task.words[10]) recomp_ram_address(rt,task.words[10],1);
-    if (task.words[11]) recomp_ram_address(rt,task.words[11],8);
+    /* ABI1 audio writes buffers named in its command list and never consumes
+     * the graphics output-buffer fields. Rayman 2 leaves those words at its
+     * heap poison value; they are not audio DMA addresses. */
+    if (task.words[0] != 2) {
+        if (task.words[10]) recomp_ram_address(rt,task.words[10],1);
+        if (task.words[11]) recomp_ram_address(rt,task.words[11],8);
+    }
     task.resumed=(task.words[1]&1)!=0;
     if (task.resumed) {
         uint32_t key=recomp_ram_address(rt,object,64);

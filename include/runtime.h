@@ -203,6 +203,7 @@ void recomp_io_destroy(Runtime *);
 bool recomp_input_set(Runtime *, unsigned, const RecompPad *);
 RecompIOStats recomp_io_stats(Runtime *);
 void hook_os_cont_init(Runtime *, MipsContext *);
+void hook_os_cont_reset(Runtime *, MipsContext *);
 void hook_os_cont_start_read(Runtime *, MipsContext *);
 void hook_os_cont_get_read(Runtime *, MipsContext *);
 void hook_os_cont_start_query(Runtime *, MipsContext *);

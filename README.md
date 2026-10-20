@@ -78,7 +78,8 @@ an existing destination containing different bytes.
 Every game uses `games/<game>/profile.toml`, where `<game>` is `sm64-us`,
 `goldeneye-us`, `shadowman-us`,
 `quake-us`, `duke-us`, `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
-`conker-us` (experimental; see its [port status](games/conker-us/README.md)).
+`conker-us` or `rayman2-us` (experimental; see the
+[Conker](games/conker-us/README.md) and [Rayman 2](games/rayman2-us/README.md) port notes).
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
@@ -92,6 +93,7 @@ The imported, normalized files have these filenames and MD5 checksums:
 | `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
 | `perfectdark.us.v11.z64` | `e03b088b6ac9e0080440efed07c1e40f` |
 | `quake.us.z64` | `097605021951024c3ecb2d502c0c2a9f` |
+| `rayman2.us.z64` | `03aa4d09fde77eed9b95be68e603d233` |
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
 | `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
 
@@ -136,7 +138,7 @@ See [ROM content packaging](docs/rom-packaging.md) for supported layouts,
 removal reports and the limits of code stripping.
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
-`duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us`. ROMs, saves, texture packs and crash dumps stay
+`duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us` / `rayman2-us`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 
 The equivalent explicit CMake configuration is:
@@ -250,6 +252,7 @@ The technical documentation covers each part:
 - [Complete process flow](docs/process-flow.md): graphs covering ROM import, generation, compilation, packaging, runtime services, workers and failure investigation.
 - [Recompilation pipeline](docs/recompilation.md): ROM mappings, discovery, translation and native execution.
 - [Adding a ROM](docs/adding-a-rom.md): step-by-step porting, required tools, missing symbols and crash investigation.
+- [ROM diagnostic collection](docs/rom-diagnostics.md): one command to gather verified failure evidence, with a workflow for models tracing callbacks, loads and tasks.
 - [MIPS code expansion and native efficiency](docs/code-expansion.md): measured size ratios, a MIPS → C → x86-64 example and compiler optimizations.
 - [OS emulation and native calls](docs/os-emulation.md): why OS support is needed, which calls are replaced and how guest behavior is preserved.
 - [Native hook recognition](docs/native-hooks.md): ROM fingerprints, game-specific overrides and guarded direct calls.

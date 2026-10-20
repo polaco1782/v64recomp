@@ -71,7 +71,7 @@ def main() -> int:
                         help='1 for OSTask byte size, 8 for games storing command counts')
     parser.add_argument('--commands', type=int, default=32, help='maximum flat command rows to print')
     parser.add_argument('--opcode', type=lambda x: int(x, 0), help='print only this opcode')
-    parser.add_argument('--extract', type=Path, help='write ucode.bin, ucode-data.bin and display-list.bin here')
+    parser.add_argument('--extract', type=Path, help='write microcode and graphics/audio command bytes here')
     args = parser.parse_args()
     if not 0 <= args.commands <= 65536 or args.opcode is not None and not 0 <= args.opcode <= 255:
         raise RecompError('invalid command count or opcode')
@@ -84,8 +84,9 @@ def main() -> int:
         raise RecompError('ROM identity differs from the crash report')
     regions = [('ucode', words[4], words[5] or 0x1000),
                ('ucode-data', words[6], words[7])]
-    if words[0] == 1:
-        regions.append(('display-list', words[12], words[13]*args.list_scale))
+    list_name = 'display-list' if words[0] == 1 else 'audio-list'
+    if words[0] in (1, 2):
+        regions.append((list_name, words[12], words[13]*args.list_scale))
     extracted = {}
     for name, address, size in regions:
         raw = snapshot.read(address, size)
@@ -97,10 +98,10 @@ def main() -> int:
         if name == 'ucode-data':
             for text in re.findall(rb'[ -~]{12,}', raw):
                 print('  String: ' + text.decode('ascii'))
-    raw = extracted.get('display-list')
+    raw = extracted.get(list_name)
     if raw is not None:
         if len(raw) % 8:
-            raise RecompError('display-list span is not a multiple of 8; check --list-scale')
+            raise RecompError('command-list span is not a multiple of 8; check --list-scale')
         counts = Counter(raw[i] for i in range(0, len(raw), 8))
         print('\nFlat opcode counts (nested lists are not followed):')
         print('  ' + ' '.join(f'{op:02x}:{count}' for op, count in sorted(counts.items())))

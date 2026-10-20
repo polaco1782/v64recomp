@@ -3333,6 +3333,14 @@ body_size = 0x1f8
 sha256 = "6d50d5b4cc8797f4404e9555806c839cb1af74ad08b60e88e94db9041a547f7b"
 expected_words = [0x27bdff80, 0x3c0e8007, 0x8dce9670, 0xafbf0024, 0xafa40080, 0xafa50084, 0xafa60088, 0x11c00003]
 
+# Hexen US: 0x80058050; complete linked SDK body, including return delay slot.
+[[signatures]]
+symbol = "osContReset"
+handler = "hook_os_cont_reset"
+body_size = 0xf8
+sha256 = "f0e021d30d8ff9b935f41194af60a35a64f4cc71ab88e169a4b81a22b69993d7"
+expected_words = [0x27bdffe0, 0xafbf0014, 0xafa40020, 0x0c01718c, 0xafa50024, 0x3c0e800d, 0x91cedf00, 0x240100ff]
+
 # Hexen US: 0x80054d60; complete linked SDK body.
 [[signatures]]
 symbol = "osContStartReadData"
@@ -3540,3 +3548,347 @@ handler = "hook_os_cont_ram_write"
 body_size = 0x1fc
 sha256 = "c017613f4b81235b01365174dcb5fcfff4a7baaa30c4f07b11a5384675d1d246"
 expected_words = [0x27bdff80, 0x8fae0090, 0xafb70030, 0xafb40024, 0xafb30020, 0xafb10018, 0xafb00014, 0x24010001]
+
+# Rayman 2 US: 0x80003dc0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osCreateMesgQueue"
+handler = "hook_os_create_mesg_queue"
+body_size = 0x24
+sha256 = "2da4273a826d87511eee2e57cda699c5ed9df22371f2b643605f0533db6181f4"
+expected_words = [0x3c028002, 0x2442a330, 0xac820000, 0xac820004, 0xac800008, 0xac80000c, 0xac860010, 0x03e00008]
+
+# Rayman 2 US: 0x80003df0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osCreateThread"
+handler = "hook_os_create_thread"
+body_size = 0xd0
+sha256 = "cb7a6a85a44f4488b985d73961adb0c17e3626f5fde8bea131666f9b638a3a41"
+expected_words = [0x27bdffe8, 0xafb00010, 0x00808021, 0x00e04821, 0x000747c3, 0x3c048001, 0x2484cd10, 0x00801821]
+
+# Rayman 2 US: 0x800040f0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osRecvMesg"
+handler = "hook_os_recv_mesg"
+body_size = 0x124
+sha256 = "6668b9960562d3f0fcc53e66a917e0f02955d7faadfc00b2f2c858abf75cef76"
+expected_words = [0x27bdffd8, 0xafb00010, 0x00808021, 0xafb40020, 0x00a0a021, 0xafb10014, 0x00c08821, 0xafbf0024]
+
+# Rayman 2 US: 0x800042a0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osStartThread"
+handler = "hook_os_start_thread"
+body_size = 0x118
+sha256 = "c2936dccc8deeee7fd2aea5175e62a2d8b317624ae52ab6bc4c36ef57ab63996"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafbf001c, 0xafb20018, 0x0c003370, 0xafb10014, 0x96030010]
+
+# Rayman 2 US: 0x80008040; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osViSetEvent"
+handler = "hook_os_vi_set_event"
+body_size = 0x58
+sha256 = "1fa27387fc267fe9edd53dcdd1e25171a750b2f2c03560c29c3c1b789745b7ee"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x00a08821, 0xafb20018, 0xafbf001c, 0x0c003370]
+
+# Rayman 2 US: 0x800080a0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osViSetMode"
+handler = "hook_os_vi_set_mode"
+body_size = 0x4c
+sha256 = "d26072ebf25f65c422e4d37a4d82087afe79bcafe19958124b0cc3c4d81172e2"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c003370, 0x00808021, 0x3c048002, 0x8c84b634, 0xac900008]
+
+# Rayman 2 US: 0x800080f0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osViSetSpecialFeatures"
+handler = "hook_os_vi_set_special_features"
+body_size = 0x164
+sha256 = "48311906d3a4920d650fb18def6f7efd1acc8f9fd897dc89e6691e846772fe48"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c003370, 0x00808021, 0x00403021, 0x32020001, 0x10400007]
+
+# Rayman 2 US: 0x800082b0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osViSwapBuffer"
+handler = "hook_os_vi_swap_buffer"
+body_size = 0x44
+sha256 = "6ae3262951c01154f66c616b29fb186f573c50181bd55e2f7aeb40a6bc3ff92e"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c003370, 0x00808021, 0x3c048002, 0x8c84b634, 0x94830000]
+
+# Rayman 2 US: 0x800085f0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osViBlack"
+handler = "hook_os_vi_black"
+body_size = 0x5c
+sha256 = "8527ef54c51568f231602f7ff4e225b2670d3c896a8f2f0d89f71c279a91d446"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c003370, 0x00808021, 0x321000ff, 0x12000006, 0x00402021]
+
+# Rayman 2 US: 0x80008750; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osContStartQuery"
+handler = "hook_os_cont_start_query"
+body_size = 0x80
+sha256 = "57822be92a4b539eb373179a85e2076f174d6b6b2f884b40205c1c964bc632c0"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c0045b5, 0x00808021, 0x3c028002, 0x90421ea8, 0x1040000b]
+
+# Rayman 2 US: 0x800087d0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osContGetQuery"
+handler = "hook_os_cont_get_query"
+body_size = 0x20
+sha256 = "1f036f83f15bc4ff4c44215eef521769c64ab270dab7dd793e757dc188e7a6f5"
+expected_words = [0x27bdffe0, 0xafbf0018, 0x00802821, 0x0c00232b, 0x27a40010, 0x8fbf0018, 0x03e00008, 0x27bd0020]
+
+# Rayman 2 US: 0x800087f0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osContStartReadData"
+handler = "hook_os_cont_start_read"
+body_size = 0x88
+sha256 = "d601b1f3d522a0b104348a3bdc8f5c052a5e720f04e13c3a4e1ae691acf5b158"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c0045b5, 0x00808021, 0x3c038002, 0x90631ea8, 0x24020001]
+
+# Rayman 2 US: 0x80008878; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osContGetReadData"
+handler = "hook_os_cont_get_read"
+body_size = 0x9c
+sha256 = "6d6a81d1c790cec7634c8c081e9a18a6d9934eef9df9d94f6aca9065e94a6f22"
+expected_words = [0x27bdfff0, 0x00804821, 0x3c028002, 0x90421e3c, 0x3c088002, 0x250807c0, 0x1840001d, 0x00003821]
+
+# Rayman 2 US: 0x80008b10; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osContInit"
+handler = "hook_os_cont_init"
+body_size = 0x19c
+sha256 = "53bc1d6c4b28cdeca1daeccfdc57d8a385df4ec13f16dfc0f0f07dbe9edc33b7"
+expected_words = [0x3c028002, 0x8c42b0c0, 0x27bdff80, 0xafb40070, 0x0080a021, 0xafb50074, 0x00a0a821, 0xafb60078]
+
+# Rayman 2 US: 0x8000b190; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osCreatePiManager"
+handler = "hook_os_create_pi_manager"
+body_size = 0x190
+sha256 = "1ded0415a2af36f961dbad82a4e597db9f4f73a42968d04c5ea60d8c8cc75a52"
+expected_words = [0x27bdffc8, 0xafb00018, 0x00808021, 0xafb5002c, 0x00a0a821, 0xafb40028, 0x3c148002, 0x2694b2c0]
+
+# Rayman 2 US: 0x8000bb80; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osPiStartDma"
+handler = "hook_os_pi_start_dma"
+body_size = 0xa8
+sha256 = "cec0a0c0a53c850e650136b178c2220795b414b0c7a98002c588b0c4344fbc01"
+expected_words = [0x27bdffe8, 0xafb00010, 0x00808021, 0x8fa40028, 0x3c028002, 0x8c42b2c0, 0x8fa8002c, 0x8fa30030]
+
+# Rayman 2 US: 0x8000ce00; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osSetIntMask"
+handler = "hook_os_set_int_mask"
+body_size = 0xa0
+sha256 = "f7b10b7d6b9c3d30c7847fcf3770ade42ccb9210efa21644052ad7644f9832a9"
+expected_words = [0x400c6000, 0x3182ff01, 0x3c088002, 0x2508a320, 0x8d0b0000, 0x2401ffff, 0x01614026, 0x3108ff00]
+
+# Rayman 2 US: 0x8000d080; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osGetThreadPri"
+handler = "hook_os_get_thread_pri"
+body_size = 0x18
+sha256 = "039a96b7a35be362782ad024b7c900065f07dbafe575dfd50ac1b084d6313e43"
+expected_words = [0x14800003, 0x00000000, 0x3c048002, 0x8c84a340, 0x03e00008, 0x8c820004]
+
+# Rayman 2 US: 0x8000d0a0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osGetTime"
+handler = "hook_os_get_time"
+body_size = 0x84
+sha256 = "2d599dda8e8405b2b0cbe637c1e27ce56c37d957ec86da75d3c3aeed0694776a"
+expected_words = [0x27bdffd8, 0xafbf0024, 0xafb40020, 0xafb3001c, 0xafb20018, 0xafb10014, 0x0c003370, 0xafb00010]
+
+# Rayman 2 US: 0x8000d130; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osJamMesg"
+handler = "hook_os_jam_mesg"
+body_size = 0x134
+sha256 = "e96c0899b4a7b47784bdf53d042547bf4b0adb43005522570323161429234ade"
+expected_words = [0x27bdffd0, 0xafb00010, 0x00808021, 0xafb50024, 0x00a0a821, 0xafb20018, 0x00c09021, 0xafbf0028]
+
+# Rayman 2 US: 0x8000d2c0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osSendMesg"
+handler = "hook_os_send_mesg"
+body_size = 0x130
+sha256 = "12d70476df7bfa364e9b8545a551f89f171a962bfebdf5a54771620e4b6e762d"
+expected_words = [0x27bdffd0, 0xafb00010, 0x00808021, 0xafb50024, 0x00a0a821, 0xafb20018, 0x00c09021, 0xafbf0028]
+
+# Rayman 2 US: 0x8000d430; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osSetThreadPri"
+handler = "hook_os_set_thread_pri"
+body_size = 0xc8
+sha256 = "2f3ce4a564fb6fd526763ac60486681823a46d13cd830187bf9671881240926d"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x00a08821, 0xafbf001c, 0x0c003370, 0xafb20018]
+
+# Rayman 2 US: 0x8000d500; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osSetTimer"
+handler = "hook_os_set_timer"
+body_size = 0x94
+sha256 = "cea1082f75357fa56cf16938cc3905a8e220cb4632d1c5837166771c125c1b1a"
+expected_words = [0x27bdffe8, 0x8fa20028, 0x8fa3002c, 0xafb00010, 0x00808021, 0xafbf0014, 0xae000000, 0xae000004]
+
+# Rayman 2 US: 0x8000d5a0; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osVirtualToPhysical"
+handler = "hook_os_virtual_to_physical"
+body_size = 0x54
+sha256 = "ebba87ecc791631eaabd865b995d3d78547a14267e809f85752182b85e3ce380"
+expected_words = [0x27bdffe8, 0x3c031fff, 0x3463ffff, 0x3c028000, 0x00821023, 0x0062102b, 0x1040000a, 0xafbf0010]
+
+# Rayman 2 US: 0x80013500; complete SDK body, reviewed relocated calls/globals.
+[[signatures]]
+symbol = "osPiGetCmdQueue"
+handler = "hook_os_pi_get_cmd_queue"
+body_size = 0x20
+sha256 = "2218d5d8c6b7a5a12e7a415e23b430e41ecf34c7cb2866bc55893c0d7d5f5ab6"
+expected_words = [0x3c038002, 0x8c63b2c0, 0x10600003, 0x00001021, 0x3c028002, 0x8c42b2c8, 0x03e00008, 0x00000000]
+
+# Rayman 2 US: 0x80003ec0; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osGetThreadId"
+handler = "hook_os_get_thread_id"
+body_size = 0x18
+sha256 = "d37309193c194f4046f683b9065ab02e5830a23253aae4612a049d6cc931891d"
+expected_words = [0x14800003, 0x00000000, 0x3c048002, 0x8c84a340, 0x03e00008, 0x8c820014]
+
+# Rayman 2 US: 0x80003ee0; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osInitialize"
+handler = "hook_os_initialize"
+body_size = 0x210
+sha256 = "369aa8b4d184d40cdde367ca4126be906c06d7237b71f18ee1ec0ec723bc313f"
+expected_words = [0x27bdffe0, 0x24020001, 0xafbf0018, 0xafa00014, 0x3c018002, 0x0c00334c, 0xac2253f4, 0x3c042000]
+
+# Rayman 2 US: 0x80003d40; complete SDK TLB invalidation loop.
+[[signatures]]
+symbol = "osUnmapTLBAll"
+handler = "hook_os_unmap_tlb_all"
+body_size = 0x44
+sha256 = "768bdca0d47853c4ad2219d3a7ce67beb987cae59401d5a92eedfb9c4612f23b"
+expected_words = [0x40085000, 0x2409001e, 0x3c0a8000, 0x408a5000, 0x40801000, 0x40801800, 0x40890000, 0x00000000]
+
+# Rayman 2 US: 0x80007850; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osAiSetFrequency"
+handler = "hook_os_ai_set_frequency"
+body_size = 0x128
+sha256 = "7a7a6e3b363da11ca9581ff08eb443a1eb45e941ed4e353eb7fa535cb2a19956"
+expected_words = [0x44841000, 0x00000000, 0x468010a1, 0x3c018002, 0xc424a318, 0x46802120, 0x04830005, 0x46201020]
+
+# Rayman 2 US: 0x80004220; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osSetEventMesg"
+handler = "hook_os_set_event_mesg"
+body_size = 0x5c
+sha256 = "78d07d47df664d7721e24ef1f64731730b7f2cbe37a12548cc787c533ffb45c3"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x00a08821, 0xafb20018, 0xafbf001c, 0x0c003370]
+
+# Rayman 2 US: 0x80007d10; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osCreateViManager"
+handler = "hook_os_create_vi_manager"
+body_size = 0x198
+sha256 = "cf769713888f07be26616337ec2f76cce665ebc7501c18c2f5cf972cabc4d638"
+expected_words = [0x27bdffd0, 0xafb40028, 0x3c148002, 0x2694a380, 0xafbf002c, 0xafb30024, 0xafb20020, 0xafb1001c]
+
+# Rayman 2 US: 0x8000a320; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osPfsInitPak"
+handler = "hook_os_pfs_init_pak"
+body_size = 0x1cc
+sha256 = "46deb94ffda4b66f5b05f5bdc5b6d0b61d1ed1404122b33b52236d15010366d2"
+expected_words = [0x27bdff90, 0xafb20060, 0x00809021, 0xafb1005c, 0x00a08821, 0xafb30064, 0x00c09821, 0xafbf0068]
+
+# Rayman 2 US: 0x8000a6b0; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "__osPfsGetStatus"
+handler = "hook_os_pfs_get_status"
+body_size = 0xe0
+sha256 = "32c0b0ccdcf8bbdc833590a403a0cc568fdf673caab8fa43bed9198309ba2549"
+expected_words = [0x27bdffc8, 0xafb20028, 0x00809021, 0xafb3002c, 0x00a09821, 0x02602021, 0xafbf0030, 0xafb10024]
+
+# Rayman 2 US: 0x80011820; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "__osContRamRead"
+handler = "hook_os_cont_ram_read"
+body_size = 0x234
+sha256 = "a6f47091313a5913b9b60e80256ff42eb3e2a0fb5dff7b49b285a2a3ee8a424b"
+expected_words = [0x27bdff98, 0xafb50054, 0x0080a821, 0xafb20048, 0x00a09021, 0xafb3004c, 0x00e09821, 0xafb10044]
+
+# Rayman 2 US: 0x80011bf0; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "__osContRamWrite"
+handler = "hook_os_cont_ram_write"
+body_size = 0x220
+sha256 = "be11b475ba50cf4ed5754251498e0b37c09de7654f64ee42a99919846087ff20"
+expected_words = [0x27bdffa0, 0x8fa20070, 0xafb3004c, 0x00809821, 0xafb10044, 0x00a08821, 0xafb20048, 0x24120002]
+
+# Rayman 2 US: 0x80004280; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osSetTime"
+handler = "hook_os_set_time"
+body_size = 0x14
+sha256 = "f11502bbaa5ae5e876a5cd0a44a89da35e9c2c0ae69e4b0cfaf8565aad88fc0a"
+expected_words = [0x3c018002, 0xac241e40, 0x3c018002, 0x03e00008, 0xac251e44]
+
+# Rayman 2 US: 0x80008260; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osViSetXScale"
+handler = "hook_os_vi_set_x_scale"
+body_size = 0x44
+sha256 = "da787231e95d81fe5f396c970f434246688604e55026d043ac61df4dcf2795ec"
+expected_words = [0x27bdffe0, 0xf7b40018, 0xafbf0010, 0x0c003370, 0x46006506, 0x3c048002, 0x8c84b634, 0x94830000]
+
+# Rayman 2 US: 0x80007a20; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osSpTaskLoad"
+handler = "hook_os_sp_task_load"
+body_size = 0x20c
+sha256 = "11c29b2e06048c2598b4346534391e8ed541ae165dc85371acb03549ddc4c1c8"
+expected_words = [0x27bdffe0, 0xafb00010, 0x00808021, 0xafb10014, 0x3c118002, 0x2631d170, 0x02202821, 0xafbf0018]
+
+# Rayman 2 US: 0x80007c2c; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osSpTaskStartGo"
+handler = "hook_os_sp_task_start_go"
+body_size = 0x2c
+sha256 = "bd4164c147f078c5b1551e2bb31d09368908ed797252bde374a3e0a37264b399"
+expected_words = [0x27bdffe8, 0xafbf0010, 0x0c0044c4, 0x00000000, 0x1440fffd, 0x00000000, 0x0c0044d0, 0x24040125]
+
+# Rayman 2 US: 0x80007c60; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osSpTaskYield"
+handler = "hook_os_sp_task_yield"
+body_size = 0x1c
+sha256 = "920015231dd54e84b9828fcdb4ecdaeb67e066efd5ccdd3cf52f3ceb366b13fd"
+expected_words = [0x27bdffe8, 0xafbf0010, 0x0c0044d0, 0x24040400, 0x8fbf0010, 0x03e00008, 0x27bd0018]
+
+# Rayman 2 US: 0x80007c80; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osSpTaskYielded"
+handler = "hook_os_sp_task_yielded"
+body_size = 0x4c
+sha256 = "34c540f01f37889ff0f8ae59895394ea4138d64b2663c2a3361d41dcf7ea388d"
+expected_words = [0x27bdffe8, 0xafb00010, 0xafbf0014, 0x0c0044cc, 0x00808021, 0x00022202, 0x30420080, 0x10400006]
+
+# Rayman 2 US: 0x80007cd0; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osViGetCurrentFramebuffer"
+handler = "hook_os_vi_get_current_framebuffer"
+body_size = 0x38
+sha256 = "e4c72130691fd4d3c82a45a7ec6bd1af1c1999cadd851f26577c89194e92266c"
+expected_words = [0x27bdffe8, 0xafbf0014, 0x0c003370, 0xafb00010, 0x3c038002, 0x8c63b630, 0x8c700004, 0x0c003378]
+
+# Rayman 2 US: 0x80007980; complete SDK body verified from ROM.
+[[signatures]]
+symbol = "osAiSetNextBuffer"
+handler = "hook_os_ai_set_next_buffer"
+body_size = 0x94
+sha256 = "0c451173b691202140918089a5011c53bbceb85b1b726c0b09b5fac74edd4242"
+expected_words = [0x3c028002, 0x9042a370, 0x27bdffe0, 0xafb10014, 0x00a08821, 0xafb00010, 0x00808021, 0x10400002]

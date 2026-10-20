@@ -231,6 +231,27 @@
         }
       ],
       "preLaunchTask": "Build Debug: Hexen US"
+    },
+    {
+      "name": "Debug: Rayman 2 US",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/rayman2-us-debug/bin/rayman2-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Rayman 2 US"
     }
   ]
 }
