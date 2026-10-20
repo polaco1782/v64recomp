@@ -9,6 +9,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from textwrap import indent
 
 from common import RecompError, load_metadata, load_profile, load_rom, validate_hook_prefix, write_json
 from emit import FunctionRegistry, analyze, cname, decode_function, direct_call_targets, emit_function, instruction_addresses, log_emission, resolve_function, target
@@ -174,7 +175,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
                          f['name'], f['section'], f['vram'], boundaries[key])
             source.append(f'void {symbol}(Runtime *runtime, MipsContext *ctx) {{\n'
                           f'    (void)runtime; (void)ctx;\n'
-                          f'    RECOMP_TRACK_PC(ctx, UINT32_C(0x{f["vram"]:08x}));\n'
+                          f'    RECOMP_TRACE(runtime, ctx, UINT32_C(0x{f["vram"]:08x}));'
                           f'    recomp_fail({json.dumps(boundaries[key])}, UINT32_C(0x{f["vram"]:08x}));\n}}')
         elif key in hooks:
             log_emission('Bind native hook %s s%s 0x%08x -> %s', f['name'], f['section'], f['vram'], symbol)

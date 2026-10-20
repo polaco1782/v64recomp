@@ -1,0 +1,98 @@
+# Quake II US revision 0, original big-endian cartridge.
+[game]
+name = "Quake II (US)"
+rom = "../../local/quake2.us.z64"
+rom_sha1 = "2edb00e602e7c2813a5d6a04dfec80487627237a"
+rom_size = 0xc00000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[discovery]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+regions = [
+  {name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0x71940},
+]
+transfers = [
+  {pc = 0x80000434, expected_word = 0x01400008, kind = "tail", targets = [0x80000450]},
+]
+roots = [
+  {name = "mainproc", vram = 0x800004ac},
+  {name = "gameproc", vram = 0x80000540},
+]
+
+# Counts follow the unsigned index bounds immediately before each JR.
+jump_tables = [
+  {pc = 0x80027360, expected_word = 0x00400008, table_vram = 0x8006fe98, count = 116, sha256 = "6bc801102c3250a04cac1c8523643977704e33c1018303f2927042a79481f2b2"},
+  {pc = 0x80026c04, expected_word = 0x00400008, table_vram = 0x8006fe28, count = 13, sha256 = "ccb17e8a466feb358e2f7587c7afb7eecdf0d4f62d24224044171f33831341bf"},
+  {pc = 0x80026dc8, expected_word = 0x00400008, table_vram = 0x8006fe60, count = 13, sha256 = "ca4ff210783a5e4f84e9428d5fca3d579a4b2a80bb3bc3210736bb339216e245"},
+  {pc = 0x8002a4b0, expected_word = 0x00400008, table_vram = 0x800704a8, count = 18, sha256 = "9b3640886ec875b9f07b477dd2b7243b9f464d0edb7d9dfeb2010e94aaea8dfb"},
+  {pc = 0x8002a570, expected_word = 0x00400008, table_vram = 0x800704f0, count = 19, sha256 = "4a095567990640c25ad8491cc76e7190b06e3723306a07c693f58b2647799601"},
+  {pc = 0x8002a62c, expected_word = 0x00400008, table_vram = 0x80070540, count = 35, sha256 = "069124feefd9cba09d2c5e8b9b577c492ff85ff1edbfd4002badee672e00f260"},
+  {pc = 0x80037988, expected_word = 0x00400008, table_vram = 0x80070910, count = 6, sha256 = "23472ad273d75260236073d332a84f988345fe4d00a79d28d362a6832b198527"},
+  {pc = 0x800183f4, expected_word = 0x00400008, table_vram = 0x8006f8a8, count = 6, sha256 = "6dae5bc13b04f8c280def828bc04898b62a7ea2b5056e7f9e3ea5d700863244e"},
+  {pc = 0x80006970, expected_word = 0x00400008, table_vram = 0x8006ecf0, count = 8, sha256 = "5614b4f602c60b6de55b281570ac5525110e2a6db5b5266d4b50bfdba994ad8e"},
+  {pc = 0x80009e14, expected_word = 0x00400008, table_vram = 0x8006ee80, count = 5, sha256 = "63375dcb8a5b50efcc5b69593b31182ca9960de8a9d30a6b2e0492bb6587dcab"},
+  {pc = 0x8000a1b0, expected_word = 0x00400008, table_vram = 0x8006eec0, count = 7, sha256 = "750a7f0f581f31c30a00d06a15ba5e89f1002d092493a98eef61a5fffe2001bd"},
+  {pc = 0x8000ae30, expected_word = 0x00400008, table_vram = 0x8006ef30, count = 9, sha256 = "ee9edaf13becfaaebf69fbf8d74d6e435cf72b08b2a8e704c81fa97473fc3b6b"},
+  {pc = 0x8000b12c, expected_word = 0x00400008, table_vram = 0x8006efc0, count = 6, sha256 = "dc13e1e36299e134fd4f4346bc1696b6c30af9c0322af834bd055d649fa12573"},
+  {pc = 0x8000ba04, expected_word = 0x00400008, table_vram = 0x8006f028, count = 6, sha256 = "8557af8943f4da7d516bb07a9c5f8cd54930a22b4ca2c45969510d38cbbfde09"},
+  {pc = 0x8004f95c, expected_word = 0x00400008, table_vram = 0x80071550, count = 17, sha256 = "bb5a802b179ee155ec07a99dae7b08bdb103e9a36d900739a7c4c16bc2d4551f"},
+  {pc = 0x80006508, expected_word = 0x00400008, table_vram = 0x8006e848, count = 6, sha256 = "a0114e553d17326fb7a4e801af364c282aa1c865e71003b65ad3c0aa25476495"},
+  {pc = 0x8000e000, expected_word = 0x00400008, table_vram = 0x8006f180, count = 14, sha256 = "7b6bf492cb4c880f3fedd25a91bbfec2a8966c2a0fb188c3162720516caab614"},
+  {pc = 0x800206e4, expected_word = 0x00400008, table_vram = 0x8006fac0, count = 8, sha256 = "0ce4711f082d6a98efb5cf571a7ffb0d7ff4d3b573d612c77cb82cd8808bc5a8"},
+  {pc = 0x80029988, expected_word = 0x00400008, table_vram = 0x80070070, count = 15, sha256 = "b3c923a62076267c0e9912b3c3b93c3662fbfd51971891081e72b8c77aad24ba"},
+  {pc = 0x80029e40, expected_word = 0x00400008, table_vram = 0x800700b8, count = 24, sha256 = "a3ff5beaf062d08527b5cc8f945c246d2e2710933dbf97c6f9ad87e3c2e060c0"},
+  {pc = 0x80033e1c, expected_word = 0x00400008, table_vram = 0x80070868, count = 39, sha256 = "746f9907619478915a6ba20c6a88e39b68a1bcf06dbf4825210870c2daa68361"},
+  {pc = 0x800393c8, expected_word = 0x00400008, table_vram = 0x80070930, count = 9, sha256 = "aca3526e5f4e8a4b26a9186705e05b4e88c1ee3596b18b0632c742ea799d0c9e"},
+  {pc = 0x80039818, expected_word = 0x00400008, table_vram = 0x80071260, count = 6, sha256 = "05dc9e01067478f53b95566734995ed1b7584e67d2a6d9dfd1ec53f99439aebd"},
+  {pc = 0x8004ada8, expected_word = 0x00400008, table_vram = 0x800713f0, count = 6, sha256 = "57a8d3fbf9356efc2d2ca8ba8bb01ed3c5295ccccdd16655bff1af990a0231b7"},
+  {pc = 0x8004f360, expected_word = 0x00400008, table_vram = 0x800714f0, count = 6, sha256 = "bf192afa035cc2f82a4d921d97477eebb3787c8e4bb2e2db133a3c897e0b85f2"},
+  {pc = 0x8005ec90, expected_word = 0x00400008, table_vram = 0x80071ac0, count = 84, sha256 = "f38ee88f5dcc1ae4ddfc09da3b4730590f0d311d56cea6a62c5d4d5aaf232daf"},
+]
+
+function_tables = [
+  # Controller action enum: 18 float-argument handlers shared by buttons and axes.
+  {pc = 0x80024fc8, expected_word = 0x0040f809, table_vram = 0x80065764, count = 18, sha256 = "8e3155cc61e9dc57e188417c0c40e9ab3cc37e59a9e311afaeb933bac37c02d4"},
+  {pc = 0x8002506c, expected_word = 0x0040f809, table_vram = 0x80065764, count = 18, sha256 = "8e3155cc61e9dc57e188417c0c40e9ab3cc37e59a9e311afaeb933bac37c02d4"},
+  {pc = 0x800250f0, expected_word = 0x0040f809, table_vram = 0x80065764, count = 18, sha256 = "8e3155cc61e9dc57e188417c0c40e9ab3cc37e59a9e311afaeb933bac37c02d4"},
+  # Entity type < 120 at 0x80039444; name/callback pairs. Types 0 and 79 have no callback.
+  {pc = 0x8003946c, expected_word = 0x0040f809, table_vram = 0x80066770, count = 240, indices = [3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 97, 99, 101, 103, 105, 107, 109, 111, 113, 115, 117, 119, 121, 123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143, 145, 147, 149, 151, 153, 155, 157, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181, 183, 185, 187, 189, 191, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 217, 219, 221, 223, 225, 227, 229, 231, 233, 235, 237, 239], sha256 = "821d04cd19403fb6dc6a61f32faa4ab9e1285dc941fdf53ea7fb5dcb43fbe36c"},
+  # Mus opcodes 0x80..0xac: 45 pointers, followed by zero padding and synth data.
+  {pc = 0x8004c438, expected_word = 0x0040f809, table_vram = 0x8006baa0, count = 45, sha256 = "f65196a893f5514e15eb90068d4638a0b23a515fd887a1491e36ffb0b5ea8939"},
+]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0x71940
+bss_start = 0x80071d40
+bss_end = 0x800a7e10
+system_entry = 0x80000450
+main_entry = 0x800004ac
+main_id = 1
+main_priority = 10
+main_object = 0x80094c60
+main_stack = 0x8008bb30
+boot_object = 0x807ff000
+boot_stack = 0x807fd000
+counter_hz = 46875000
+thread_tail = 0x8006be30
+run_queue = 0x8006be38
+active_queue = 0x8006be3c
+running_thread = 0x8006be40
+vi_clock = 0x8006be18
+clock_rate = 0x8006be10
+final_rom = 0x80096c70
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+# osMemSize is IPL data, read directly at 0x80006354; match game.ram_size.
+0x80000318 = 0x800000

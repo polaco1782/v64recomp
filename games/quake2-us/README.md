@@ -1,0 +1,114 @@
+# Quake II US revision 0
+
+The port uses the original cartridge code, RT64 graphics, standard NAudio and
+**8 MiB of RDRAM with the Expansion Pak enabled**. The cartridge's startup screen
+confirms “Expansion Pak detected. Features enabled.” Full-game progression is
+not yet validated. Debug and Release build, the bounded Debug replay reaches
+Strogg Outpost with first-person rendering and nonzero audio output, and the user
+confirmed that the game runs well. Further testing stopped at the user's request;
+save/reload, sustained audio quality and broader progression remain unverified.
+
+## ROM and launch
+
+Supply `Quake II (U) [!].z64` locally. The exact normalized identity is:
+
+- Size: `0xc00000` (12 MiB), big-endian.
+- SHA-1: `2edb00e602e7c2813a5d6a04dfec80487627237a`.
+- Header title: `QUAKE II`; country `0x45`; revision `0`; entry `0x80000400`.
+
+Run from the repository root:
+
+```sh
+.venv/bin/python tools/import_rom.py --profile games/quake2-us/profile.toml \
+  --rom '/path/to/Quake II (U) [!].z64'
+cmake --preset quake2-us-release
+cmake --build --preset quake2-us-release -j 4
+./build/quake2-us-release/bin/quake2-us
+```
+
+Controller Pak storage defaults to `local/saves/quake2-us.mpk`. Use `--save FILE`
+for a separate image. Both configurations use the same game adapter and shared
+core crash reporter. Debug has its own entry point, input replay and captures:
+
+```sh
+cmake --preset quake2-us-debug
+cmake --build --preset quake2-us-debug -j 4
+.venv/bin/python tools/controller_replay.py \
+  games/quake2-us/debug/gameplay-input.json build/quake2-us-gameplay-input.txt \
+  --game quake2-us
+./build/quake2-us-debug/bin/quake2-us --frames 2400 \
+  --input build/quake2-us-gameplay-input.txt --capture-every 240
+```
+
+Debug replay events count host presentations, while the cartridge uses guest VI
+time. Capture overhead and a slower build can change the menu timing. Inspect
+the resulting screens before treating a replay as gameplay acceptance. Diagnostic
+output is under `build/quake2-us-debug/debug-output/quake2-us/`; crash reports and
+RAM snapshots are under `local/crashes/quake2-us/`.
+
+## Verified implementation
+
+The initial load maps ROM `0x1000..0x72940` to guest
+`0x80000400..0x80071d40`. The entry clears BSS
+`0x80071d40..0x800a7e10`, sets SP to `0x80095fe8`, and jumps to `0x80000450`.
+That startup creates mainproc at `0x800004ac`, which creates gameproc at
+`0x80000540`. The synthetic IPL thread is retired at mainproc's first PI-manager
+call, before allocation can reuse its storage. Debug checks the BSS clear and
+the instruction return address at this handoff.
+
+`osMemSize` is a data global at `0x80000318`, initialized to `0x800000` alongside
+the 8 MiB runtime allocation. The cartridge reads it directly at `0x80006354`
+and selects Expansion Pak features when it exceeds 4 MiB; no function hook is
+needed for this read.
+
+One complete `profile.toml` binds the ROM, load, bootstrap, switch tables and
+function tables. `startup-entries.json` is a **partial** entry inventory: each
+root has a first-16-byte fingerprint and reviewed callback provenance. It does
+not classify every byte as code or data. Normal SDK routines use complete-body
+SHA-256 signatures in the shared `tools/symbols.json` catalog.
+
+Callback groups include:
+
+- The 120 entity name/spawn records at `0x80066770`, selected by the bounds check
+  at `0x80039444`. Types 0 and 79 have null callbacks.
+- The 41 item records at `0x80065adc`, stride `0x3c`, with pickup/use/weapon
+  pointers at offsets 4/8/12. Weapon firing passes through `0x8004775c`.
+- The 18 controller actions at `0x80065764`, shared by buttons and analog axes.
+- The 45 Mus sequence handlers at `0x8006baa0` for opcodes `0x80..0xac`.
+- Entity think/touch/use/pain/die fields, mover completion and monster callbacks.
+- Monster move descriptors and frame arrays: `0x80036ee8` bounds the frame
+  index, reads `{first,last,frames,endfunc}`, and invokes `{ai,distance,think}`
+  records at stride 12. The reviewed arrays contain 143 move descriptors.
+
+The graphics task uses the cartridge microcode at `0x80062320`; it runs through
+the existing RT64 adapter. The audio task uses boot/code/data at
+`0x80060e20` / `0x800636f0` / `0x8006e2e0`, with exact task descriptors and hashes
+in `audio.h`. Standard NAudio opcode 14 is a volume-rate update, which differs
+from the filter in the existing MP3 and Conker modes.
+
+The initial single-frame stall came from an untranslated next-framebuffer query
+reading stale guest VI context after native swaps. Binding that SDK body to the
+shared getter restores graphics scheduling. The current-mode query now reads
+the selected native VI mode through the shared OS service as well.
+
+## Analysis and references
+
+```sh
+.venv/bin/python tools/generate_game.py --game quake2-us \
+  --output build/quake2-us-report --report-only
+.venv/bin/python games/quake2-us/debug/analyze_callbacks.py \
+  --output build/quake2-us-callback-review.json
+```
+
+The callback analyzer only reports candidates and animation structure evidence;
+it never modifies the inventory. Review pointer producers, consumers and complete
+function boundaries before adding entries.
+
+Public research did not identify a matching N64 Quake II decompilation. The
+[Q2N64 PC project](https://github.com/Joca64/Q2N64---PC) ports maps to the PC
+engine; its code and addresses are not used here. SDK identification used the
+repository's pinned [n64sym signatures](https://github.com/shygoo/n64sym/tree/ccf4600f3389f1a84bde23339225cf372fdf7712),
+followed by local body/ABI review. Audio identification was checked against
+[Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle/blob/8a7a472a7172eb2c8725b305eae26818ed7b51a2/src/hle.c)
+and the bundled standard NAudio command dispatcher at that revision.
+No external source tree or downloaded game assets are build dependencies.

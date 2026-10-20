@@ -77,9 +77,10 @@ an existing destination containing different bytes.
 
 Every game uses `games/<game>/profile.toml`, where `<game>` is `sm64-us`,
 `goldeneye-us`, `shadowman-us`,
-`quake-us`, `duke-us`, `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
+`quake-us`, `quake2-us`, `duke-us`, `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
 `conker-us` or `rayman2-us` (experimental; see the
 [Conker](games/conker-us/README.md) and [Rayman 2](games/rayman2-us/README.md) port notes).
+Quake II runs with the Expansion Pak enabled; see its [port notes](games/quake2-us/README.md).
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
@@ -92,6 +93,7 @@ The imported, normalized files have these filenames and MD5 checksums:
 | `nightmare.us.z64` | `4116cf435db315a2481af8d1e9352feb` |
 | `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
 | `perfectdark.us.v11.z64` | `e03b088b6ac9e0080440efed07c1e40f` |
+| `quake2.us.z64` | `cc93c30c633ff461c29b54ceabefd701` |
 | `quake.us.z64` | `097605021951024c3ecb2d502c0c2a9f` |
 | `rayman2.us.z64` | `03aa4d09fde77eed9b95be68e603d233` |
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
@@ -137,7 +139,7 @@ external ROM. `--rom PATH` still loads and verifies an original ROM for comparis
 See [ROM content packaging](docs/rom-packaging.md) for supported layouts,
 removal reports and the limits of code stripping.
 
-Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `duke-us`,
+Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `quake2-us`, `duke-us`,
 `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us` / `rayman2-us`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 

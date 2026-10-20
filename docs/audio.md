@@ -1,7 +1,7 @@
 # Native audio
 
 Each game runs its translated sound code and reads tables, sequences and
-sample assets from its ROM. `backends/audio.c` executes ABI1 and Zelda NEAD command operations
+sample assets from its ROM. `backends/audio.c` executes ABI1, Zelda NEAD and NAudio command operations
 using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
 ADPCM, codebooks, envelopes, four-tap resampling, mixing, reverb-buffer operations,
@@ -27,6 +27,12 @@ Games provide pinned task addresses and boot/text/data microcode hashes through
 command's RAM/DMEM ranges, alignment and supported flags. Unknown microcodes,
 commands and unsupported resampling flags fail explicitly. Revision, license and
 local changes are in [third_party/rsp-hle/README.md](../third_party/rsp-hle/README.md).
+
+Quake II uses standard NAudio (`RECOMP_AUDIO_NAUDIO`). Its opcode 14 supplies
+the low word of the right-channel volume ramp; it does not execute the filter
+used by the MP3/Conker variants. The shared backend calls the pinned
+`alist_process_naudio` dispatcher and rejects its unsupported opcodes 7 and 8.
+The game profile advertises 8 MiB so the cartridge enables Expansion Pak features.
 
 `runtime/platform.c` owns the two-entry AI FIFO and exact clock/divisor timing.
 Length reports the active buffer; a full FIFO rejects admission with -1. Queued

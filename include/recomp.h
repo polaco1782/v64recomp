@@ -37,14 +37,6 @@ typedef struct MipsContext {
     bool fpu_fr1;
 } MipsContext;
 
-/* Generated sources are shared between build modes. Release must not evaluate
- * either argument or emit any diagnostic PC stores, even at -O0. */
-#ifdef RECOMP_DEBUG
-#define RECOMP_TRACK_PC(context, address) ((context)->pc = (address))
-#else
-#define RECOMP_TRACK_PC(context, address) ((void)0)
-#endif
-
 typedef struct Runtime Runtime;
 typedef struct RecompScheduler RecompScheduler;
 typedef struct RecompClock RecompClock;
@@ -123,7 +115,7 @@ struct Runtime {
 /* Count instructions separately from diagnostic call-site PC restoration. */
 #ifdef RECOMP_DEBUG
 #define RECOMP_TRACE(runtime, context, address) \
-    ((runtime)->debug_ops++, RECOMP_TRACK_PC(context, address))
+    ((runtime)->debug_ops++, (context)->pc = (address))
 #else
 #define RECOMP_TRACE(runtime, context, address) ((void)0)
 #endif

@@ -252,6 +252,27 @@
         }
       ],
       "preLaunchTask": "Build Debug: Rayman 2 US"
+    },
+    {
+      "name": "Debug: Quake II US",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/quake2-us-debug/bin/quake2-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Quake II US"
     }
   ]
 }

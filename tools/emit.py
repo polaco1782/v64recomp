@@ -513,9 +513,6 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         return [f'{indent}/* {instruction.pc:08x}: {instruction.assembly} */',
                 location(instruction.pc, indent), *([indent + statement] if statement else [])]
 
-    def call_location(indent: str) -> str:
-        return f"{indent}RECOMP_TRACK_PC(ctx, UINT32_C(0x{i.pc:08x}));"
-
     def fallthrough(address: int, indent: str = '    ') -> str:
         return f'{indent}recomp_fail("fell off generated function", UINT32_C(0x{address:08x}));'
 
@@ -580,7 +577,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 checkpoint = around([f"{indent}{call}(runtime);"], indent)
             return [*checkpoint, jump(address, indent)]
         log_call(address, 'Tail/branch call')
-        return [call_location(indent), *emit_call(address, indent, resume=False), f"{indent}return;"]
+        return [location(i.pc, indent), *emit_call(address, indent, resume=False), f"{indent}return;"]
 
     prologue = lines
     blocks = []
@@ -652,7 +649,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                     lines.extend(transfer(address, '            '))
                 else:
                     log_call(address, 'Checked indirect tail target')
-                    lines.extend([call_location('            '),
+                    lines.extend([location(i.pc, '            '),
                                   *emit_call(address, '            ', resume=False), '            return;'])
             lines.append('        default:')
             lines.extend(flush('            '))
@@ -664,7 +661,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             # Flush before the branch: both the lookup-tail and the return path leave the function.
             lines.extend(flush('        '))
             lines.extend(['        if (destination != return_address) {',
-                          call_location('            '),
+                          location(i.pc, '            '),
                           '            recomp_lookup(runtime, destination)(runtime, ctx);', '        }', '        return;'])
         elif i.opcode in ('jal', 'jalr'):
             dest = 'destination' if i.opcode == 'jalr' else f"UINT32_C(0x{target(i):08x})"
@@ -674,7 +671,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 lines.append(f'        switch ({destination}) {{')
                 for address in checked['targets']:
                     log_call(address, 'Checked indirect call target')
-                    lines.extend([f'        case UINT32_C(0x{address:08x}):', call_location('            '),
+                    lines.extend([f'        case UINT32_C(0x{address:08x}):', location(i.pc, '            '),
                                   *emit_call(address, '            '), '            break;'])
                 lines.append('        default:')
                 lines.extend(flush('            '))
@@ -687,7 +684,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 else:
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))
-                lines.extend([call_location('        '), *call])
+                lines.extend([location(i.pc, '        '), *call])
             unwind = next((c for c in function.get('unwind_calls', []) if c['pc'] == i.pc), None)
             if unwind:
                 if unwind.get('conditional'):

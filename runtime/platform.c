@@ -504,6 +504,12 @@ void hook_os_vi_get_next_framebuffer(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     result(ctx, (int32_t)platform(rt)->vi.framebuffer);
 }
+void hook_os_vi_get_current_mode(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    uint32_t mode = platform(rt)->vi.mode;
+    if (!mode) recomp_fail("VI mode query before mode selection", ctx->pc);
+    result(ctx, (int32_t)recomp_load(rt, mode, 1));
+}
 void hook_os_create_pi_manager(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);

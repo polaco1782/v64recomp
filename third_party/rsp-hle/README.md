@@ -10,6 +10,8 @@ processing and synthesis transform using the same pinned upstream revision. Thes
 implement audio-command operations in native C, including ADPCM, envelope
 mixing, four-tap resampling and interleaving. No plugin shell, CPU interpreter,
 RSP instruction interpreter or graphics microcode modules are imported.
+Standard NAudio supplies Quake II through `alist_process_naudio`; its opcode 14
+is the SETVOL rate tail, distinct from NAudio MP3/CBFD filters.
 The upstream headers retain declarations for modules outside this subset.
 
 `jpeg.c` supplies the PS/OOT JPEG task decoder: dequantization, inverse DCT and

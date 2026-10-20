@@ -142,9 +142,11 @@ static void validate_nead(RecompAudio *a,uint32_t w1,uint32_t w2,uint32_t pc) {
 static void validate_naudio(RecompAudio *a,uint32_t w1,uint32_t w2,uint32_t pc) {
     unsigned op=w1>>24, addr=w2&0xffffff;
     if(op>15)recomp_fail("unknown NAudio command",pc);
+    bool standard=a->microcode==RECOMP_AUDIO_NAUDIO;
+    if(standard && (op==7 || op==8))recomp_fail("unsupported standard NAudio command",pc);
     a->stats.commands++;a->stats.opcodes[op]++;
     switch(op) {
-    case 0:sample_range(0x4f0+(w1&4095),0x170);break;
+    case 0:if(!standard)sample_range(0x4f0+(w1&4095),0x170);break;
     case 1: {
         unsigned n=align((w2>>16)&4095,32);
         if(n && a->book_coefficients<16)recomp_fail("NAudio ADPCM without codebook",pc);
@@ -175,7 +177,7 @@ static void validate_naudio(RecompAudio *a,uint32_t w1,uint32_t w2,uint32_t pc) 
         ram_range(a,addr,n,2);a->book_coefficients=n/2;break;
     }
     case 12:sample_range(0x4f0+(w2>>16),0x170);sample_range(0x4f0+(w2&65535),0x170);break;
-    case 14:ram_range(a,addr,32,2);break;
+    case 14:if(!standard)ram_range(a,addr,32,2);break;
     case 15:ram_range(a,addr,32,2);break;
     }
 }
@@ -185,7 +187,7 @@ void HleValidateCommand(void *opaque,uint32_t w1,uint32_t w2,uint32_t pc) {
     a->debug.command_index++;
     if(a->debug.history_count<RECOMP_AUDIO_HISTORY)a->debug.history_count++;
     if(a->microcode==RECOMP_AUDIO_NEAD_OOT) { validate_nead(a,w1,w2,pc);return; }
-    if(a->microcode==RECOMP_AUDIO_NAUDIO_MP3 || a->microcode==RECOMP_AUDIO_NAUDIO_CBFD) { validate_naudio(a,w1,w2,pc);return; }
+    if(a->microcode==RECOMP_AUDIO_NAUDIO || a->microcode==RECOMP_AUDIO_NAUDIO_MP3 || a->microcode==RECOMP_AUDIO_NAUDIO_CBFD) { validate_naudio(a,w1,w2,pc);return; }
     unsigned op=w1>>24,flags=(w1>>16)&255,count=s->count;
     if(op>15)recomp_fail("unknown ABI1 audio command",pc);
     a->stats.commands++;a->stats.opcodes[op]++;
@@ -343,7 +345,7 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
        || config->prebuffer_ms>200
        || (config->microcode!=RECOMP_AUDIO_ABI1 && config->microcode!=RECOMP_AUDIO_ABI1_LINEAR
            && config->microcode!=RECOMP_AUDIO_NEAD_OOT && config->microcode!=RECOMP_AUDIO_NAUDIO_MP3
-           && config->microcode!=RECOMP_AUDIO_NAUDIO_CBFD))return NULL;
+           && config->microcode!=RECOMP_AUDIO_NAUDIO_CBFD && config->microcode!=RECOMP_AUDIO_NAUDIO))return NULL;
     RecompAudio *a=calloc(1,sizeof(*a));if(!a)return NULL;
     a->rt=rt;a->owner=SDL_ThreadID();a->playback=config->playback;a->enabled=config->output_enabled;
     a->microcode=config->microcode;a->task_profile=config->task_profile;
@@ -421,6 +423,7 @@ static void execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     memcpy(a->dmem+TASK_DATA_PTR,&physical,4);memcpy(a->dmem+TASK_DATA_SIZE,&bytes,4);
     a->task_done=false;uint64_t start=timer_ns();
     if(a->microcode==RECOMP_AUDIO_NEAD_OOT)alist_process_nead_oot(&a->hle);
+    else if(a->microcode==RECOMP_AUDIO_NAUDIO)alist_process_naudio(&a->hle);
     else if(a->microcode==RECOMP_AUDIO_NAUDIO_MP3)alist_process_naudio_mp3(&a->hle);
     else if(a->microcode==RECOMP_AUDIO_NAUDIO_CBFD)alist_process_naudio_cbfd(&a->hle);
     else if(a->microcode==RECOMP_AUDIO_ABI1_LINEAR)alist_process_audio_ge(&a->hle);

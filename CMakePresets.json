@@ -252,6 +252,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "quake2-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/quake2-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "quake2-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "quake2-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/quake2-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "quake2-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -350,6 +371,14 @@
     {
       "name": "rayman2-us-debug",
       "configurePreset": "rayman2-us-debug"
+    },
+    {
+      "name": "quake2-us-release",
+      "configurePreset": "quake2-us-release"
+    },
+    {
+      "name": "quake2-us-debug",
+      "configurePreset": "quake2-us-debug"
     }
   ]
 }

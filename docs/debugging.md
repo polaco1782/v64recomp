@@ -76,7 +76,7 @@ including branches, jumps, nops, and executed delay slots. Annulled branch-likel
 slots do not update it. Native calls restore the call-site PC after the delay
 slot so blocking hooks and thread snapshots identify the caller. Addresses use
 the compiled guest layout, including for relocated code.
-`RECOMP_TRACK_PC` compiles to a no-op in Release, with no argument evaluation or
+`RECOMP_TRACE` compiles to a no-op in Release, with no argument evaluation or
 PC stores; the retained context field holds the scheduler's initial thread entry.
 Release failure boundaries still report their known address directly.
 

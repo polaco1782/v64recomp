@@ -11,6 +11,7 @@ typedef enum RecompAudioMicrocode {
     RECOMP_AUDIO_NEAD_OOT=2,
     RECOMP_AUDIO_NAUDIO_MP3=3,
     RECOMP_AUDIO_NAUDIO_CBFD=4,
+    RECOMP_AUDIO_NAUDIO=5,
 } RecompAudioMicrocode;
 typedef struct RecompAudioTaskProfile {
     uint32_t descriptor[6]; /* Expected boot/code/data addresses and task sizes. */

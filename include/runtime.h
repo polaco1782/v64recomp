@@ -236,6 +236,7 @@ void hook_os_vi_set_event(Runtime *, MipsContext *);
 void hook_os_vi_swap_buffer(Runtime *, MipsContext *);
 void hook_os_vi_get_current_framebuffer(Runtime *, MipsContext *);
 void hook_os_vi_get_next_framebuffer(Runtime *, MipsContext *);
+void hook_os_vi_get_current_mode(Runtime *, MipsContext *);
 void hook_os_set_int_mask(Runtime *, MipsContext *);
 void hook_os_pfs_init_pak(Runtime *, MipsContext *);
 void hook_os_pfs_is_plug(Runtime *, MipsContext *);
