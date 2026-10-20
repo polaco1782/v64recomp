@@ -46,7 +46,7 @@ available. Layout references come from the matching `ntsc-final` version of
 [the Perfect Dark decompilation](https://github.com/n64decomp/perfect_dark).
 
 Common SDK calls are recognized by complete function-body hashes in the shared
-`tools/native_hooks.toml` catalog. `profile.toml` contains Perfect Dark's
+`tools/symbols.json` catalog. `profile.toml` contains Perfect Dark's
 boot mapping, inflater handoff, obfuscated cartridge read and idle checkpoint,
 alongside checked original switch and AI handler tables. The model
 assembly's shared epilogue and nonlocal helper returns have explicit, checked

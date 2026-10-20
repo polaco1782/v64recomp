@@ -6,6 +6,11 @@ This port targets the 32 MiB big-endian US revision 0 cartridge, header title
 - SHA-1: `50558356b059ad3fbaf5fe95380512b9dceaaf52`
 - MD5: `03aa4d09fde77eed9b95be68e603d233`
 
+Bring-up is in progress. Debug runs the original boot, DMA asset loading, audio
+tasks, controller polling and scene scripts. Rendered gameplay is not yet
+verified. The checked callback inventory remains partial; unknown paths fail
+explicitly rather than silently executing an unverified target.
+
 From the repository root:
 
 ```sh
@@ -82,6 +87,33 @@ come from these producers:
 - `0x80035f4c` constructs thirteen object callbacks (`0x80035578..0x80035d40`)
   in a stack record. `0x800adf44` copies that record to `0x800c95ec..0x800c961c`;
   `0x800ac41c` invokes its first twelve methods to obtain object parameters.
+- `0x80045440` dispatches the script node's type byte at `+7` through the
+  41-pointer table `0x800c7238..0x800c72dc`. This supplies the original missing
+  handler `0x800450d4`. Its primitive getter `0x8004c9b4` indexes 330 eight-byte
+  function/flag records at `0x800c7bc0..0x800c8610`; only the function fields are
+  registered, including the next observed target `0x8005fcbc`.
+  The related getters use 74 function/flag records at `0x800c7340`, 174 at
+  `0x800c7590`, 19 function pointers at `0x800c7b00`, and 28 at `0x800c7b50`.
+  Padding and flag fields are excluded. The profile also pins each primitive's
+  switch table to its original unsigned bounds check and complete table hash.
+- `0x80045264` and `0x80045230` use the getters at `0x8004c8d4` /
+  `0x8004c8e8` to select two callback fields from four sixteen-byte records at
+  `0x800c7300`. The remaining fields are type tags and padding, not code.
+- Scene setup `0x80029428` calls `0x8002883c` with `0x800e3f28` to install
+  the two update methods `0x800721b8` / `0x80073400`. The dispatch at
+  `0x80028ac8` selects them using the object's type returned by `0x80073010`.
+- Field read/write dispatch at `0x800444cc` / `0x80044930` uses the two method
+  fields in 24 twelve-byte records at `0x800c8610..0x800c8730`. Type tags are
+  excluded. Lifecycle construction at `0x8003fd18` / `0x8003fd4c` uses fields
+  2 / 0 of the eleven-record lifecycle table; `0x8003fe7c` uses cleanup field 4.
+- `0x80029dc8` installs the ten-method object parameter interfaces beginning at
+  `0x80029830` and `0x80029d1c` through `0x800adfb4` / `0x800ae1ec`.
+  `0x800acdf4` reads those dynamically allocated 72-byte method records. The
+  same constructor registers the callback `0x800348e0` through `0x800ae324`.
+- Property access at `0x800612f0` / `0x800611e8` selects read/write methods
+  from eleven three-word records at `0x800c87f0..0x800c8874`. The conversion
+  calls at `0x80061310` / `0x800611dc` use five records at
+  `0x800c8874..0x800c88b0`. The first word in each record is a type tag.
 
 Ordinary SDK calls use full-body fingerprints in `tools/symbols.json`.
 Runtime loaded-section checks and registered indirect-call lookup remain enabled.
@@ -106,3 +138,27 @@ For a failure, collect evidence before rebuilding:
 ```
 
 See [the model debugging workflow](../../docs/rom-diagnostics.md).
+
+## Public research references
+
+Research checked on 2026-10-19 found these useful starting points; none is a
+build dependency or a substitute for this ROM's checked metadata:
+
+- [Raymap](https://github.com/byvar/raymap), inspected at revision
+  `2df138379acaa5c9d74ae275c6690ba8e2e3e52e`, includes N64 data loading and
+  [ROM script parsing](https://github.com/byvar/raymap/blob/2df138379acaa5c9d74ae275c6690ba8e2e3e52e/Assets/Scripts/OpenSpace/ROM/Structs/AI/ScriptNodeArray.cs).
+  It distinguishes packed cartridge nodes from expanded script nodes and
+  separates node kinds, parameter types and primitive-name tables. The expanded
+  node reader's parameter/indent/type layout agrees with this ROM's dispatch
+  reads at offsets 0, 6 and 7. Its name-table lengths differ from our verified
+  native tables; numeric names and IDs have not been imported.
+- An indexed README for
+  [another N64 recompilation attempt](https://github.com/danielgomesvieira2000/rayman-2-the-great-escape-recomp)
+  targets the same cartridge SHA-1 and reports the same three segment addresses
+  and graphics microcode identifier. The repository and detailed findings could
+  not be retrieved, so this is cached corroboration, not a verified symbol map.
+  Its reported thread-state bug prompted a local check: our scheduler already
+  writes libultra's guest state bits 1/2/4/8, separately from host thread enums.
+- [ACP_Ray2](https://github.com/raytools/ACP_Ray2) documents PC engine types and
+  functions. It can supply conceptual hints, but PC addresses and layouts are
+  not assumed to match the N64 cartridge.

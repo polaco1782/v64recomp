@@ -168,6 +168,16 @@ void recomp_io_destroy(Runtime *rt) {
 }
 bool recomp_input_set(Runtime *rt, unsigned port, const RecompPad *pad) {
     if (port >= 4 || !pad) return false;
+#ifdef RECOMP_DEBUG
+    static int trace_input = -1;
+    if (trace_input < 0) trace_input = getenv("RECOMP_DEBUG_INPUT") != NULL;
+    const RecompPad *old = &io(rt)->live[port];
+    if (trace_input && (old->connected != pad->connected || old->buttons != pad->buttons ||
+                       old->stick_x != pad->stick_x || old->stick_y != pad->stick_y)) {
+        RECOMP_LOG("input", "port=%u connected=%s buttons=0x%04x stick=(%d,%d)",
+            port, pad->connected ? "yes" : "no", pad->buttons, pad->stick_x, pad->stick_y);
+    }
+#endif
     io(rt)->live[port] = *pad; return true;
 }
 RecompIOStats recomp_io_stats(Runtime *rt) { return io(rt)->stats; }

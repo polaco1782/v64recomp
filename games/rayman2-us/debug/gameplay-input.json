@@ -1,0 +1,73 @@
+{
+  "format_version": 1,
+  "rom_sha1": "50558356b059ad3fbaf5fe95380512b9dceaaf52",
+  "description": "Native Debug presentation-clock replay: forward, jump, attack and turn in the initial scene; not wall-clock keyboard timing.",
+  "events": [
+    {
+      "frame": 0,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 0
+    },
+    {
+      "frame": 270,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 80
+    },
+    {
+      "frame": 300,
+      "buttons": 32768,
+      "stick_x": 0,
+      "stick_y": 80
+    },
+    {
+      "frame": 312,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 80
+    },
+    {
+      "frame": 330,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 0
+    },
+    {
+      "frame": 390,
+      "buttons": 32768,
+      "stick_x": 0,
+      "stick_y": 0
+    },
+    {
+      "frame": 408,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 0
+    },
+    {
+      "frame": 430,
+      "buttons": 16384,
+      "stick_x": 0,
+      "stick_y": 0
+    },
+    {
+      "frame": 448,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 0
+    },
+    {
+      "frame": 480,
+      "buttons": 0,
+      "stick_x": 80,
+      "stick_y": 0
+    },
+    {
+      "frame": 510,
+      "buttons": 0,
+      "stick_x": 0,
+      "stick_y": 0
+    }
+  ]
+}
