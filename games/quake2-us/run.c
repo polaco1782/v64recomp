@@ -98,7 +98,8 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
         recomp_store(&rt,boot_parameters[i][0],boot_parameters[i][1],4);
     RecompClockConfig clock={.ticks_per_second=BOOT_COUNTER_HZ,.now_ns=guest_time};
     RecompSchedulerConfig scheduler={.thread_tail=BOOT_THREAD_TAIL,.run_queue=BOOT_RUN_QUEUE,
-        .active_queue=BOOT_ACTIVE_QUEUE,.running_thread=BOOT_RUNNING_THREAD};
+        .active_queue=BOOT_ACTIVE_QUEUE,.running_thread=BOOT_RUNNING_THREAD,
+        .idle_thread=BOOT_IDLE_THREAD};
     RecompPlatformConfig platform={.vi_period_ticks=781250,.vi_clock=BOOT_VI_CLOCK,
         .clock_rate=BOOT_CLOCK_RATE,.final_rom=BOOT_FINAL_ROM,.app_nmi_buffer=0x8000031c};
     wall_origin=recomp_game_monotonic();
