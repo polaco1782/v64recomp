@@ -1,10 +1,5 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/oot.us.v12.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/oot.us.v12.z64.sram")
-set(RECOMP_OOT_FPS "60" CACHE STRING "OOT interpolated display FPS (0 for original rate)")
-if(NOT RECOMP_OOT_FPS MATCHES "^(0|[1-9][0-9]*)$" OR
-   (NOT RECOMP_OOT_FPS EQUAL 0 AND (RECOMP_OOT_FPS LESS 10 OR RECOMP_OOT_FPS GREATER 1000)))
-    message(FATAL_ERROR "RECOMP_OOT_FPS must be 0 (original) or 10..1000")
-endif()
+
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_jpeg)
-set_property(SOURCE "${RECOMP_GAME_DIR}/${RECOMP_APP}" APPEND PROPERTY COMPILE_DEFINITIONS RECOMP_OOT_FPS=${RECOMP_OOT_FPS})

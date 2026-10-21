@@ -12,7 +12,7 @@ from common import RecompError, load_metadata
 from emit import decode
 from export_analysis_rom import load_analysis_rom
 from generate_game import GAMES
-from metadata_candidates import materialized_entries, pointer_entries
+from metadata_candidates import materialized_entries, owned_ranges, pointer_entries
 
 
 def number(value: str) -> int:
@@ -37,18 +37,6 @@ def mapped_range(metadata: dict, value: str) -> dict:
         raise RecompError(f'unaligned or unmapped range: {value}')
     return dict(section=section['id'], vram=low, size=high-low,
                 rom_offset=section['rom_offset']+low-section['vram'])
-
-
-def owned_ranges(function: dict) -> list[dict]:
-    """Scan contiguous owned runs, without treating gaps in a function span as code."""
-    runs = []
-    for pc in function['instruction_addresses']:
-        if runs and runs[-1]['vram'] + runs[-1]['size'] == pc:
-            runs[-1]['size'] += 4
-        else:
-            runs.append(dict(vram=pc, size=4,
-                             rom_offset=function['rom_offset']+pc-function['vram']))
-    return runs
 
 
 def inspect_callbacks(rom: bytes, metadata: dict, text: list[dict], data: list[dict],
@@ -84,13 +72,13 @@ def inspect_callbacks(rom: bytes, metadata: dict, text: list[dict], data: list[d
         if address % 4 or record(address) is None:
             raise RecompError(f'target {address:#010x} is unaligned or outside the selected text ranges')
 
-    def reference(address: int, kind: str, pc: int, source: dict, function: dict | None = None):
+    def reference(address: int, kind: str, pc: int, source: dict, function: dict | None = None, **details):
         item = record(address)
         if item is None:
             return
         item['references'].append(dict(kind=kind, pc=pc, section=source['section'],
             rom_offset=source['rom_offset']+pc-source['vram'],
-            function=function['name'] if function else None))
+            function=function['name'] if function else None, **details))
 
     # Empty ownership lets the helpers report known targets as well as candidates.
     # Ownership is classified above using section IDs, including shared-tail gaps.
@@ -101,8 +89,9 @@ def inspect_callbacks(rom: bytes, metadata: dict, text: list[dict], data: list[d
         for candidate in candidates:
             address = candidate['vram']
             if not targets or address in targets:
-                for pc in candidate['materialized_sources']:
-                    reference(address, 'materialized-address', pc, source, function)
+                for use in candidate['address_uses']:
+                    reference(address, use['kind'], use['pc'], source, function,
+                              **{k:v for k,v in use.items() if k not in ('kind','pc')})
         for pc in function['instruction_addresses']:
             offset = function['rom_offset']+pc-function['vram']
             word = int.from_bytes(rom[offset:offset+4], 'big')

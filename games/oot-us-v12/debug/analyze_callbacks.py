@@ -34,7 +34,7 @@ def main() -> None:
         text.append(dict(section, size=text_size))
         data.append(dict(section, vram=section['vram']+data_start,
             rom_offset=section['rom_offset']+data_start, size=section['size']-data_start))
-    for overlay in json.loads((base/'overlays.json').read_text()):
+    for overlay in profile['discovery']['overlays']:
         section = sections[overlay['name']]
         if overlay['text_size']:
             text.append(dict(section, size=overlay['text_size']))

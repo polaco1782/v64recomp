@@ -41,6 +41,7 @@ These are the investigation tools and when to use them:
 | `tools/disassemble_function.py` | Resolve a generated name such as `recomp_s3_7f068008` through `symbols.json` and disassemble its verified MIPS instructions. |
 | `tools/dump_cpu_code.py` | Export all checked CPU text as a packed binary, disassembly and address manifest, plus the separate IPL3 boot block; see [CPU code dumps](dumping-cpu-code.md). |
 | `tools/inspect_callbacks.py` | Find callback address materializations, direct/checked callers and bounded data pointers; show MIPS context, ownership and fingerprints without changing discovery metadata. |
+| `tools/inspect_function_candidates.py` | Find potentially missing entries from owned address-producing code, image-wide pointers, stack frames and direct calls in candidate bodies; report bounded control-flow and ownership checks. |
 | `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
 | `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |
 | `tools/controller_replay.py` | Convert existing ROM-bound replay JSON to the debug app's text input format. |
@@ -185,6 +186,7 @@ Read these artifacts before trying to compile:
 | Artifact | Evidence to inspect |
 | --- | --- |
 | `symbols.json` | `sections`, function names/aliases, `instruction_addresses`, `discovery_errors`, `unvisited_ranges`, discovery origins and issues. |
+| `function-candidates.json` | Unregistered entry candidates, source sites, first-16-byte fingerprints and bounded body checks. Generated before translation for every game; candidates are not added to the registry automatically. |
 | `coverage.json` | `summary`, each function's `status` and `errors`, metadata issues and code inventory completeness. |
 | `pending-boundaries.json`, if the adapter emits it | Explicit unimplemented function bodies that will fail if reached. |
 
@@ -248,6 +250,49 @@ functions in `tools/metadata_candidates.py` propose pointer/materialized-address
 candidates; they are not a standalone CLI or proof of code. Full classifications
 have a different schema validated by `tools/code_inventory.py`.
 
+Review `function-candidates.json` before progressing a partial port. Generation
+scans address arithmetic, register copies, stored addresses and call arguments
+in owned code, plus aligned pointers throughout the verified analysis image.
+The image-wide scan also sees script operands and asset callback records outside
+the CPU load mappings. A bounded body probe checks instruction validity, control
+flow and overlap with owned code; clean candidate bodies expose further direct
+callees. Checked switch-table words and already owned interiors are excluded.
+Stack frames supply additional candidates for routines without pointer references.
+
+Discovery also follows proven constant callback flows automatically for partial
+profiles with checked registered-call policy. It traces entry arguments through
+register copies along a callee's owned control flow to `jalr`, including delay
+slots, branch-likely paths and call clobbers. If an owned caller passes a constant
+mapped code address in that argument, discovery adds the unowned target and
+repeats until no new entries appear. Constant `jalr` targets are handled too.
+Recovered functions have origin `inferred-callback` and `entry_sources` recording
+the caller, instruction word, argument, callee and consuming indirect-call sites.
+Mutable memory values, raw pointer matches and prologue guesses do not authorize
+this inference; complete checked code inventories retain their existing entries.
+
+Reports in `build/` are ignored by Git. Preserve reviewed, validated discoveries
+in the game's checked `startup-entries.json` or code inventory, with its analysis
+ROM identity, entry fingerprint and useful source evidence. An inferred callback
+can be retained as a `checked-root` after review. Generation does not rewrite
+these inputs; speculative candidates remain diagnostic output.
+
+To collect source evidence for existing entries too, such as a callback that
+previously crashed and has since been registered:
+
+```sh
+.venv/bin/python tools/inspect_function_candidates.py --game duke-zero-hour-us \
+  --metadata build/duke-zero-hour-us-debug/generated/duke-zero-hour-us/symbols.json \
+  --include-registered --output build/duke-zero-hour-functions.json
+```
+
+`likely` prioritizes review; it does not prove function boundaries or callback ABI.
+`review` retains uncertain bodies and weaker evidence. Random pointer-only hits
+that fail the body check are counted separately. Check each source, the actual
+table/bytecode consumer and the complete body before adding a checked entry or
+table to discovery. This scan does not recover code that preparation has not
+decompressed/mapped, runtime-generated addresses, or relocated pointers whose
+source representation differs from the mapped address.
+
 For `unresolved indirect transfer`, inspect the exact `jr`/`jalr` and preceding
 instructions, including the delay slot. Determine whether it is a switch, callback,
 tail call or saved return. A checked switch table needs its instruction `pc`,
@@ -256,6 +301,15 @@ count from the bounds check, not from how many following words resemble pointers
 `jump_tables` describes local computed jumps; `function_tables` describes indirect
 calls. Explicit `transfers` handles proven fixed target sets and return patterns.
 The existing [Duke startup metadata](../games/duke-us/profile.toml) provides examples.
+
+Keep these declarations in the game's single `profile.toml`, including overlay
+load mappings and game-specific table configuration. Do not keep a second JSON
+configuration inventory for dispatches or overlays. Compressed tables use the
+same `jump_tables` / `function_tables` fields; the game's `prepare()` resolves
+their bytes and preserves the instruction, bounds, fingerprint and target checks.
+For example, GoldenEye resolves its `jump_tables` from verified decompressed
+startup data, while OoT reads its overlay mappings from `discovery.overlays`.
+ROM-bound JSON code/entry inventories remain separate evidence files.
 
 `allow_registered_indirect_calls` permits runtime lookup only with a checked
 code/entry inventory. It does not discover missing entries or make arbitrary
@@ -607,11 +661,9 @@ issues but cannot validate audio. A successful build, report, headless startup o
 nonzero frame counter alone does not prove rendered gameplay or a complete port.
 
 After changing discovery/emission/runtime behavior, run the focused checks for
-that change and any affected game's reproduction. The portable diagnostic-tool
-checks added with this guide run without ROM assets:
+that change and any affected game's reproduction. Check the final diff too:
 
 ```sh
-.venv/bin/python -m unittest discover -s tools/tests -p test_porting_tools.py -v
 git diff --check
 ```
 

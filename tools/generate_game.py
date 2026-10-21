@@ -69,6 +69,11 @@ def generate(game: str, output: Path, report_only: bool) -> None:
     if hasattr(generator,'finalize_metadata'):generator.finalize_metadata(rom,metadata,profile)
     write_json(output/'symbols.json',metadata)
     metadata=load_metadata(output/'symbols.json',rom)
+    from inspect_function_candidates import inspect_candidates
+    candidates=inspect_candidates(rom,metadata)
+    write_json(output/'function-candidates.json',candidates)
+    print(f"{game}: unregistered function candidates {candidates['summary']}; "
+          f"see {output/'function-candidates.json'} (review required)",flush=True)
     if not report_only and hasattr(generator,'configure_translation'):
         generator.configure_translation(rom,metadata,profile,output)
     # Complete-inventory ports retain the translator's checks for discovery
@@ -84,7 +89,7 @@ def generate(game: str, output: Path, report_only: bool) -> None:
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
     (output/'sources.cmake').write_text(manifest)
     outputs=[p.name for p in [*sources,*output.glob('*.h'),output/'sources.cmake',
-                             output/'symbols.json',output/'coverage.json']]
+                             output/'symbols.json',output/'coverage.json',output/'function-candidates.json']]
     (output/'outputs.json').write_text(json.dumps(outputs))
     # Input changes can leave CPU bytes identical. Preserve their timestamps so
     # build tools only recompile files whose content actually changed.

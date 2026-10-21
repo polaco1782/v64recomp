@@ -55,7 +55,8 @@ static void capture_renderer(void) {
     CHECK(rs.graphics_tasks==rendered_tasks && rs.sp_callbacks==rendered_tasks && rs.dp_callbacks==rendered_tasks && rs.presentations==presentations);
     char path[4096];CHECK(snprintf(path,sizeof(path),"%s/window.ppm",output)>0);CHECK(recomp_renderer_capture(renderer,path));
     FILE *f=artifact("renderer_results.json","w");
-    fprintf(f,"{\"graphics_tasks\":%u,\"sp_callbacks\":%" PRIu64 ",\"dp_callbacks\":%" PRIu64 ",\"presentations\":%u,\"startup_tasks_captured\":%u,\"audio_synthesized\":%s,\"submit_ns\":%" PRIu64 ",\"present_ns\":%" PRIu64 ",\"textures_dumped\":%" PRIu64 ",\"textures_replaced\":%" PRIu64 ",\"replacement_files\":%" PRIu64 "}\n",rendered_tasks,rs.sp_callbacks,rs.dp_callbacks,presentations,graphics-rendered_tasks,AUDIO_SYNTHESIZED,rs.submit_ns,rs.present_ns,rs.textures_dumped,rs.textures_replaced,rs.replacement_files);
+    fprintf(f,"{\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64 ",",rs.display_frames,rs.display_elapsed_ns);
+    fprintf(f,"\"graphics_tasks\":%u,\"sp_callbacks\":%" PRIu64 ",\"dp_callbacks\":%" PRIu64 ",\"presentations\":%u,\"startup_tasks_captured\":%u,\"audio_synthesized\":%s,\"submit_ns\":%" PRIu64 ",\"present_ns\":%" PRIu64 ",\"textures_dumped\":%" PRIu64 ",\"textures_replaced\":%" PRIu64 ",\"replacement_files\":%" PRIu64 "}\n",rendered_tasks,rs.sp_callbacks,rs.dp_callbacks,presentations,graphics-rendered_tasks,AUDIO_SYNTHESIZED,rs.submit_ns,rs.present_ns,rs.textures_dumped,rs.textures_replaced,rs.replacement_files);
     CHECK(!fclose(f));
 }
 static void finish_audio(void) {
@@ -98,7 +99,9 @@ static bool submit(Runtime *rt,void *unused,const RecompTask *task) {
                 ready=true;memcpy(start_pos,last_pos,sizeof(start_pos));max_height=min_height=last_pos[1];
                 printf("Mario controllable in level %u after %u world frames.\n",level,world_frames);fflush(stdout);
                 char data[4096];CHECK(snprintf(data,sizeof(data),"%s/rt64-data",output)>0);
-                if(!renderer) { renderer=recomp_renderer_create_named(rt,data,"Super Mario 64");CHECK(renderer); }
+                if(!renderer) {
+                    renderer=recomp_renderer_create_named(rt,data,"Super Mario 64");CHECK(renderer);
+                }
                 if(!live_startup) { recomp_audio_set_output_enabled(native_audio,true);playback_origin=monotonic_ns();clock_origin=ns; }
                 if(!goal && !live_clock) { wall_origin=monotonic_ns();clock_origin=ns;live_clock=true; }
             }

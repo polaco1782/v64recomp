@@ -20,7 +20,6 @@ Raw discovery, without the explicit failing runtime boundaries:
 ```sh
 .venv/bin/python tools/generate_game.py --game conker-us \
   --output build/conker-us-report --report-only
-.venv/bin/python -m unittest discover -s tools/tests
 ```
 
 ## Observed runtime and current work
@@ -198,13 +197,11 @@ provided pointers, graphics buffers and audio resume remain strictly checked.
 
 Save setup at `0x1501c5d4` requires a 16 Kbit EEPROM. The adapter configures
 2048 bytes at the selected save path; checked SDK probe/read/write variants use
-the shared service. `runtime/tests/eeprom_blocks.c` verifies exact eight-byte
-transfers and persisted reloads independently of the game.
+the shared service.
 
 The shared VI mode service clears its initial BLACK state as the SDK does;
 framebuffer swaps retain explicit blanking. Cartridge bus reads preserve the
-low virtual boot/pager mappings. Focused fixtures under `runtime/tests/` cover
-these fixes. Shared emitter tests are under `tools/tests/`.
+low virtual boot/pager mappings.
 
 `debug/analyze_switches.py` reports candidates for review and never edits profiles.
 Keep runtime artifacts ignored and preserve the matching evidence for any new

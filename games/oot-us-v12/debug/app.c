@@ -152,7 +152,6 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Ocarina of Time IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "The Legend of Zelda: Ocarina of Time");
     require(renderer != NULL, "Ocarina of Time renderer initialization failed", 0);
-    recomp_renderer_set_frame_rate(renderer, RECOMP_OOT_FPS);
     RecompAudioConfig ac = {.output_enabled=true, .playback=getenv("RECOMP_AUDIO_MUTE") == NULL,
         .prebuffer_ms=160,
         .microcode=RECOMP_AUDIO_NEAD_OOT, .task_profile=&oot_audio_task_profile,
@@ -224,8 +223,8 @@ int main(int argc, char **argv) {
     FILE *f = fopen(report_path, "w");
     require(f != NULL, "cannot open Ocarina of Time report", 0);
     fprintf(f, "{\"jpeg_tasks\":%u,", jpeg_tasks);
-    fprintf(f, "\"target_fps\":%u,\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64 ",",
-            (unsigned)RECOMP_OOT_FPS, rs.display_frames, rs.display_elapsed_ns);
+    fprintf(f, "\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64 ",",
+            rs.display_frames, rs.display_elapsed_ns);
     int written = fprintf(f, "\"bss_cleared\":true,\"bss_guard_verified\":true,"
             "\"main_state\":\"%s\",\"main_entry\":%u,\"main_thread\":%u,"
             "\"main_id\":%d,\"main_priority\":%d,\"main_stack\":%u,\"registered_functions\":%zu,"

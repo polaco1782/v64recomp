@@ -88,22 +88,35 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
 
 
 def checked_dispatches(rom: bytes, profile: dict) -> None:
-    """Bind frozen local jump targets to the ROM's initialized data tables."""
-    project = Path(__file__).resolve().parents[2]
-    document=json.loads((project/'games/goldeneye-us/dispatches.json').read_text())
-    if document.get('format_version')!=1 or document.get('rom_sha1')!=profile['game']['rom_sha1']:
-        raise RecompError('GoldenEye dispatch inventory belongs to another ROM')
+    """Resolve profile jump tables from the verified compressed startup data."""
     data=startup_data(rom,profile['bootstrap'])
-    for transfer in document['transfers']:
-        offset=transfer['table_vram']-profile['bootstrap']['data_address']
-        size=transfer['table_count']*4
-        if offset<0 or size<=0 or offset+size>len(data):
+    transfers=[]
+    for table in profile['discovery'].get('jump_tables', []):
+        address,count=table['table_vram'],table['count']
+        if (type(address) is not int or type(count) is not int or address%4
+                or not 0<count<=4096):
+            raise RecompError('invalid GoldenEye checked dispatch table')
+        offset=address-profile['bootstrap']['data_address']
+        size=count*4
+        if offset<0 or offset+size>len(data):
             raise RecompError('GoldenEye jump table outside initialized data')
         raw=data[offset:offset+size]
-        if (hashlib.sha256(raw).hexdigest()!=transfer['table_sha256']
-                or sorted({int.from_bytes(raw[i:i+4],'big') for i in range(0,size,4)})!=transfer['targets']):
-            raise RecompError(f'GoldenEye jump table fingerprint/targets mismatch at {transfer["pc"]:#010x}')
-    profile['discovery']['transfers'].extend(document['transfers'])
+        if hashlib.sha256(raw).hexdigest()!=table['sha256']:
+            raise RecompError(f'GoldenEye jump table fingerprint mismatch at {table["pc"]:#010x}')
+        indices=table.get('indices',list(range(count)))
+        if (not isinstance(indices,list) or not indices
+                or any(type(i) is not int or not 0<=i<count for i in indices)
+                or len(set(indices))!=len(indices)):
+            raise RecompError('invalid GoldenEye checked dispatch table indices')
+        transfers.append(dict(pc=table['pc'],expected_word=table['expected_word'],kind='jump',
+            targets=sorted({int.from_bytes(raw[i*4:i*4+4],'big') for i in indices}),
+            table_vram=address,table_count=count,table_sha256=table['sha256']))
+        if 'indices' in table:
+            transfers[-1]['table_indices']=indices
+    # These tables live outside the CPU ROM mappings. Resolve their bytes here;
+    # discovery still checks each transfer instruction and every target mapping.
+    profile['discovery']={**profile['discovery'],'jump_tables':[],
+        'transfers':[*profile['discovery'].get('transfers',[]),*transfers]}
 
 
 def validate_idle_loop(rom: bytes, profile: dict) -> None:

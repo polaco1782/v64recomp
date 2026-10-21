@@ -24,6 +24,65 @@
       "sha256": "c85ebbe6d1b26a57074a4ea74e9e47e834884a4e283594a39bcad8dd29e64c7d"
     },
     {
+      "vram": 2147533080,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "materialized_sources": [
+        2147533024
+      ],
+      "body_size": 52,
+      "body_sha256": "d3dad7d2cdc1383eaafad630b51c2ba9735ed2c633baca59b1b76aef69494393",
+      "entry_sources": [
+        {
+          "argument_register": 4,
+          "callee": 2147565312,
+          "expected_word": 201347008,
+          "function": 2147532992,
+          "indirect_calls": [
+            {
+              "expected_word": 42006537,
+              "pc": 2147565428
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566080
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566132
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566220
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566276
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566364
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566424
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566512
+            },
+            {
+              "expected_word": 42006537,
+              "pc": 2147566616
+            }
+          ],
+          "kind": "call-argument",
+          "pc": 2147533036,
+          "section": 0
+        }
+      ]
+    },
+    {
       "vram": 2147540608,
       "origin": "checked-root",
       "sha256": "008e6bde1905e87bcb9ed46078c1ed53272fa2ea205f187447b5d718bdb8ffdf"
