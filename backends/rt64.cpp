@@ -6,6 +6,7 @@
 #include "rhi/rt64_render_hooks.h"
 #include "imgui.h"
 #include "textures.h"
+#include "cheat_menu.h"
 #ifdef RECOMP_DEBUG
 #include "debug_overlay.h"
 #endif
@@ -39,6 +40,9 @@ struct RecompRenderer {
     bool custom_gbi=false;
     std::thread::id owner=std::this_thread::get_id();
     std::unique_ptr<RT64::Application> app;
+    std::unique_ptr<RecompCheatMenu> cheat_menu;
+    SDL_EventFilter previous_event_filter=nullptr;
+    void *previous_event_userdata=nullptr;
 #ifdef RECOMP_DEBUG
     std::unique_ptr<RecompDebugOverlay> debug_overlay;
     RecompDebugGeometryStats debug_geometry;
@@ -95,9 +99,16 @@ static void display_draw(plume::RenderCommandList *list,plume::RenderFramebuffer
     trace_frame(s,"display");
 #ifdef RECOMP_DEBUG
     if(s->debug_overlay)s->debug_overlay->draw(list,s->display_frames.load(),now);
-#else
-    (void)list;
 #endif
+    if(s->cheat_menu)s->cheat_menu->draw(list);
+}
+static int menu_event_filter(void *opaque,SDL_Event *event) {
+    auto *s=static_cast<RecompRenderer *>(opaque);
+    // F12 must reach the shared menu even when RT64's inspector captures keys.
+    // While open, route UI events to the owner instead of the inspector.
+    if((event->type==SDL_KEYDOWN || event->type==SDL_KEYUP) && event->key.keysym.scancode==SDL_SCANCODE_F12)return 1;
+    if(s->cheat_menu && s->cheat_menu->open())return 1;
+    return s->previous_event_filter?s->previous_event_filter(s->previous_event_userdata,event):1;
 }
 static void interrupts() {
     RecompRenderer *s=active_renderer;
@@ -254,6 +265,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->debug_overlay=std::make_unique<RecompDebugOverlay>(*s->app);
         s->app->appWindow->sdlCheckFilterInstallation();
 #endif
+        s->cheat_menu=std::make_unique<RecompCheatMenu>(*s->app,rt,data_path);
+        SDL_GetEventFilter(&s->previous_event_filter,&s->previous_event_userdata);
+        SDL_SetEventFilter(menu_event_filter,s.get());
         s->textureFiles.configure(*s->app->textureCache);
         if (const char *source = std::getenv("RECOMP_TEXTURE_SCAN"); source && *source) {
             const char *raw = std::getenv("RECOMP_TEXTURE_SCAN_RAW");
@@ -294,6 +308,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     } catch(const std::exception &e) {
         std::fprintf(stderr,"RT64 setup: %s\n",e.what());
         SDL_SetEventFilter(nullptr,nullptr);
+        s->cheat_menu.reset();
 #ifdef RECOMP_DEBUG
         s->debug_overlay.reset();
 #endif
@@ -329,8 +344,9 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     s->textureCapture.reset();
     if(s->textureScan)s->textureScan->stop();
     SDL_SetEventFilter(nullptr,nullptr);
-#ifdef RECOMP_DEBUG
     s->wait_texture_reload();
+    s->cheat_menu.reset();
+#ifdef RECOMP_DEBUG
     s->debug_overlay.reset();
 #endif
     if(s->ready) { s->wait_workers();s->app->end(); }
@@ -391,6 +407,15 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
     }
     while(SDL_PollEvent(&event)) {
         if(event.type==SDL_QUIT)return false;
+        s->cheat_menu->event(event);
+        if(s->cheat_menu->open()) {
+            const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+            // RT64 draws its inspector after the external render hook. Close
+            // it so it cannot cover the menu or retain keyboard/mouse capture.
+            if(s->app->presentQueue->inspector)
+                s->app->processDeveloperShortcut(RT64::Application::DeveloperShortcut::Inspector);
+        }
+        if(s->cheat_menu->captures_input())continue;
         if(event.type==SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode==SDL_SCANCODE_F5) {
             s->wait_texture_reload();s->textureFiles.refreshAndToggle(*s->app->textureCache);
         }
@@ -409,7 +434,9 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
         }
 #endif
     }
+    s->cheat_menu->update();
     *pad={};pad->connected=true;
+    if(s->cheat_menu->captures_input())return true;
     if(!(SDL_GetWindowFlags(s->window)&SDL_WINDOW_INPUT_FOCUS))return true;
 #ifdef RECOMP_DEBUG
     {

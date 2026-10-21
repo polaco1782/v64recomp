@@ -221,7 +221,11 @@ D-pad remains the N64 D-pad. See [Steam Deck support](docs/steamdeck.md) for the
 selectable Steam Input template and installation instructions.
 
 Arrow keys move the stick; A/X/Z are N64 A/B/Z; S is Start; C/V are L/R;
-I/J/K/L are C buttons. Escape or window close exits. F5 reloads texture packs
+I/J/K/L are C buttons. F12 opens the shared GameShark cheat menu in Debug and
+Release. It downloads ROM-specific codes from Mupen64Plus and Project64 and
+caches them for offline use; downloading requires `curl` on `PATH`. See
+[cheat support and implementation](docs/cheats.md).
+Escape or window close exits. F5 reloads texture packs
 and toggles original/replacement textures. Packs default to
 `local/textures/<game>/replacements`; `RECOMP_TEXTURE_REPLACEMENTS` overrides this
 path (an empty value disables packs). Rendering uses 4x resolution, 4x MSAA,
