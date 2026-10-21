@@ -29,6 +29,12 @@ allow_registered_indirect_calls = true
 # geometry data. Include the full table, including handlers not yet exercised.
 function_tables = [
   {pc = 0x800dd5e0, expected_word = 0x0320f809, table_vram = 0x80130e70, count = 102, sha256 = "3cb6618896b7b7eda414371a1805792da9fce28f8cf498c5836f105c768e5ac6"},
+  # Thinker save/load descriptors: twelve 20-byte records and a zero terminator.
+  # Each record is {class, thinker, archive, restore, size}. Both walkers advance
+  # by 0x14 and stop at class zero. Hash all 65 words; select every nonnull
+  # callback at offsets 8 (archive) and 12 (restore), skipping the three null pairs.
+  {pc = 0x801187f0, expected_word = 0x0040f809, table_vram = 0x80132120, count = 65, indices = [2, 7, 12, 17, 22, 27, 32, 42, 57], sha256 = "926f032d31d29e8ad68e76a371679ba6bb17469bb11e774e86523982149b5fb8"},
+  {pc = 0x801188f4, expected_word = 0x0060f809, table_vram = 0x80132120, count = 65, indices = [3, 8, 13, 18, 23, 28, 33, 43, 58], sha256 = "926f032d31d29e8ad68e76a371679ba6bb17469bb11e774e86523982149b5fb8"},
 ]
 
 # Each dispatch count follows its unsigned ROM bounds check.
