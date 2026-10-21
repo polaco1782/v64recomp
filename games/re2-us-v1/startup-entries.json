@@ -1,0 +1,499 @@
+{
+  "format_version": 1,
+  "rom_sha1": "2f0e5888ecbf875f74322f3ad4c0e07c676723b3",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2147799440,
+      "origin": "checked-root",
+      "sha256": "1ba258f9dc6aa0271dfdffb024c20e0b629d7e3f08a8f469b5035669e0f0812c",
+      "evidence": "osCreateThread argument at 0x8004d368, call 0x8004d378"
+    },
+    {
+      "vram": 2148042344,
+      "origin": "checked-root",
+      "sha256": "b6d12fa686452830d7f52d88bc8cb767098030a7289fddc913ed70bb3ddccfe0",
+      "evidence": "Constant a2 to osCreateThread at 0x80088964"
+    },
+    {
+      "vram": 2147926228,
+      "origin": "checked-root",
+      "sha256": "5e91c3cf1c10838c39f508166f742d7dab7aa852d4c9ed4555478cd39eaefd77",
+      "evidence": "Constant a2 to osCreateThread at 0x8006cc30"
+    },
+    {
+      "vram": 2147502312,
+      "origin": "checked-root",
+      "sha256": "5de72f9b4a39bfddc7603667e8f000905bafe5ed8c5ec6c898740870e3f7b97c",
+      "evidence": "zlib stream allocator/free field store at 0x800030b8; consumed via jalr"
+    },
+    {
+      "vram": 2147502348,
+      "origin": "checked-root",
+      "sha256": "c655d12ea8dea077bad44c6b959d801eddb63b698691f7d13c18277b763fa642",
+      "evidence": "zlib stream allocator/free field store at 0x800030d4; consumed via jalr"
+    },
+    {
+      "vram": 2147488160,
+      "origin": "checked-root",
+      "sha256": "2266cbed47ec5618a85320612402049e433a3df5739f789889a0fee1c348e212",
+      "evidence": "Constant checksum callback at 0x8000314c"
+    },
+    {
+      "vram": 2147648232,
+      "origin": "checked-root",
+      "sha256": "f770a3903e2b0860fcf53c6c46ad0ac8710ff306464abd9ec9bb8cae5a18ec00",
+      "evidence": "Constant a2 to osCreateThread at 0x8006c224"
+    },
+    {
+      "vram": 2147924724,
+      "origin": "checked-root",
+      "sha256": "5df8fd9636a68f482da254b152c6c0cf124d85c5b810b9ffd09881a0229323c8",
+      "evidence": "Constant a2 to osCreateThread at 0x8006c2dc"
+    },
+    {
+      "vram": 2147925684,
+      "origin": "checked-root",
+      "sha256": "ab83dc4834712d310c814bc03f0adce90c4f83e36f35ffd667b168405224b00f",
+      "evidence": "Constant a2 to osCreateThread at 0x8006c328"
+    },
+    {
+      "vram": 2148040912,
+      "origin": "checked-root",
+      "sha256": "e728c0300603ce40559bdbae1aa676605ab11c4f807f3ff0017b775016aee56b",
+      "evidence": "Constant a2 to osCreateThread at 0x8006c384"
+    },
+    {
+      "vram": 2147640848,
+      "origin": "checked-root",
+      "sha256": "b9dc3c13afb3027c846e94fe019352d9ec1a620c64b6b1720f0bed37d24d0350",
+      "evidence": "0x800265d4 passes callback to 0x8004cd54; store +0x1b8 at 0x8004cd78; load to osCreateThread a2 at 0x8004cb50/0x8004cb60"
+    },
+    {
+      "vram": 2147924436,
+      "origin": "checked-root",
+      "sha256": "c0b902a4ec6a29aa2c9226e5559838df4b9841941bdb413559725d5d0000d710",
+      "evidence": "Audio callback struct 0x8012bac0 slot 0; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2147924464,
+      "origin": "checked-root",
+      "sha256": "5e41159654629dc86e527bbc7c36ec6f8b9b1c0ce322b5f9ac858b024d25e78d",
+      "evidence": "Audio callback struct 0x8012bac0 slot 1; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2147924412,
+      "origin": "checked-root",
+      "sha256": "9b7324b9a44763a832c83e02f1e8794f390f2dab08d7180ed7f2f9779ba9155f",
+      "evidence": "Audio callback struct 0x8012bac0 slot 2; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2147924424,
+      "origin": "checked-root",
+      "sha256": "1782b5fdc82bf94e7048bddfbe3429346b3b9154d43f52d2484849062fd4a37d",
+      "evidence": "Audio callback struct 0x8012bac0 slot 3; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2148042532,
+      "origin": "checked-root",
+      "sha256": "b2a9af6ca0359444a11a39a09d4745bb90a6d1bb4650dd1a9093d178df22add2",
+      "evidence": "Audio callback struct 0x8012bac0 slot 4; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2148041584,
+      "origin": "checked-root",
+      "sha256": "2094aceae628ac09cb7296c53ee4cea791c27248ad5e0b04581cec555bdc2617",
+      "evidence": "Audio callback struct 0x8012bac0 slot 5; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2148041608,
+      "origin": "checked-root",
+      "sha256": "c6f27542abd0c73acc764445e5d81c7cef1ef2de9c8e777a1dc599ca768df2b1",
+      "evidence": "Audio callback struct 0x8012bac0 slot 6; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2148041880,
+      "origin": "checked-root",
+      "sha256": "3223541877d1c83ef41382a53d77fc27698da3ed1543ca27f5b183859c76b1d0",
+      "evidence": "Audio callback struct 0x8012bac0 slot 7; copied by 0x800b1fc0 to 0x80143ff0; slot 6 consumed at 0x800a50c4"
+    },
+    {
+      "vram": 2148148576,
+      "origin": "checked-root",
+      "sha256": "29da2f8a2e16d0dc4ba0c70360b43879cebcd59d9d96d938335c5fcb97bad5c5",
+      "evidence": "osCreateThread a2 at 0x800a50d8/0x800a50f8"
+    },
+    {
+      "vram": 2148157668,
+      "origin": "checked-root",
+      "sha256": "864bc92d8d120bd1d075dd705420037c695c3eabc1656e545978a64872b4effa",
+      "evidence": "Audio completion callback passed to copied struct slot 2 by 0x800a4eac/0x800a4ed4; 0x8006b9bc stores it and 0x8006ba98 invokes it"
+    },
+    {
+      "vram": 2148219804,
+      "origin": "checked-root",
+      "sha256": "e3ef5062f0035722352566da090d20b81d6cdb7ba622b2966df1061f6a6d6460",
+      "evidence": "Audio hook stored at 0x800b41dc into 0x80143fd8; loaded at 0x800a48e8 and called at 0x800a491c"
+    },
+    {
+      "vram": 2148222272,
+      "origin": "checked-root",
+      "sha256": "78f6f28ad10734bb761d9c1995cfaa21193c14f9bf5c94c50ee1b90d788dcd10",
+      "evidence": "Audio hook stored at 0x800b46dc into 0x80143fd4; loaded at 0x800a49d8 and called at 0x800a49e8"
+    },
+    {
+      "vram": 2147646080,
+      "origin": "checked-root",
+      "sha256": "8c20836476abf8ba64798cc2e8a5b6e76702beaa48a3bcfef9cc699578879c22",
+      "evidence": "Thread callback passed in a1 at 0x80026728 to 0x8004cd54; stored in thread slot, consumed by osCreateThread at 0x8004cb60."
+    },
+    {
+      "vram": 2147679544,
+      "origin": "checked-root",
+      "sha256": "e110215a3a835eeb4736e8a8f86c7fab091a2fbd4ed403fa0123198119e284ef",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147679988,
+      "origin": "checked-root",
+      "sha256": "cc10e259bf47e1826d84123952a2297e7ea63dacb1035b87ce8378f0604f89e1",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147680236,
+      "origin": "checked-root",
+      "sha256": "c8ea37ac45803e38fd47b033ca798d7339fd4ea71547c700e4a7f60beeafde83",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147680540,
+      "origin": "checked-root",
+      "sha256": "62659fbd71123869cf325e76805799f01fc552b4c91c16e26a3e62c5685878a7",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147680860,
+      "origin": "checked-root",
+      "sha256": "22b6d0779cc0b472e51d8339a0383f8409a271fe7f35100f989633db357cbf9d",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147681060,
+      "origin": "checked-root",
+      "sha256": "22b6d0779cc0b472e51d8339a0383f8409a271fe7f35100f989633db357cbf9d",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147681260,
+      "origin": "checked-root",
+      "sha256": "e5aec47c48dd346248ccf2b667c5301200f6a54844a6cb368ad908f23c540e78",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147682540,
+      "origin": "checked-root",
+      "sha256": "0f881cdd7f5ef7154d2cf0b1260f59b80f4df6b9439548bba3f7f5e75359c8db",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147682876,
+      "origin": "checked-root",
+      "sha256": "0f881cdd7f5ef7154d2cf0b1260f59b80f4df6b9439548bba3f7f5e75359c8db",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147683212,
+      "origin": "checked-root",
+      "sha256": "d1423011fd2fd4317e82e8601e4f9145811c4648e7342a99108a5c4d274ff7e9",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147683596,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "0x80030dd8..0x80030e58 initializes 11 method slots in a 0x50-byte object table; pointer installed at object+4, loaded for JALR by 0x8002d1a4..0x8002d1b0"
+    },
+    {
+      "vram": 2147668324,
+      "origin": "checked-root",
+      "sha256": "422809c3165bbcfc81e5c5d48d448eab10544b12023e300eb243bad83d9e198f",
+      "evidence": "0x8002d1c0..0x8002d244 initializes 0x60-byte callback table at object+0x174; repeated default slots plus explicit dispatch callbacks"
+    },
+    {
+      "vram": 2147667028,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "0x8002d1c0..0x8002d244 initializes 0x60-byte callback table at object+0x174; repeated default slots plus explicit dispatch callbacks"
+    },
+    {
+      "vram": 2147667744,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "evidence": "0x8002d1c0..0x8002d244 initializes 0x60-byte callback table at object+0x174; repeated default slots plus explicit dispatch callbacks"
+    },
+    {
+      "vram": 2147666108,
+      "origin": "checked-root",
+      "sha256": "e5aec47c48dd346248ccf2b667c5301200f6a54844a6cb368ad908f23c540e78",
+      "evidence": "0x8002d1c0..0x8002d244 initializes 0x60-byte callback table at object+0x174; repeated default slots plus explicit dispatch callbacks"
+    },
+    {
+      "vram": 2147661840,
+      "origin": "checked-root",
+      "sha256": "abff83ff3afc68d4167c3a35823bf746a3dc45fa4430e19264e02659bd5b83e4",
+      "evidence": "0x8002d1c0..0x8002d244 initializes 0x60-byte callback table at object+0x174; repeated default slots plus explicit dispatch callbacks"
+    },
+    {
+      "vram": 2147662656,
+      "origin": "checked-root",
+      "sha256": "1be2395cb9be70808778dbd1847ae52e68014d4afa7501da0c14cd7089ebbc7d",
+      "evidence": "0x8002d1c0..0x8002d244 initializes 0x60-byte callback table at object+0x174; repeated default slots plus explicit dispatch callbacks"
+    },
+    {
+      "vram": 2147674128,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "evidence": "Five method pointers initialized by 0x8002e894..0x8002e8cc; object method +0x10 consumed by JALR at 0x800287b0."
+    },
+    {
+      "vram": 2147674220,
+      "origin": "checked-root",
+      "sha256": "f10e5e336e5fb76e6def91eb6fe9dbb0a6adb09eaa07aced495e21d6525df078",
+      "evidence": "Five method pointers initialized by 0x8002e894..0x8002e8cc; object method +0x10 consumed by JALR at 0x800287b0."
+    },
+    {
+      "vram": 2147674184,
+      "origin": "checked-root",
+      "sha256": "e57e5ca5fb1e3624a97bd2c2281c5cd7e31e9cd360336f7fd8e38c910340610f",
+      "evidence": "Five method pointers initialized by 0x8002e894..0x8002e8cc; object method +0x10 consumed by JALR at 0x800287b0."
+    },
+    {
+      "vram": 2147674228,
+      "origin": "checked-root",
+      "sha256": "a69988d8c114e5d6b21cb40ecb23fac62d8955166ea435c9bc33b09e5b286e29",
+      "evidence": "Five method pointers initialized by 0x8002e894..0x8002e8cc; object method +0x10 consumed by JALR at 0x800287b0."
+    },
+    {
+      "vram": 2147674236,
+      "origin": "checked-root",
+      "sha256": "328be58f9c894b6e0d159c506f391cd75bf048269ed00efaa68b47e698f3fb13",
+      "evidence": "Five method pointers initialized by 0x8002e894..0x8002e8cc; object method +0x10 consumed by JALR at 0x800287b0."
+    },
+    {
+      "vram": 2147650992,
+      "origin": "checked-root",
+      "sha256": "4294c0e5c9b145c87a1f6cfb895011e1f2411050b878301000fdd16e1bc1973f",
+      "evidence": "0x80028f60..0x80028f9c initializes five methods at offsets 8..0x18 in object+0x14; method +8 consumed by JALR at 0x800287d0."
+    },
+    {
+      "vram": 2147651008,
+      "origin": "checked-root",
+      "sha256": "5849c71e35a928316dce5989b784c2517a8ef7e041377fe3e13a59e3da77482c",
+      "evidence": "0x80028f60..0x80028f9c initializes five methods at offsets 8..0x18 in object+0x14; method +8 consumed by JALR at 0x800287d0."
+    },
+    {
+      "vram": 2147651204,
+      "origin": "checked-root",
+      "sha256": "76f9adc7329bb6fb8f7ffea8f936392f7856640aa02e5ea86ba5b3bf0a478d10",
+      "evidence": "0x80028f60..0x80028f9c initializes five methods at offsets 8..0x18 in object+0x14; method +8 consumed by JALR at 0x800287d0."
+    },
+    {
+      "vram": 2147667932,
+      "origin": "checked-root",
+      "sha256": "88cccc931511352a96a7af4cd68e28d6294c9b58700dd3b7d154cc9d68f8a4dd",
+      "evidence": "0x80028f60..0x80028f9c initializes five methods at offsets 8..0x18 in object+0x14; method +8 consumed by JALR at 0x800287d0."
+    },
+    {
+      "vram": 2147651324,
+      "origin": "checked-root",
+      "sha256": "1a8ec5879e38e1dd4148a7059ac0e8f0ef429d4c42b83320009abcb2642bab32",
+      "evidence": "0x80028f60..0x80028f9c initializes five methods at offsets 8..0x18 in object+0x14; method +8 consumed by JALR at 0x800287d0."
+    },
+    {
+      "vram": 2147671004,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "evidence": "0x8002dddc..0x8002ddf8 initializes method pointers at object+0x164; loaded and called by 0x800288c0."
+    },
+    {
+      "vram": 2147671348,
+      "origin": "checked-root",
+      "sha256": "8ac45dda0a608dd2e61e5e52043e2d47f0e0d65677cfbdf819da85f0070e660c",
+      "evidence": "0x8002dddc..0x8002ddf8 initializes method pointers at object+0x164; loaded and called by 0x800288c0."
+    },
+    {
+      "vram": 2147651536,
+      "origin": "checked-root",
+      "sha256": "c8049325833c43274008919ba9b07357c20bc74422170e1fbe608438a8459a3b",
+      "evidence": "0x800292cc..0x800292dc: method for object+0x16c; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147652512,
+      "origin": "checked-root",
+      "sha256": "5bfaed1e74951c1e5d288737b1fcdc35334292dd31d383d0a40d4b5dda49b8ba",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147653192,
+      "origin": "checked-root",
+      "sha256": "58ec47b49c747c3b281a19d36f2e3e1541c1592e5e1010bf3234f34988cc8129",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147679164,
+      "origin": "checked-root",
+      "sha256": "942b7d905d120d135da6a7613dcffd60d81d029409a8b61ce97f84899e4e8d30",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147678340,
+      "origin": "checked-root",
+      "sha256": "e51d3d1c1d4ed315b3af8d634ee0c8e6f58043ac3af2e22a7ff4ebca5d71c440",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147676960,
+      "origin": "checked-root",
+      "sha256": "2ab9a3b1401ad4956f95b7f748399f3a696d1597fcb9fe8511133206f47419bd",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147675600,
+      "origin": "checked-root",
+      "sha256": "a68c4464df43140ce11724e1465f320da100cbb34c08910035ebed7a5fb5aedd",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147674368,
+      "origin": "checked-root",
+      "sha256": "d7e30953fab62bc4c613572de277f30cb38141a3f4329a4149506f002dc5ba6b",
+      "evidence": "0x80029734..0x80029804: methods for object+0x17c; type 1/2/4/8 selects per-channel callback; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147653792,
+      "origin": "checked-root",
+      "sha256": "1968945c3f2ae4444bdfef765dc1bbdc489962dc49e6ec1078e1d0ebe1a691ae",
+      "evidence": "0x8002a524..0x8002a53c: methods for object+0x178; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147655592,
+      "origin": "checked-root",
+      "sha256": "e4b46321311e25df931cd9db5b7c9b25f94c67a27e53984298b03d41738e175a",
+      "evidence": "0x8002a524..0x8002a53c: methods for object+0x178; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147658288,
+      "origin": "checked-root",
+      "sha256": "ee6ec371940e173e2646bce829ab1c8f7def1215f65c5dcaa87a48b624b2644e",
+      "evidence": "0x8002ad98..0x8002ada8: method for object+0x168; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147671568,
+      "origin": "checked-root",
+      "sha256": "d1b0fb7ca2b75069d9755269e89bd77a847656f44a43cd085df46158dd2ec79d",
+      "evidence": "0x8002e528..0x8002e5a8: methods for object+0x180; format selects method +4/+0xc; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147671828,
+      "origin": "checked-root",
+      "sha256": "bf3d129ee8b258d50f769e76f041b3f35e3fe73dc35ea6b48b6599ffb458220a",
+      "evidence": "0x8002e528..0x8002e5a8: methods for object+0x180; format selects method +4/+0xc; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147672676,
+      "origin": "checked-root",
+      "sha256": "84ec336fd047c9693e0b7a31a29c03ab32db6a0d0a4ec50ddcfb128e577f4a37",
+      "evidence": "0x8002e528..0x8002e5a8: methods for object+0x180; format selects method +4/+0xc; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147672132,
+      "origin": "checked-root",
+      "sha256": "8d5330e39abb9762e77a0ae52177669dd40baa209f93c0bf5f15a6a9d17b1b33",
+      "evidence": "0x8002e528..0x8002e5a8: methods for object+0x180; format selects method +4/+0xc; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147672232,
+      "origin": "checked-root",
+      "sha256": "2af53e98968455a38e7c107a12bc90d4abe6c929a2f863dda3e51f26162fabca",
+      "evidence": "0x8002e528..0x8002e5a8: methods for object+0x180; format selects method +4/+0xc; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147673552,
+      "origin": "checked-root",
+      "sha256": "edec3d5936a8d7cbb5c9f5804cf9622eda8dfb008466b41fd51ac22fce789cbb",
+      "evidence": "0x8002e730..0x8002e73c: method for object+0x170; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147685008,
+      "origin": "checked-root",
+      "sha256": "c1efba93af012b7ce846fb953bb5734bafdf91773dcc7ebf8e99623227313e70",
+      "evidence": "0x80031368..0x80031390: three methods for the returned 0x30-byte object; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147685016,
+      "origin": "checked-root",
+      "sha256": "240e289cb093a9e6b19893aa99c378c35593f5ea78b70a955c74ecd0a8ee2809",
+      "evidence": "0x80031368..0x80031390: three methods for the returned 0x30-byte object; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147684816,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "0x80031368..0x80031390: three methods for the returned 0x30-byte object; constructor instructions verified against prepared image."
+    },
+    {
+      "vram": 2147658440,
+      "origin": "checked-root",
+      "sha256": "f7d0b27b7e91bc9dbe8f482660ad683e33699a1eb9a1a25be3f455e14d4b2b46",
+      "evidence": "0x8002aa84..0x8002aa8c sets method +4 in object+0x168; consumer in 0x80028a20"
+    },
+    {
+      "vram": 2147651660,
+      "origin": "checked-root",
+      "sha256": "5a062eab99e479a6b13082c1b2a5daf3647b40f98e9be79df998606a181bcea1",
+      "evidence": "0x8002901c sets callback in the object+0x16c method structure"
+    },
+    {
+      "vram": 2148905008,
+      "origin": "checked-root",
+      "sha256": "d7cad6488fc97691de585109fccfe44f6a3e17745f826dea15696bcaf0863fe7",
+      "evidence": "Overlay table record 3; complete decoded bytes match runtime RAM. Thread entry consumed by osCreateThread at 0x8004cb60 after loading record 3."
+    },
+    {
+      "vram": 2149059792,
+      "origin": "checked-root",
+      "sha256": "e3e034423b812ef6ff7f209137c43a8a110deab1437150761b0d79dc57cad341",
+      "evidence": "0x800273e4 calls 0x8004cc5c with index zero; record at 0x8010b2e0 selects overlay2 and callback 0x80180cd0, consumed at 0x8004cc90."
+    },
+    {
+      "vram": 2148196724,
+      "origin": "checked-root",
+      "sha256": "43aa11c17cf95b1212d5d757c233fb58432c953eb7083ce2fb3483b36b18efee",
+      "evidence": "0x800adfcc..0x800adfe0 supplies fifth stack argument to binary search at 0x800adff4; callee 0x800ab43c loads it at 0x800ab444 and calls via fp at 0x800ab4a0."
+    },
+    {
+      "vram": 2148196676,
+      "origin": "checked-root",
+      "sha256": "43aa11c17cf95b1212d5d757c233fb58432c953eb7083ce2fb3483b36b18efee",
+      "evidence": "0x800ad9e4/0x800ad9e8 materializes/stores fifth stack argument to binary search 0x800ab43c; consumed by JALR at 0x800ab4a0."
+    },
+    {
+      "vram": 2148196692,
+      "origin": "checked-root",
+      "sha256": "3a9d0285d7aa94d68471901617bd4bead97ff235da395ad20d93ad42e0b0ff9b",
+      "evidence": "0x800ada80/0x800ada98 materializes/stores fifth stack argument to binary search 0x800ab43c; consumed by JALR at 0x800ab4a0."
+    },
+    {
+      "vram": 2148196708,
+      "origin": "checked-root",
+      "sha256": "43aa11c17cf95b1212d5d757c233fb58432c953eb7083ce2fb3483b36b18efee",
+      "evidence": "0x800adf04/0x800adf14 and 0x800adf64/0x800adf74 materializes/stores fifth stack argument to binary search 0x800ab43c; consumed by JALR at 0x800ab4a0."
+    },
+    {
+      "vram": 2148196740,
+      "origin": "checked-root",
+      "sha256": "3a9d0285d7aa94d68471901617bd4bead97ff235da395ad20d93ad42e0b0ff9b",
+      "evidence": "0x800ae070/0x800ae088 materializes/stores fifth stack argument to binary search 0x800ab43c; consumed by JALR at 0x800ab4a0."
+    }
+  ]
+}

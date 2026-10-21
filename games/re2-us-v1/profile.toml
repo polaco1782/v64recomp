@@ -1,0 +1,152 @@
+# Resident Evil 2 US, header revision 1 (the supplied GoodN64 dump).
+[game]
+name = "Resident Evil 2 (US, revision 1)"
+rom = "../../local/re2.us.rev1.z64"
+rom_sha1 = "62ec19bead748c12d38f6c5a7ab0831edbd3d44b"
+rom_size = 0x4000000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+code_sections = [".boot", ".main", ".overlay3", ".overlay2"]
+boot_sections = [".boot"]
+
+[discovery]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+regions = [
+  {name = ".boot", vram = 0x80000480, rom_offset = 0x1000, size = 0x13420},
+  {name = ".main", vram = 0x80018a80, rom_offset = 0x4000000, size = 0x11e310},
+  {name = ".overlay3", vram = 0x8015b030, rom_offset = 0x411e310, size = 0x6cc0},
+  {name = ".overlay2", vram = 0x8017b410, rom_offset = 0x4124fd0, size = 0xc0a0},
+]
+# Counts are the unsigned SLTIU bounds before the checked JR, after any
+# index bias. Each digest covers the entire table, including default entries.
+jump_tables = [
+  # Menu selection byte is unsigned <8 at 0x8015b868.
+  {pc = 0x8015b884, expected_word = 0x00400008, table_vram = 0x80160420, count = 8, sha256 = "0fb5b74f2c2419ad06bd28f5c22605a99d88fc719e14ff8c4cbcfc0e8570deaa"},
+  # Movie stream extension type minus one is unsigned <10 at 0x8017d678.
+  {pc = 0x8017d68c, expected_word = 0x00400008, table_vram = 0x80184af0, count = 10, sha256 = "c8a78e727f9f4df02f0c0f616503941cd66c89b2794a42b3ecafa6d8b623bce9"},
+  {pc = 0x800ac9cc, expected_word = 0x00400008, table_vram = 0x800ba860, count = 6, sha256 = "dc1b238adb149efb51b6a0bd52433dca7aca8988d5ace0d5b681226a5b2be042"},
+  {pc = 0x800aca3c, expected_word = 0x00400008, table_vram = 0x800ba878, count = 6, sha256 = "81ddffc4c932c1e67f9a4f171b1ed308eb99f5a5736d49d9a5bbf8d4077551b7"},
+  {pc = 0x800acb40, expected_word = 0x00400008, table_vram = 0x800ba890, count = 6, sha256 = "06d11eb5eea58cb7c06e31178936bda2c4b1c5974865214354769d6652d2ded3"},
+  {pc = 0x800b0104, expected_word = 0x00400008, table_vram = 0x800ba8b0, count = 5, sha256 = "01dcf2016cba249a9ade4687418cf3fd163137e5051785a49976516b31a52bdc"},
+  {pc = 0x800b0678, expected_word = 0x00400008, table_vram = 0x800ba8c8, count = 114, sha256 = "c008dff18adee94ac64b54f1b157e91b55fff67260b5f6174ba937d9a2f8b203"},
+  {pc = 0x80004dc4, expected_word = 0x00400008, table_vram = 0x80011910, count = 16, sha256 = "53f2aa3fe6224fa90712b0522b27dbdd43474cc50f057c915633223d459f6864"},
+  {pc = 0x8004c2ac, expected_word = 0x00400008, table_vram = 0x800b8ab0, count = 17, sha256 = "efb1841fdf67ccf3bf719456e2c8d947f5af8c2aed17e6352752c3479ec3c05f"},
+  {pc = 0x8002458c, expected_word = 0x00400008, table_vram = 0x800b69b0, count = 6, sha256 = "1b8a83e3e7ebb4c696339e4f1ceb6b0139f4beaae9e597574390148f0473deb4"},
+  {pc = 0x80024814, expected_word = 0x00400008, table_vram = 0x800b69e0, count = 6, sha256 = "c7e7e593f6d8ddcd0c7ef6d820762e5c826e19d3175b20c8420dc5d1a25cee68"},
+  {pc = 0x8002d5b4, expected_word = 0x00400008, table_vram = 0x800b6ec0, count = 5, sha256 = "5f07013a35ddd17f447f748ecdabed1bdc28fc089d9f1019592a19d2d054d4d9"},
+  {pc = 0x8004b108, expected_word = 0x00400008, table_vram = 0x800b8a48, count = 7, sha256 = "3c76341528a97b2855be9cf99714a2d6b86d0e9999f7d4bd5ed509e4924f7629"},
+  {pc = 0x8004bcb8, expected_word = 0x00400008, table_vram = 0x800b8a68, count = 17, sha256 = "d2f3e87df9dc0fcce7cdbbc0bfb788dbbd5ba1563edfaff6af78b486ae20970d"},
+  {pc = 0x80088194, expected_word = 0x00400008, table_vram = 0x800b9dd0, count = 8, sha256 = "909a85293c8f15ee5284c7ac442b8ae9dd3949772e4996e211073589f87ae604"},
+  {pc = 0x800a7bd0, expected_word = 0x00400008, table_vram = 0x800ba780, count = 6, sha256 = "f06f68c92a3ead2708499a29fdd1495851c55bc5c9d714ceaca3a199d57231b9"},
+  {pc = 0x8000246c, expected_word = 0x00400008, table_vram = 0x800116b8, count = 10, sha256 = "eeebe3c31310bae2007de71afb1f0ed186af4ec72ba9cc2f43b6312ec5fd1162"},
+  {pc = 0x8006c53c, expected_word = 0x00400008, table_vram = 0x800b9508, count = 12, sha256 = "b29aa61e061689631f8c8ef8e1ecdc13bbf98c837b97a1d0017da5dde3f93945"},
+  {pc = 0x8009f648, expected_word = 0x00400008, table_vram = 0x800ba580, count = 5, sha256 = "6317432f87bbfe600bd48b9de94f5c4e6428931dc3bc401ec92dd3af57d84694"},
+  {pc = 0x80001724, expected_word = 0x00400008, table_vram = 0x80011658, count = 10, sha256 = "b18036e5f1dce4c926133fe982c38f36dbd0e51009d5718eb691e145397d3a16"},
+  {pc = 0x8006c414, expected_word = 0x00400008, table_vram = 0x800b94c8, count = 16, sha256 = "e9b6fd597476b29aacfe09385d83aee9ab98cdae7645485b59f985275f9560b5"},
+  # inflate mode is unsigned < 14 at 0x800031fc.
+  {pc = 0x80003218, expected_word = 0x00400008, table_vram = 0x80011790, count = 14, sha256 = "9ed900d94e63f8b37da9af7de44ca52c49d8a6956238420348c5d7346c58de2b"},
+]
+# Sound state 0..3 at 0x80012884, set by 0x80004ab4/4c20/4c5c/4c84.
+function_tables = [
+  # Overlay 3 states 0..4. The <2 test at 0x8015b08c selects extra drawing,
+  # not the dispatch bound. State 1 increments to 2 at 0x8015b478;
+  # state 0 selects 3 at 0x8015b218; state 3 increments to 4 at 0x8015d8a8.
+  {pc = 0x8015b0b0, expected_word = 0x0040f809, table_vram = 0x80160b38, count = 5, sha256 = "7364503bb2e1c853ec646478a0698f3fdc0706ada024ebbfcb5e514a298fd8fe"},
+  # State 2's six substate handlers, followed by packed resource IDs.
+  {pc = 0x8015b4b4, expected_word = 0x0040f809, table_vram = 0x80160b4c, count = 6, sha256 = "70976b9caf82a20c617886f19f2c736579484caf58ec9f69fc61e636f9fe48e0"},
+  # State 4's two handlers; the following word begins UI geometry.
+  {pc = 0x8015d8e4, expected_word = 0x0040f809, table_vram = 0x80160b70, count = 2, sha256 = "f1d93af62572664eff4e791ec237d959235e1bbcb02062e127e282b0ba0e119a"},
+  {pc = 0x80004bd0, expected_word = 0x0040f809, table_vram = 0x8001288c, count = 4, sha256 = "08c95593f0d5cf50d2474a557ed2dc64a996de06512605a3f771c106bbd2a6e4"},
+]
+roots = [{name = "system_main", vram = 0x8004d344}]
+
+# Startup 0x80000598 selects record 1 through 0x80001180 and inflates it.
+# These are cartridge offsets; the .main discovery offset is in the prepared image.
+[[discovery.overlays]]
+index = 1
+record_offset = 0x12ce0
+rom_offset = 0x14420
+compressed_size = 0x5e1ef
+vram = 0x80018a80
+size = 0x11e310
+section = ".main"
+sha256 = "daabf1d4dac248cf697ab7ed60aa1a6e0a555a26a56a154747fbd46b234c6673"
+
+# Runtime loader record 3: the second entry in the reusable thread slot.
+[[discovery.overlays]]
+index = 3
+record_offset = 0x12d00
+rom_offset = 0x7688e
+compressed_size = 0x237f
+vram = 0x8015b030
+size = 0x6cc0
+section = ".overlay3"
+sha256 = "6d9fbcbd1ff19ab43fcf03d18ba554901320c6418b366f4a5576012ac5903352"
+
+[[discovery.overlays]]
+index = 2
+record_offset = 0x12cf0
+rom_offset = 0x72610
+compressed_size = 0x427e
+vram = 0x8017b410
+size = 0xc0a0
+section = ".overlay2"
+sha256 = "62b0bb539478c4cf53453bd19e8fd949333b8a584b4ad5f5080ed58850c14ac2"
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000480
+initial_load_size = 0x13420
+bss_start = 0x800138a0
+bss_end = 0x80018a80
+system_entry = 0x80000520
+main_entry = 0x8004d344
+inflate_cleanup = 0x80004594
+main_address = 0x80018a80
+main_size = 0x11e310
+main_thread_entry = 0x8004d190
+main_thread_first_call = 0x8008af6c
+thread_tail = 0x80012940
+run_queue = 0x80012948
+active_queue = 0x8001294c
+running_thread = 0x80012950
+vi_clock = 0x800128c8
+clock_rate = 0x800128c0
+final_rom = 0x80014ff0
+boot_object = 0x807ff000
+boot_stack = 0x807fd000
+counter_hz = 46875000
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x800000
+
+# Complete custom watch-register helper. Only disabled watchpoints are supported.
+[[hooks]]
+symbol = "re2_disable_watch"
+vram = 0x800004f0
+kind = "replace_function"
+handler = "hook_re2_disable_watch"
+expected_words = [0x40849000, 0x40809800, 0x03e00008, 0]
+
+# Retire the synthetic IPL thread after the first real priority-zero thread starts.
+[[hooks]]
+symbol = "re2_start_thread"
+vram = 0x8000db90
+kind = "replace_function"
+handler = "hook_re2_start_thread"
+expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc001cb8, 0xafb10014, 0x96030010, 0x409021, 0x24020001, 0x10620008, 0x24020008, 0x1462001e, 0x24020002, 0xa6020010, 0x3c048001, 0x24842948, 0x800370d, 0x2002821, 0x8e020008, 0x50400006, 0x24020002, 0x3c118001, 0x26312948, 0x14510007, 0x2002821, 0x24020002, 0xa6020010, 0x3c048001, 0x24842948, 0x800370d, 0x2002821, 0x8e040008, 0x24020008, 0xc0003c2, 0xa6020010, 0x8e040008, 0xc0003d4, 0x0, 0x2202021, 0x402821, 0xc0003c2, 0x0, 0x3c048001, 0x8c842950, 0x14800005, 0x0, 0xc0003d8, 0x0, 0x8003722, 0x0, 0x3c028001, 0x8c422948, 0x8c830004, 0x8c420004, 0x62182a, 0x10600005, 0x24020002, 0xa4820010, 0x3c048001, 0xc000375, 0x24842948, 0xc001cc0, 0x2402021, 0x8fbf001c, 0x8fb20018, 0x8fb10014, 0x8fb00010, 0x3e00008, 0x27bd0020]
+
+# Custom audio-buffer cache-line allocation; complete seven-instruction body.
+[[hooks]]
+symbol = "re2_cache_allocate"
+vram = 0x80135cb0
+kind = "replace_function"
+handler = "hook_re2_cache_allocate"
+expected_words = [0x00041025, 0x24420010, 0x0045082b, 0x1420fffd, 0xbc4dfff0, 0x03e00008, 0]
