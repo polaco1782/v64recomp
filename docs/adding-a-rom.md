@@ -321,10 +321,11 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    extensions; an unknown RSP task is not fixed by declaring it standard graphics
    or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
 5. Run the scheduler, input, presentation and deadlines from the app loop. Keep SDL
-   input/window operations on their owner thread. Join workers before teardown.
+   input/window operations and synchronous HLE on their owner thread. Drain RT64
+   queues and destroy backends before runtime teardown.
    Once the guest clock follows wall time and its priority-zero idle thread has
    been verified/configured, prefer `recomp_game_pace(rt, deadline)` between
-   presentations so VI/AI/timers and completed RSP workers remain serviced.
+   presentations so VI/AI/timers and queued RSP completions remain serviced.
    Keep synthetic-clock bootstrap, calibration, busy-poll handling and
    frame-exact diagnostic routes in the adapter when they need different
    behavior. See the game-by-game [pacing policy](profiling.md#frame-pacing-and-stutter).
@@ -556,14 +557,15 @@ Follow the bad value to its writer, rather than changing the final check:
    move. Guest RAM is word-swapped: byte address `p` is stored at `rdram[p ^ 3]`,
    a 16-bit access at `p ^ 2`, and an aligned 32-bit word at `p`. Arbitrary byte
    dumps are not big-endian ROM bytes. Do not use a direct-RAM watchpoint formula
-   for custom virtual mappings or a worker's separate RAM snapshot.
+   for custom virtual mappings.
 5. Fix the lifetime, mapping, ABI or instruction semantics that produced the bad
    state. Rerun the original trigger and continue beyond it; check the evidence
    that would have detected the old failure.
 
-A concrete example is OOT's `guest wrote an in-flight task output` at physical
+A historical example from the former snapshot/worker backend is OOT's
+`guest wrote an in-flight task output` at physical
 `0x003ff003`. It fell within the synthetic IPL object at guest `0x803ff000`, which
-overlapped memory reused for a framebuffer. `recomp_worker_merge` correctly detected
+overlapped memory reused for a framebuffer. The former merge helper detected
 conflicting writes. A stopped guest thread still had scheduler-synchronized state;
 stopping it did not release the RAM. The fix retires it from `oot_prepare_call`
 at `0x80005f20`, before graphics submission, with a debug guard that it is dead.

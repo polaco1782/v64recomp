@@ -38,7 +38,7 @@ flowchart TD
     Output --> Play
     Play --> Exit{"Close or frame limit?"}
     Exit -->|No| Play
-    Exit -->|Yes| Cleanup["Drain workers and finalize captures<br/>Destroy backends, then runtime<br/>Free ROM memory"]
+    Exit -->|Yes| Cleanup["Drain RT64 queues and finalize captures<br/>Destroy backends, then runtime<br/>Free ROM memory"]
     Play -->|"Controlled failure"| Crash["Shared crash JSON + RDRAM snapshot"]
     Generate -->|"Discovery or translation issue"| Review["Inspect evidence and fix owning layer"]
     Crash --> Review
@@ -97,7 +97,7 @@ the generated source list, and unchanged generated content keeps its timestamps
 to avoid unnecessary recompilation. Game-specific preparation and configuration
 stay in `games/<game>/generate.py`.
 
-## Runtime, devices and worker completion
+## Runtime, devices and task completion
 
 Startup details vary by game. The common structure allocates guest RDRAM and the
 compiled function registry, attaches verified ROM content through
@@ -125,13 +125,13 @@ flowchart TD
     OS --> IO["Controller and save services<br/>Guest structures, EEPROM, SRAM or Pak"]
     IO --> Files["Persistent files in local/"]
     IO --> Events
-    OS --> SP["Submit supported graphics or audio task<br/>One active SP task<br/>Take private RAM snapshot"]
+    OS --> SP["Submit supported graphics or audio task<br/>One active SP task<br/>Park guest for owner processing"]
     RAM --> SP
     SP --> Kind{"Task type"}
-    Kind -->|Graphics| Video["n64-video worker<br/>RT64 display-list processing and readbacks"]
-    Kind -->|Audio| Audio["n64-audio worker<br/>Validate microcode and DSP commands<br/>Synthesize PCM in private RAM"]
+    Kind -->|Graphics| Video["Owner: RT64 display-list processing<br/>Readbacks use live RAM"]
+    Kind -->|Audio| Audio["Owner: validate microcode and DSP commands<br/>Synthesize PCM in live RAM"]
     Video --> GPU["RT64 render and presentation queues<br/>Vulkan GPU → window"]
-    Video --> Merge["Host commits changed task output bytes<br/>Retain unrelated guest writes<br/>Reject conflicting writes"]
+    Video --> Merge["HLE returns with output in live RAM<br/>Queue task completion receipts"]
     Audio --> Merge
     Merge --> Events["Post applicable device completion events<br/>SP/DP, PI, SI and AI messages"]
     Merge --> RAM
@@ -148,16 +148,16 @@ flowchart TD
     Present -->|Exit| Drain["Drain outstanding work<br/>Finalize enabled captures and statistics<br/>Destroy backends before runtime"]
 ```
 
-Graphics and audio workers can overlap guest CPU execution. Both use private
-snapshots; worker output reaches guest RAM before the associated completion is
-published. Graphics task completion follows display-list processing, readbacks
-and copying of render inputs; it does not wait for GPU presentation. Guest AI
-completion follows the modeled guest clock rather than the host sound device.
+Graphics HLE parsing, readbacks and audio DSP run synchronously on the owner
+while guest CPU execution is parked. They use live RAM without full-memory
+snapshots or merges. Graphics completion follows display-list processing,
+readbacks and capturing render inputs; RT64 rendering and presentation remain
+asynchronous. Guest AI completion follows the guest clock rather than the host
+sound device. See [native threading](threading.md) for the RAM ownership contract.
 
 Custom paging, overlay loading, relocation and graphics extensions belong to the
 game adapter. Section load state determines which compiled guest addresses are
-callable. The scheduler still allows only one guest CPU thread to execute at a
-time, even while processing workers are active.
+callable. The scheduler allows only one guest CPU thread to execute at a time.
 
 ## Thread ownership and concurrency
 
@@ -171,13 +171,14 @@ priorities do not determine libultra scheduling.
 flowchart LR
     subgraph Owner["Main host thread / scheduler owner"]
         SDL["SDL window and controller events<br/>PCM queue admission and frame pacing"]
-        Host["Run scheduler and host callbacks<br/>Poll timers, devices and worker receipts"]
+        Host["Run scheduler and host callbacks<br/>Poll timers, devices and task receipts"]
         Dispatch["Pick highest-priority ready guest<br/>Signal its condition variable"]
-        Submit["Validate task and reserve SP<br/>Snapshot live RAM into before + working buffers"]
-        Commit["Collect finished job<br/>Merge changed output and check conflicts<br/>Publish completion messages"]
+        Submit["Validate task and reserve SP<br/>Execute HLE synchronously using live RAM"]
+        Commit["Poll queued SP/DP receipts<br/>Publish completion messages"]
         SDL --> Host
         Host --> Dispatch
         Host --> Submit
+        Submit --> Commit
         Commit --> Host
     end
     subgraph Guests["Guest CPU pthreads — one execution token"]
@@ -191,10 +192,6 @@ flowchart LR
         Game --> Callback
         Sound --> Callback
     end
-    subgraph Workers["Persistent processing workers — private RAM"]
-        Video["n64-video pthread<br/>RT64 display-list processing"]
-        Audio["n64-audio pthread<br/>Native DSP synthesis"]
-    end
     subgraph Renderer["RT64 internal threads and GPU"]
         Render["Workload/render queues<br/>Rendering and supporting workers"]
         Present["Presentation thread<br/>GPU scheduling and window output"]
@@ -204,11 +201,7 @@ flowchart LR
     Dispatch -->|"Select one"| Sound
     Return --> Host
     Callback -->|"Owner executes; guest then resumes"| Host
-    Submit -->|"Graphics job"| Video
-    Submit -->|"Audio job"| Audio
-    Video -->|"Finished processing and readbacks"| Commit
-    Audio -->|"Finished DSP output"| Commit
-    Video -->|"Copied render inputs"| Render
+    Submit -->|"Captured graphics inputs"| Render
     Park -. "Message, start or wake makes eligible" .-> Dispatch
 ```
 
@@ -231,59 +224,44 @@ sequenceDiagram
     participant H as Main host / scheduler
     participant A as Guest pthread A
     participant B as Guest pthread B
-    participant W as Task worker
     H->>A: Grant execution token
     A->>A: osRecvMesg with blocking flag; queue empty
     A->>H: Mark WAIT_RECV, release token and park
     Note over A: Native stack and MipsContext remain intact
     H->>B: Grant token to next ready guest
-    par Guest CPU work
-        B->>B: Execute compiled game code
-        B->>H: Block or reach checkpoint yield
-    and Previously submitted worker job
-        W->>W: Process private RAM snapshot
-        W-->>H: Job result ready for collection
-    end
-    H->>H: Poll receipts and merge task output
+    B->>H: Submit task through recomp_on_host; park B
+    H->>H: Process HLE using live RAM; queue completion
+    H-->>B: Owner callback returns; resume B
+    B->>H: Block or reach checkpoint yield
+    H->>H: Poll queued task receipts
     H->>H: Deliver registered completion message
     H->>H: Make A ready; apply guest priority ordering
     H->>A: Grant token when A is selected
     A->>A: Original receive completes; continue same call stack
 ```
 
-This example uses a worker completion to satisfy the receive. Timer, VI, PI, SI
-and AI events or another guest's queue send can also wake a receiver. A full
+This example uses a queued HLE completion to satisfy the receive. Timer, VI, PI,
+SI and AI events or another guest's queue send can also wake a receiver. A full
 queue can similarly park a blocking sender until space becomes available.
 
 ### What can overlap
 
 | Execution context | Work and concurrency |
 | --- | --- |
-| Main host thread | Runs SDL and owner callbacks while the active guest is parked; collects results and updates shared device state. |
-| Selected guest pthread | Executes compiled CPU code with the execution token; other guest pthreads wait. |
-| Guest sound pthread | Builds audio lists as ordinary guest CPU work and shares the same execution token. |
-| `n64-audio` | Executes native DSP jobs against private RAM; can overlap guest CPU execution. |
-| `n64-video` | Processes RT64 display lists against private RAM; can overlap guest CPU execution. |
-| RT64 internal threads / GPU | Consume copied render inputs and handle rendering/presentation; can continue after graphics SP completion. |
-| SDL audio device thread | Consumes queued host PCM independently; does not drive the guest AI completion clock. |
+| Main host thread | Runs SDL, scheduling, graphics HLE and audio DSP while the guest is parked; waits while a guest owns the token. |
+| One guest pthread | Executes translated game code; other guest CPU pthreads remain parked. |
+| RT64 internal threads and GPU | Render and present captured workload data independently; can overlap guest CPU execution without accessing live guest RAM. |
+| SDL audio device thread | Consumes queued host PCM independently; does not drive guest AI completion timing. |
 
-Each processing worker accepts one job at a time. The shared SP service allows
-one active RSP task, so separate video and audio pthreads do not imply two
-simultaneous active guest SP tasks. Rendering and presentation can continue after
-the graphics SP task releases the processor for an audio task.
+The SP service allows one active task. HLE writes live RAM before queuing
+completion receipts; polling delivers SP before DP. Split lists without full
+sync retire after SP. A whole-list HLE call cannot be suspended midway through
+processing; a late yield polls its queued completion first.
 
-Snapshots and result commits occur under owner control while guest CPU execution
-is parked. For each byte, the merge compares the original snapshot, worker result
-and current guest RAM. Unchanged worker bytes are ignored. A changed worker byte
-is committed if live RAM still contains the original byte or already equals the
-result; a third, conflicting value triggers a controlled failure. The host posts
-completion only after that merge.
-
-Shutdown drains and joins workers before releasing their state, destroys
-backends before the runtime, and wakes/joins parked guest threads before freeing
-their storage. Worker failures preserve their originating native stack and are
-reported through the owner thread. See [native threading](threading.md) for the
-scheduler configuration and [audio](audio.md) for AI timing and SDL buffering.
+Shutdown drains RT64 queues, destroys backends before the runtime and joins guest
+threads before releasing their storage. HLE failures occur directly on the owner
+and use the shared crash reporter. See [native threading](threading.md) and
+[audio](audio.md) for memory ownership and buffering.
 
 ## Investigation and validation loop
 

@@ -115,11 +115,11 @@ void recomp_game_pace(Runtime *rt,uint64_t deadline) {
         uint64_t now=recomp_game_monotonic();
         if(now>=deadline)break;
         if(run==RECOMP_RUN_BUDGET)continue;
-        /* Completed workers and hardware events must wake the guest between
+        /* Queued task completions and hardware events must wake the guest between
          * display ticks. A full-frame sleep quantizes them to the host's 60 Hz
          * loop and can make the game miss the following retrace. */
         uint64_t wake=deadline-now>UINT64_C(1000000)?now+UINT64_C(1000000):deadline;
-        /* Preserve games' earlier VI/AI/timer wakeups as well as the worker
+        /* Preserve games' earlier VI/AI/timer wakeups as well as the service
          * polling limit. Their guest clocks must already follow wall time. */
         uint64_t event=recomp_platform_next_deadline(rt);
         uint64_t timer=recomp_clock_next_deadline(rt);

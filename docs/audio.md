@@ -6,21 +6,22 @@ using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
 ADPCM, codebooks, envelopes, four-tap resampling, mixing, reverb-buffer operations,
 filtering and stereo interleave write PCM into guest RAM. One SP completion is
-posted after synthesis. DSP tasks run on the persistent `n64-audio` pthread using
-a private RAM snapshot. The host merges task-modified bytes before publishing
-the SP event; unrelated guest writes are retained, and conflicting writes fail
-explicitly. No CPU or RSP instruction interpreter is linked.
+queued after synthesis. DSP tasks run synchronously on the main owner thread
+while the guest is parked by `recomp_on_host`. They read and write live guest
+RAM, including PCM and decoder history, without snapshots or deferred merges.
+The task service delivers SP events during polling. SDL playback remains
+asynchronous. No CPU or RSP instruction interpreter is linked.
 
 The native PI manager services accepted cartridge DMA submissions on the owner
 thread before returning to guest code. Deferring those transfers until a later
-scheduler poll can let an audio task snapshot stale sample data; Quake's streamed
+scheduler poll can let an audio task read stale sample data; Quake's streamed
 ADPCM samples exposed this ordering bug. DMA completion messages are posted after
 the copy, before the submitting guest resumes.
 
 Zelda FILTER setup copies coefficients into an RSP-local cache. Filter execution
 updates that cache and the 32-byte guest filter state, preserving the CPU-owned
 source table. This permits the game to prepare the following task's coefficients
-while synthesis runs. Source coefficients remain CPU-owned across filter execution.
+after synthesis returns. Source coefficients remain CPU-owned across filter execution.
 
 Games provide pinned task addresses and boot/text/data microcode hashes through
 `games/<game>/audio.h`. The shared adapter validates these fingerprints and each
@@ -75,7 +76,7 @@ enabled WAV capture and audio statistics.
 Rendered apps use absolute presentation deadlines. Ocarina of Time additionally
 runs bounded scheduler batches during the remaining interval, sleeping at most
 1 ms between batches. Its audio manager discards duplicate retrace messages;
-servicing VI/AI and worker completions during pacing prevents that coalescing
+servicing VI/AI and task completions during pacing prevents that coalescing
 from starving playback. Its debug executable supports `--audio-trace PATH` for a CSV of
 host timestamps, admitted frames, sample rate, SDL queue bytes and underruns.
 `RECOMP_AUDIO_TRACE=PATH` enables the same CSV for any build whose audio config

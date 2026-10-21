@@ -81,10 +81,11 @@ retrace, device completion or message send can wake the receiver; it resumes
 its existing call stack when scheduled. Returning immediately from every OS
 call would break this synchronization and change the game's behavior.
 
-Graphics and audio workers can run alongside guest CPU execution. Task workers
-use private RAM snapshots; their changed bytes are committed before the host
-publishes SP/DP completion events. AI buffer timing and completion are modeled
-by the runtime. SDL sound-device progress does not determine guest AI completion.
+Graphics HLE parsing and audio DSP run synchronously on the owner while the
+guest is parked. They use live RAM and finish their output writes before queuing
+SP/DP completion events. RT64 rendering and SDL playback remain asynchronous.
+AI buffer timing and completion are modeled by the runtime. SDL sound-device
+progress does not determine guest AI completion.
 
 ## How replacements are selected
 

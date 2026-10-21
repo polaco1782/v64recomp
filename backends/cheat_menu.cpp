@@ -108,8 +108,8 @@ void RecompCheatMenu::update() {
         ImGui::Render();
         draw_ready = true;
     }
-    // The owner is between guest dispatches and renderer worker receipts have
-    // been merged before input. The present thread never reads or writes RAM.
+    // The owner is between guest dispatches and synchronous HLE calls. The
+    // present thread never reads or writes guest RAM.
     for (const auto &cheat : catalog.cheats) if (cheat.enabled)
         recomp_cheats_apply(runtime, cheat.program.data(), cheat.program.size(), gs_button);
 }

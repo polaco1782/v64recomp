@@ -24,17 +24,11 @@
 #include <memory>
 #include <thread>
 #include <stdexcept>
-#include <vector>
 #include <unistd.h>
 
 struct RecompRenderer {
     Runtime *rt;
-    RecompWorker *worker=nullptr;
-    std::vector<uint8_t> before;
-    RecompTask pending{};
-    bool busy=false, presenting=false, registered=false;
     uint32_t code=0,data=0,list=0;
-    std::thread::id processing;
     RecompGraphicsHook graphics_hook=nullptr;
     RecompMicrocodeHook microcode_hook=nullptr;
     bool custom_gbi=false;
@@ -48,7 +42,6 @@ struct RecompRenderer {
     RecompDebugGeometryStats debug_geometry;
     uint64_t debug_workload_id=0;
 #endif
-    std::vector<uint8_t> ram=std::vector<uint8_t>(8*1024*1024);
     std::array<uint8_t,64> header{};
     std::array<uint8_t,4096> dmem{},imem{};
     uint32_t mi=0, dp_start=0,dp_end=0,dp_current=0,dp_status=0,dp_clock=0,dp_busy=0,dp_pipe=0,dp_tmem=0;
@@ -113,7 +106,7 @@ static int menu_event_filter(void *opaque,SDL_Event *event) {
 static void interrupts() {
     RecompRenderer *s=active_renderer;
     if(!s)recomp_fail("RT64 interrupt without renderer",0);
-    if(s->processing!=std::this_thread::get_id())recomp_fail("RT64 interrupt outside processing thread",0);
+    s->check_owner();
     uint32_t bits=s->mi&0x21u;s->mi&=~bits;
     if(!bits)return;
     if(!s->token)recomp_fail("RT64 interrupt without task token",0);
@@ -139,33 +132,10 @@ static void interrupts() {
     }
 }
 
-static void service_renderer(Runtime *rt,void *opaque,bool wait) {
-    RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
-    s->check_owner();
-    if(!s->busy || (!wait && !recomp_worker_ready(s->worker)))return;
-    s->busy=false;
-    recomp_worker_finish(s->worker);
-    if(s->presenting) { s->presenting=false;return; }
-    trace_frame(s,"graphics_receipt");
-    recomp_worker_merge(rt,s->before.data(),s->ram.data());
-    if(!s->sp_seen || !recomp_task_complete(rt,s->pending.token,RECOMP_SP_DONE))
-        recomp_fail("graphics worker missing SP receipt",s->pending.guest_address);
-    if(s->dp_seen) {
-        if(!recomp_task_complete(rt,s->pending.token,RECOMP_DP_DONE))
-            recomp_fail("invalid graphics worker DP receipt",s->pending.guest_address);
-    } else {
-        if(!recomp_task_finish_without_dp(rt,s->pending.token))
-            recomp_fail("invalid graphics worker split-list receipt",s->pending.guest_address);
-        s->stats.graphics_tasks_without_dp++;
-    }
-    s->token=0;s->stats.graphics_tasks++;
-}
-static void process_graphics(void *opaque) {
-    RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
-    s->processing=std::this_thread::get_id();
+static void process_graphics(RecompRenderer *s) {
     uint64_t start=monotonic_ns();
     trace_frame(s,"graphics_begin",s->code);
-    bool custom=s->microcode_hook && s->microcode_hook(s->app->interpreter.get(),s->before.size(),s->code,s->data);
+    bool custom=s->microcode_hook && s->microcode_hook(s->app->interpreter.get(),s->rt->rdram_size,s->code,s->data);
     if(!custom && s->custom_gbi) {
         s->app->interpreter->UCode.textAddress=UINT32_MAX;
         s->app->interpreter->UCode.dataAddress=UINT32_MAX;
@@ -178,19 +148,18 @@ static void process_graphics(void *opaque) {
     // decoder and its variant flags; it prints diagnostics if lookup fails.
     s->app->interpreter->loadUCodeGBI(s->code,s->data,true);
     if(!s->app->interpreter->hleGBI)recomp_fail("RT64 did not recognize the graphics microcode",s->code);
-    if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->before.size(),&s->stats.rdp_triangles);
+    if(s->graphics_hook)s->graphics_hook(s->app->interpreter.get(),s->rt->rdram_size,&s->stats.rdp_triangles);
     if(s->textureCapture)s->textureCapture->beginTask();
-    s->app->processDisplayLists(s->ram.data(),s->list,0,true);
+    s->app->processDisplayLists(s->rt->rdram,s->list,0,true);
     s->textureFiles.collect(*s->app->textureCache);
     s->stats.submit_ns+=monotonic_ns()-start;
     trace_frame(s,"graphics_end",s->dp_seen);
 }
-static void process_present(void *opaque) {
-    RecompRenderer *s=static_cast<RecompRenderer *>(opaque);
-    s->processing=std::this_thread::get_id();
+static void process_present(RecompRenderer *s) {
     uint64_t start=monotonic_ns();
     trace_frame(s,"present_begin",s->vi.origin);
-    // SDL filter/window access stays on the host. The worker owns RT64 state.
+    // Capture live framebuffer bytes before resuming the guest. RT64's render
+    // and present queues consume their own storage after this returns.
     s->app->screenApiProfiler.logAndRestart();
     s->app->state->updateScreen(s->app->core.decodeVI(),false);
     s->stats.presentations++;s->stats.present_ns+=monotonic_ns()-start;
@@ -216,7 +185,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
     for(unsigned n=0;n<64;n++)s->header[n^3]=rt->rom[n];
     RT64::Application::Core core{};
     core.window.display=wm.info.x11.display;core.window.window=wm.info.x11.window;
-    core.HEADER=s->header.data();core.RDRAM=s->ram.data();core.DMEM=s->dmem.data();core.IMEM=s->imem.data();
+    core.HEADER=s->header.data();core.RDRAM=rt->rdram;core.DMEM=s->dmem.data();core.IMEM=s->imem.data();
     core.MI_INTR_REG=&s->mi;core.DPC_START_REG=&s->dp_start;core.DPC_END_REG=&s->dp_end;
     core.DPC_CURRENT_REG=&s->dp_current;core.DPC_STATUS_REG=&s->dp_status;core.DPC_CLOCK_REG=&s->dp_clock;
     core.DPC_BUFBUSY_REG=&s->dp_busy;core.DPC_PIPEBUSY_REG=&s->dp_pipe;core.DPC_TMEM_REG=&s->dp_tmem;
@@ -283,7 +252,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
                 const auto &load=state->rdp->rice.lastLoadOpByTMEM[tile.tmem];
                 const auto &palette=state->rdp->rice.lastLoadOpByTMEM[256+(tile.siz==G_IM_SIZ_4b?tile.palette*16:0)];
                 return capture->capture(hash,reinterpret_cast<const uint8_t *>(state->rdp->TMEM),state->RDRAM,
-                                        s->ram.size(),tile,load,palette,width,height,tlut);
+                                        s->rt->rdram_size,tile,load,palette,width,height,tlut);
             };
             s->textureScan->start();
             std::fprintf(stderr,"Texture scan: %s; pack output %s/textures.rtz; matching every %u seconds.\n",
@@ -296,13 +265,6 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
             std::fprintf(stderr,"Texture raw dump: %s\n",path);
         }
 #endif
-        s->before.resize(rt->rdram_size);
-        s->worker=recomp_worker_create("n64-video");
-        if(s->worker && rt->tasks)s->registered=recomp_task_service_add(rt,service_renderer,s.get());
-        if(!s->worker || (rt->tasks && !s->registered)) {
-            recomp_worker_destroy(s->worker);s->worker=nullptr;
-            throw std::runtime_error("graphics worker initialization failed");
-        }
         s->input.reset(recomp_input_create());
         return s.release();
     } catch(const std::exception &e) {
@@ -319,7 +281,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
 }
 void recomp_renderer_set_frame_rate(RecompRenderer *s,uint32_t target_fps) {
     s->check_owner();
-    if(s->busy || s->stats.graphics_tasks || s->stats.presentations || (target_fps && (target_fps<10 || target_fps>1000)))
+    if(s->token || s->stats.graphics_tasks || s->stats.presentations || (target_fps && (target_fps<10 || target_fps>1000)))
         recomp_fail("configure renderer frame rate before submitting tasks",target_fps);
     s->app->userConfig.refreshRate=target_fps?RT64::UserConfiguration::RefreshRate::Manual:RT64::UserConfiguration::RefreshRate::Original;
     if(target_fps)s->app->userConfig.refreshRateTarget=static_cast<int>(target_fps);
@@ -330,16 +292,14 @@ void recomp_renderer_set_frame_rate(RecompRenderer *s,uint32_t target_fps) {
     s->app->updateEnhancementConfig();
 }
 void recomp_renderer_set_graphics_hook(RecompRenderer *s,RecompGraphicsHook hook) {
-    s->check_owner();service_renderer(s->rt,s,true);s->graphics_hook=hook;
+    s->check_owner();s->graphics_hook=hook;
 }
 void recomp_renderer_set_microcode_hook(RecompRenderer *s,RecompMicrocodeHook hook) {
-    s->check_owner();service_renderer(s->rt,s,true);s->microcode_hook=hook;
+    s->check_owner();s->microcode_hook=hook;
 }
 void recomp_renderer_destroy(RecompRenderer *s) {
     if(!s)return;
-    s->check_owner();service_renderer(s->rt,s,true);
-    recomp_task_service_remove(s->rt,s);
-    recomp_worker_destroy(s->worker);
+    s->check_owner();
     s->app->state->textureManager.captureTexture={};
     s->textureCapture.reset();
     if(s->textureScan)s->textureScan->stop();
@@ -368,39 +328,48 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     SDL_Quit();delete s;
 }
 bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
-    s->check_owner();service_renderer(s->rt,s,true);
-    if(!s->registered) {
-        s->registered=recomp_task_service_add(s->rt,service_renderer,s);
-        if(!s->registered)return false;
-    }
+    s->check_owner();
     if(!s->ready || s->token || task->resumed || task->words[0]!=1
        || (task->words[1]&~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE | RECOMP_TASK_USER_FLAGS))
        || !task->words[4] || task->words[5]>0x2000
        || !task->words[6] || !task->words[7] || task->words[7]>0x2000
        || task->words[13]%8 || !task->words[13])return false;
     s->sync_vi();
-    recomp_worker_snapshot(s->rt,s->before.data(),s->ram.data());
     s->code=recomp_ram_address(s->rt,task->words[4],task->words[5]?task->words[5]:0x1000);
     s->data=recomp_ram_address(s->rt,task->words[6],task->words[7]);
     s->list=recomp_ram_address(s->rt,task->words[12],task->words[13]);
-    s->pending=*task;s->token=task->token;s->sp_seen=s->dp_seen=false;
+    s->token=task->token;s->sp_seen=s->dp_seen=false;
     trace_frame(s,"graphics_submit",s->code);
-    s->busy=recomp_worker_submit(s->worker,process_graphics,s);
-    return s->busy;
+    /* The task hook parks the guest in recomp_on_host. RT64 captures geometry,
+     * textures and readbacks before returning; its GPU queues stay asynchronous. */
+    process_graphics(s);
+    trace_frame(s,"graphics_receipt");
+    if(!s->sp_seen || !recomp_task_complete(s->rt,task->token,RECOMP_SP_DONE))
+        recomp_fail("graphics task missing SP receipt",task->guest_address);
+    if(s->dp_seen) {
+        if(!recomp_task_complete(s->rt,task->token,RECOMP_DP_DONE))
+            recomp_fail("invalid graphics task DP receipt",task->guest_address);
+    } else {
+        if(!recomp_task_finish_without_dp(s->rt,task->token))
+            recomp_fail("invalid graphics task split-list receipt",task->guest_address);
+        s->stats.graphics_tasks_without_dp++;
+    }
+    s->token=0;s->stats.graphics_tasks++;
+    return true;
 }
 bool recomp_renderer_present(RecompRenderer *s) {
-    s->check_owner();service_renderer(s->rt,s,true);
+    s->check_owner();
     s->sync_vi();SDL_PumpEvents();
     trace_frame(s,"host_present",s->vi.origin);
 #ifdef RECOMP_DEBUG
     s->debug_overlay->update(s->rt,{s->debug_geometry,s->stats.graphics_tasks,s->stats.submit_ns});
     s->app->appWindow->sdlCheckFilterInstallation();
 #endif
-    s->presenting=true;s->busy=recomp_worker_submit(s->worker,process_present,s);
-    return s->busy;
+    process_present(s);
+    return true;
 }
 bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
-    s->check_owner();service_renderer(s->rt,s,true);SDL_Event event;
+    s->check_owner();SDL_Event event;
     if(s->textureScan && s->textureScan->takeReload()) {
         s->wait_texture_reload();s->textureFiles.refresh(*s->app->textureCache);
         std::fprintf(stderr,"Texture scan: RT64 replacements refreshed.\n");
@@ -461,7 +430,7 @@ bool recomp_renderer_input(RecompRenderer *s,RecompPad *pad) {
 }
 #ifdef RECOMP_DEBUG
 bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
-    s->check_owner();service_renderer(s->rt,s,true);s->wait_workers();
+    s->check_owner();s->wait_workers();
     SDL_SysWMinfo info{};SDL_VERSION(&info.version);
     if(!SDL_GetWindowWMInfo(s->app->appWindow->sdlWindow,&info) || info.subsystem!=SDL_SYSWM_X11)return false;
     XWindowAttributes attrs{};Display *display=info.info.x11.display;Window window=info.info.x11.window;
@@ -482,7 +451,7 @@ bool recomp_renderer_capture(RecompRenderer *s,const char *path) {
 }
 #endif
 RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {
-    s->check_owner();service_renderer(s->rt,s,true);s->stats.textures_dumped=s->textureFiles.pngsWritten;
+    s->check_owner();s->stats.textures_dumped=s->textureFiles.pngsWritten;
     s->stats.textures_replaced=s->textureFiles.replacedCount();
     s->stats.replacement_files=s->textureFiles.replacementFiles;
     uint64_t first=s->first_display_ns.load(),last=s->last_display_ns.load();
