@@ -29,6 +29,17 @@ guest preemption boundaries; disabled interrupts suppress checkpoint yields.
 Device services poll on the host between dispatches, rather than making a host
 round trip at every translated backedge. The default interval is 64 checkpoints.
 
+Saved register contexts use a serialized-word cache for direct KSEG0/KSEG1 RAM
+on little-endian hosts. A running thread refreshes its cache at synchronization;
+a parked thread reuses its last context. Each synchronization checks the live
+RAM against the cached bytes and restores changed context ranges, so guest or
+native RAM writes cannot silently invalidate the saved state. One checked span
+replaces per-register address resolution. The serializer writes only GPR/LO/HI,
+PC, FCR31 and the configured FR=0 or FR=1 register area; status, exception and RCP
+fields retain their existing ownership. Mapped objects, invalid spans and other
+host byte orders use the original checked stores. Thread metadata, queue links
+and event ordering continue through the existing synchronization paths.
+
 `recomp_on_host` parks the guest while the main thread executes task-submission
 and AI-output callbacks. SDL input, window creation, event handling and audio
 queue admission stay on that thread. This preserves application callback state

@@ -24,6 +24,12 @@ typedef struct NativeThread {
     NativeQueue *wait_queue;
     uint64_t order;
     unsigned checkpoints;
+#if RECOMP_LITTLE_ENDIAN_HOST
+    /* Serialized context words, excluding the OSThread header. Running threads
+     * refresh this cache; parked threads retain their last saved registers. */
+    uint32_t saved_context[(0x230 - 0x20) / 4];
+    bool context_cached;
+#endif
 } NativeThread;
 
 struct NativeQueue {
@@ -209,7 +215,7 @@ static bool host_idle(RecompScheduler *s, const NativeThread *t) {
     return t && s->config.idle_thread && t->object == s->config.idle_thread && t->priority == 0;
 }
 
-static void save_context(Runtime *rt, NativeThread *t) {
+static void save_context_checked(Runtime *rt, NativeThread *t) {
     static const unsigned registers[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,28,29,30,31};
     for (unsigned i = 0; i < sizeof(registers) / sizeof(registers[0]); i++)
         recomp_store(rt, t->object + 0x20 + i * 8, t->context.gpr[registers[i]], 8);
@@ -224,6 +230,60 @@ static void save_context(Runtime *rt, NativeThread *t) {
         for (unsigned i = 0; i < 32; i++)
             recomp_store(rt, t->object + 0x130 + (i ^ 1) * 4, t->context.fpr[i], 4);
     }
+}
+
+#if RECOMP_LITTLE_ENDIAN_HOST
+static void context_word_pair(uint32_t *words, uint64_t value) {
+    /* Guest RAM stores each big-endian 64-bit register as two native words. */
+    words[0] = (uint32_t)(value >> 32);
+    words[1] = (uint32_t)value;
+}
+
+static void cache_context(NativeThread *t) {
+    static const unsigned registers[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,28,29,30,31};
+    for (unsigned i = 0; i < sizeof(registers) / sizeof(registers[0]); i++)
+        context_word_pair(t->saved_context + i * 2, t->context.gpr[registers[i]]);
+    context_word_pair(t->saved_context + (0x108 - 0x20) / 4, t->context.lo);
+    context_word_pair(t->saved_context + (0x110 - 0x20) / 4, t->context.hi);
+    t->saved_context[(0x11c - 0x20) / 4] = t->context.pc;
+    t->saved_context[(0x12c - 0x20) / 4] = t->context.fcr31;
+    if (t->context.fpu_fr1) {
+        for (unsigned i = 0; i < 32; i++)
+            context_word_pair(t->saved_context + (0x130 - 0x20) / 4 + i * 2,
+                              mips_fpr_pair(&t->context, i));
+    } else {
+        for (unsigned i = 0; i < 32; i++)
+            t->saved_context[(0x130 - 0x20) / 4 + (i ^ 1)] = t->context.fpr[i];
+    }
+    t->context_cached = true;
+}
+
+static void sync_context_range(uint8_t *ram, const uint8_t *saved, size_t bytes) {
+    /* Guest/native code can modify a parked thread's saved context. Compare
+     * live RAM rather than trusting the cache as evidence that RAM is current. */
+    if (memcmp(ram, saved, bytes)) memcpy(ram, saved, bytes);
+}
+#endif
+
+static void save_context(Runtime *rt, NativeThread *t) {
+#if RECOMP_LITTLE_ENDIAN_HOST
+    size_t bytes = t->context.fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES;
+    uint32_t physical = t->object & UINT32_C(0x1fffffff);
+    if (recomp_direct_address(t->object) && physical < rt->rdram_size
+            && bytes <= rt->rdram_size - physical) {
+        if (!t->context_cached || t->running) cache_context(t);
+        /* Validate the complete direct-RAM span in Debug and Release. Mapped
+         * objects keep per-field resolution and the original write ordering. */
+        physical = recomp_ram_address_write_slow(rt, t->object + 0x20, bytes - 0x20);
+        uint8_t *ram = rt->rdram + physical;
+        const uint8_t *saved = (const uint8_t *)t->saved_context;
+        sync_context_range(ram, saved, 0x118 - 0x20);
+        sync_context_range(ram + 0x11c - 0x20, saved + 0x11c - 0x20, 4);
+        sync_context_range(ram + 0x12c - 0x20, saved + 0x12c - 0x20, bytes - 0x12c);
+        return;
+    }
+#endif
+    save_context_checked(rt, t);
 }
 
 static void sync_list(Runtime *rt, RecompThreadState state, NativeQueue *q, uint32_t head) {
