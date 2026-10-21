@@ -13,6 +13,12 @@ cmake --workflow --preset sm64-us-debug
 ./build/sm64-us-debug/bin/sm64-us --help
 ```
 
+Both builds target 60 FPS through RT64 frame interpolation. The original game
+logic and audio timing are retained. Set `rendering.target_fps` in `profile.toml`
+to `0` for the original display rate, or `60` for interpolation, then rebuild.
+Debug renderer reports include `target_fps`, `display_frames` and
+`display_elapsed_ns` to distinguish displayed frames from host presentations.
+
 Configure either mode with `-DRECOMP_EMBED_ROM=ON` to include ROM content in the
 executable and launch without the external ROM. SM64's complete checked inventory
 lets packaging erase ordinary CPU text, native OS ranges and the unused IPL3

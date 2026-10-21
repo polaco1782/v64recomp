@@ -52,6 +52,7 @@ list(FILTER RECOMP_GENERATED_HEADERS EXCLUDE REGEX "/game_defaults\\.h$")
 add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/sources.cmake" "${RECOMP_GENERATED}/generation.key"
     "${RECOMP_GENERATED}/symbols.json" "${RECOMP_GENERATED}/coverage.json"
+    "${RECOMP_GENERATED}/function-candidates.json"
     COMMAND "${Python3_EXECUTABLE}" -u "${CMAKE_SOURCE_DIR}/tools/generate_game.py"
         --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}"
     DEPENDS ${RECOMP_GENERATOR_INPUTS} "${RECOMP_ROM}"

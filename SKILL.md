@@ -104,7 +104,16 @@ Create the files the port needs:
 - `CMakeLists.txt` and `README.md`: build integration and accurate game instructions.
 
 Do not split the profile into additional TOML files or introduce an inheritance
-chain. Export `write_config(profile, metadata, output, startup)` from the
+chain. Keep checked tables in `[discovery]`: `jump_tables` for local switches,
+`function_tables` for indirect calls, and `transfers` for other checked target
+sets or returns. Use the standard `pc`, `expected_word`, `table_vram`, `count`,
+`sha256` and optional `indices` fields for dispatch tables. Keep overlay mappings
+and game-specific table configuration in the same profile, rather than JSON
+configuration sidecars. Preparation helpers read these declarations and resolve
+compressed data; they do not maintain a second table inventory. ROM-bound JSON
+code/entry inventories remain separate evidence files.
+
+Export `write_config(profile, metadata, output, startup)` from the
 parent-folder `generate.py`, with optional hooks as documented in
 [adding a ROM](docs/adding-a-rom.md). Keep game-specific generation logic there
 rather than adding game-ID branches to the shared driver.
@@ -146,7 +155,7 @@ Use the actual generation pipeline, including the game's preparation hooks:
   --output build/<game>-report --report-only
 ```
 
-Read both `symbols.json` and `coverage.json`. Inspect per-function errors,
+Read `symbols.json`, `coverage.json` and `function-candidates.json`. Inspect per-function errors,
 metadata issues, unsupported instructions, ownership conflicts, and unresolved
 transfers rather than only summary counts. Use `tools/discover.py`,
 `tools/translate.py`, `tools/code_inventory.py`, and `tools/common.py` to confirm
@@ -178,6 +187,30 @@ ownership before adding entries. Do not blindly apply another game's analyzer.
 
 Use the maintained command-line tools before writing investigation snippets:
 
+- Generation writes `function-candidates.json` for every game before translation.
+  Review its likely missing entries before gameplay: it combines owned address
+  materializations/copies/stores/call arguments, image-wide pointers (including
+  script/assets outside CPU mappings), stack frames and bounded candidate body
+  walks. Inspect source sites, calling convention, ownership and whole tables
+  before promoting candidates to checked entries. The scan does not register
+  guesses or authorize native replacements. For already registered targets, use
+  `tools/inspect_function_candidates.py --game <game> --metadata PATH
+  --include-registered --output build/<game>-function-candidates.json`.
+- Shared discovery automatically follows constant callback arguments when a
+  translated callee's owned control flow proves that argument reaches `jalr`.
+  It also follows constant indirect-call targets and repeats to a fixed point.
+  This uses the partial profile's checked registered-call policy; complete code
+  inventories retain their classifications. Inspect `inferred-callback` origins
+  and `entry_sources` in `symbols.json` for the caller/consumer evidence. This
+  inference does not promote raw pointers, mutable memory values or prologue
+  candidates.
+
+Generated reports under `build/` are ignored by Git. After reviewing an inferred
+entry and validating the affected path, retain the verified entry and its source
+evidence in the game's checked `startup-entries.json` (or complete code inventory).
+Bind the entry to the analysis ROM identity and first-16-byte SHA-256; keep useful
+caller/consumer evidence alongside it. Do not copy speculative candidate lists
+into checked inventories. Normal generation must not rewrite checked inputs.
 - `tools/disassemble_function.py recomp_s<id>_<address> --game <game>
   --metadata build/<game>-debug/generated/<game>/symbols.json` resolves a native
   stack's generated function name and disassembles its verified owned instructions.
@@ -193,9 +226,10 @@ Use the maintained command-line tools before writing investigation snippets:
   when reviewing a complete table; data-range fingerprints are printed too.
   `--json build/<game>-report/callbacks.json` preserves structured evidence.
 
-Both tools can prepare the pinned ROM with `--game`; use `--rom` only with the
-exact normalized/prepared analysis image. Select `--section` for ambiguous overlay
-addresses and inspect overlapping text mappings separately. Candidate reports do
+These inspectors can prepare the pinned ROM with `--game`; use `--rom` only with
+the exact normalized/prepared analysis image. For callback inspection, select
+`--section` for ambiguous overlay addresses and inspect overlapping text mappings
+separately. The image-wide candidate scan requires nonoverlapping mappings. Candidate reports do
 not modify inventories or prove callback ABI, table bounds or complete bodies.
 Review the producer and consumer, then add checked roots or the whole verified
 dispatch table and regenerate. When another repeated investigation needs custom

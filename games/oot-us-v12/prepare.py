@@ -4,7 +4,6 @@ Runtime continues to use the unmodified, compressed cartridge image.
 """
 from __future__ import annotations
 import hashlib
-import json
 import struct
 from pathlib import Path
 from common import RecompError
@@ -54,7 +53,7 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
     dd, _ = file_bytes(rom, 28)
     regions.append(dict(name=".n64dd", vram=0x801c7740, rom_offset=len(image), size=len(dd)))
     image.extend(dd)
-    overlays = json.loads((Path(__file__).parent/'overlays.json').read_text())
+    overlays = profile['discovery']['overlays']
     descriptors = []
     relocations = {}
     for overlay in overlays:

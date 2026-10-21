@@ -53,6 +53,7 @@ int main(int argc,char **argv) {
     require(recomp_io_init(&rt,&io),"SM64 save/input init failed",0);
     renderer=recomp_renderer_create_named(&rt,options.data,"Super Mario 64");
     require(renderer!=NULL,"SM64 renderer init failed",0);
+    recomp_renderer_set_frame_rate(renderer,GAME_TARGET_FPS);
     RecompAudioConfig ac={.playback=!options.mute,.output_enabled=true,.task_profile=&sm64_audio_task_profile};
     audio=recomp_audio_create(&rt,&ac);require(audio!=NULL,"SM64 audio init failed",0);
     /* Renderer setup is host work; start the guest wall clock afterwards. */

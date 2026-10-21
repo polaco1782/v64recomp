@@ -25,6 +25,12 @@ games/<game>/
   bootstrap settings, discovery policy, tables, hooks and boundaries there.
   Do not introduce `full.toml`, `startup.toml`, `startup-base.toml`,
   `services.toml`, `dispatches.toml`, or other game profile inheritance chains.
+- Declare checked tables in `[discovery]`: `jump_tables` for local switches,
+  `function_tables` for indirect calls, and `transfers` for other checked target
+  sets or returns. Keep overlay mappings and game-specific table configuration
+  in this same profile; do not split them into JSON configuration sidecars.
+  Preparation helpers resolve compressed data from these declarations. JSON
+  code/entry inventories remain separate ROM-bound evidence files.
 - Keep all game headers and shared game code in `games/<game>/`. Both modes
   use the parent folder; neither mode may depend on the other mode's folder.
   Keep independent `debug/app.c` and `release/app.c` entry points.

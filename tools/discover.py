@@ -13,6 +13,7 @@ from common import RecompError, load_profile, load_rom, validate_hook_prefix, wr
 from code_inventory import load_inventory, load_entry_inventory, complete_code
 from emit import decode, target
 from native_hooks import classify_native_bodies, resolve_native_hooks
+from metadata_candidates import indirect_parameter_uses, materialized_entries, owned_ranges
 
 
 def discover(rom: bytes, profile: dict) -> dict:
@@ -345,6 +346,8 @@ def discover(rom: bytes, profile: dict) -> dict:
                     size_source='rom-control-flow', origin=entries[key]['origin'],
                     instruction_addresses=addresses, discovery_errors=errors,
                     indirect_transfers=used_transfers, fallthrough_transfers=used_fallthroughs)
+        if entries[key].get('sources'):
+            result['entry_sources'] = entries[key]['sources']
         if used_continuations:
             result['tail_call_continuations'] = used_continuations
         link_registers = {t['entry_register'] for t in used_transfers if 'entry_register' in t}
@@ -354,11 +357,47 @@ def discover(rom: bytes, profile: dict) -> dict:
             result['return_address_register'] = link_registers.pop()
         return result
 
-    while queue:
-        walk(queue.popleft())
-    # Calls found later can turn an earlier followed branch into a tail call.
-    # Revisit with the complete entry set before assigning instruction ownership.
-    functions = [walk(key) for key in sorted(entries)]
+    while True:
+        while queue:
+            walk(queue.popleft())
+        # Calls found later can turn an earlier branch into a tail call. Settle
+        # ownership before using owned instructions as callback producers.
+        functions = [walk(key) for key in sorted(entries)]
+        if queue:
+            continue
+        if not dynamic_calls or inventory is not None:
+            break
+        by_address = {f['vram']:f for f in functions}
+        owned_addresses = {pc for f in functions for pc in f['instruction_addresses']}
+        parameters = {}
+        text = [dict(s,section=s['id']) for s in sections]
+        for function in functions:
+            if function['discovery_errors'] or function['origin'] in ('native-replacement','unsupported-boundary'):
+                continue
+            candidates = materialized_entries(rom,{'functions':functions},text,
+                source_ranges=owned_ranges(function),owned_addresses=owned_addresses)
+            for candidate in candidates:
+                sources = []
+                for use in candidate['address_uses']:
+                    source = dict(section=function['section'],function=function['vram'],
+                                  pc=use['pc'],expected_word=read(use['pc']).word,kind=use['kind'])
+                    if use['kind']=='constant-indirect-call':
+                        sources.append(source)
+                    elif use['kind']=='call-argument' and use.get('callee') in by_address:
+                        callee = by_address[use['callee']]
+                        if callee['discovery_errors'] or callee['origin'] in ('native-replacement','unsupported-boundary'):
+                            continue
+                        if callee['vram'] not in parameters:
+                            parameters[callee['vram']] = indirect_parameter_uses(rom,callee)
+                        sites = parameters[callee['vram']].get(use['register'],[])
+                        if sites:
+                            sources.append(dict(source,callee=callee['vram'],
+                                                argument_register=use['register'],indirect_calls=sites))
+                if sources:
+                    key = add_entry(candidate['vram'],origin='inferred-callback')
+                    entries[key].setdefault('sources',[]).extend(sources)
+        if not queue:
+            break
     owners, issues = {}, []
     conflicts = set()
     for function in functions:

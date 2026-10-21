@@ -87,6 +87,15 @@ data or a gap. For RAM/hardware errors, follow the memory operand back to its
 writer. For unsupported tasks, identify the actual microcode before selecting
 an audio or graphics adapter.
 
+Generation also writes `function-candidates.json` before translation. Review it
+for missing entries before the next run. The shared scanner includes raw pointers
+in script/assets outside CPU mappings and address uses in owned code; candidate
+body checks expose unsupported transfers and overlaps. Use
+`tools/inspect_function_candidates.py --game <game> --metadata PATH
+--include-registered --output build/<game>-function-candidates.json` to recover
+source evidence for an entry that was registered after an older crash. A likely
+candidate still needs source/ABI and ownership review before becoming a root.
+
 Task code/data sizes can include padding, DMEM BSS or adjacent cartridge data.
 An ASCII identifier anywhere in that full span does not establish the executing
 microcode. Check the initialized spans, descriptor producer and command format.

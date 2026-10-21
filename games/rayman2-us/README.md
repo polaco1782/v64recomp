@@ -7,8 +7,9 @@ This port targets the 32 MiB big-endian US revision 0 cartridge, header title
 - MD5: `03aa4d09fde77eed9b95be68e603d233`
 
 Bring-up is in progress. Debug runs the original boot, DMA asset loading, audio
-tasks, controller polling and scene scripts. Rendered gameplay is not yet
-verified. The checked callback inventory remains partial; unknown paths fail
+tasks, controller polling and scene scripts. A 1,200-presentation Release run
+reaches the title and rendered language selection and exits cleanly. Rendered
+gameplay is not yet verified. The checked callback inventory remains partial; unknown paths fail
 explicitly rather than silently executing an unverified target.
 
 From the repository root:
@@ -53,6 +54,10 @@ is set, so it is not configured as a permanently idle thread.
 ## Checked discovery
 
 `profile.toml` contains all mappings, bootstrap parameters and dispatch tables.
+Shared discovery traces callback arguments through translated consumers. It
+recovered `0x8000c118` from `0x8000c0c0`, which passes it as `a0` to the formatter
+at `0x80013f00`; that routine invokes it through `s4`. This verified entry and its
+caller/consumer evidence are retained in the checked `startup-entries.json`.
 `startup-entries.json` is deliberately partial and ROM-bound. Its callback roots
 come from these producers:
 
