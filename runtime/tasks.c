@@ -195,7 +195,12 @@ void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     buffer(rt,task.words[4],task.words[5],false,object);
     buffer(rt,task.words[6],task.words[7],false,object);
     buffer(rt,task.words[8],task.words[9],false,object);
-    buffer(rt,task.words[12],task.words[13],true,object);
+    /* F3DEX/S2DEX follow command terminators; data_size is not their DL
+     * length (and is zero in RE2). Still require a complete first command. */
+    bool custom_data = t->backend.validate_custom_data &&
+        t->backend.validate_custom_data(rt,t->backend.userdata,&task);
+    buffer(rt,task.words[12],task.words[13] ? task.words[13] :
+           (task.words[0] == 1 && !custom_data ? 8 : 0),!custom_data,object);
     /* Audio microcode never yields. Some SDK task builders leave the standard
      * yield size set while providing no buffer. A supplied pointer must still
      * describe valid RAM, and graphics always requires a consistent span. */

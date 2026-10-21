@@ -238,6 +238,8 @@ void hook_os_motor_stop(Runtime *, MipsContext *);
 void hook_os_create_pi_manager(Runtime *, MipsContext *);
 void hook_os_pi_start_dma(Runtime *, MipsContext *);
 void hook_os_pi_raw_read_io(Runtime *, MipsContext *);
+void hook_os_pi_raw_start_dma(Runtime *, MipsContext *);
+void hook_os_pi_get_status(Runtime *, MipsContext *);
 
 void hook_os_memcpy(Runtime *, MipsContext *);
 void hook_os_memset(Runtime *, MipsContext *);
@@ -260,6 +262,10 @@ typedef struct RecompTaskBackend {
     bool (*submit)(Runtime *, void *, const RecompTask *);
     bool (*yield)(Runtime *, void *, uint64_t token);
     uint32_t additional_task_types; /* Explicit backend opt-in, bit N for task type N. */
+    /* Verify a custom task whose inputs are in ucode_data instead of data_ptr.
+     * Must authenticate its program and validate the complete input/output plan.
+     * False retains the ordinary mandatory command-list validation. */
+    bool (*validate_custom_data)(Runtime *, void *, const RecompTask *);
 } RecompTaskBackend;
 typedef struct RecompTaskStats {
     uint64_t submissions, sp_events, dp_events, yielded, rejected_completions;

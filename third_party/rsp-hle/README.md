@@ -4,7 +4,7 @@ Upstream: https://github.com/mupen64plus/mupen64plus-rsp-hle
 Revision: `8a7a472a7172eb2c8725b305eae26818ed7b51a2`
 License: GPL-2.0-or-later, see source notices and `LICENSES`.
 
-`alist.c`, `alist_audio.c`, `alist_nead.c`, `alist_naudio.c`, `mp3.c`, `audio.c`
+`alist.c`, `alist_audio.c`, `alist_nead.c`, `alist_naudio.c`, `mp3.c`, `musyx.c`, `audio.c`
 and `memory.c` are compiled. NAudio MP3 supplies Perfect Dark's audio command
 processing and synthesis transform using the same pinned upstream revision. These
 implement audio-command operations in native C, including ADPCM, envelope
@@ -13,6 +13,18 @@ RSP instruction interpreter or graphics microcode modules are imported.
 Standard NAudio supplies Quake II through `alist_process_naudio`; its opcode 14
 is the SETVOL rate tail, distinct from NAudio MP3/CBFD filters.
 The upstream headers retain declarations for modules outside this subset.
+
+`musyx.c` supplies MusyX v1 for Resident Evil 2. Only v1 is dispatched; the
+upstream v2 entry remains unused. Its task size counts 0xa10-byte subframe
+descriptors. Local guards validate every guest span, decoded/compressed sample
+capacity, initialized resample taps, ADPCM predictors, effect rings and voice
+termination. Address validation accepts physical/KSEG aliases only when they
+match upstream's 24-bit DRAM window. ADPCM offsets use integers until validated;
+base-volume/FIR arithmetic uses wide accumulators and envelope updates wrap
+explicitly. Sample end/restart sentinels remain integer positions until used;
+every actual resampling tap is checked. `games/re2-us-v1/debug/check_musyx.c`
+exercises synthetic PCM, ADPCM, stereo output and rejected spans with sanitizers;
+it can also replay private task snapshots.
 
 `jpeg.c` supplies the PS/OOT JPEG task decoder: dequantization, inverse DCT and
 RGBA5551 tile output. The CPU's JPEG parsing and Huffman decoding stay translated.

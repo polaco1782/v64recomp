@@ -2,6 +2,8 @@
 
 These are the established port milestones, not new full-game acceptance claims.
 
+- **Resident Evil 2 US header revision 1**: Experimental bring-up. Original main-image and overlay decompression run with full decoded-image verification. Opening logos, warning, movie and title menu render on the desktop; Start skips the movie. MusyX v1 synthesis and native video resize/conversion are integrated; gameplay, audible audio and save acceptance remain in progress. See the [port notes](../games/re2-us-v1/README.md).
+
 - **Super Mario 64 US**: Working gameplay baseline, with Castle Grounds movement/jumping and the castle lobby transition previously validated. Broader courses, ending and prolonged runs still need validation.
 - **GoldenEye 007 US**: Original startup, menus and playable Dam. CPU inventory is partial and remaining unsupported functions fail explicitly. Full-game progression remains unverified.
 - **Shadow Man US**: Original startup, graphics, audio and Controller Pak screen. Title/gameplay progression remains in progress; this is not a completed game port.

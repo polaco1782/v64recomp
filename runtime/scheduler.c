@@ -24,6 +24,8 @@ typedef struct NativeThread {
     NativeQueue *wait_queue;
     uint64_t order;
     unsigned checkpoints;
+    bool interrupts_disabled;
+    uint32_t interrupt_mask;
 #if RECOMP_LITTLE_ENDIAN_HOST
     /* Serialized context words, excluding the OSThread header. Running threads
      * refresh this cache; parked threads retain their last saved registers. */
@@ -553,6 +555,8 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
     if (!pthread_equal(pthread_self(), s->owner) || s->current || !max_resumes)
         recomp_fail("invalid or nested scheduler run", 0);
     pthread_mutex_lock(&s->mutex);
+    bool owner_interrupts_disabled = rt->interrupts_disabled;
+    uint32_t owner_interrupt_mask = rt->interrupt_mask;
 #ifdef RECOMP_DEBUG
     debug_status(rt);
 #endif
@@ -567,6 +571,11 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         RECOMP_LOG_SAMPLED("thread", "dispatch id=%" PRId32 " thread=0x%08" PRIx32
             " priority=%" PRId32 " pc=0x%08" PRIx32, t->id, t->object, t->priority, t->context.pc);
         sync_guest(rt);
+        /* __osDispatch restores each thread's CPU IE and interrupt masks.
+         * A thread may block in a critical section; its disabled state must
+         * not suppress checkpoints and device service in the next thread. */
+        rt->interrupts_disabled = t->interrupts_disabled;
+        rt->interrupt_mask = t->interrupt_mask;
         t->running = true;
         pthread_cond_signal(&t->resume);
         while (t->running) {
@@ -577,6 +586,10 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
                 pthread_cond_signal(&t->resume);
             }
         }
+        t->interrupts_disabled = rt->interrupts_disabled;
+        t->interrupt_mask = rt->interrupt_mask;
+        rt->interrupts_disabled = owner_interrupts_disabled;
+        rt->interrupt_mask = owner_interrupt_mask;
         s->current = NULL;
         if (t->state == RECOMP_RUNNING) recomp_fail("pthread returned without a state transition", t->object);
         if (t->state == RECOMP_DEAD) join_thread(s, t);
@@ -605,7 +618,14 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     while (*link) {
         NativeThread *t = *link;
         if (t->key == key) {
-            if (t->state != RECOMP_DEAD) recomp_fail("thread object is already active", object);
+            /* Some games initialize a new entry in an existing stopped
+             * loader thread. Discard its suspended native call stack before
+             * resetting the guest context. Runnable/waiting threads still
+             * own their context and cannot be overwritten. */
+            if (t->state != RECOMP_DEAD &&
+                    (t->state != RECOMP_STOPPED || t->wait_queue || t == s->current))
+                recomp_fail("thread object is already active", object);
+            if (t->state != RECOMP_DEAD) retire(t);
             *link = t->next;
             if (!guest_thread) pthread_mutex_lock(&s->mutex);
             join_thread(s, t);
@@ -619,6 +639,8 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     NativeThread *t = calloc(1, sizeof(*t));
     if (!t) recomp_fail("thread allocation failed", object);
     t->runtime = rt; t->object = object; t->key = key; t->id = id; t->priority = priority;
+    /* SDK osCreateThread starts with SR=0xff03 and RCP mask=0x3f. */
+    t->interrupt_mask = UINT32_C(0x003fff01);
     t->state = RECOMP_STOPPED;
     t->entry = recomp_lookup(rt, entry);
     t->context.pc = entry;

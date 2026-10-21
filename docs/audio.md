@@ -29,6 +29,17 @@ command's RAM/DMEM ranges, alignment and supported flags. Unknown microcodes,
 commands and unsupported resampling flags fail explicitly. Revision, license and
 local changes are in [third_party/rsp-hle/README.md](../third_party/rsp-hle/README.md).
 
+MusyX v1 (`RECOMP_AUDIO_MUSYX_V1`) uses 0xa10-byte subframe descriptors rather
+than ABI commands; the task size is a descriptor count. Each descriptor supplies
+PCM/ADPCM voices, output and history pointers, and optional delay/filter effects.
+The shared adapter verifies its microcode profile and validates RAM spans and
+DSP buffer bounds before synthesis. RE2's data fingerprint covers its complete
+0x230-byte constant prefix; the next bytes contain mutable CPU-owned state.
+Inspect a captured task with `tools/inspect_rsp_task.py REPORT --list-scale 0xa10
+--structured`. `games/re2-us-v1/debug/check_musyx.c` contains ROM-free sanitizer
+fixtures and a private snapshot replay mode, with its build command in the source
+header.
+
 Quake II uses standard NAudio (`RECOMP_AUDIO_NAUDIO`). Its opcode 14 supplies
 the low word of the right-channel volume ramp; it does not execute the filter
 used by the MP3/Conker variants. The shared backend calls the pinned

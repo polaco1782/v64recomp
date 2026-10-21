@@ -543,3 +543,23 @@ void hook_os_pi_raw_read_io(Runtime *rt, MipsContext *ctx) {
     for (unsigned i = 0; i < 4; i++) value = (value << 8) | rt->rom[offset + i];
     recomp_store(rt, arg(ctx, 1), value, 4); result(ctx, 0);
 }
+
+void hook_os_pi_raw_start_dma(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    uint32_t direction = arg(ctx, 0), offset = arg(ctx, 1), address = arg(ctx, 2), size = arg(ctx, 3);
+    if (direction > 1 || !size) { result(ctx, -1); return; }
+    if (direction == 1)
+        recomp_fail("raw PI writes require a supported writable cartridge device", offset);
+    if (!rom_range(rt, &offset, size)) { result(ctx, -1); return; }
+    recomp_copy_to_ram(rt, address, rt->rom + offset, size);
+    code_loaded(rt, address, offset, size);
+    if (!recomp_event_post(rt, 8)) recomp_fail("raw PI completion queue exhausted", address);
+    result(ctx, 0);
+}
+
+void hook_os_pi_get_status(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    /* Native cartridge copies finish before their submitting guest resumes. */
+    (void)platform(rt);
+    result(ctx, 0);
+}

@@ -21,8 +21,10 @@
 
 #ifndef HLE_EXTERNAL_H
 #define HLE_EXTERNAL_H
+#include <stddef.h>
 #include <stdint.h>
 void HleValidateCommand(void *, uint32_t, uint32_t, uint32_t);
+void HleMusyxValidateRam(void *, uint32_t, size_t, unsigned);
 
 #if defined(__GNUC__)
 #define ATTR_FMT(fmtpos, attrpos) __attribute__ ((format (printf, fmtpos, attrpos)))

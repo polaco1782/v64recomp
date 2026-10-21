@@ -52,6 +52,15 @@ their targets, and explores both possible branch paths unless the instruction
 itself proves one impossible. N64 branch delay slots are included in that
 analysis. This stage does not need gameplay or a recorded execution trace.
 
+VR4300 branch-and-link instructions write `r31 = PC + 8` even when untaken.
+Discovery therefore treats `BLTZAL $zero` as address materialization, without
+following its unreachable destination into possible inline data. Translation
+evaluates the condition before updating `r31` and preserves likely delay-slot
+annulment. The synthetic execution check covers all four link branches, both
+outcomes, delay-slot reads of the link, and a predicate reading the old `r31`:
+`.venv/bin/python tools/check_branch_link.py --build build/re2-us-v1-debug`.
+Use any existing CMake runtime build; the check runs at `-O0` and `-O2` without a ROM.
+
 Indirect transfers need additional information. A direct `jal` instruction
 encodes its destination, while `jalr` takes a destination from a register.
 Computed local jumps can select a target from a switch table. Profiles can supply

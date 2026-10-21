@@ -335,11 +335,11 @@ bool recomp_renderer_submit(RecompRenderer *s,const RecompTask *task) {
        || (task->words[1]&~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE | RECOMP_TASK_USER_FLAGS))
        || !task->words[4] || task->words[5]>0x2000
        || !task->words[6] || !task->words[7] || task->words[7]>0x2000
-       || task->words[13]%8 || !task->words[13])return false;
+       || !task->words[12] || task->words[12]%8 || task->words[13]%8)return false;
     s->sync_vi();
     s->code=recomp_ram_address(s->rt,task->words[4],task->words[5]?task->words[5]:0x1000);
     s->data=recomp_ram_address(s->rt,task->words[6],task->words[7]);
-    s->list=recomp_ram_address(s->rt,task->words[12],task->words[13]);
+    s->list=recomp_ram_address(s->rt,task->words[12],task->words[13]?task->words[13]:8);
     s->token=task->token;s->sp_seen=s->dp_seen=false;
     trace_frame(s,"graphics_submit",s->code);
     /* The task hook parks the guest in recomp_on_host. RT64 captures geometry,
