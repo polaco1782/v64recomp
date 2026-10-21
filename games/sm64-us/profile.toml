@@ -16,10 +16,6 @@ rom = "../../local/sm64.us.z64"
 code_sections = [".main", ".engine", ".goddard"]
 boot_sections = [".main"]
 
-[rendering]
-# Interpolate display frames while retaining the original game/VI timing.
-target_fps = 60
-
 [packaging]
 # Native startup loads .main at ROM 0x1000; RT64 only consumes the 64-byte header.
 # The hardware IPL3 block is never executed or loaded by this port.

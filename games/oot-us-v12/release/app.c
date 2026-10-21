@@ -62,7 +62,6 @@ int main(int argc,char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Ocarina of Time IO/task init failed", 0);
     renderer=recomp_renderer_create_named(&rt,options.data,"The Legend of Zelda: Ocarina of Time");
     require(renderer!=NULL,"renderer initialization failed",0);
-    recomp_renderer_set_frame_rate(renderer,RECOMP_OOT_FPS);
     RecompAudioConfig ac = {.output_enabled=true, .playback=!options.mute,
         .prebuffer_ms=160,
         .microcode=RECOMP_AUDIO_NEAD_OOT, .task_profile=&oot_audio_task_profile};

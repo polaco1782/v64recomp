@@ -5,11 +5,8 @@ from common import RecompError
 
 def write_game_config(profile: dict,metadata: dict,output: Path,extra_symbols=()) -> None:
     game,boot=profile['game'],profile['bootstrap']
-    target_fps=profile['rendering']['target_fps']
-    if type(target_fps) is not int or (target_fps!=0 and not 10<=target_fps<=1000):
-        raise RecompError('SM64 rendering.target_fps must be 0 (original) or 10..1000')
     constants={'GAME_ENTRY_POINT':metadata['entry_vram'],'GAME_RAM_SIZE':game['ram_size'],
-               'GAME_ROM_SIZE':game['rom_size'],'GAME_TARGET_FPS':target_fps}
+               'GAME_ROM_SIZE':game['rom_size']}
     constants.update({f'GAME_{name.upper()}':boot[name] for name in
         ('counter_hz','timer_sentinel','vi_period_ticks','idle_thread','main_thread')})
     constants.update({f'GAME_{name.upper()}':metadata['symbols'][name] for name in

@@ -228,7 +228,8 @@ caches them for offline use; downloading requires `curl` on `PATH`. See
 Escape or window close exits. F5 reloads texture packs
 and toggles original/replacement textures. Packs default to
 `local/textures/<game>/replacements`; `RECOMP_TEXTURE_REPLACEMENTS` overrides this
-path (an empty value disables packs). Rendering uses 4x resolution, 4x MSAA,
+path (an empty value disables packs). Rendering defaults to 60 FPS interpolation
+for all games, with original gameplay and audio timing. Rendering uses 4x resolution, 4x MSAA,
 widescreen expansion and texture LOD scaling. This RT64 revision has no game
 ray-tracing renderer.
 

@@ -20,7 +20,8 @@ typedef struct RecompRendererStats {
  * guest execution parked. Display-list parsing, readbacks and presentation
  * preparation use live RAM; RT64's render/present queues remain asynchronous. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
-/* 0 preserves the game's original rate; 10..1000 enables RT64 interpolation.
+/* Defaults to 60 FPS interpolation. 0 preserves the game's original rate;
+ * 10..1000 enables RT64 interpolation at the requested rate.
  * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */
 void recomp_renderer_set_frame_rate(RecompRenderer *, uint32_t target_fps);
 /* Configure a game-specific microcode extension after RT64 recognizes a task. */

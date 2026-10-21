@@ -212,7 +212,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt,const char *data_path,c
         s->app->userConfig.threePointFiltering=false;
         s->app->userConfig.aspectRatio=RT64::UserConfiguration::AspectRatio::Expand;
         s->app->userConfig.extAspectRatio=RT64::UserConfiguration::AspectRatio::Expand;
-        s->app->userConfig.refreshRate=RT64::UserConfiguration::RefreshRate::Original;
+        s->app->userConfig.refreshRate=RT64::UserConfiguration::RefreshRate::Manual;
+        s->app->userConfig.refreshRateTarget=60;
+        s->app->enhancementConfig.presentation.mode=RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;
         s->app->enhancementConfig.textureLOD.scale=true;
         if(s->app->setup(0)!=RT64::Application::SetupResult::Success) {
             std::fprintf(stderr,"RT64 setup failed: %s\n",RT64::GlobalLastError.c_str());
