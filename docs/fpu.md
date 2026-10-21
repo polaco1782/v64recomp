@@ -30,9 +30,10 @@ This first arithmetic backend requires **Linux x86-64 SSE2**, IEEE binary32/64,
 `USE_INTRISICS=1` (the default in `include/recomp.h`), binary arithmetic, square
 roots, conversions and comparisons use scalar SSE/SSE2 intrinsics. These operations
 save MXCSR, mask host SSE traps, select guest rounding, disable DAZ/FTZ, collect
-exceptions, and restore MXCSR and errno before returning. The x87 environment
-remains untouched. These are individual guest operations, preserving their
-exception order and register dependencies.
+exceptions, and restore MXCSR before returning. Scalar intrinsics leave errno
+and the x87 environment untouched, avoiding thread-local errno saves/restores.
+The C/libm fallback still saves and restores errno. These are individual guest
+operations, preserving their exception order and register dependencies.
 
 Conversions select guest rounding through MXCSR, including the per-instruction
 override for `ROUND`, `TRUNC`, `CEIL` and `FLOOR`. Integer conversions use the SSE
