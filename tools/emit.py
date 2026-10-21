@@ -36,7 +36,10 @@ lwl lwr ldl ldr swl swr sdl sdr
 mtc1 mfc1 dmtc1 dmfc1 lwc1 swc1 ldc1 sdc1
 beq bne blez bgtz bltz bgez beql bnel blezl bgtzl bltzl bgezl b
 j jal jalr jr
+bltzal bgezal bltzall bgezall
 """.split())
+
+LINK_BRANCHES = {'bltzal': 'bltz', 'bgezal': 'bgez', 'bltzall': 'bltz', 'bgezall': 'bgez'}
 
 FP_BINARY = {'add', 'sub', 'mul', 'div'}
 FP_UNARY = {'sqrt', 'abs', 'neg', 'mov'}
@@ -114,7 +117,7 @@ def decode(raw: bytes, address: int) -> list[Instruction]:
                 writes |= 1 << r
         # Rabbitizer describes the explicit destination, but JAL writes an
         # implicit link and merge loads also read the old destination value.
-        if opcode == 'jal':
+        if opcode == 'jal' or opcode in LINK_BRANCHES:
             writes |= 1 << 31
         if opcode in ('lwl', 'lwr', 'ldl', 'ldr') and operands[1]:
             reads |= 1 << operands[1]
@@ -226,9 +229,9 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
             if (index + 1 == len(instructions) or instructions[index + 1].pc != i.pc + 4
                     or instructions[index + 1].delay):
                 reason = "missing delay slot or control transfer inside delay slot"
-            elif i.opcode not in ('jr', 'jalr'):
+            elif i.opcode not in ('jr', 'jalr') and constant_condition(i) is not False:
                 destination = target(i)
-                local = destination in addresses and i.opcode != 'jal'
+                local = destination in addresses and i.opcode != 'jal' and i.opcode not in LINK_BRANCHES
                 if not local and resolve_function(registry, function['section'], destination) is None:
                     reason = f"unresolved target: {destination:#010x}"
                 if local and destination % 4:
@@ -401,7 +404,7 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
 
 def constant_condition(i: Instruction) -> bool | None:
     """Resolve only outcomes proven by register identity or the zero register."""
-    op = i.opcode.rstrip('l')
+    op = LINK_BRANCHES.get(i.opcode, i.opcode.rstrip('l'))
     if op == 'b' or op == 'beq' and i.rs == i.rt:
         return True
     if op == 'bne' and i.rs == i.rt:
@@ -415,7 +418,7 @@ def constant_condition(i: Instruction) -> bool | None:
 
 
 def condition(i: Instruction) -> str:
-    op, a, b = i.opcode.rstrip('l'), reg(i.rs), reg(i.rt)
+    op, a, b = LINK_BRANCHES.get(i.opcode, i.opcode.rstrip('l')), reg(i.rs), reg(i.rt)
     if op == 'b': return 'true'
     if op == 'bc1t': return '(ctx->fcr31 & UINT32_C(0x800000)) != 0'
     if op == 'bc1f': return '(ctx->fcr31 & UINT32_C(0x800000)) == 0'
@@ -601,6 +604,30 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         lines.append(f"    /* {i.pc:08x}: {i.assembly} */")
         lines.append(location(i.pc))
         lines.append('    {')
+        if i.opcode in LINK_BRANCHES:
+            known = constant_condition(i)
+            # VR4300 links unconditionally, even on a not-taken likely branch.
+            # Capture the predicate before writing r31 (rs may itself be r31).
+            if known is None:
+                lines.append(f'        bool take_branch = {condition(i)};')
+            ra = (f'mips_s32(recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc+8:08x})))'
+                  if function.get('relocatable') else signed_constant(i.pc + 8, 32))
+            lines.append('        ' + set_reg(31, ra))
+            if not i.likely:
+                lines.extend(emit_body(slot, '        '))
+            if known is not False:
+                indent = '        ' if known is True else '            '
+                if known is None:
+                    lines.append('        if (take_branch) {')
+                if i.likely:
+                    lines.extend(emit_body(slot, indent))
+                lines.extend([location(i.pc, indent), *emit_call(target(i), indent)])
+                if known is None:
+                    lines.append('        }')
+            lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
+                         else fallthrough(i.pc, '        '))
+            lines.append('    }')
+            continue
         if i.opcode not in ('j', 'jal', 'jr', 'jalr'):
             known = constant_condition(i)
             if known is True:

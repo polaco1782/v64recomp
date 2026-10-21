@@ -6,7 +6,7 @@ rom_sha1 = "62ec19bead748c12d38f6c5a7ab0831edbd3d44b"
 rom_size = 0x4000000
 ram_size = 0x800000
 entry_symbol = "entry_point"
-code_sections = [".boot", ".main", ".overlay3", ".overlay2"]
+code_sections = [".boot", ".main", ".overlay3", ".overlay2", ".overlay4"]
 boot_sections = [".boot"]
 
 [discovery]
@@ -16,15 +16,21 @@ regions = [
   {name = ".boot", vram = 0x80000480, rom_offset = 0x1000, size = 0x13420},
   {name = ".main", vram = 0x80018a80, rom_offset = 0x4000000, size = 0x11e310},
   {name = ".overlay3", vram = 0x8015b030, rom_offset = 0x411e310, size = 0x6cc0},
-  {name = ".overlay2", vram = 0x8017b410, rom_offset = 0x4124fd0, size = 0xc0a0},
+  {name = ".overlay2", vram = 0x8017b410, rom_offset = 0x4124fd0, size = 0xc0a0, overlay_group = "movie_slot"},
+  {name = ".overlay4", vram = 0x8017b410, rom_offset = 0x4131070, size = 0xe5e0, overlay_group = "movie_slot"},
 ]
 # Counts are the unsigned SLTIU bounds before the checked JR, after any
 # index bias. Each digest covers the entire table, including default entries.
 jump_tables = [
+  # Overlay 4 status value is unsigned <12 at 0x8017ff34.
+  {section = ".overlay4", pc = 0x8017ff50, expected_word = 0x00400008, table_vram = 0x801803b8, count = 12, sha256 = "a4dafabae32d176f02bc507cf70964d66a2deff594f8c7ac93da4eb7fd0e35ea"},
+  # Overlay 4 switch bounds are unsigned <21 at 0x8017d2b4 / 0x8017e338.
+  {section = ".overlay4", pc = 0x8017d2d4, expected_word = 0x00400008, table_vram = 0x80180208, count = 21, sha256 = "610800bf4c61a7ee5e22d37d8d8c1d826910b9587764236320a15c2592cfac8f"},
+  {section = ".overlay4", pc = 0x8017e37c, expected_word = 0x00400008, table_vram = 0x80180260, count = 21, sha256 = "b067d685328a861b5c04ad157734e390bb3302fb930c7112d1756358363d3178"},
   # Menu selection byte is unsigned <8 at 0x8015b868.
   {pc = 0x8015b884, expected_word = 0x00400008, table_vram = 0x80160420, count = 8, sha256 = "0fb5b74f2c2419ad06bd28f5c22605a99d88fc719e14ff8c4cbcfc0e8570deaa"},
   # Movie stream extension type minus one is unsigned <10 at 0x8017d678.
-  {pc = 0x8017d68c, expected_word = 0x00400008, table_vram = 0x80184af0, count = 10, sha256 = "c8a78e727f9f4df02f0c0f616503941cd66c89b2794a42b3ecafa6d8b623bce9"},
+  {section = ".overlay2", pc = 0x8017d68c, expected_word = 0x00400008, table_vram = 0x80184af0, count = 10, sha256 = "c8a78e727f9f4df02f0c0f616503941cd66c89b2794a42b3ecafa6d8b623bce9"},
   {pc = 0x800ac9cc, expected_word = 0x00400008, table_vram = 0x800ba860, count = 6, sha256 = "dc1b238adb149efb51b6a0bd52433dca7aca8988d5ace0d5b681226a5b2be042"},
   {pc = 0x800aca3c, expected_word = 0x00400008, table_vram = 0x800ba878, count = 6, sha256 = "81ddffc4c932c1e67f9a4f171b1ed308eb99f5a5736d49d9a5bbf8d4077551b7"},
   {pc = 0x800acb40, expected_word = 0x00400008, table_vram = 0x800ba890, count = 6, sha256 = "06d11eb5eea58cb7c06e31178936bda2c4b1c5974865214354769d6652d2ded3"},
@@ -93,6 +99,16 @@ vram = 0x8017b410
 size = 0xc0a0
 section = ".overlay2"
 sha256 = "62b0bb539478c4cf53453bd19e8fd949333b8a584b4ad5f5080ed58850c14ac2"
+
+[[discovery.overlays]]
+index = 4
+record_offset = 0x12d10
+rom_offset = 0x78c0e
+compressed_size = 0x236b
+vram = 0x8017b410
+size = 0xe5e0
+section = ".overlay4"
+sha256 = "f0f26b339f1cf183a296f14d882970ef088d03fa6525005e42f58743389ce857"
 
 [bootstrap]
 initial_rom_offset = 0x1000

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "rom_sha1": "2f0e5888ecbf875f74322f3ad4c0e07c676723b3",
+  "rom_sha1": "378f7ee4db6fbc6cb0d595849e45c9ee2bd01f4f",
   "complete": false,
   "entries": [
     {
@@ -463,7 +463,8 @@
       "vram": 2149059792,
       "origin": "checked-root",
       "sha256": "e3e034423b812ef6ff7f209137c43a8a110deab1437150761b0d79dc57cad341",
-      "evidence": "0x800273e4 calls 0x8004cc5c with index zero; record at 0x8010b2e0 selects overlay2 and callback 0x80180cd0, consumed at 0x8004cc90."
+      "evidence": "0x800273e4 calls 0x8004cc5c with index zero; record at 0x8010b2e0 selects overlay2 and callback 0x80180cd0, consumed at 0x8004cc90.",
+      "section": ".overlay2"
     },
     {
       "vram": 2148196724,
@@ -494,6 +495,20 @@
       "origin": "checked-root",
       "sha256": "3a9d0285d7aa94d68471901617bd4bead97ff235da395ad20d93ad42e0b0ff9b",
       "evidence": "0x800ae070/0x800ae088 materializes/stores fifth stack argument to binary search 0x800ab43c; consumed by JALR at 0x800ab4a0."
+    },
+    {
+      "vram": 2149037072,
+      "section": ".overlay4",
+      "origin": "checked-root",
+      "sha256": "234b19644b5e104b6ddcb1d6760276043e09a25050beeecac381fe8e0be503cd",
+      "evidence": "Module table record 2 at 0x8010b2f0 selects overlay 4 and callback 0x8017b410; consumer JALR 0x8004cc90; captured decoded RAM matches the complete overlay SHA-256"
+    },
+    {
+      "vram": 2149059600,
+      "section": ".overlay2",
+      "origin": "checked-root",
+      "sha256": "7a5297c54acb5063463a0ec9db4ec03d8c4211695321f337042cf111e5328f28",
+      "evidence": "Direct movie-state JAL 0x8009f73c in 0x8009f60c; section-qualified to overlay 2 because overlay 4 reuses the slot"
     }
   ]
 }

@@ -8,7 +8,6 @@ control flow without registering addresses or changing checked inventories.
 from __future__ import annotations
 
 import argparse
-from bisect import bisect_right
 from collections import Counter, deque
 import hashlib
 from pathlib import Path
@@ -127,9 +126,6 @@ def probe_body(rom, section, address, owners, entries, transfers, limit):
 def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                        max_instructions=4096) -> dict:
     sections = sorted(metadata['sections'],key=lambda s:s['vram'])
-    if any(a['vram']+a['size']>b['vram'] for a,b in zip(sections,sections[1:])):
-        raise RecompError('candidate scan requires nonoverlapping section mappings')
-    starts = [s['vram'] for s in sections]
     prefixes = {prefix for s in sections
                 for prefix in range(s['vram']>>24,((s['vram']+s['size']-1)>>24)+1)}
     complete = bool((metadata.get('code_inventory') or {}).get('complete'))
@@ -144,40 +140,45 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
     records = {}
     skipped_interior = 0
 
-    def mapping(address, size=16):
-        index = bisect_right(starts,address)-1
-        if index<0 or address%4:
-            return None
-        s = sections[index]
-        return s if address+size<=s['vram']+s['size'] else None
+    def mappings(address, size=16, preferred=None):
+        matches = [s for s in sections if not address % 4
+                   and s['vram'] <= address and address + size <= s['vram'] + s['size']]
+        selected = [s for s in matches if s['id'] == preferred]
+        return selected or matches
+
+    def mapping(address, size=16, preferred=None):
+        matches = mappings(address, size, preferred)
+        return matches[0] if len(matches) == 1 else None
 
     def record(address, reference):
         nonlocal skipped_interior
-        section = mapping(address)
-        if section is None:
-            return
-        key = section['id'],address
-        if key in entries and not include_registered:
-            return
-        if key in owners and key not in entries:
-            skipped_interior += 1
-            return
-        offset = section['rom_offset']+address-section['vram']
-        item = records.setdefault(key,dict(vram=address,section=section['id'],
-            rom_offset=offset,sha256=hashlib.sha256(rom[offset:offset+16]).hexdigest(),
-            registered=key in entries,reference_count=0,references=[]))
-        item['reference_count'] += 1
-        # Preserve counts but bound reports for frequently repeated script operands.
-        if len(item['references'])<64 and reference not in item['references']:
-            item['references'].append(reference)
+        added = []
+        for section in mappings(address, preferred=reference.get('section')):
+            key = section['id'],address
+            if key in entries and not include_registered:
+                continue
+            if key in owners and key not in entries:
+                skipped_interior += 1
+                continue
+            offset = section['rom_offset']+address-section['vram']
+            if key not in records:
+                added.append(key)
+            item = records.setdefault(key,dict(vram=address,section=section['id'],
+                rom_offset=offset,sha256=hashlib.sha256(rom[offset:offset+16]).hexdigest(),
+                registered=key in entries,reference_count=0,references=[]))
+            item['reference_count'] += 1
+            # Preserve counts but bound reports for frequently repeated script operands.
+            if len(item['references'])<64 and reference not in item['references']:
+                item['references'].append(reference)
+        return added
 
     # Local switch labels must not become function candidates just because their
     # table contains code-looking pointers. Exclude checked jump table words.
     excluded_offsets = set()
-    for transfer in transfers.values():
+    for (sid, _), transfer in transfers.items():
         if transfer['kind']!='jump' or 'table_vram' not in transfer:
             continue
-        s = mapping(transfer['table_vram'],transfer['table_count']*4)
+        s = mapping(transfer['table_vram'],transfer['table_count']*4,sid)
         if s:
             offset = s['rom_offset']+transfer['table_vram']-s['vram']
             excluded_offsets.update(range(offset,offset+transfer['table_count']*4,4))
@@ -189,7 +190,6 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             if offset in owned_offsets or offset in excluded_offsets:
                 continue
             record(value,dict(kind='image-pointer',rom_offset=offset))
-        text = [dict(s,section=s['id']) for s in sections]
         for gap in metadata.get('unvisited_ranges',[]):
             section = next(s for s in sections if s['id']==gap['section'])
             offset = section['rom_offset']+gap['vram']-section['vram']
@@ -207,6 +207,10 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             # Replaced original bodies are not active callback producers.
             if function.get('origin') in ('native-replacement','unsupported-boundary'):
                 continue
+            text = [dict(s,section=s['id']) for s in sections
+                    if s['id'] == function['section'] or not any(
+                        s['id'] != other['id'] and s['vram'] < other['vram'] + other['size']
+                        and other['vram'] < s['vram'] + s['size'] for other in sections)]
             if include_registered:
                 for pc in function['instruction_addresses']:
                     offset = function['rom_offset']+pc-function['vram']
@@ -233,10 +237,10 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             item['body'] = dict(status='registered',instructions=len(entries[key]['instruction_addresses']))
             item['confidence'] = 'registered'
             continue
-        body = probe_body(rom,mapping(item['vram']),item['vram'],owners,entries,transfers,max_instructions)
+        body = probe_body(rom,mapping(item['vram'],preferred=item['section']),item['vram'],owners,entries,transfers,max_instructions)
         for call in body['direct_calls']:
-            if mapping(call['vram'],4) is None:
-                body['issues'].append(dict(pc=call['pc'],reason='direct call target has no CPU mapping'))
+            if mapping(call['vram'],4,item['section']) is None:
+                body['issues'].append(dict(pc=call['pc'],reason='direct call target has no unique CPU mapping'))
                 body['status'] = 'review'
         item['body'] = body
         kinds = {r['kind'] for r in item['references']}
@@ -248,12 +252,9 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
         # Propagate only from bodies whose bounded flow check closed cleanly.
         if body['status']=='closed':
             for call in body['direct_calls']:
-                before = len(records)
-                record(call['vram'],dict(kind='candidate-direct-call',pc=call['pc'],
+                pending.extend(record(call['vram'],dict(kind='candidate-direct-call',pc=call['pc'],
                     section=item['section'],candidate=item['vram'],
-                    rom_offset=item['rom_offset']+call['pc']-item['vram']))
-                if len(records)>before:
-                    pending.append((mapping(call['vram'])['id'],call['vram']))
+                    rom_offset=item['rom_offset']+call['pc']-item['vram'])))
     order = {'likely':0,'review':1,'registered':2}
     # Random asset words often resemble pointers. Retain only closed bodies,
     # stack-frame candidates, or addresses actually constructed by owned code.

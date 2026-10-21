@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from bisect import bisect_right
 from collections import Counter, deque
 import hashlib
 from pathlib import Path
@@ -11,7 +10,7 @@ import sys
 
 from common import RecompError, load_profile, load_rom, validate_hook_prefix, write_json
 from code_inventory import load_inventory, load_entry_inventory, complete_code
-from emit import decode, target
+from emit import constant_condition, decode, target
 from native_hooks import classify_native_bodies, resolve_native_hooks
 from metadata_candidates import indirect_parameter_uses, materialized_entries, owned_ranges
 
@@ -31,11 +30,18 @@ def discover(rom: bytes, profile: dict) -> dict:
             raise RecompError(f'invalid ROM discovery region: {name}')
         if any(s['name'] == name for s in sections):
             raise RecompError(f'duplicate discovery region: {name}')
-        if any(address < s['vram'] + s['size'] and s['vram'] < address + size for s in sections):
-            raise RecompError('overlapping load mappings need explicit overlay support; not implemented yet')
+        group = region.get('overlay_group')
+        if group is not None and (not isinstance(group, str) or not group or name in game.get('boot_sections', [])):
+            raise RecompError('overlay_group requires a nonempty name on a section unloaded at boot')
+        for s in sections:
+            if address < s['vram'] + s['size'] and s['vram'] < address + size:
+                if not group or group != s.get('overlay_group'):
+                    raise RecompError('overlapping load mappings require the same explicit overlay_group')
         sections.append(dict(id=len(sections), name=name, vram=address, size=size, rom_offset=offset,
                              loaded_at_boot=name in game.get('boot_sections', []),
                              sha256=hashlib.sha256(rom[offset:offset + size]).hexdigest()))
+        if group:
+            sections[-1]['overlay_group'] = group
     if set(game['code_sections']) != {s['name'] for s in sections}:
         raise RecompError('discovery regions must cover every configured section')
     inventory,inventory_entries=load_inventory(config['inventory'],rom,sections) if config.get('inventory') else (None,[])
@@ -47,14 +53,25 @@ def discover(rom: bytes, profile: dict) -> dict:
     if dynamic_calls and inventory is None and not partial_entries:
         raise RecompError('registered indirect calls require a checked code inventory or entry inventory')
 
-    ordered_sections = sorted(sections, key=lambda s: s['vram'])
-    section_starts = [s['vram'] for s in ordered_sections]
-    def mapping(address):
-        index = bisect_right(section_starts, address) - 1
-        if index < 0:
-            return None
-        section = ordered_sections[index]
-        return section if address < section['vram'] + section['size'] else None
+    current_section = None
+    declared_entries = [*partial_entries, *inventory_entries, *config.get('roots', [])]
+    def mapping(address, preferred=None):
+        matches = [s for s in sections if s['vram'] <= address < s['vram'] + s['size']]
+        preferred = current_section if preferred is None else preferred
+        if preferred is not None:
+            if not any(preferred in (s['name'], s['id']) for s in sections):
+                raise RecompError(f'unknown discovery section: {preferred}')
+            selected = next((s for s in matches if preferred in (s['name'], s['id'])), None)
+            if selected is not None:
+                return selected
+        if len(matches) > 1:
+            declared = {root['section'] for root in declared_entries
+                        if root.get('vram') == address and 'section' in root}
+            selected = [s for s in matches if s['name'] in declared or s['id'] in declared]
+            if len(selected) == 1:
+                return selected[0]
+            raise RecompError(f'ambiguous overlay address {address:#010x}; select its section explicitly')
+        return matches[0] if matches else None
 
     def read(address):
         section = mapping(address)
@@ -70,15 +87,18 @@ def discover(rom: bytes, profile: dict) -> dict:
     if limit <= 0 or instruction_limit <= 0:
         raise RecompError('discovery limits must be positive')
 
-    def add_entry(address, name=None, origin='direct-call'):
-        section = mapping(address)
-        if section is None or address % 4:
+    def add_entry(address, name=None, origin='direct-call', preferred=None):
+        section = mapping(address, preferred)
+        if (section is None or address % 4 or preferred is not None
+                and preferred not in (section['name'], section['id'])):
             raise RecompError(f'unmapped or unaligned function root: {address:#010x}')
         key = (section['id'], address)
         if key not in entries:
             if len(entries) >= limit:
                 raise RecompError(f'function discovery limit reached ({limit})')
-            entries[key] = {'name': name or f'func_{address:08x}', 'origin': origin}
+            default = (f'func_s{section["id"]}_{address:08x}' if section.get('overlay_group')
+                       else f'func_{address:08x}')
+            entries[key] = {'name': name or default, 'origin': origin}
             queue.append(key)
         elif name is not None and entries[key]['name'] != name:
             raise RecompError(f'duplicate names for discovery root: {address:#010x}')
@@ -95,35 +115,36 @@ def discover(rom: bytes, profile: dict) -> dict:
     for root in roots:
         if root.get('name') in excluded:
             continue
-        add_entry(root['vram'], root.get('name'), 'profile-root')
+        add_entry(root['vram'], root.get('name'), 'profile-root', root.get('section'))
     for root in inventory_entries:
-        add_entry(root['vram'],root.get('name'),'inventory-entry')
+        add_entry(root['vram'],root.get('name'),'inventory-entry',root.get('section'))
     for root in partial_entries:
-        add_entry(root['vram'], origin='checked-partial-entry')
+        add_entry(root['vram'], origin='checked-partial-entry', preferred=root.get('section'))
     replacements = {}
     for hook in [*profile.get('hooks', []), *profile.get('boundaries', [])]:
         if 'vram' not in hook:
             continue
         if hook.get('kind') not in ('replace_function', 'unsupported_function'):
             raise RecompError(f"hook kind not implemented: {hook.get('kind')}")
-        section = mapping(hook['vram'])
+        section = mapping(hook['vram'], hook.get('section'))
         existing = entries.get((section['id'], hook['vram'])) if section else None
         if 'catalog_body_size' in hook and existing and existing['name'] != hook['symbol']:
-            key = add_entry(hook['vram'], origin='native-replacement')
+            key = add_entry(hook['vram'], origin='native-replacement', preferred=section['id'])
             existing.setdefault('aliases', []).append(hook['symbol'])
         else:
-            key = add_entry(hook['vram'], hook['symbol'], 'native-replacement')
+            key = add_entry(hook['vram'], hook['symbol'], 'native-replacement', section['id'])
         section = sections[key[0]]
         offset = section['rom_offset'] + key[1] - section['vram']
         size = validate_hook_prefix(rom, offset, key[1], section['vram'] + section['size'] - key[1], hook)
         if key in replacements:
             raise RecompError(f"duplicate native replacement: {hook['symbol']}")
         replacements[key] = (size, hook.get('kind'))
-    transfers = {}
+    transfers_by_section = {}
     table_transfers = []
     tables = [(t, 'jump') for t in config.get('jump_tables', [])]
     tables.extend((t, 'call') for t in config.get('function_tables', []))
     for table, kind in tables:
+        current_section = table.get('section')
         address, count = table['table_vram'], table['count']
         section = mapping(address) if type(address) is int else None
         if (type(address) is not int or type(count) is not int or address % 4 or not 0 < count <= 4096
@@ -141,13 +162,16 @@ def discover(rom: bytes, profile: dict) -> dict:
         targets = sorted({int.from_bytes(raw[i*4:i*4+4], 'big') for i in indexes})
         table_transfers.append(dict(pc=table['pc'], expected_word=table['expected_word'], kind=kind,
                                     targets=targets, table_vram=address, table_count=count,
-                                    table_indices=indexes, table_sha256=table['sha256']))
+                                    table_indices=indexes, table_sha256=table['sha256'], section=section['name']))
     for transfer in [*config.get('transfers', []), *table_transfers]:
+        current_section = transfer.get('section')
         pc = transfer['pc']
         i = read(pc)
+        section = mapping(pc)
+        key = (section['id'], pc) if section else None
         kind = transfer['kind']
         targets = transfer['targets']
-        if (i is None or i.word != transfer['expected_word'] or pc in transfers
+        if (i is None or i.word != transfer['expected_word'] or key in transfers_by_section
                 or kind not in ('tail', 'jump', 'call', 'return')
                 or (bool(targets) == (kind == 'return')) or len(set(targets)) != len(targets)
                 or (kind == 'call' and i.opcode != 'jalr')
@@ -169,31 +193,43 @@ def discover(rom: bytes, profile: dict) -> dict:
             if ((not entry_link or 'save_pc' in transfer or 'expected_save_word' in transfer)
                     if 'entry_register' in transfer else not saved_ra):
                 raise RecompError(f'invalid checked return save at {pc:#010x}')
-        transfers[pc] = transfer
-    fallthroughs = {}
+        transfers_by_section[key] = transfer
+    fallthroughs_by_section = {}
     for transfer in config.get('fallthroughs', []):
+        current_section = transfer.get('section')
         pc, destination = transfer['pc'], transfer['target']
         i=read(pc)
-        if (i is None or i.delay or i.word != transfer['expected_word'] or pc in fallthroughs
+        section = mapping(pc)
+        key = (section['id'], pc) if section else None
+        if (i is None or i.delay or i.word != transfer['expected_word'] or key in fallthroughs_by_section
                 or destination != pc+4 or mapping(destination) != mapping(pc)
                 or not isinstance(transfer.get('reason'),str) or not transfer['reason']):
             raise RecompError(f'invalid checked function fallthrough at {pc:#010x}')
         add_entry(destination)
-        fallthroughs[pc]=transfer
-    continuations = {}
+        fallthroughs_by_section[key]=transfer
+    continuations_by_section = {}
     for site in config.get('tail_continuations', []):
+        current_section = site.get('section')
         pc = site['pc']
         i = read(pc)
+        section = mapping(pc)
+        key = (section['id'], pc) if section else None
         resume = site['resume_pc']
         if (i is None or not i.delay or i.opcode in ('jr', 'jal', 'jalr', 'bltzal', 'bgezal', 'bltzall', 'bgezall')
-                or i.word != site['expected_word'] or pc in continuations
+                or i.word != site['expected_word'] or key in continuations_by_section
                 or type(resume) is not int or resume % 4 or mapping(resume) != mapping(pc)):
             raise RecompError(f'invalid checked tail continuation at {pc:#010x}')
-        continuations[pc] = site
+        continuations_by_section[key] = site
+    current_section = None
 
     def walk(key):
+        nonlocal current_section
         section_id, start = key
+        current_section = section_id
         section = sections[section_id]
+        transfers = {pc:t for (sid,pc),t in transfers_by_section.items() if sid == section_id}
+        fallthroughs = {pc:t for (sid,pc),t in fallthroughs_by_section.items() if sid == section_id}
+        continuations = {pc:t for (sid,pc),t in continuations_by_section.items() if sid == section_id}
         if key in replacements:
             # Only the fingerprint is classified here. No function boundary is
             # inferred, and privileged OS internals are not followed past it.
@@ -315,7 +351,10 @@ def discover(rom: bytes, profile: dict) -> dict:
                 else:
                     local(target(i), pc)
             elif i.opcode in ('bltzal', 'bgezal', 'bltzall', 'bgezall'):
-                call(target(i), pc)
+                # BLTZAL zero is also used solely to materialize PC+8 in r31.
+                # Its never-taken destination can be embedded data, not a callee.
+                if constant_condition(i) is not False:
+                    call(target(i), pc)
                 pending.append(pc + 8)
             else:
                 # Follow both possible paths, except branches provable from
@@ -367,13 +406,24 @@ def discover(rom: bytes, profile: dict) -> dict:
             continue
         if not dynamic_calls or inventory is not None:
             break
-        by_address = {f['vram']:f for f in functions}
-        owned_addresses = {pc for f in functions for pc in f['instruction_addresses']}
+        by_address = {}
+        for f in functions:
+            by_address.setdefault(f['vram'], []).append(f)
         parameters = {}
-        text = [dict(s,section=s['id']) for s in sections]
         for function in functions:
             if function['discovery_errors'] or function['origin'] in ('native-replacement','unsupported-boundary'):
                 continue
+            current_section = function['section']
+            # Infer callbacks only where the caller selects a mapping, or the
+            # target has one unambiguous mapping. Other overlay roots require
+            # a checked inventory entry with an explicit section.
+            text = [dict(s,section=s['id']) for s in sections
+                    if s['id'] == current_section or not any(
+                        s['id'] != other['id'] and s['vram'] < other['vram'] + other['size']
+                        and other['vram'] < s['vram'] + s['size'] for other in sections)]
+            selected_sections = {s['id'] for s in text}
+            owned_addresses = {pc for f in functions if f['section'] in selected_sections
+                               for pc in f['instruction_addresses']}
             candidates = materialized_entries(rom,{'functions':functions},text,
                 source_ranges=owned_ranges(function),owned_addresses=owned_addresses)
             for candidate in candidates:
@@ -384,12 +434,17 @@ def discover(rom: bytes, profile: dict) -> dict:
                     if use['kind']=='constant-indirect-call':
                         sources.append(source)
                     elif use['kind']=='call-argument' and use.get('callee') in by_address:
-                        callee = by_address[use['callee']]
+                        matches = by_address[use['callee']]
+                        callee = next((f for f in matches if f['section'] == current_section),
+                                      matches[0] if len(matches) == 1 else None)
+                        if callee is None:
+                            continue
                         if callee['discovery_errors'] or callee['origin'] in ('native-replacement','unsupported-boundary'):
                             continue
-                        if callee['vram'] not in parameters:
-                            parameters[callee['vram']] = indirect_parameter_uses(rom,callee)
-                        sites = parameters[callee['vram']].get(use['register'],[])
+                        callee_key = (callee['section'], callee['vram'])
+                        if callee_key not in parameters:
+                            parameters[callee_key] = indirect_parameter_uses(rom,callee)
+                        sites = parameters[callee_key].get(use['register'],[])
                         if sites:
                             sources.append(dict(source,callee=callee['vram'],
                                                 argument_register=use['register'],indirect_calls=sites))

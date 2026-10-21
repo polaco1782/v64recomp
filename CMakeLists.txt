@@ -15,7 +15,7 @@ configure_file(licenses/Mupen64Plus-rsp-hle.txt "${CMAKE_BINARY_DIR}/bin/license
 
 # One native game per build tree. Use a separate directory for each mode.
 set(RECOMP_GAME "sm64-us" CACHE STRING "Game to build, or none for shared libraries")
-set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us rayman2-us quake2-us)
+set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us rayman2-us quake2-us re2-us-v1)
 set_property(CACHE RECOMP_GAME PROPERTY STRINGS none ${RECOMP_GAMES})
 if(NOT RECOMP_GAME STREQUAL "none" AND NOT RECOMP_GAME IN_LIST RECOMP_GAMES)
     message(FATAL_ERROR "Unknown RECOMP_GAME=${RECOMP_GAME}. Choose: ${RECOMP_GAMES};none")
@@ -70,7 +70,7 @@ if(RECOMP_BUILD_AUDIO)
     add_library(recomp_audio STATIC backends/audio.c third_party/rsp-hle/alist.c
         third_party/rsp-hle/alist_audio.c third_party/rsp-hle/alist_nead.c
         third_party/rsp-hle/alist_naudio.c third_party/rsp-hle/mp3.c
-        third_party/rsp-hle/audio.c)
+        third_party/rsp-hle/audio.c third_party/rsp-hle/musyx.c)
     target_include_directories(recomp_audio PRIVATE third_party/rsp-hle)
     target_link_libraries(recomp_audio PUBLIC recomp_runtime recomp_rsp_memory SDL2::SDL2)
     target_compile_options(recomp_audio PRIVATE -Wall -Wextra -Werror -fno-strict-aliasing)

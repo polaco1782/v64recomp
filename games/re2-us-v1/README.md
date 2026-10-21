@@ -41,8 +41,9 @@ The 16-byte record at `0x12ce0` gives cartridge `0x14420`, compressed size
 `0x5e1ef`, and decoded RAM `0x80018a80..0x80136d90`. It starts with a two-byte
 header followed by raw DEFLATE. `generate.py` verifies this record, EOF, decoded
 size and full SHA-256, then appends its bytes at analysis offset `0x4000000`.
-Overlay 3 follows at analysis offset `0x411e310` and overlay 2 at `0x4124fd0`.
-The analysis SHA-1 is `2f0e5888ecbf875f74322f3ad4c0e07c676723b3`.
+Overlay 3 follows at analysis offset `0x411e310`, overlay 2 at `0x4124fd0`
+and overlay 4 at `0x4131070`.
+The analysis SHA-1 is `378f7ee4db6fbc6cb0d595849e45c9ee2bd01f4f`.
 Prepared offsets must never be used for cartridge DMA or ROM import.
 
 At runtime the original translated inflater runs after native raw PI DMA;

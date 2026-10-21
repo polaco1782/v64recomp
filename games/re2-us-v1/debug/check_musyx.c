@@ -2,8 +2,10 @@
  * clang -std=c11 -O1 -g -fsanitize=address,undefined -fno-strict-aliasing \
  *   -Ithird_party/rsp-hle games/re2-us-v1/debug/check_musyx.c \
  *   third_party/rsp-hle/musyx.c \
- *   third_party/rsp-hle/audio.c third_party/rsp-hle/memory.c -o /tmp/check-musyx
- * /tmp/check-musyx [word-swapped-rdram task-list-address subframe-count]
+ *   third_party/rsp-hle/audio.c third_party/rsp-hle/memory.c \
+ *   -o build/re2-us-v1-debug/check-musyx
+ * ASAN_OPTIONS=detect_leaks=0 build/re2-us-v1-debug/check-musyx \
+ *   [word-swapped-rdram task-list-address subframe-count]
  */
 #include "hle_internal.h"
 #include "hle_external.h"

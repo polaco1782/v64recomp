@@ -1,8 +1,8 @@
 /* ROM-free fixed-point video fixtures.
  * clang -std=c11 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all \
  *   -Igames/re2-us-v1 games/re2-us-v1/debug/check_video_dsp.c \
- *   games/re2-us-v1/video_dsp.c -o /tmp/check-re2-resize
- * ASAN_OPTIONS=detect_leaks=0 /tmp/check-re2-resize */
+ *   games/re2-us-v1/video_dsp.c -o build/re2-us-v1-debug/check-video-dsp
+ * ASAN_OPTIONS=detect_leaks=0 build/re2-us-v1-debug/check-video-dsp */
 #include "video_dsp.h"
 #include <assert.h>
 #include <stdio.h>

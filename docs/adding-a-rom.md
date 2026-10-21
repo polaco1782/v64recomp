@@ -311,6 +311,18 @@ For example, GoldenEye resolves its `jump_tables` from verified decompressed
 startup data, while OoT reads its overlay mappings from `discovery.overlays`.
 ROM-bound JSON code/entry inventories remain separate evidence files.
 
+For fixed-address overlay slots, give overlapping discovery regions the same
+nonempty `overlay_group`; these sections must start unloaded. Add `section` with
+the region name to partial entry-inventory roots and dispatch declarations whose
+addresses overlap. Discovery follows calls and local flow in the current
+section. Cross-section calls into an ambiguous slot need a section-qualified
+checked root at the target. Runtime lookup still requires exactly one loaded
+function at that address; the game loader must invalidate the old section and
+verify the complete replacement before activating it. Auto-detected native
+bodies retain their section identity, and custom hooks in an overlapping slot
+also need `section`. `tools/check_overlays.py --build build/<game>-debug`
+exercises synthetic overlapping code, switches and native dispatch.
+
 `allow_registered_indirect_calls` permits runtime lookup only with a checked
 code/entry inventory. It does not discover missing entries or make arbitrary
 targets safe. Keep loaded-section and `prepare_call` checks on direct calls too.

@@ -55,6 +55,13 @@ Mupen64Plus-rsp-hle. Source files specify GPL version 2 or later and retain
 individual copyright notices. The upstream license and author list are
 preserved in [licenses/Mupen64Plus-rsp-hle.txt](licenses/Mupen64Plus-rsp-hle.txt).
 
+RE2's integer video cores in `games/re2-us-v1/video_dsp.c` are adapted
+from [Salsa64](https://github.com/ricowp81/Salsa64), revision
+`59cb166c99e7bee2dbf6467814dfab9a13625d1f`, `src/rsp/jpeg/re2.c` and `re2.h`.
+It is GPL version 2 or later, retains the original Gilles Siberlin notice,
+and builds on the Mupen64Plus RE2 task implementation. Its local adapter adds
+ROM-bound microcode authentication and validates the complete RAM plan.
+
 ## n64sym signature data
 
 The SDK identification signatures and library references in `tools/symbols.json`

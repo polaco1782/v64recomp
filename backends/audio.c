@@ -46,6 +46,16 @@ static uint32_t ram_range(RecompAudio *a,uint32_t address,size_t bytes,unsigned 
     if(address%alignment)recomp_fail("audio RAM alignment",address);
     return recomp_physical_address(a->rt,address,bytes);
 }
+void HleMusyxValidateRam(void *opaque, uint32_t address, size_t bytes, unsigned alignment) {
+    RecompAudio *a = opaque;
+    if (address % alignment) recomp_fail("MusyX RAM alignment", address);
+    uint32_t physical = recomp_ram_address(a->rt, address, bytes);
+    if (physical != (address & UINT32_C(0xffffff)))
+        recomp_fail("MusyX address cannot use the native HLE RAM window", address);
+}
+void HleVerboseMessage(void *opaque, const char *message, ...) {
+    (void)opaque; (void)message;
+}
 static uint32_t address(RecompAudio *a,uint32_t word) {
     unsigned segment=(word>>24)&63;
     if(segment>=16)recomp_fail("audio segment outside table",segment);
@@ -331,7 +341,8 @@ RecompAudio *recomp_audio_create(Runtime *rt,const RecompAudioConfig *config) {
        || config->prebuffer_ms>200
        || (config->microcode!=RECOMP_AUDIO_ABI1 && config->microcode!=RECOMP_AUDIO_ABI1_LINEAR
            && config->microcode!=RECOMP_AUDIO_NEAD_OOT && config->microcode!=RECOMP_AUDIO_NAUDIO_MP3
-           && config->microcode!=RECOMP_AUDIO_NAUDIO_CBFD && config->microcode!=RECOMP_AUDIO_NAUDIO))return NULL;
+           && config->microcode!=RECOMP_AUDIO_NAUDIO_CBFD && config->microcode!=RECOMP_AUDIO_NAUDIO
+           && config->microcode!=RECOMP_AUDIO_MUSYX_V1))return NULL;
     RecompAudio *a=calloc(1,sizeof(*a));if(!a)return NULL;
     a->rt=rt;a->owner=SDL_ThreadID();a->playback=config->playback;a->enabled=config->output_enabled;
     a->microcode=config->microcode;a->task_profile=config->task_profile;
@@ -407,7 +418,24 @@ static void execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
 }
 void recomp_audio_execute_abi1(RecompAudio *a,uint32_t list,uint32_t bytes) {
     owner(a);
+    if (a->microcode == RECOMP_AUDIO_MUSYX_V1)
+        recomp_fail("MusyX requires subframe descriptors, not ABI1 commands", list);
     execute_abi1(a,list,bytes);
+}
+static void execute_musyx(RecompAudio *a, uint32_t list, uint32_t count) {
+    if (!count || count > 64) recomp_fail("invalid MusyX subframe count", list);
+    HleMusyxValidateRam(a, list, (size_t)count * 0xa10, 4);
+    uint32_t physical = list & UINT32_C(0xffffff);
+    a->debug = (RecompAudioSnapshot){.list = list, .bytes = count * 0xa10};
+    memcpy(a->dmem + TASK_DATA_PTR, &physical, 4);
+    memcpy(a->dmem + TASK_DATA_SIZE, &count, 4);
+    a->task_done = false;
+    uint64_t start = timer_ns();
+    musyx_v1_task(&a->hle);
+    a->stats.synth_ns += timer_ns() - start;
+    if (!a->task_done) recomp_fail("MusyX task did not finish", list);
+    a->stats.tasks++;
+    a->stats.commands += count;
 }
 static bool microcode_matches(RecompAudio *a,uint32_t address,unsigned bytes,const char *hex) {
     uint8_t *data=malloc(bytes);if(!data)return false;
@@ -429,7 +457,9 @@ bool recomp_audio_submit(RecompAudio *a,const RecompTask *task) {
     }
     /* The task hook parks the guest in recomp_on_host. Write live RAM before
      * queuing SP completion; the task service delivers its event on polling. */
-    execute_abi1(a,task->words[12],task->words[13]);
+    if (a->microcode == RECOMP_AUDIO_MUSYX_V1)
+        execute_musyx(a, task->words[12], task->words[13]);
+    else execute_abi1(a,task->words[12],task->words[13]);
     if(!recomp_task_complete(a->rt,task->token,RECOMP_SP_DONE))
         recomp_fail("invalid audio task completion",task->guest_address);
     return true;

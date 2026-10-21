@@ -17,17 +17,20 @@ def load_entry_inventory(path, rom: bytes, sections: list[dict]) -> list[dict]:
     result, seen = [], set()
     for entry in document['entries']:
         address = entry.get('vram') if isinstance(entry, dict) else None
-        section = next((s for s in sections if type(address) is int
-                        and s['vram'] <= address <= s['vram'] + s['size'] - 16), None)
-        if section is None or address % 4 or address in seen:
+        matches = [s for s in sections if type(address) is int
+                   and s['vram'] <= address <= s['vram'] + s['size'] - 16
+                   and ('section' not in entry or entry['section'] == s['name'])]
+        section = matches[0] if len(matches) == 1 else None
+        key = (section['id'], address) if section else None
+        if section is None or address % 4 or key in seen:
             raise RecompError('invalid or duplicate checked function entry')
         offset = section['rom_offset'] + address - section['vram']
         if hashlib.sha256(rom[offset:offset+16]).hexdigest() != entry.get('sha256'):
             raise RecompError(f'function entry fingerprint mismatch at {address:#010x}')
         if entry.get('origin') not in ('direct-jal', 'stack-prologue', 'checked-root'):
             raise RecompError('checked function entry needs an explicit origin')
-        seen.add(address)
-        result.append({'vram':address})
+        seen.add(key)
+        result.append({'vram':address, 'section':section['name']})
     return result
 
 

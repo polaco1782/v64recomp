@@ -416,6 +416,38 @@
       "problemMatcher": [
         "$gcc"
       ]
+    },
+    {
+      "label": "Configure Debug: Resident Evil 2 US revision 1",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "re2-us-v1-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Resident Evil 2 US revision 1",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "re2-us-v1-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Resident Evil 2 US revision 1",
+      "problemMatcher": [
+        "$gcc"
+      ]
     }
   ]
 }

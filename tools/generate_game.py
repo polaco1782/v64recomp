@@ -15,7 +15,7 @@ from translate import translate
 from symbol_database import DATABASE
 
 PROJECT = Path(__file__).resolve().parents[1]
-GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us')
+GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1')
 
 
 def split_sources(output: Path) -> list[Path]:

@@ -37,9 +37,10 @@ def resolve_native_hooks(rom: bytes, profile: dict) -> list[dict]:
                 if (position % 4 == offset % 4 and position + size <= end
                         and hashlib.sha256(rom[position:position + size]).hexdigest() == signature['sha256']):
                     address = region['vram'] + position - offset
-                    if address in found:
+                    key = (region['name'], address)
+                    if key in found:
                         raise RecompError(f'ambiguous shared native hook at {address:#010x}')
-                    found[address] = dict(symbol=signature['symbol'], vram=address,
+                    found[key] = dict(symbol=signature['symbol'], vram=address, section=region['name'],
                         kind='replace_function', handler=signature['handler'],
                         expected_words=[int.from_bytes(rom[p:p + 4], 'big')
                                         for p in range(position, position + size, 4)],
@@ -48,16 +49,31 @@ def resolve_native_hooks(rom: bytes, profile: dict) -> list[dict]:
     # Keep the customary symbol when unique. Multiple linked copies still have
     # separate registry entries and must not produce ambiguous symbol bindings.
     names = [h['symbol'] for h in found.values()] + [h['symbol'] for h in custom]
-    custom_addresses = {h.get('vram') for h in custom}
+    def custom_key(hook):
+        address = hook.get('vram')
+        if address is None:
+            return None
+        matches = [r for r in profile.get('discovery', {}).get('regions', [])
+                   if r['vram'] <= address < r['vram'] + r['size']
+                   and ('section' not in hook or hook['section'] == r['name'])]
+        if len(matches) != 1:
+            raise RecompError(f'native override needs a unique section at {address:#010x}')
+        return matches[0]['name'], address
+
+    custom_addresses = {custom_key(h) for h in custom}
     result = []
     for hook in custom:
-        recognized = found.get(hook.get('vram'))
+        recognized = found.get(custom_key(hook))
         result.append(dict(hook, catalog_body_size=recognized['catalog_body_size']) if recognized else hook)
-    for address, hook in sorted(found.items()):
-        if address in custom_addresses:
+    for key, hook in sorted(found.items()):
+        section, address = key
+        if key in custom_addresses:
             continue
         if names.count(hook['symbol']) > 1:
-            hook = dict(hook, symbol=f'{hook["symbol"]}_native_{address:08x}')
+            same_address = sum(a == address for _, a in found) > 1
+            sid = next(i for i, r in enumerate(profile['discovery']['regions']) if r['name'] == section)
+            suffix = f's{sid}_{address:08x}' if same_address else f'{address:08x}'
+            hook = dict(hook, symbol=f'{hook["symbol"]}_native_{suffix}')
         result.append(hook)
     return result
 
@@ -74,7 +90,8 @@ def classify_native_bodies(rom: bytes, sections: list[dict], ranges: list[dict],
     result = []
     for region in ranges:
         start, end = region['vram'], region['vram'] + region['size']
-        selected = [h for h in bodies if start <= h['vram'] < end]
+        selected = [h for h in bodies if start <= h['vram'] < end
+                    and h.get('section', region['section']) == region['section']]
         if not selected or region['kind'] != 'code':
             result.append(region)
             continue

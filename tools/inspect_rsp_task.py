@@ -67,12 +67,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('report', type=Path)
     parser.add_argument('--rom', type=Path, help='normalized original ROM; show exact byte matches')
-    parser.add_argument('--list-scale', type=int, choices=(1, 8), default=1,
-                        help='1 for OSTask byte size, 8 for games storing command counts')
+    parser.add_argument('--list-scale', type=lambda x: int(x, 0), default=1,
+                        help='bytes per task list unit: 1 for bytes, 8 for commands, 0xa10 for MusyX v1 subframes')
+    parser.add_argument('--structured', action='store_true',
+                        help='list contains descriptors; omit command/opcode interpretation')
     parser.add_argument('--commands', type=int, default=32, help='maximum flat command rows to print')
     parser.add_argument('--opcode', type=lambda x: int(x, 0), help='print only this opcode')
     parser.add_argument('--extract', type=Path, help='write microcode and graphics/audio command bytes here')
     args = parser.parse_args()
+    if not 1 <= args.list_scale <= 65536:
+        raise RecompError('invalid task list scale')
     if not 0 <= args.commands <= 65536 or args.opcode is not None and not 0 <= args.opcode <= 255:
         raise RecompError('invalid command count or opcode')
     snapshot = Snapshot(args.report)
@@ -99,7 +103,7 @@ def main() -> int:
             for text in re.findall(rb'[ -~]{12,}', raw):
                 print('  String: ' + text.decode('ascii'))
     raw = extracted.get(list_name)
-    if raw is not None:
+    if raw is not None and not args.structured:
         if len(raw) % 8:
             raise RecompError('command-list span is not a multiple of 8; check --list-scale')
         counts = Counter(raw[i] for i in range(0, len(raw), 8))

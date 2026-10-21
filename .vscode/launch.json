@@ -273,6 +273,27 @@
         }
       ],
       "preLaunchTask": "Build Debug: Quake II US"
+    },
+    {
+      "name": "Debug: Resident Evil 2 US revision 1",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/re2-us-v1-debug/bin/re2-us-v1",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Resident Evil 2 US revision 1"
     }
   ]
 }
