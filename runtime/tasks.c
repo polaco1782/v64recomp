@@ -165,8 +165,8 @@ static void buffer(Runtime *rt, uint32_t address, uint32_t bytes, bool required,
 }
 static void wait_sp_load_on_host(Runtime *rt, void *opaque) {
     uint32_t object = *(uint32_t *)opaque;
-    /* SDK __osSpSetPc retries until SP_STATUS_HALT. Native workers must finish
-     * and publish that same completion before the next task can be loaded. */
+    /* SDK __osSpSetPc retries until SP_STATUS_HALT. Drain deferred services and
+     * deliver queued HLE completions before the next task can be loaded. */
     recomp_task_services_flush(rt);
     poll_tasks(rt);
     if (tasks(rt)->active) recomp_fail("SP task did not halt before load", object);
@@ -254,8 +254,8 @@ void hook_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
 static void yield_on_host(Runtime *rt, void *opaque) {
     MipsContext *ctx=opaque;
     RecompTasks *t=tasks(rt);
-    /* Supported HLE tasks finish at a whole-list boundary. Drain the worker
-     * before deciding whether this request still needs a backend yield. */
+    /* Supported HLE tasks finish at a whole-list boundary. Deliver their queued
+     * completions before deciding whether a backend yield is still needed. */
     recomp_task_services_flush(rt);
     poll_tasks(rt);
     if (!t->active) {

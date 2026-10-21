@@ -36,7 +36,6 @@ typedef struct FpEnvironment {
 
 static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
     FpEnvironment env;
-    env.saved_errno = errno;
     unsigned rm = mode < 0 ? ctx->fcr31 & 3 : (unsigned)mode;
 #if USE_INTRISICS
     env.sse_only = sse_only;
@@ -52,6 +51,9 @@ static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
 #else
     (void)sse_only;
 #endif
+    /* Scalar SSE intrinsics cannot change errno. Only the C/libm fallback
+     * needs to save and restore it around host floating-point operations. */
+    env.saved_errno = errno;
     if (feholdexcept(&env.saved) || fesetround(rounding[rm]))
         recomp_fail("host floating-point environment unavailable", ctx->pc);
 #if defined(__SSE2__)
@@ -67,7 +69,6 @@ static unsigned end(MipsContext *ctx, const FpEnvironment *env) {
     if (env->sse_only) {
         unsigned flags = _mm_getcsr();
         _mm_setcsr(env->saved_mxcsr);
-        errno = env->saved_errno;
         return ((flags & 0x20) ? FP_I : 0) | ((flags & 0x10) ? FP_U : 0)
              | ((flags & 0x08) ? FP_O : 0) | ((flags & 0x04) ? FP_Z : 0)
              | ((flags & 0x01) ? FP_V : 0);

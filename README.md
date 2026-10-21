@@ -273,7 +273,7 @@ The technical documentation covers each part:
 - [MIPS code expansion and native efficiency](docs/code-expansion.md): measured size ratios, a MIPS → C → x86-64 example and compiler optimizations.
 - [OS emulation and native calls](docs/os-emulation.md): why OS support is needed, which calls are replaced and how guest behavior is preserved.
 - [Native hook recognition](docs/native-hooks.md): ROM fingerprints, game-specific overrides and guarded direct calls.
-- [Thread scheduling and workers](docs/threading.md): priorities, blocking, message delivery and asynchronous graphics/audio work.
+- [Thread scheduling and HLE](docs/threading.md): priorities, blocking, synchronous task processing and asynchronous rendering/playback.
 - [Audio processing](docs/audio.md): native DSP tasks, AI timing and SDL playback.
 - [Floating-point semantics](docs/fpu.md): guest rounding, exceptions and host arithmetic.
 

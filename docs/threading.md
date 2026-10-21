@@ -1,7 +1,7 @@
 # Native threading
 
 See the [thread ownership graph and blocking-receive sequence](process-flow.md#thread-ownership-and-concurrency)
-for the scheduler, guest pthreads, processing workers and RT64 presentation flow.
+for the scheduler, guest pthreads, synchronous HLE and RT64 presentation flow.
 
 Each libultra thread has a named pthread, a native stack and its own
 `MipsContext`. A scheduler mutex and condition variables transfer an execution
@@ -18,8 +18,9 @@ uses the original guest entry address, so guest IDs remain available to the
 emulated OS and diagnostics. Unknown entries retain the `n64-<id>` fallback.
 GoldenEye emits its checked profile's labels as `n64-main`, `n64-idle`,
 `n64-scheduler`, `n64-sound` and `n64-controller`. The translated sound thread
-is distinct from the `n64-audio` DSP worker. Rebuild and restart to see new names
-in `top -H` or perf; existing processes retain their original names.
+builds audio lists; native DSP synthesis runs on the main host thread. Rebuild
+and restart to see new names in `top -H` or perf; existing processes retain
+their original names.
 
 Blocking queue operations and stopped threads park their pthread without losing
 the translated C call stack. Destroying a parked thread wakes it for exit and
@@ -28,40 +29,50 @@ guest preemption boundaries; disabled interrupts suppress checkpoint yields.
 Device services poll on the host between dispatches, rather than making a host
 round trip at every translated backedge. The default interval is 64 checkpoints.
 
+Saved register contexts use a serialized-word cache for direct KSEG0/KSEG1 RAM
+on little-endian hosts. A running thread refreshes its cache at synchronization;
+a parked thread reuses its last context. Each synchronization checks the live
+RAM against the cached bytes and restores changed context ranges, so guest or
+native RAM writes cannot silently invalidate the saved state. One checked span
+replaces per-register address resolution. The serializer writes only GPR/LO/HI,
+PC, FCR31 and the configured FR=0 or FR=1 register area; status, exception and RCP
+fields retain their existing ownership. Mapped objects, invalid spans and other
+host byte orders use the original checked stores. Thread metadata, queue links
+and event ordering continue through the existing synchronization paths.
+
 `recomp_on_host` parks the guest while the main thread executes task-submission
 and AI-output callbacks. SDL input, window creation, event handling and audio
 queue admission stay on that thread. This preserves application callback state
 and SDL's main-thread requirements.
 
-The persistent `n64-audio` worker executes ABI1 DSP tasks. The `n64-video` worker
-processes RT64 display lists and presentation; RT64 also retains its internal
-workload and presentation threads. These workers can run alongside guest CPU
-execution. A worker accepts one job at a time; the native SP service still
-permits only one active RSP task.
+Graphics display-list parsing, framebuffer readbacks and audio DSP synthesis
+execute synchronously on the owner with guest CPU execution parked. Both use
+live `Runtime.rdram`; there are no task RAM snapshots, full-RAM merges or
+`n64-audio`/`n64-video` adapter threads. This follows the execution model of
+UltraHLE's synchronous HLE path. The SP service still permits one active task.
 
-A task takes a private RAM snapshot at submission. Workers access that snapshot,
-then host task services merge only bytes changed by processing. Unrelated guest
-writes survive; a differing guest write to a changed output byte causes a
-controlled failure. The host publishes SP/DP receipts after committing output.
-The shared snapshot helper loads guest RAM once into both private buffers on
-SSE2 hosts. Merging skips unchanged 64-byte blocks, using SSE2 comparisons when
-`USE_INTRISICS` is enabled, then checks/writes individual changed bytes in their
-original order. Other builds use ordinary copies and block comparisons. Short
-tails do not read beyond the RAM buffer. Both backends use these same helpers.
-Split graphics lists without a DP full sync keep their existing retirement
-behavior. A yield request drains the current HLE list at its completion boundary;
-HLE processing does not support suspending midway through a list.
+RT64 captures vertices, matrices, textures and framebuffer data into its own
+workload/presentation storage before returning from the owner call. Its internal
+render, upload and present threads, GPU rendering and SDL playback remain
+asynchronous and can overlap guest execution. No RT64 queue receives a pointer
+into guest RAM for later consumption. Texture reload, capture and shutdown keep
+the explicit RT64 queue barriers they require.
 
-Input, capture, statistics and destruction drain outstanding jobs when they need
-their results. Backends must be destroyed before the runtime. Captured worker
-failures retain their originating native stack and reach the application's
-failure observer on the main thread.
+Audio writes PCM and decoder state directly into live RAM before queuing SP
+completion. Graphics queues SP and applicable DP receipts after parsing and
+readbacks; completion does not wait for GPU presentation. The task service
+delivers queued guest events during polling, in SP-before-DP order. A split list
+without DP full sync still retires after SP. HLE tasks finish at whole-list
+boundaries; a late yield first polls their queued completion.
 
-Full-RAM snapshots and kernel thread handoffs have costs. This implementation
-establishes native threading and processing overlap; comparative CPU and frame
-pacing measurements are still needed before claiming an overall gameplay
-performance improvement. See [CPU profiling](profiling.md) for measured memory
-helper improvements and their limits.
+Fatal HLE failures now occur on the owner and use the shared crash reporter.
+Backends must be destroyed before the runtime. Four-MiB games retain an eight-MiB
+host allocation for RT64's physical address window and RAM dump; guest bounds
+and Expansion Pak detection still use the configured four-MiB logical size.
+
+The synchronous path removes snapshot copying, merge scanning and adapter-worker
+handoffs, but also removes CPU/HLE overlap. Compare equivalent settled scenes
+before claiming a gameplay improvement; see [CPU profiling](profiling.md).
 
 Build the shared services with `cmake -S . -B build/host -G Ninja
 -DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF`, then `cmake --build build/host`.

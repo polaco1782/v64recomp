@@ -7,7 +7,7 @@ its logic and reads its assets from the ROM. Shared native services implement
 the N64 OS and hardware interactions required by each game.
 
 See the [complete process flow](process-flow.md) for detailed graphs of the build,
-runtime services, graphics/audio workers, packaging and investigation loop.
+runtime services, graphics/audio HLE, packaging and investigation loop.
 
 ```mermaid
 flowchart TD
@@ -161,16 +161,16 @@ priorities. One guest CPU thread runs at a time, preserving interrupt critical
 sections. Generated checkpoints provide safe scheduling and event boundaries.
 Native services preserve guest memory structures, calling conventions and
 completion events expected by the translated game.
-See [native threading](threading.md) for scheduling and worker ownership.
+See [native threading](threading.md) for scheduling and HLE ownership.
 
 Graphics tasks pass to RT64 for Vulkan rendering. The translated game's audio
 code builds command lists; the shared native audio backend executes supported,
 verified ABI1 and Zelda NEAD tasks to produce PCM in guest RAM. The native AI service supplies
 buffer timing and completion events, and SDL plays the samples. Audio synthesis,
-graphics display lists and presentation run on processing workers. Task workers
-use private RAM snapshots; the host commits changed bytes before publishing SP
-and DP events, and rejects conflicting guest writes to task output. SDL window
-and input operations stay on the main thread. These task
+graphics display-list parsing and presentation preparation run on the main
+owner thread with the guest parked. They use live RAM and queue SP/DP completion
+after output writes. RT64's internal rendering queues and SDL playback remain
+asynchronous. SDL window and input operations stay on the main thread. These task
 backends implement supported graphics/audio behavior rather than translating
 RSP microcode through the CPU translator. See [audio](audio.md).
 

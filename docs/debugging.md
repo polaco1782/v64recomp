@@ -38,7 +38,8 @@ job wall time per DL and synthesis time per AL, audio queue depth
 in milliseconds, and playback underruns. Rates and timings use half-second
 windows. Graphics time includes RT64 backpressure and any GPU waits inside the
 job; it is not a GPU timer or exclusive CPU time. Synthesis time covers DSP
-execution. Neither includes time waiting for the native worker to start a job.
+execution. HLE runs on the owner while the guest is parked; neither timer
+includes guest execution or the scheduler handoff into the owner callback.
 `frame` means a game workload completed by DP full sync, including preceding
 split display lists, rather than an interpolated display frame. Triangle counts
 exclude rectangle expansion and geometry rejected before RT64 records it; they

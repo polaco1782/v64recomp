@@ -54,6 +54,11 @@ That startup creates mainproc at `0x800004ac`, which creates gameproc at
 call, before allocation can reuse its storage. Debug checks the BSS clear and
 the instruction return address at this handoff.
 
+Mainproc's final path at `0x80000510` lowers its own priority to zero, then loops
+over `osYieldThread` at `0x80000520`. Generation checks the complete transition
+and loop before configuring object `0x80094c60` as the scheduler's idle thread.
+Startup still runs at priority 10; only its priority-zero phase is parked.
+
 `osMemSize` is a data global at `0x80000318`, initialized to `0x800000` alongside
 the 8 MiB runtime allocation. The cartridge reads it directly at `0x80006354`
 and selects Expansion Pak features when it exceeds 4 MiB; no function hook is

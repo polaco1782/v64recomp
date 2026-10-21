@@ -16,9 +16,9 @@ typedef struct RecompRendererStats {
     /* Swap-chain draws, including interpolated frames, and time from first to last. */
     uint64_t display_frames, display_elapsed_ns;
 } RecompRendererStats;
-/* Linux/X11 Vulkan adapter. Public entry points run on the host owner. Display
- * lists and presentation run on a private worker; SDL input/window work stays
- * on the owner. Stats/capture/destroy drain pending jobs. */
+/* Linux/X11 Vulkan adapter. Public entry points run on the host owner with
+ * guest execution parked. Display-list parsing, readbacks and presentation
+ * preparation use live RAM; RT64's render/present queues remain asynchronous. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
 /* 0 preserves the game's original rate; 10..1000 enables RT64 interpolation.
  * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */

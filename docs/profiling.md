@@ -38,7 +38,7 @@ The capture contains:
 
 Start with `hotspots.txt` to identify the busy thread, then find its TID in
 `thread-hotspots.txt`. `recomp_s<section>_<vram>` identifies translated guest
-functions; scheduler, memory, worker, audio, RT64, and driver symbols identify
+functions; scheduler, memory, audio, RT64, and driver symbols identify
 native work. Folded stacks retain the caller paths behind those costs. C++ names
 are demangled when libstdc++ is available. The collector also reads native ELF
 symbol tables to name static runtime helpers and RT64's hidden functions. Local
@@ -84,7 +84,7 @@ disabled.
 
 CPU sampling does not explain time spent asleep. Set `RECOMP_FRAME_TRACE` to a
 new CSV path to record host presentation requests, graphics submissions, graphics
-and presentation worker jobs, observed graphics completions, and display draw
+and presentation HLE calls, queued graphics completions, and display draw
 callbacks. The parent directory must exist; existing files are rejected.
 
 ```sh
@@ -100,8 +100,9 @@ The report includes median, p95, p99 and maximum intervals/job durations, and
 counts display/presentation/full-sync intervals exceeding 50 ms. `graphics_end`
 has value 1 when the task produced a DP receipt; split tasks without full sync
 have value 0. Graphics begin/submit values are microcode addresses; presentation
-values are VI origins. The receipt delay ends when the host observes the worker
-finish, before RAM merging and guest event delivery.
+values are VI origins. The receipt delay ends when the owner queues completion after the HLE call,
+before guest event delivery. Current HLE processing is synchronous; older traces
+include the worker collection delay.
 
 These timestamps measure **CPU callbacks**, not GPU execution, compositor
 scanout, or unique game frames. A full-sync task is not universally one game
@@ -247,7 +248,6 @@ Route hot symbols to the corresponding code:
 | `ram_address`, `recomp_load*`, `recomp_store*` | Shared memory helpers in `runtime/memory.c` |
 | `mips_fp_*` | Floating-point helpers in `runtime/fpu.c` |
 | `sync_guest`, `save_context`, `recomp_scheduler_run` | Guest scheduling/context serialization in `runtime/scheduler.c` |
-| `recomp_worker_merge` | RAM snapshot reconciliation in `runtime/worker.c` |
 | `RT64::…`, Vulkan driver symbols | Renderer/driver CPU work |
 | Audio synthesis functions | Audio backend/HLE work |
 
@@ -271,17 +271,19 @@ for the next frame. Guest pthread names come from the entry-address labels in
 the game profile, with `n64-<guest ID>` as a fallback for unknown entries.
 GoldenEye uses `n64-main` (formerly `n64-3`), `n64-idle` (`n64-1`),
 `n64-scheduler` (`n64-2`), `n64-sound` (`n64-4`) and `n64-controller` (`n64-5`).
-The old suffix identified a guest thread, not a host CPU number. `n64-video` is the shared
-graphics worker that processes display lists and presentation. RT64 also creates
-its own workload, texture, buffer and presentation threads. `n64-audio` is the
-audio worker.
+The old suffix identified a guest thread, not a host CPU number. Graphics HLE,
+audio synthesis and presentation preparation now run synchronously on the main
+host thread while guest execution is parked. The adapter no longer creates
+`n64-video` or `n64-audio` threads. RT64 retains its own workload, texture, buffer
+and presentation threads; SDL retains its playback thread.
 
-High host-thread CPU can come from services invoked on behalf of the guest:
-whole-RAM task snapshots, snapshot merges and guest context serialization. Use
-the call tree to distinguish these from actual game computation on `n64-3`.
-Many voluntary context switches suggest frequent scheduler/worker handoffs, but
-the count alone does not measure their CPU cost. Compare the same scene and
-settings before and after an optimization, and check both CPU use and frame time.
+A busy main thread can reflect HLE processing, guest context serialization,
+device services or scheduling. Use sampled call trees to distinguish these from
+translated game computation. Voluntary context switches can reflect scheduler
+handoffs or ordinary waits; inspect stacks rather than assuming useful work.
+
+The historical captures below predate synchronous HLE and describe the former
+snapshot/worker implementation. Their timings are not current-path benchmarks.
 
 ### Observed GoldenEye capture, 2026-10-18
 
@@ -313,13 +315,13 @@ No runtime performance changes were made as part of this measurement.
 
 ### Memory helper optimization, 2026-10-18
 
-The subsequent shared-runtime change replaces four-byte merge comparisons with
+The subsequent shared-runtime change replaced four-byte merge comparisons with
 64-byte comparisons. SSE2 compares four vectors and skips the block when all
 bytes match; changed blocks still use the original byte-level conflict checks
 and ascending write/failure order. Snapshot creation feeds both private buffers
 from each input vector, avoiding the second full-buffer read. Audio and graphics
-both use `recomp_worker_snapshot`. `USE_INTRISICS=0` retains ordinary copies and
-portable block comparisons.
+both used `recomp_worker_snapshot`, later removed by synchronous HLE.
+`USE_INTRISICS=0` retained ordinary copies and portable block comparisons.
 
 Local microbenchmarks on the Ryzen 7 5700X, compiled with Clang `-O3`, measured:
 

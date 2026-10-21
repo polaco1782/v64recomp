@@ -107,7 +107,11 @@ bool recomp_runtime_init(Runtime *rt, size_t ram_size,
     *rt = (Runtime){.interrupt_mask = UINT32_C(0x003fff01)};
     if (!ram_size || ram_size % 4 || ram_size > UINT32_C(0x20000000) || !sections
             || (count && !functions) || count > SIZE_MAX / sizeof(*rt->function_index)) return false;
-    rt->rdram = calloc(1, ram_size);
+    /* RT64 addresses an 8 MiB physical window, including its RAM debugger dump.
+     * Preserve that backing for 4 MiB games now that it uses live RAM. Guest
+     * bounds and Expansion Pak detection still use the requested rdram_size. */
+    size_t backing_size = ram_size == 4 * 1024 * 1024 ? 8 * 1024 * 1024 : ram_size;
+    rt->rdram = calloc(1, backing_size);
     rt->section_loaded = calloc(sections, sizeof(bool));
     if (!rt->rdram || !rt->section_loaded) {
         recomp_runtime_destroy(rt);

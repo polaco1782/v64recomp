@@ -75,6 +75,11 @@ main_entry = 0x800004ac
 main_id = 1
 main_priority = 10
 main_object = 0x80094c60
+idle_thread = 0x80094c60
+# mainproc sets its own priority to zero, then only yields and jumps back.
+idle_transition = 0x80000510
+idle_words = [0x3c048009, 0x24844c60, 0x0c01484c, 0x00002821,
+              0x0c0148f0, 0x00000000, 0x08000148, 0x00000000]
 main_stack = 0x8008bb30
 boot_object = 0x807ff000
 boot_stack = 0x807fd000
