@@ -12,7 +12,8 @@ Captured from the native builds.
 | --- | --- | --- | --- |
 | ![Super Mario 64 in Castle Grounds](docs/screenshots/super-mario-64.png) | ![The Legend of Zelda: Ocarina of Time title screen](docs/screenshots/ocarina-of-time.png) | ![GoldenEye 007 gameplay](docs/screenshots/goldeneye-007.png) | ![Perfect Dark in the Carrington Institute](docs/screenshots/perfect-dark.png) |
 
-RT64's widescreen expansion gives *Ocarina of Time* an ultrawide view of Hyrule.
+This *Ocarina of Time* capture uses RT64's optional widescreen expansion.
+The default preserves each game's original aspect ratio.
 
 ![Ocarina of Time rendered in an ultrawide window with RT64](docs/screenshots/zelda-wide.png)
 
@@ -236,8 +237,10 @@ and toggles original/replacement textures. Packs default to
 `local/textures/<game>/replacements`; `RECOMP_TEXTURE_REPLACEMENTS` overrides this
 path (an empty value disables packs). Rendering defaults to 60 FPS interpolation
 for all games, with original gameplay and audio timing. Rendering uses 4x resolution, 4x MSAA,
-widescreen expansion and texture LOD scaling. This RT64 revision has no game
-ray-tracing renderer.
+the game's original aspect ratio and texture LOD scaling. The window starts at
+1280×960 (4:3). F7 toggles between the original aspect ratio and expansion to fit
+a wider window in both Debug and Release. Original is the startup default.
+This RT64 revision has no game ray-tracing renderer.
 
 Use `--texture-pack /path/to/pack.zip` to let RT64 match Rice/GLideN64 filenames
 and stream directly from the original ZIP. RT64 persists mappings in a JSON

@@ -73,7 +73,10 @@ struct Runtime {
     size_t section_count;
     RecompScheduler *scheduler;
     void (*destroy_scheduler)(Runtime *);
-    void (*checkpoint)(Runtime *, bool);
+    /* Decision may advance scheduler counters, but must not inspect/mutate
+     * guest context or yield. Invoke checkpoint only after flushing GPRs. */
+    bool (*checkpoint_due)(Runtime *, bool force_yield);
+    void (*checkpoint)(Runtime *);
     RecompClock *clock;
     RecompPlatform *platform;
     void (*destroy_clock)(Runtime *);
@@ -324,13 +327,16 @@ uint32_t recomp_physical_address(Runtime *, uint32_t, size_t);
 uint64_t recomp_load_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
 void recomp_store_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
 
+static inline bool recomp_checkpoint_due(Runtime *rt, bool force_yield) {
+    return !rt->interrupts_disabled && rt->checkpoint_due && rt->checkpoint_due(rt, force_yield);
+}
 static inline void recomp_checkpoint(Runtime *rt) {
-    if (rt->checkpoint)
-        rt->checkpoint(rt, false);
+    if (recomp_checkpoint_due(rt, false))
+        rt->checkpoint(rt);
 }
 static inline void recomp_yield_checkpoint(Runtime *rt) {
-    if (rt->checkpoint)
-        rt->checkpoint(rt, true);
+    if (recomp_checkpoint_due(rt, true))
+        rt->checkpoint(rt);
 }
 
 static inline bool mips_signed_less(uint64_t x, uint64_t y) {

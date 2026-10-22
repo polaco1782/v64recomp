@@ -153,9 +153,10 @@ static uint64_t double_bits(double x) {
 
 static uint64_t result(MipsContext *ctx, uint64_t bits, enum MipsFpFormat fmt, unsigned flags) {
     uint64_t minimum = fmt == MIPS_FP_D ? UINT64_C(0x10000000000000) : UINT64_C(0x800000);
-    if ((flags & FP_I) && (bits & ~sign_mask(fmt)) == minimum)
-        /* Host and VR4300 tininess detection can disagree at this boundary.
-         * Require explicit support instead of silently copying host behavior. */
+    if ((flags & FP_U) && (bits & ~sign_mask(fmt)) == minimum)
+        /* A tiny result can round up to minimum normal. Keep that boundary
+         * fail-closed until independently classified, but ordinary inexact
+         * normal results (no host underflow) need only the Inexact handling. */
         finish(ctx, FP_E);
     if ((flags & FP_U) || denormal(bits, fmt)) {
         if (!(ctx->fcr31 & UINT32_C(0x1000000)) || (ctx->fcr31 & UINT32_C(0x180))) {
@@ -425,20 +426,15 @@ void mips_fp_compare(MipsContext *ctx, unsigned fs, unsigned ft, enum MipsFpForm
     bool unordered = nan_bits(a, fmt) || nan_bits(b, fmt), equal = false, less = false;
     unsigned flags = unordered && ((predicate & 8) || signaling(a, fmt) || signaling(b, fmt)) ? FP_V : 0;
     if (!unordered) {
-        FpEnvironment env = begin(ctx, -1, true); /* Comparisons support denormals, independent of host DAZ. */
 #if USE_INTRISICS
-        if (fmt == MIPS_FP_S) {
-            volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b);
-            __m128 vx = _mm_set_ss(x), vy = _mm_set_ss(y);
-            equal = _mm_ucomieq_ss(vx, vy);
-            less = _mm_ucomilt_ss(vx, vy);
-        } else {
-            volatile double x = as_double(a), y = as_double(b);
-            __m128d vx = _mm_set_sd(x), vy = _mm_set_sd(y);
-            equal = _mm_ucomieq_sd(vx, vy);
-            less = _mm_ucomilt_sd(vx, vy);
-        }
+        /* Non-NaN encodings are ordered by magnitude, reversed for negatives.
+         * Treat both signed zeros as equal. Integer comparisons also preserve
+         * denormals without changing host rounding, exception flags or DAZ. */
+        uint64_t sign = sign_mask(fmt);
+        equal = a == b || ((a | b) & ~sign) == 0;
+        less = !equal && (((a ^ b) & sign) ? (a & sign) != 0 : (a & sign) ? a > b : a < b);
 #else
+        FpEnvironment env = begin(ctx, -1, true);
         if (fmt == MIPS_FP_S) {
             volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b);
             equal = x == y;
@@ -448,8 +444,8 @@ void mips_fp_compare(MipsContext *ctx, unsigned fs, unsigned ft, enum MipsFpForm
             equal = x == y;
             less = x < y;
         }
-#endif
         (void)end(ctx, &env);
+#endif
     }
     finish(ctx, flags);
     bool condition = ((predicate & 1) && unordered) || ((predicate & 2) && equal) || ((predicate & 4) && less);

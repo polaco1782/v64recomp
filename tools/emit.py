@@ -320,6 +320,9 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     parts = op.split('.')
     if op == 'dmtc1': return f'mips_set_fpr_pair(ctx, {i.rd}, {b});'
     if op == 'dmfc1': return set_reg(i.rt, f'mips_fpr_pair(ctx, {i.rd})')
+    # MOV preserves raw bits and FCR31; double moves retain the runtime FR layout.
+    if op == 'mov.s': return f'ctx->fpr[{i.shift}] = ctx->fpr[{i.rd}];'
+    if op == 'mov.d': return f'mips_set_fpr_pair(ctx, {i.shift}, mips_fpr_pair(ctx, {i.rd}));'
     if len(parts) >= 2 and parts[-1] in ('s', 'd', 'w', 'l'):
         fmt = f'MIPS_FP_{parts[-1].upper()}'
         if parts[0] in FP_BINARY:
@@ -574,11 +577,15 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if address in addresses:
             checkpoint = []
             if address <= i.pc:
-                call = 'recomp_yield_checkpoint' if i.pc in yield_sites else 'recomp_checkpoint'
-                log_emission('Checkpoint %s s%s 0x%08x -> 0x%08x: %s',
-                             function['name'], function['section'], i.pc, address, call, verbose=True)
-                # Checkpoints may suspend and snapshot ctx, and resumption may rewrite it.
-                checkpoint = around([f"{indent}{call}(runtime);"], indent)
+                force_yield = 'true' if i.pc in yield_sites else 'false'
+                log_emission('Checkpoint %s s%s 0x%08x -> 0x%08x: force_yield=%s',
+                             function['name'], function['section'], i.pc, address, force_yield, verbose=True)
+                # The decision never observes ctx or yields. Only the action
+                # needs synchronized registers, including reloads after resuming.
+                nested = indent + '    '
+                checkpoint = [f'{indent}if (recomp_checkpoint_due(runtime, {force_yield})) {{',
+                              *around([f'{nested}runtime->checkpoint(runtime);'], nested),
+                              f'{indent}}}']
             return [*checkpoint, jump(address, indent)]
         log_call(address, 'Tail/branch call')
         return [location(i.pc, indent), *emit_call(address, indent, resume=False), f"{indent}return;"]

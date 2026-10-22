@@ -404,10 +404,15 @@ static void suspend(Runtime *rt, RecompThreadState state) {
     }
 }
 
-static void preempt(Runtime *rt) {
-    RecompScheduler *s = scheduler(rt);
+static bool preemption_due(RecompScheduler *s) {
+    if (!guest_thread || s->polling || !s->current)
+        return false;
     NativeThread *candidate = best(s, RECOMP_READY, NULL, NULL);
-    if (guest_thread && !s->polling && s->current && candidate && candidate->priority > s->current->priority)
+    return candidate && candidate->priority > s->current->priority;
+}
+
+static void preempt(Runtime *rt) {
+    if (preemption_due(scheduler(rt)))
         suspend(rt, RECOMP_READY);
 }
 
@@ -528,23 +533,27 @@ static void poll(Runtime *rt) {
     recomp_on_host(rt, poll_on_host, NULL);
 }
 
-static void checkpoint(Runtime *rt, bool force_yield) {
-    if (rt->interrupts_disabled)
-        return;
+static bool checkpoint_due(Runtime *rt, bool force_yield) {
     RecompScheduler *s = scheduler(rt);
-    if (!guest_thread) {
-        poll(rt);
-        return;
-    }
+    if (!guest_thread)
+        return true;
     /* The host polls between dispatches. Avoid a kernel rendezvous at every
      * backedge; the configured interval bounds service/preemption latency. */
     unsigned interval = s->config.checkpoint_interval ? s->config.checkpoint_interval : 64;
     if (force_yield || ++s->current->checkpoints >= interval) {
         s->current->checkpoints = 0;
-        suspend(rt, RECOMP_READY);
-    } else {
-        preempt(rt);
+        return true;
     }
+    return preemption_due(s);
+}
+
+static void checkpoint(Runtime *rt) {
+    /* The decision and this action execute under the same guest execution
+     * token. Generated code flushes its registers between the two calls. */
+    if (!guest_thread)
+        poll(rt);
+    else
+        suspend(rt, RECOMP_READY);
 }
 
 bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
@@ -592,6 +601,7 @@ bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
     s->pending_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     rt->scheduler = s;
     rt->destroy_scheduler = recomp_scheduler_destroy;
+    rt->checkpoint_due = checkpoint_due;
     rt->checkpoint = checkpoint;
     recomp_store(rt, config->thread_tail, 0, 4);
     recomp_store(rt, config->thread_tail + 4, UINT32_MAX, 4);
@@ -627,6 +637,7 @@ void recomp_scheduler_destroy(Runtime *rt) {
     free(s);
     rt->scheduler = NULL;
     rt->destroy_scheduler = NULL;
+    rt->checkpoint_due = NULL;
     rt->checkpoint = NULL;
 }
 

@@ -29,6 +29,14 @@ guest preemption boundaries; disabled interrupts suppress checkpoint yields.
 Device services poll on the host between dispatches, rather than making a host
 round trip at every translated backedge. The default interval is 64 checkpoints.
 
+Each generated backedge first asks whether a checkpoint is due. This decision
+updates the thread's interval counter and checks priority preemption without
+reading guest registers, polling devices or yielding. Only a due checkpoint
+flushes cached GPRs, runs the scheduling action, and reloads the GPRs on return.
+Forced checkpoints still yield immediately when interrupts are enabled;
+disabled interrupts skip both the decision and synchronization. Calls from
+native OS hooks use the same decision with their already synchronized context.
+
 Logical CPU interrupt enable and SDK interrupt masks belong to each guest
 thread. Dispatch restores them, and blocking/preemption saves them before
 another thread runs. A blocking receive inside a critical section must resume

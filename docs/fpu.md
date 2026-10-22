@@ -1,10 +1,10 @@
 # Floating-point translation
 
-`tools/emit.py` lowers floating-point instructions to calls with constant
-operation and register operands. `runtime/fpu.c` implements those individual
-operations. It does not fetch or decode instructions at runtime. Raw FPR bits
-remain in the thread's `MipsContext`: an FR=0 double uses the even register's low
-word and the following odd register's high word. An explicit `game.fpu_fr = 1`
+`tools/emit.py` lowers floating-point arithmetic, conversions and comparisons to
+calls with constant operation and register operands. `runtime/fpu.c` implements
+those individual operations. It does not fetch or decode instructions at runtime.
+Raw FPR bits remain in the thread's `MipsContext`: an FR=0 double uses the even
+register's low word and the following odd register's high word. An explicit `game.fpu_fr = 1`
 profile permits independent 64-bit registers, including odd double operands.
 The application must also set `RecompSchedulerConfig.fpu_fr1`; its guest thread
 layout saves all 32 registers in a 0x230-byte object. Existing profiles default
@@ -18,6 +18,10 @@ The supported instructions are:
 - All sixteen single/double comparison predicates and `BC1F/T/FL/TL`.
 - `CFC1`/`CTC1` for FCR31, plus raw transfers, `DMFC1`/`DMTC1` and RAM loads.
 
+`MOV.S` emits a raw word copy; `MOV.D` uses the inline register-pair helpers to
+preserve the runtime FR layout. Neither calls the arithmetic backend or changes
+FCR31.
+
 The implementation follows the [NEC VR4300 manual, chapters 5 and 6](https://manuals.plus/m/c715b005609cb524eac30be04209da9e3d2a168bee77d6662b81dc5561e014ce).
 FCR31's rounding mode selects nearest-even, toward zero, toward positive infinity
 or toward negative infinity. Fixed-rounding conversions override that mode for
@@ -28,12 +32,18 @@ branches annul their untaken slots. Diagnostics identify a faulting slot's addre
 This first arithmetic backend requires **Linux x86-64 SSE2**, IEEE binary32/64,
 `-fno-fast-math -frounding-math -ffp-contract=off`, and libm. With
 `USE_INTRISICS=1` (the default in `include/recomp.h`), binary arithmetic, square
-roots, conversions and comparisons use scalar SSE/SSE2 intrinsics. These operations
+roots and conversions use scalar SSE/SSE2 intrinsics. These operations
 save MXCSR, mask host SSE traps, select guest rounding, disable DAZ/FTZ, collect
 exceptions, and restore MXCSR before returning. Scalar intrinsics leave errno
 and the x87 environment untouched, avoiding thread-local errno saves/restores.
 The C/libm fallback still saves and restores errno. These are individual guest
 operations, preserving their exception order and register dependencies.
+
+The default comparison path classifies NaNs and compares the remaining register
+bits as integers. Positive encodings increase with magnitude; negative encodings
+use the reverse order, and both signed zeros compare equal. This includes
+denormals and infinities without touching MXCSR or the x87 environment. The
+existing predicate-specific Invalid handling and FCR31 updates still apply.
 
 Conversions select guest rounding through MXCSR, including the per-instruction
 override for `ROUND`, `TRUNC`, `CEIL` and `FLOOR`. Integer conversions use the SSE
@@ -59,9 +69,10 @@ and set Underflow/Inexact cause and flag bits, including exact denormal results.
 This is an explicitly partial exception implementation. Enabled exceptions and
 VR4300 unimplemented conditions stop through `recomp_fail` before writing the
 destination. Guest exception-handler execution is not implemented. Nonfinite or
-out-of-range word conversions, and inexact results rounded to minimum normal,
-also stop explicitly. The latter boundary needs independent tininess analysis;
-using host exception flags alone would not establish VR4300 behavior there.
+out-of-range word conversions, and host-underflow results rounded up to minimum
+normal, also stop explicitly. The latter boundary still needs independent
+tininess analysis. Minimum-normal results without host underflow use the ordinary
+Inexact handling; rounding to minimum normal alone is not an underflow condition.
 Long integers use even FR=0 register pairs. Integer-to-single conversions round
 directly to binary32, avoiding double rounding through a binary64 intermediate.
 FCR0 identification, other FCRs and dynamic Status.FR changes are unsupported.

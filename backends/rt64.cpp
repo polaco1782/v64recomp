@@ -195,7 +195,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
     }
     auto s = std::make_unique<RecompRenderer>(rt);
     s->window = SDL_CreateWindow(window_title ? window_title : "Native N64 recompilation", SDL_WINDOWPOS_CENTERED,
-                                 SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
+                                 SDL_WINDOWPOS_CENTERED, 1280, 960, SDL_WINDOW_RESIZABLE);
     SDL_SysWMinfo wm{};
     SDL_VERSION(&wm.version);
     if (!s->window || !SDL_GetWindowWMInfo(s->window, &wm) || wm.subsystem != SDL_SYSWM_X11) {
@@ -257,8 +257,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         s->app->userConfig.resolutionMultiplier = 4.0;
         s->app->userConfig.antialiasing = RT64::UserConfiguration::Antialiasing::MSAA4X;
         s->app->userConfig.threePointFiltering = false;
-        s->app->userConfig.aspectRatio = RT64::UserConfiguration::AspectRatio::Expand;
-        s->app->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Expand;
+        // Start with the game's original view; F7 can enable expansion.
+        s->app->userConfig.aspectRatio = RT64::UserConfiguration::AspectRatio::Original;
+        s->app->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Original;
         s->app->userConfig.refreshRate = RT64::UserConfiguration::RefreshRate::Manual;
         s->app->userConfig.refreshRateTarget = 60;
         s->app->enhancementConfig.presentation.mode = RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;
@@ -447,6 +448,18 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         if (event.type == SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode == SDL_SCANCODE_F5) {
             s->wait_texture_reload();
             s->textureFiles.refreshAndToggle(*s->app->textureCache);
+        }
+        if (event.type == SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode == SDL_SCANCODE_F7) {
+            {
+                const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+                using AspectRatio = RT64::UserConfiguration::AspectRatio;
+                auto& config = s->app->userConfig;
+                const bool expand = config.aspectRatio != AspectRatio::Expand;
+                config.aspectRatio = expand ? AspectRatio::Expand : AspectRatio::Original;
+                config.extAspectRatio = config.aspectRatio;
+                std::fprintf(stderr, "Aspect ratio: %s\n", expand ? "expanded" : "original");
+            }
+            s->app->updateUserConfig(true);
         }
 #ifdef RECOMP_DEBUG
         if (event.type == SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode == SDL_SCANCODE_F6) {
