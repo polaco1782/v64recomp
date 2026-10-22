@@ -68,6 +68,23 @@ traversal target `0x800f4dc4` and script target `0x800dff00` were fixed at these
 registration sources. Fatal failures and optional `RECOMP_HEXEN_SNAPSHOT=1`
 diagnostics use the shared crash reporter.
 
+The sky pass first draws textured clouds, writes sky-sector depth masks, and
+then clears the remaining background with a maximum-primitive-depth rectangle.
+The shared RT64 build corrects primitive Z from inclusive UNORM to unsigned
+0.15 fixed point, so that rectangle passes `LESS` against cleared depth outside
+the sky masks. See [the shared renderer correction](../../docs/recompilation.md).
+`debug/sky-depth.txt` reaches the first level, backs into the courtyard and turns
+for a focused rendering replay:
+
+```sh
+./build/hexen-us-debug/bin/hexen-us --frames 3300 \
+  --input games/hexen-us/debug/sky-depth.txt
+```
+
+Debug and Release passed 55-second first-level runs with movement and turning.
+Captured-task isolation verifies the sky, depth-mask and background-clear passes
+separately. Later levels and other games have not been checked for this change.
+
 The automap uses L3DEX 1.21 at physical `0x66490`. RT64's database identifies
 this version but marks its implementation `Unknown`; its L3DEX2 line handler
 also has no implementation. `graphics.cpp` binds only Hexen's verified L3DEX

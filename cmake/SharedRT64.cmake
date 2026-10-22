@@ -61,7 +61,8 @@ endif()
 include("${RECOMP_RT64_BUILD_DIR}/rt64-targets.cmake")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_LIST_DIR}/rt64/CMakeLists.txt" "${CMAKE_CURRENT_LIST_DIR}/BuildRT64.cmake"
-    "${CMAKE_CURRENT_LIST_DIR}/rt64/StableProjection.cmake")
+    "${CMAKE_CURRENT_LIST_DIR}/rt64/StableProjection.cmake"
+    "${CMAKE_CURRENT_LIST_DIR}/rt64/PrimitiveDepth.cmake")
 
 # Local symlinks are build byproducts so Ninja can order missing libraries.
 # Cleaning one game removes only these links, preserving the shared artifacts.
