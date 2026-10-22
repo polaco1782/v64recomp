@@ -504,12 +504,19 @@ static void poll_on_host(Runtime *rt, void *unused) {
      * can run. Otherwise queue-send preemption could reenter that service. */
     s->polling = true;
     if (!rt->platform || rt->platform_initialized) {
+        /* Consume available backend receipts before generating elapsed timer
+         * and VI notifications. A completed SP task must not be queued behind
+         * a later VI: games can wait for its flag inside the VI handler with
+         * interrupts disabled, preventing them from receiving the SP message. */
+        if (rt->poll_tasks)
+            rt->poll_tasks(rt);
+        /* VI delivery writes its queue directly; finish the SP/DP event FIFO
+         * first rather than leaving those receipts until the final drain. */
+        deliver_events(rt);
         if (rt->poll_clock)
             rt->poll_clock(rt);
         if (rt->poll_platform)
             rt->poll_platform(rt);
-        if (rt->poll_tasks)
-            rt->poll_tasks(rt);
         if (rt->poll_io)
             rt->poll_io(rt);
     }

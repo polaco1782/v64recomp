@@ -361,6 +361,12 @@ static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
 #endif
     return mips_s32(result);
 }
+static inline uint64_t mips_add64(uint64_t x, uint64_t y) {
+    uint64_t result = x + y;
+    if ((~(x ^ y) & (x ^ result)) & UINT64_C(0x8000000000000000))
+        recomp_fail("signed DADD overflow", 0);
+    return result;
+}
 static inline uint64_t mips_sub32(uint64_t x, uint64_t y) {
 #if USE_INTRISICS && (defined(__GNUC__) || defined(__clang__))
     int32_t result;

@@ -26,7 +26,7 @@ def log_emission(message: str, *args: object, verbose: bool = False) -> None:
 rabbitizer.config.pseudos_enablePseudos = False
 
 SUPPORTED = set("""
-nop lui addiu addi addu add subu sub daddiu daddu dsubu
+nop lui addiu addi addu add subu sub daddiu dadd daddu dsubu
 and or xor nor andi ori xori slt sltu slti sltiu
 sll srl sra sllv srlv srav dsll dsrl dsra dsll32 dsrl32 dsra32 dsllv dsrlv dsrav
 mult multu div divu mfhi mflo mthi mtlo
@@ -352,13 +352,14 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     elif op in ('addiu', 'addi', 'daddiu'):
         expression = (f"mips_s32({add_immediate(a, relocated_immediate or i.immediate)})" if op == 'addiu'
                       else f"mips_add32({a}, {imm})" if op == 'addi' else add_immediate(a, relocated_immediate or i.immediate))
-    elif op in ('addu', 'add', 'subu', 'sub', 'daddu', 'dsubu'):
+    elif op in ('addu', 'add', 'subu', 'sub', 'dadd', 'daddu', 'dsubu'):
         destination = i.rd
-        sign = '+' if op in ('addu', 'add', 'daddu') else '-'
+        sign = '+' if op in ('addu', 'add', 'dadd', 'daddu') else '-'
         # Unsigned 64-bit arithmetic followed by narrowing has the same low
         # 32 bits as narrowing both operands before the wrapping operation.
         expression = (f"mips_s32({a} {sign} {b})" if op in ('addu', 'subu')
                       else f"mips_{'add' if op == 'add' else 'sub'}32({a}, {b})" if op in ('add', 'sub')
+                      else f"mips_add64({a}, {b})" if op == 'dadd'
                       else f"{a} {sign} {b}")
     elif op in ('and', 'or', 'xor', 'nor', 'andi', 'ori', 'xori'):
         operation = {'and': '&', 'or': '|', 'xor': '^', 'nor': '|', 'andi': '&', 'ori': '|', 'xori': '^'}[op]
@@ -399,7 +400,7 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
         if op in ('lb', 'lh', 'lw'): expression = f"mips_s{width * 8}({expression})"
     if expression is None:
         raise RecompError(f"no straight-line emitter for {op}")
-    return set_reg(destination, expression, effectful=op in LOAD_OPS)
+    return set_reg(destination, expression, effectful=op in LOAD_OPS or op in ('add', 'addi', 'sub', 'dadd'))
 
 
 def constant_condition(i: Instruction) -> bool | None:
