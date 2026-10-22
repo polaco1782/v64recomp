@@ -1,12 +1,39 @@
 # Texture dumps and replacements
 
-For automatic Rice/GLideN64 matching while playing, use
-[`--texture-scan [ZIP_OR_DIRECTORY]`](../texture_scan/README.md). The native worker
-reads source images without extracting ZIPs, builds `replacements/textures.rtz`
-with an embedded `rt64.json`, and writes a copy of the index beside the archive.
-Changed matches trigger publication and reload every 60 seconds. Source ZIPs and
-images are preserved. Both release and debug runners support this mode; no
-Python texture importer or separate packing command is needed.
+Pass an original Rice/GLideN64 ZIP directly to RT64 in either Debug or Release:
+
+```sh
+./build/sm64-us-debug/bin/sm64-us --texture-pack /path/to/pack.zip
+```
+
+RT64 indexes the ZIP's filenames once, matches textures as they are drawn, and
+streams the matching PNGs directly from that same archive. The ZIP stays
+unchanged. No extraction, capture files, generated RTZ, or packing step is needed.
+RT64 saves hash-to-entry paths in `/path/to/pack.zip.rt64.json`, atomically on its
+background worker and again at shutdown. The ZIP directory must be writable for
+that cache to persist; a write failure is logged while in-memory matching continues.
+The sidecar is reused on the next launch and invalidated when the ZIP's size,
+modification time, ROM title, or RT64 hash version changes.
+
+Matching supports exact Rice IDs, CI texture/palette `$` wildcards, ordinary
+images before `Copy of`/`Flash` alternates, and `_rgb`/`_a` pairs. Conflicting
+same-priority images are rejected. RGB/alpha composition happens in memory on
+RT64 workers. Filenames must use the ROM's internal title and the supported
+`_all`, `_ciByRGBA`, `_allciByRGBA`, `_rgb`, or `_a` PNG suffixes. Unmatched textures
+use the original. Textures are discovered as they are drawn, so new scenes add
+mappings during play.
+
+The graphics thread only copies bounded texture/palette memory for previously
+unseen hashes (at most 8 captures per frame, with a 256 KiB admission budget).
+A bounded queue retries deferred captures on later draws. Rice hashing, ZIP image
+reads, ambiguity checks, JSON writes, and decoding run on RT64 workers. New matches
+enter the existing asynchronous streaming queue without rebuilding the pack or
+reloading the replacement cache. The original texture stays visible until its
+replacement is ready. **F5** reloads the ZIP/index and toggles originals/replacements.
+Debug builds print each loaded ZIP entry, its dimensions, and any separate alpha
+mask as `RT64 ZIP loaded: ...`.
+`RECOMP_TEXTURE_PACK=/path/to/pack.zip` is equivalent to the command-line option;
+it takes precedence over `RECOMP_TEXTURE_REPLACEMENTS`.
 
 The native RT64 runner can export the original textures as they enter the decoded
 texture cache. Enable it while playing:
@@ -56,6 +83,6 @@ RECOMP_TEXTURE_REPLACEMENTS= ./build/sm64-us-release/bin/sm64-us
 ```
 
 Dump and replacement directories must differ. Reloading can briefly stall while
-PNG uploads complete. Normal play only checks the directory at startup or F5;
-`--texture-scan` adds the periodic background matcher. Bounded run results include counts
+PNG uploads complete. Loose replacement directories are checked at startup or F5;
+ZIP matching runs in RT64 as textures are encountered. Bounded run results include counts
 of PNGs written, replacement files indexed and replacement textures encountered.

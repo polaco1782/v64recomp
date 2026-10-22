@@ -239,11 +239,10 @@ for all games, with original gameplay and audio timing. Rendering uses 4x resolu
 widescreen expansion and texture LOD scaling. This RT64 revision has no game
 ray-tracing renderer.
 
-Use `--texture-scan /path/to/pack.zip` (or an extracted directory) to match
-Rice/GLideN64 PNGs while playing. A native worker builds `textures.rtz` and
-`rt64.json` in the game's replacement folder every 60 seconds when matches change,
-then requests an RT64 reload. Original ZIPs and source images are kept. See
-[native texture scanning](texture_scan/README.md) for usage.
+Use `--texture-pack /path/to/pack.zip` to let RT64 match Rice/GLideN64 filenames
+and stream directly from the original ZIP. RT64 persists mappings in a JSON
+sidecar beside the ZIP, without creating an RTZ. See
+[texture packs and dumps](docs/textures.md) for usage.
 
 Failures in either mode routed through `recomp_fail` write a uniquely named JSON report
 and RDRAM snapshot to `local/crashes/<game>/`. Reports include native stack

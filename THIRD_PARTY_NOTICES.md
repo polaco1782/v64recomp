@@ -34,9 +34,9 @@ SOFTWARE.
 
 ## Rice / GLideN64 texture hashing
 
-The scanner links RT64's `src/tools/texture_hasher/texture_hasher.cpp` directly.
-That file identifies its Rice checksum algorithms as derived from GLideN64 and
-RiceVideo and licensed under the GPL. Its original attribution is retained in
+RT64's live ZIP matcher and offline texture hasher share
+`src/common/rt64_rice_hasher.cpp`. Its Rice checksum algorithms are derived from
+GLideN64 and RiceVideo and licensed under the GPL. Its original attribution is retained in
 the source; the full accompanying notice and GPL text are preserved in
 [licenses/GLideN64.txt](licenses/GLideN64.txt).
 

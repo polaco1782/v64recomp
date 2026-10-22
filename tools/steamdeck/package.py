@@ -95,7 +95,6 @@ here=$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")" && pwd)
 export LD_LIBRARY_PATH="$here/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
 export SDL_VIDEODRIVER=x11
 export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"
-export RECOMP_TEXTURE_SCAN_RAW="${{RECOMP_TEXTURE_SCAN_RAW-$here/local/textures/{game}/scan}}"
 cd -- "$here"
 exec "$here/{game}" --rom "$here/local/{rom}" \\
     --data "$here/local/rt64/{game}" --save "$here/local/{save}" \\

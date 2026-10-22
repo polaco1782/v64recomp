@@ -42,7 +42,9 @@ struct PausedUploads {
 };
 }
 
-void RecompTextureFiles::configure(RT64::TextureCache& cache) {
+void RecompTextureFiles::configure(RT64::TextureCache& cache, const std::string& title, size_t rdramSize) {
+    romTitle = title;
+    rdramByteCount = rdramSize;
 #ifdef RECOMP_DEBUG
     if (const char *path = std::getenv("RECOMP_TEXTURE_DUMP"); path && *path) {
         dumpDirectory = path;
@@ -52,6 +54,10 @@ void RecompTextureFiles::configure(RT64::TextureCache& cache) {
 #endif
     if (const char *path = std::getenv("RECOMP_TEXTURE_REPLACEMENTS"); path && *path)
         replacementDirectory = path;
+    if (const char *path = std::getenv("RECOMP_TEXTURE_PACK"); path && *path) {
+        replacementDirectory = path;
+        zipPack = true;
+    }
     reload(cache);
 }
 
@@ -62,6 +68,16 @@ void RecompTextureFiles::reload(RT64::TextureCache& cache) {
     replaced.clear();
     PausedUploads pause(cache);
     cache.clearReplacementDirectories();
+    if (zipPack) {
+#ifdef RECOMP_DEBUG
+        constexpr bool logLoads = true;
+#else
+        constexpr bool logLoads = false;
+#endif
+        if (!cache.loadTexturePack(replacementDirectory, romTitle, rdramByteCount, logLoads))
+            throw std::runtime_error("could not load texture ZIP");
+        return;
+    }
     // A missing pack is normal: the game uses its original textures.
     if (!std::filesystem::exists(replacementDirectory))
         return;
@@ -147,20 +163,9 @@ void RecompTextureFiles::refreshAndToggle(RT64::TextureCache& cache) {
     std::fprintf(stderr, "Textures: %s\n", map.replacementMapEnabled ? "replacements" : "originals");
 }
 
-void RecompTextureFiles::refresh(RT64::TextureCache& cache) {
-    reload(cache);
-    std::unique_lock lock(cache.textureMapMutex);
-    auto& map = cache.textureMap;
-    for (size_t i = 0; i < map.textureReplacements.size(); i++) {
-        if (map.textureReplacements[i])
-            map.versions[i]++;
-    }
-    map.globalVersion++;
-}
-
 void RecompTextureFiles::collect(RT64::TextureCache& cache) {
 #ifdef RECOMP_DEBUG
-    if (dumpDirectory.empty() && !replacementFiles)
+    if (dumpDirectory.empty() && !replacementFiles && !zipPack)
         return;
     struct Pending {
         uint64_t hash;
@@ -169,6 +174,11 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
     std::vector<Pending> pending;
     {
         std::unique_lock lock(cache.textureMapMutex);
+        if (zipPack) {
+            replacementFiles = 0;
+            for (const auto& paths : cache.textureMap.replacementMap.fileSystemResolvedPaths)
+                replacementFiles += paths.size();
+        }
         for (const auto& [hash, index] : cache.textureMap.hashMap) {
             if (cache.textureMap.replacementMapEnabled && cache.textureMap.textureReplacements[index])
                 replaced.insert(hash);

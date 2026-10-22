@@ -25,5 +25,5 @@ endif()
 
 # Export the entire static link graph, including platform libraries and include
 # requirements. Game builds import these targets rather than configuring RT64.
-export(TARGETS texture_hashing rt64 re-spirv nfd libzstd_static plume
+export(TARGETS rt64 re-spirv nfd libzstd_static plume
     NAMESPACE RecompRT64:: FILE "${CMAKE_BINARY_DIR}/rt64-targets.cmake")

@@ -69,7 +69,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 set(rt64_link_dir "${CMAKE_BINARY_DIR}/rt64-links")
 set(rt64_link_commands)
 set(rt64_links)
-foreach(library texture_hashing rt64 re-spirv nfd libzstd_static plume)
+foreach(library rt64 re-spirv nfd libzstd_static plume)
     set(target "RecompRT64::${library}")
     get_target_property(archive "${target}" "IMPORTED_LOCATION_${rt64_config}")
     get_filename_component(filename "${archive}" NAME)
@@ -85,6 +85,6 @@ add_custom_target(recomp_rt64
     ${rt64_link_commands}
     BYPRODUCTS ${rt64_links}
     COMMENT "Checking shared RT64 libraries" USES_TERMINAL VERBATIM)
-foreach(library texture_hashing rt64 re-spirv nfd libzstd_static plume)
+foreach(library rt64 re-spirv nfd libzstd_static plume)
     add_dependencies("RecompRT64::${library}" recomp_rt64)
 endforeach()

@@ -91,9 +91,8 @@ if(RECOMP_BUILD_RT64)
     include(cmake/SharedRT64.cmake)
     find_package(SDL2 REQUIRED)
     add_library(recomp_renderer STATIC backends/rt64.cpp backends/textures.cpp backends/input.c
-        backends/cheat_database.cpp backends/cheat_menu.cpp
-        texture_scan/scanner.cpp texture_scan/capture.cpp texture_scan/pack.cpp texture_scan/source.cpp)
-    target_link_libraries(recomp_renderer PUBLIC recomp_runtime RecompRT64::texture_hashing SDL2::SDL2)
+        backends/cheat_database.cpp backends/cheat_menu.cpp)
+    target_link_libraries(recomp_renderer PUBLIC recomp_runtime RecompRT64::rt64 SDL2::SDL2)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_definitions(recomp_renderer PRIVATE RECOMP_DEBUG)
         target_sources(recomp_renderer PRIVATE backends/debug_overlay.cpp)

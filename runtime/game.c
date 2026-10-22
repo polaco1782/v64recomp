@@ -33,7 +33,7 @@ static void directory(const char *path) {
     }
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
-    const char *texture_source = NULL;
+    const char *texture_pack = NULL;
     const char *profile_directory = NULL;
     unsigned profile_hz = 99, profile_delay = 0, profile_seconds = 0;
     *o = (RecompGameOptions){.rom = RECOMP_DEFAULT_ROM,
@@ -44,7 +44,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
             printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
-                   "[--texture-scan [ZIP_OR_DIRECTORY]]\n"
+                   "[--texture-pack ZIP]\n"
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
                    "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
                    "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
@@ -54,17 +54,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         }
         if (!strcmp(arg, "--mute")) {
             o->mute = true;
-            continue;
-        }
-        if (!strcmp(arg, "--texture-scan")) {
-            texture_source = RECOMP_DEFAULT_TEXTURE_SOURCE;
-            if (i + 1 < argc && argv[i + 1][0] != '-')
-                texture_source = argv[++i];
-            struct stat source;
-            if (stat(texture_source, &source) || (!S_ISDIR(source.st_mode) && !S_ISREG(source.st_mode))) {
-                fprintf(stderr, "texture scan source must be a ZIP file or directory: %s\n", texture_source);
-                return -1;
-            }
             continue;
         }
         if (i + 1 >= argc) {
@@ -84,7 +73,14 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->save = value;
         else if (!strcmp(arg, "--crash-dir"))
             o->crash_dir = value;
-        else if (!strcmp(arg, "--profile"))
+        else if (!strcmp(arg, "--texture-pack")) {
+            struct stat source;
+            if (stat(value, &source) || !S_ISREG(source.st_mode)) {
+                fprintf(stderr, "texture pack must be a ZIP file: %s\n", value);
+                return -1;
+            }
+            texture_pack = value;
+        } else if (!strcmp(arg, "--profile"))
             profile_directory = value;
         else if (!strcmp(arg, "--profile-hz") || !strcmp(arg, "--profile-delay") || !strcmp(arg, "--profile-seconds")) {
             char *end;
@@ -131,14 +127,8 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
     crash_dir = o->crash_dir;
     if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
         setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
-    if (texture_source) {
-        setenv("RECOMP_TEXTURE_SCAN", texture_source, 1);
-        if (!getenv("RECOMP_TEXTURE_SCAN_RAW"))
-            setenv("RECOMP_TEXTURE_SCAN_RAW", RECOMP_DEFAULT_TEXTURE_RAW, 1);
-        const char *replacements = getenv("RECOMP_TEXTURE_REPLACEMENTS");
-        if (!replacements || !*replacements)
-            setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
-    }
+    if (texture_pack)
+        setenv("RECOMP_TEXTURE_PACK", texture_pack, 1);
     if (profile_directory && !recomp_profile_start(profile_directory, profile_hz, profile_delay, profile_seconds))
         return -1;
     return 0;

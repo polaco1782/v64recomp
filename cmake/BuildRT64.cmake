@@ -12,7 +12,7 @@ if(RECOMP_RT64_CONFIGURE_ONLY OR NOT EXISTS "${RECOMP_RT64_BUILD_DIR}/CMakeCache
 endif()
 if(NOT RECOMP_RT64_CONFIGURE_ONLY)
     execute_process(COMMAND "${CMAKE_COMMAND}" --build "${RECOMP_RT64_BUILD_DIR}"
-        --target texture_hashing --parallel "${RECOMP_RT64_JOBS}"
+        --target rt64 --parallel "${RECOMP_RT64_JOBS}"
         RESULT_VARIABLE result)
     if(NOT result EQUAL 0)
         message(FATAL_ERROR "Shared RT64 build failed (${result})")
