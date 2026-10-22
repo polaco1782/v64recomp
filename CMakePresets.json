@@ -294,6 +294,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "turok-us-v12-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/turok-us-v12-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "turok-us-v12",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "turok-us-v12-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/turok-us-v12-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "turok-us-v12",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -435,6 +456,16 @@
     {
       "name": "re2-us-v1-debug",
       "configurePreset": "re2-us-v1-debug",
+      "jobs": 4
+    },
+    {
+      "name": "turok-us-v12-release",
+      "configurePreset": "turok-us-v12-release",
+      "jobs": 4
+    },
+    {
+      "name": "turok-us-v12-debug",
+      "configurePreset": "turok-us-v12-debug",
       "jobs": 4
     }
   ],
@@ -800,6 +831,32 @@
         {
           "type": "build",
           "name": "re2-us-v1-debug"
+        }
+      ]
+    },
+    {
+      "name": "turok-us-v12-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "turok-us-v12-release"
+        },
+        {
+          "type": "build",
+          "name": "turok-us-v12-release"
+        }
+      ]
+    },
+    {
+      "name": "turok-us-v12-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "turok-us-v12-debug"
+        },
+        {
+          "type": "build",
+          "name": "turok-us-v12-debug"
         }
       ]
     }

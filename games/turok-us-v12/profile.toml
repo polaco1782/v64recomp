@@ -1,0 +1,198 @@
+[game]
+name = "Turok: Dinosaur Hunter (US v1.2)"
+rom = "../../local/turok.us.v12.z64"
+rom_sha1 = "c7ed00dee20f4235823bcf50d32fa5d6862d6fce"
+rom_size = 0x800000
+ram_size = 0x400000
+entry_symbol = "entry_point"
+code_sections = [".boot", ".main"]
+boot_sections = [".boot"]
+
+[discovery]
+regions = [
+ {name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0xf00},
+ {name = ".main", vram = 0x80001300, rom_offset = 0x800000, size = 0xf7e70},
+]
+# Checked split immediately before the first call into the decoded image.
+fallthroughs = [{pc = 0x800005d8, expected_word = 0x03302823, target = 0x800005dc, reason = "RNC boot load completion; verify and activate decoded program"}]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+transfers = [{pc = 0x8000040c, expected_word = 0x01400008, kind = "tail", targets = [0x800004c4]}]
+roots = [{name = "system_entry", vram = 0x80001300}, {name = "mainproc", vram = 0x80001324}, {name = "eventproc", vram = 0x8000134c}, {name = "gameproc", vram = 0x8000167c}]
+
+# Local switch counts follow the unsigned bounds checks at each dispatch.
+jump_tables = [
+  {pc = 0x800089d0, expected_word = 0x1600008, table_vram = 0x800efad8, count = 0xb, sha256 = "6827b351ad5090b55fef35b7efd2a8245736f09bcc934cefb4749cd2a70e073a"},
+  {pc = 0x800096ec, expected_word = 0x3200008, table_vram = 0x800efb20, count = 0xf, sha256 = "22265fb9eaee4a52b2fddc5139f1a5dc5941fea883d39b7ba44e018d17bb3889"},
+  {pc = 0x800098e0, expected_word = 0x1200008, table_vram = 0x800efbb0, count = 0xa, sha256 = "9fc858ddb36d473c760948c4fac82fe110605360fddcda2043765c8549d7dd2a"},
+  {pc = 0x8005f1e8, expected_word = 0x1c00008, table_vram = 0x800f3d74, count = 0x5, sha256 = "63a58872b9f5400e1f672b080ec10343e4009ccecc417c4fbab187e4f222ce04"},
+  {pc = 0x8005f214, expected_word = 0x1e00008, table_vram = 0x800f3d88, count = 0x16, sha256 = "c3941fa89b47120f0d5df16cf7ad8e1eb6ab6994a27b7fa28664ca0b118995fd"},
+  {pc = 0x8005f294, expected_word = 0x3000008, table_vram = 0x800f3de0, count = 0xa, sha256 = "c5012f6026d2a6cb973ed2027f771cd6e6e8b55fbef7aaf52b09f46e27bc9833"},
+  {pc = 0x80089d90, expected_word = 0x3200008, table_vram = 0x800f61cc, count = 0x6, sha256 = "34b00ae682f0785ae558f341be8aa12e450376a4457f2454aef25e1702c75319"},
+  {pc = 0x800a7904, expected_word = 0x1e00008, table_vram = 0x800f7214, count = 0x34, sha256 = "1fcf9cfbde977c99a46d0af604f6b1795a49c96f96c52d802533edd739ebf0d2"},
+  {pc = 0x800adb50, expected_word = 0x3200008, table_vram = 0x800f7550, count = 0x6, sha256 = "230254a3d87b4211bd22f7025201bbf31a13506448a75ac91f0832350c1bd509"},
+  {pc = 0x800aec58, expected_word = 0x1c00008, table_vram = 0x800f7570, count = 0x9, sha256 = "4981ce002b5d019253360dc66faf26f139f1368239f4d4b3b730a4e0e1ccf575"},
+  {pc = 0x80007ec0, expected_word = 0x3000008, table_vram = 0x800efaa8, count = 0xa, sha256 = "06d57cdde5ef1445f230a70a48e4fe0e2f34ff557555223c35b211cb779f8f74"},
+  {pc = 0x800093dc, expected_word = 0x1c00008, table_vram = 0x800efb04, count = 0x5, sha256 = "fd41182b1fdae6b023260c39fddb92a66c8984ac4f23a37c95c1eeeb91c876e6"},
+  {pc = 0x8000c300, expected_word = 0x1e00008, table_vram = 0x800f0c58, count = 0xc, sha256 = "a18d996414276d24da4e8e8797689516f7eeb28413e16b9e749d8e51d2322acc"},
+  {pc = 0x8000cec4, expected_word = 0x1c00008, table_vram = 0x800f0c98, count = 0xc, sha256 = "15a5c68c2881f995d7c4f2a1f6b9bfb22188e984667233c92e2522d46facf3dd"},
+  {pc = 0x8000f29c, expected_word = 0x3000008, table_vram = 0x800f0d00, count = 0x7, sha256 = "c4a7954712056c856355b2ab087c50110d4f678eb4b184a597bf8483a1381427"},
+  {pc = 0x80023a48, expected_word = 0x1e00008, table_vram = 0x800f1704, count = 0x1b, sha256 = "783e82aa1046ead5bf419bb4fa2e7ce1ea0bb06c02c333d32cf36172e26c26f6"},
+  {pc = 0x80024078, expected_word = 0x1e00008, table_vram = 0x800f1770, count = 0x23, sha256 = "b89cc24d5dad8f218c957ba20a8f79a2334f3cde97dc94c4d7b82f3b2f3e3320"},
+  {pc = 0x80026e3c, expected_word = 0x1c00008, table_vram = 0x800f189c, count = 0x9, sha256 = "c315ea7985f6841bb2201c7357a0000633064b521fb6af47353b3045f7f9ef00"},
+  {pc = 0x80027038, expected_word = 0x1a00008, table_vram = 0x800f18c0, count = 0x9, sha256 = "9c8cd26592dfb3598ee4c6fbb61076ab3826ee39fb842f88f84361678bdf17bc"},
+  {pc = 0x80028478, expected_word = 0x1c00008, table_vram = 0x800f1940, count = 0x3f, sha256 = "4a740888b1376881b2cdf26948f8f241249404a877f5c5f0949900a61a3ed459"},
+  {pc = 0x80028c5c, expected_word = 0x3200008, table_vram = 0x800f1a58, count = 0x6, sha256 = "3c6d40ef15ee4ce899de68a9e1999b06cd3582a0a10b58be4a2b95b6b9df1a91"},
+  {pc = 0x80039cec, expected_word = 0x1c00008, table_vram = 0x800f1f10, count = 0x5, sha256 = "e0438d6b8cf8750e06b778a50484981c7544fa31a2786dd871f39045394280f2"},
+  {pc = 0x8003f268, expected_word = 0x1e00008, table_vram = 0x800f2480, count = 0x5, sha256 = "b9913230d0f530ce7befa279bad2142980bd7e1940dc1a9b06a210376fdd3e4e"},
+  {pc = 0x80052034, expected_word = 0x1600008, table_vram = 0x800f3030, count = 0xd, sha256 = "2cca348a59cebae4b74fd66ef2b07137efd3d7be4360152cd5aaf50391f9629f"},
+  {pc = 0x80053fa0, expected_word = 0x1400008, table_vram = 0x800f3128, count = 0x6, sha256 = "25a334c7ba5bded8d453a77ff6747b2ef5c029dae587dc82b1baa689298f8c05"},
+  {pc = 0x80054890, expected_word = 0x1c00008, table_vram = 0x800f3148, count = 0x7, sha256 = "da335d18f563c260e1ed38e20422fe000f1164d13637a58cb9cf58f0fbb76891"},
+  {pc = 0x800584f8, expected_word = 0x1c00008, table_vram = 0x800f34bc, count = 0xf, sha256 = "6818d8a2bdcbdf2872f96dd90a835124f7018f5509be8a007c19df043e09d79b"},
+  {pc = 0x80058708, expected_word = 0x1e00008, table_vram = 0x800f350c, count = 0xf, sha256 = "5cfba46b1633e7327eec4d19cf7613adfc8c9886be05ca3963ed2b7a7139fea5"},
+  {pc = 0x800587c8, expected_word = 0x1c00008, table_vram = 0x800f3548, count = 0xf, sha256 = "a59bb2b9b4a9251a32d71b675ad517e94d1c1f99c03c03e1c6fbf462f7e087ec"},
+  {pc = 0x80059418, expected_word = 0x1200008, table_vram = 0x800f3670, count = 0x10, sha256 = "c1d7dc43524fb0d6a6a11733310f2d9c481446a3d1529450bc4489eef5c052c7"},
+  {pc = 0x8005f67c, expected_word = 0x1600008, table_vram = 0x800f3e10, count = 0x17, sha256 = "98a9732c6fe4ac944e91118c71fd71f1218ee45805767cce923b9b76bdac4f18"},
+  {pc = 0x8006041c, expected_word = 0x1e00008, table_vram = 0x800f3fe0, count = 0x17, sha256 = "64528c129248e609636122d87ef1c8e4fad8f8f86f39e235cec58ff90d151e12"},
+  {pc = 0x80062298, expected_word = 0x1c00008, table_vram = 0x800f4248, count = 0x24, sha256 = "03bc43d5bfeb65e9cb248a856540b7b270b29b10b52b110dd12d4575dbff04b0"},
+  {pc = 0x800622b8, expected_word = 0x1e00008, table_vram = 0x800f42d8, count = 0x10, sha256 = "b886621bff3e19dd1717385901d52409ed7f9dc98da86abd81f25581317e8232"},
+  {pc = 0x80062310, expected_word = 0x3000008, table_vram = 0x800f4318, count = 0x1e, sha256 = "854d48621e7665f11f1c740fbf9bd282a330e766e549fb2b7380c5fe72347404"},
+  {pc = 0x80062330, expected_word = 0x3200008, table_vram = 0x800f4390, count = 0x10, sha256 = "68e11a9b37a364c7ae025b85109105056bc81e27721fdcf13f56b569960774f4"},
+  {pc = 0x80063f7c, expected_word = 0x1000008, table_vram = 0x800f4458, count = 0x20, sha256 = "96d6f3b9788313477102f84f021ef2e0b1a218a4f6121854c584886e27a9d41e"},
+  {pc = 0x8006bd58, expected_word = 0x1c00008, table_vram = 0x800f4824, count = 0x4c, sha256 = "634092837a725f9779001ece954a9b3d09bdde47c956715300d22406f596ae7c"},
+  {pc = 0x8006bd78, expected_word = 0x1e00008, table_vram = 0x800f4954, count = 0x174, sha256 = "bbdbd7b2723af99d88ab206765b21afe486ffd2fb7c2aa542b5d276c04486cc2"},
+  {pc = 0x80070e0c, expected_word = 0x1c00008, table_vram = 0x800f4f24, count = 0x4c, sha256 = "d0420f6775fe58158314b641899026d12389ffdd4e978dd9647d258f601162f3"},
+  {pc = 0x80070e2c, expected_word = 0x1e00008, table_vram = 0x800f5054, count = 0x174, sha256 = "3fc8ec8bb854ecde86c9e255e70549bf77050fe0c7274363f8bb776a19cde38b"},
+  {pc = 0x80079ea0, expected_word = 0x1400008, table_vram = 0x800f5d28, count = 0xf, sha256 = "27fd0e7270a107f528d1296d19f1587f2b7324440e0a600efe4d302c2954a2db"},
+  {pc = 0x8007a180, expected_word = 0x3200008, table_vram = 0x800f5d64, count = 0x7, sha256 = "dcc888b11fcb9d62416f7e10812dce2a40d58287e9faf0a468e6799b137f52fd"},
+  {pc = 0x8007f70c, expected_word = 0x1c00008, table_vram = 0x800f5e78, count = 0x6, sha256 = "da03f5ca3c2cfc654390e0d1db84d4535c193c487847c5c4c627c800b628de95"},
+  {pc = 0x800845fc, expected_word = 0x1c00008, table_vram = 0x800f5fc0, count = 0x5, sha256 = "26553ccef29e5a01cbeab3d44dbc4b1d49ce2a3417af0419ee96559b610555ad"},
+  {pc = 0x80085688, expected_word = 0x1400008, table_vram = 0x800f5fe4, count = 0x7, sha256 = "faaa7fa1789fb00c803c44b9403f711640bc3c5bdc03c8a7906bf2e17a344c8d"},
+  {pc = 0x800857fc, expected_word = 0x3200008, table_vram = 0x800f6000, count = 0x7, sha256 = "eddf138c927e99a9d8de0ec39541f13b0e0fb3d6d7885ac088b2a6bfc2aaa586"},
+  {pc = 0x800883ac, expected_word = 0x1400008, table_vram = 0x800f60b0, count = 0x1e, sha256 = "7331d77f19ef91cb696337445cde153f217e3c043f7919552f640fbc3f677e21"},
+  {pc = 0x800910e0, expected_word = 0x1e00008, table_vram = 0x800f6340, count = 0x7, sha256 = "0b80abfc23eccce82d3c066d650d22f81f0028a5ad8f04ecb8b9c374a2c6ef6a"},
+  {pc = 0x80091710, expected_word = 0x1000008, table_vram = 0x800f63fc, count = 0x39, sha256 = "73f913aa932e78ca69349878c2e212cd7bb432275c25cca9469ac424ab4010a4"},
+  {pc = 0x80093fa4, expected_word = 0x1800008, table_vram = 0x800f6560, count = 0x5, sha256 = "5280d9a2bae0fecdb36ae4c5370f0e2e8ce19b42895b4eda8b8bd78c6e125a58"},
+  {pc = 0x800972fc, expected_word = 0x3200008, table_vram = 0x800f6bc0, count = 0xb, sha256 = "3bbe826f60636e020ac7b49bc69e33608b9d734bf41e4d08293d6103fdd75a54"},
+  {pc = 0x80097594, expected_word = 0x1800008, table_vram = 0x800f6bec, count = 0xb, sha256 = "39ba3f4768187c01a46a6deb77e59e3023a30c033afb8cb92db6b60632930822"},
+  {pc = 0x80002440, expected_word = 0x1c00008, table_vram = 0x800ef87c, count = 0xa, sha256 = "575c35ce55b9cc37585bb42b8c266b25f011a9a62558570d3b2ce34d32b12326"},
+  {pc = 0x80043758, expected_word = 0x1e00008, table_vram = 0x800f2574, count = 0x1a, sha256 = "7756feaaca2f341e3ab5c0c0f53bf46568d03d492f818320bd34c1819c9c3486"},
+  {pc = 0x80057c14, expected_word = 0x1c00008, table_vram = 0x800f3408, count = 0xf, sha256 = "7c4e34d04e8b6867de542431b2bc86fc5c8e8f72e2cd09a8ee6338c6a7f9fa40"},
+  {pc = 0x800585b4, expected_word = 0x1c00008, table_vram = 0x800f34f8, count = 0x5, sha256 = "043a4938abe30a9f58e1761dce4537e7e5117c254814a8c52bdead9b95974551"},
+  {pc = 0x80059ab4, expected_word = 0x1600008, table_vram = 0x800f3724, count = 0x10, sha256 = "6f50a15f8e971227a19e835dd2055dabfec31e3e4daea39590a61600387c1f9e"},
+  {pc = 0x8005a31c, expected_word = 0x1800008, table_vram = 0x800f3820, count = 0x10, sha256 = "19d883b19c3b361d43a7c2f82069cc37f0977ee01bf4c549a57d7d4769339fcc"},
+  {pc = 0x8005a6f4, expected_word = 0x1c00008, table_vram = 0x800f38f0, count = 0xd, sha256 = "b429d8bcea42dc9acb2500196e662728fb52c1e53232794d8c18695c0d507077"},
+  {pc = 0x8005a760, expected_word = 0x3000008, table_vram = 0x800f3924, count = 0xd, sha256 = "497491e6b931bfc43a705dec0c693f0f338481231386aecdbe58c402206b4f7e"},
+  {pc = 0x8005fc18, expected_word = 0x3200008, table_vram = 0x800f3e88, count = 0x5, sha256 = "760691247654f03ae67b4654904047766bfc8f04dba8c296ef077b2d84dc36e5"},
+  {pc = 0x8005fc38, expected_word = 0x1000008, table_vram = 0x800f3e9c, count = 0x16, sha256 = "986c175ba6d78998cac38b820c2f43422022637a919bde4c58cc8e1cb9cba8db"},
+  {pc = 0x8005fff4, expected_word = 0x1a00008, table_vram = 0x800f3ef4, count = 0x20, sha256 = "0d589bb503c016a53f4b197ec6ea527edfcf32184af5e082097f7bde020d2517"},
+  {pc = 0x80060014, expected_word = 0x3000008, table_vram = 0x800f3f74, count = 0x16, sha256 = "30f787dd11479d7c0f1aee6f9a3f470667e1c01a3bffdd253059ca097ed5c1d3"},
+  {pc = 0x800608ac, expected_word = 0x1e00008, table_vram = 0x800f4050, count = 0x6, sha256 = "c1ddf2ac7e2f583c431a0c8276e2a2ed6e766fa07ec73adda92a91d73fe499fd"},
+  {pc = 0x800609f4, expected_word = 0x1200008, table_vram = 0x800f4068, count = 0x17, sha256 = "db0ff18759e010fd4ced86cfcf0e66ff58f1b4a3a997fdc35f6a79bf21c32e21"},
+  {pc = 0x800611e0, expected_word = 0x1a00008, table_vram = 0x800f40e0, count = 0x17, sha256 = "7787b95be9e25c76d3e9349c68969ca5274c3e345c5f4ecd6e3a6f319d56e7c2"},
+  {pc = 0x80061374, expected_word = 0x1600008, table_vram = 0x800f413c, count = 0x17, sha256 = "4cd5981dc0aa1a181c0eb1cf2f2cb62f67dfde6c910caf34974bfe72d32514ed"},
+  {pc = 0x80061438, expected_word = 0x1800008, table_vram = 0x800f4198, count = 0x6, sha256 = "05c3740fb717501cb10bae56110c6af25781c50d2cd06d5b77779ba3d22e3b88"},
+  {pc = 0x80061ca4, expected_word = 0x1e00008, table_vram = 0x800f41e4, count = 0x17, sha256 = "2ca58d70a8a01dd4580485e0b3ebb7a678d28e92cee6db13d202927ffa68aab9"},
+  {pc = 0x8006399c, expected_word = 0x1800008, table_vram = 0x800f43f8, count = 0x9, sha256 = "ccdca5567845bbf71ddb3cdd7e962b8bc395c38e6b6126f00b8dd348d07a2d0a"},
+  {pc = 0x8006a088, expected_word = 0x1c00008, table_vram = 0x800f44f0, count = 0x17, sha256 = "dafbe9ad39af2cb588ae779ec31dca68ab610ea62be82a4062c5166fa274a790"},
+  {pc = 0x8006a314, expected_word = 0x1c00008, table_vram = 0x800f454c, count = 0x17, sha256 = "f1e7e4d5d19bf3d81ce24aece2dfe5310f2dc90c76874dcfca17573f62bca7de"},
+  {pc = 0x8006a78c, expected_word = 0x1c00008, table_vram = 0x800f45a8, count = 0x17, sha256 = "cc7783b5d3c7550acdde246396cfd6bf4542914a90ec6f52140d2248c5b9c7f7"},
+  {pc = 0x8006a9f0, expected_word = 0x1c00008, table_vram = 0x800f4604, count = 0x17, sha256 = "440c45076a3d355e9c6e2895469e4aef31345cf302e41076788e99d01fbf9794"},
+  {pc = 0x8006ad0c, expected_word = 0x1c00008, table_vram = 0x800f4660, count = 0x17, sha256 = "66a6d72f868d58f7a84f938d49966613ca6552e924e573125c8a340ce2e960df"},
+  {pc = 0x8006af60, expected_word = 0x1e00008, table_vram = 0x800f46bc, count = 0x17, sha256 = "bd56159ceb57dd330c943a3de3b29008e5fbd9c9be3e6577e23e4276496755a4"},
+  {pc = 0x8006b03c, expected_word = 0x1c00008, table_vram = 0x800f4718, count = 0x17, sha256 = "d4157b6fc86df42d386d3d3764982ed900e770b4c145799bf36238bfaddab6d1"},
+  {pc = 0x8006b2d4, expected_word = 0x1c00008, table_vram = 0x800f4780, count = 0x17, sha256 = "7642cce39cde39c0f63b6ea009a648d585ca6c78499210f24a4a37a6b37b276a"},
+  {pc = 0x8007a328, expected_word = 0x1200008, table_vram = 0x800f5d80, count = 0xc, sha256 = "be7cbabb07b569f3b50f557bf6cd97b2f32fbb43b955dd0f169c54be762414f9"},
+  {pc = 0x8007f748, expected_word = 0x3000008, table_vram = 0x800f5e90, count = 0x5, sha256 = "9d49eed8083bfdea2cd421445f0dd9e4b87143a4fdf8827d946d219e38a3910c"},
+  {pc = 0x80002f6c, expected_word = 0x1400008, table_vram = 0x800ef8b4, count = 0x1f, sha256 = "9e504461b23f29530bd54de966d3f4434c93c60649c5cecdce700cf0e76ccb32"},
+  {pc = 0x80015da0, expected_word = 0x1e00008, table_vram = 0x800f0f38, count = 0x44, sha256 = "ce0ff27f062c762ad274b07b9c016c7129df7db126f41625e58c7c877364c03c"},
+  {pc = 0x80015eb8, expected_word = 0x1c00008, table_vram = 0x800f1048, count = 0x7, sha256 = "c776dc9f794929a988db5fca71b35774d1ad8fdc9a884db3c0c242cbc5065e66"},
+  {pc = 0x80015fc4, expected_word = 0x1e00008, table_vram = 0x800f1064, count = 0x6, sha256 = "029812c9ab9e7d66ca86746371ffbf3f797a70619afb0a3f7f656d2d60a22196"},
+  {pc = 0x800160a4, expected_word = 0x1e00008, table_vram = 0x800f107c, count = 0x14, sha256 = "4ab47e3367272920ffa351f7957ef7b60725c82e0a666464fa6761f902cba11f"},
+  {pc = 0x800160e4, expected_word = 0x3000008, table_vram = 0x800f10cc, count = 0x14, sha256 = "a018c1941164a912f37768ecd3da344634c31b021e8bae43234f685331557c98"},
+  {pc = 0x80016134, expected_word = 0x3200008, table_vram = 0x800f111c, count = 0x14, sha256 = "0bfce2c460cff08f000bd182a7009bba7f5462b88b2af9419051e411d3631de1"},
+  {pc = 0x8001617c, expected_word = 0x1000008, table_vram = 0x800f116c, count = 0x13, sha256 = "1496c22addcd78bc9d3cec73846fbc90e336755ddc1267e511155f2a18cb6202"},
+  {pc = 0x800161c4, expected_word = 0x1200008, table_vram = 0x800f11b8, count = 0x14, sha256 = "7e071bb4004c5e0e39938c42cba8b7ea8400ce255797d77af9382b4bd5fa9cca"},
+  {pc = 0x80016254, expected_word = 0x1800008, table_vram = 0x800f1208, count = 0x14, sha256 = "53166f36a06ef5e51d7e1661864ea114df98d17a6b2bd9741258525b2681e5d7"},
+  {pc = 0x8001629c, expected_word = 0x1a00008, table_vram = 0x800f1258, count = 0x13, sha256 = "6b72afaa80db00aba57a030e25ffe863aa0ff70628610ff03397ef71c8334f93"},
+  {pc = 0x800167d8, expected_word = 0x1c00008, table_vram = 0x800f12d8, count = 0x1f, sha256 = "738ba9c8608d4180131f7e02df349d4df588edad9a60338c32a6c0b49ba1d51d"},
+  {pc = 0x80016968, expected_word = 0x1200008, table_vram = 0x800f1360, count = 0x7, sha256 = "67b75bc9c95ec7e1a260f45d1caea653c492e42a5cd564182b21177e2f94e995"},
+  {pc = 0x8001c758, expected_word = 0x1200008, table_vram = 0x800f14c8, count = 0x12, sha256 = "ba075aee98882d1484c7c53842cf1a4416bc7f745475c00f7ed6ea6e11cc0c1f"},
+  {pc = 0x8001c7c8, expected_word = 0x1400008, table_vram = 0x800f1510, count = 0x20, sha256 = "0badc45c1804d2805df2d4c8e34d34bbb0ea5738916083fad176f0f081b2c43d"},
+  {pc = 0x8001ff60, expected_word = 0x1000008, table_vram = 0x800f1684, count = 0xa, sha256 = "4fb11bb3c66e0cf3f102a68c1206e07d4367567908cd91c916a154a7b1c68b34"},
+  {pc = 0x80024c70, expected_word = 0x1800008, table_vram = 0x800f17fc, count = 0x7, sha256 = "c1e4d649045c5521cc4c9b72b1058ac3032c69379dd15207d90fd475d984df2d"},
+  {pc = 0x8002505c, expected_word = 0x1c00008, table_vram = 0x800f1818, count = 0x7, sha256 = "622fd37e7cafb4abfdc2dc610bd0d16fc47a4657434c620bc9fc2c9d40c7ab3c"},
+  {pc = 0x800254b4, expected_word = 0x1c00008, table_vram = 0x800f1834, count = 0x7, sha256 = "3ffd16d5f623d0399d1d5846fb8495edb50e26fc7355854b87d119639d200495"},
+  {pc = 0x80025d4c, expected_word = 0x3000008, table_vram = 0x800f1850, count = 0x5, sha256 = "326a19f06c6e67193d152e5c84e3a1d2952e388cafadff95f2ed5372a0e52826"},
+  {pc = 0x8002752c, expected_word = 0x1800008, table_vram = 0x800f1928, count = 0x6, sha256 = "9555a314fc673541cb67165c36ce1e8fcb65fe2e21bf55c623d5be0fdda985a8"},
+  {pc = 0x800313d0, expected_word = 0x1800008, table_vram = 0x800f1cb8, count = 0xf, sha256 = "c33fb7b85a4e0feb4f1abbf92ad004584c6d8d01a2dabc1374337092bc4a843f"},
+  {pc = 0x80031f48, expected_word = 0x1c00008, table_vram = 0x800f1d00, count = 0x9, sha256 = "29e84e7ca2db04badab04241dfa6f4f4fc3e20f9ec8b916aa8cafc145797c767"},
+  {pc = 0x8003ae2c, expected_word = 0x1c00008, table_vram = 0x800f1fc0, count = 0x14, sha256 = "3ff11706984a735a8e99b2f38bd0cca4801ce2b644fd2bf53d7ec1af6bba6e6e"},
+  {pc = 0x80043d50, expected_word = 0x1c00008, table_vram = 0x800f25e0, count = 0xa, sha256 = "f669dfcf4425c0738e03bde37f3efc58c003e9e75ef2325a4c250c9667157d8b"},
+  {pc = 0x80044100, expected_word = 0x1c00008, table_vram = 0x800f2610, count = 0xb, sha256 = "b8aba05dce0f60945f52692d769e8d6087b25b89fa5e47dffa387d5aded75b23"},
+  {pc = 0x80049c88, expected_word = 0x3000008, table_vram = 0x800f2b48, count = 0x2c, sha256 = "56c8c4562a0de9e946537362ce337084248f705799cbc3a0707f278fc18d7e36"},
+  {pc = 0x8004f8b0, expected_word = 0x3000008, table_vram = 0x800f2fa0, count = 0x11, sha256 = "a0ceb639a0ca0c43bfce4483269440b65a9420ca896cbf0b842d9cdabe5595a7"},
+  {pc = 0x8004f92c, expected_word = 0x3000008, table_vram = 0x800f2fe4, count = 0x11, sha256 = "e20484100208c057253b10f8cc3f494ba5127dcd1af952f6993cc42c34598ba5"},
+  {pc = 0x800588dc, expected_word = 0x3000008, table_vram = 0x800f3584, count = 0xf, sha256 = "0c41a42690b4b6a5b2b3a09b35e50b1c763e1a591cc496e68955009187a13433"},
+  {pc = 0x80071c40, expected_word = 0x1c00008, table_vram = 0x800f5638, count = 0x5, sha256 = "840c18c671cf17cfba4f6e2e0fd7cafbc1feeb22d89648923e3077cd85961183"},
+  {pc = 0x80071c88, expected_word = 0x1e00008, table_vram = 0x800f564c, count = 0x9, sha256 = "06363e46f2d79821a05ceb847c88b032120e9ddf9c84dd7780054a31a6e01a1b"},
+  {pc = 0x80071ca8, expected_word = 0x3000008, table_vram = 0x800f5670, count = 0x17, sha256 = "307399ca255d35325aebe59f8e4329fe9e8de172d1f4e78e8840d1a030c27919"},
+  {pc = 0x80076430, expected_word = 0x1c00008, table_vram = 0x800f5928, count = 0x24, sha256 = "01698f7fa0edb6691ffb548134ccc4c47fb05cb60f659fb293b54654975e53f0"},
+  {pc = 0x800767a8, expected_word = 0x1e00008, table_vram = 0x800f5a28, count = 0xb, sha256 = "c4cc19fd10f4b84e314771ac8d5b26d3498aeefdc0b3ddf3ab62d05e69f5feff"},
+  {pc = 0x800767cc, expected_word = 0x3000008, table_vram = 0x800f5a54, count = 0xc, sha256 = "9e771316223a6011975e4a731b716a21e673f1441a322c68f50640863ca88d2f"},
+  {pc = 0x80077724, expected_word = 0x3000008, table_vram = 0x800f5ad8, count = 0x14, sha256 = "8923b718eaeb744cb49cc09524bc5b2050e80218ba0d4f400261b4842f0280d7"},
+  {pc = 0x80077748, expected_word = 0x3200008, table_vram = 0x800f5b28, count = 0x19, sha256 = "415c19e1f19f10a28c29a0764f5ce3cdac7b3c142c406721d5a0227ce8553375"},
+  {pc = 0x80077770, expected_word = 0x1c00008, table_vram = 0x800f5b8c, count = 0x1c, sha256 = "b2dff6b64b6dc3105f79c2755c274db2bd0af777a1f67e814e70e524102431b4"},
+  {pc = 0x80077954, expected_word = 0x3200008, table_vram = 0x800f5bfc, count = 0x20, sha256 = "62f06120a1d949d9b0c7638151a3c4845ddd3e908dfc7df8f6e1c83479c0eadf"},
+  {pc = 0x800813d8, expected_word = 0x3000008, table_vram = 0x800f5ed0, count = 0x20, sha256 = "4d42cd892732f6a935efb2b2403ad363f97dbd3970a36c0d70286f83686c4954"},
+  {pc = 0x800842c0, expected_word = 0x1800008, table_vram = 0x800f5fa4, count = 0x7, sha256 = "72847bc3b9860f0d9ef2d9c53080de8ce7efdbeb71d654ba8026585d4a63068c"},
+  {pc = 0x80087e6c, expected_word = 0x1a00008, table_vram = 0x800f6058, count = 0x15, sha256 = "fb0dc6667c82eed17285c0769c898ca0ac805117b0cd6cf9fae480215ee1b8b9"},
+  {pc = 0x80088ad4, expected_word = 0x3000008, table_vram = 0x800f6138, count = 0x12, sha256 = "8db763b22fa6fe914722c47eecadf719dad75a6e17ce174424d4e658fb9abf47"},
+  {pc = 0x800902b4, expected_word = 0x3000008, table_vram = 0x800f62f0, count = 0x7, sha256 = "f6677933b78412b405bc947bf5951cc1a597db380479fef41fd452e48cc2755f"},
+  {pc = 0x80090400, expected_word = 0x3200008, table_vram = 0x800f630c, count = 0x7, sha256 = "7e394890bd2eef9b94e71d38d3d9e84dee98925d1dbb39a6e5c0ee78d888e3bc"},
+  {pc = 0x80091390, expected_word = 0x1c00008, table_vram = 0x800f635c, count = 0x28, sha256 = "db8dcc92e46fc0e5a41f6de4e695fedb66a620e6ed2d12cfee588dc50eb1043a"},
+  {pc = 0x80016670, expected_word = 0x3000008, table_vram = 0x800f12a4, count = 0xd, sha256 = "61e4cbe2b4a01b79f753be786254b6daa3f3e8af1599d8a826e4e5130fdf9c5c"},
+  {pc = 0x80057eb8, expected_word = 0x1c00008, table_vram = 0x800f3444, count = 0xf, sha256 = "aa6fe26f0e6392cae3dc651c6c0372dd8f8ae4f46215e3a1ad5446ae31a45ceb"},
+  {pc = 0x8002c904, expected_word = 0x1e00008, table_vram = 0x800f1ab4, count = 0x7, sha256 = "c02374d4bba8340b1b0f7bc05fbca7ce937d07afe226b3e855aa3527c66f52d1"},
+  {pc = 0x8008ce58, expected_word = 0x1000008, table_vram = 0x800f627c, count = 0xc, sha256 = "a61f7345dea836f8002acd1ecb951d0483d7904004dc73b9e45451e2769b69be"},
+]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0xf00
+compressed_offset = 0x783690
+decoded_address = 0x80001300
+decoded_size = 0xf7e70
+decoded_sha256 = "4edaabc08e405dac51733041ca4342eccfa0d355683207450a8e55dd5b85aec4"
+bss_start = 0x800f9170
+bss_end = 0x8013a280
+system_entry = 0x80001300
+counter_hz = 46875000
+main_id = 1
+main_object = 0x800f9170
+boot_object = 0x803ff000
+boot_stack = 0x803fd000
+thread_tail = 0x800ef320
+run_queue = 0x800ef328
+active_queue = 0x800ef32c
+running_thread = 0x800ef330
+idle_thread = 0x800f9170
+clock_rate = 0x800ee570
+final_rom = 0x800ee580
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x400000
+
+[[hooks]]
+symbol = "turok_boot_rom_read"
+vram = 0x80000450
+kind = "replace_function"
+handler = "hook_turok_rom_read"
+expected_words = [0x3c0e8000, 0x8dce0308, 0x67882, 0x3c09a460, 0x1e03025, 0x35290010, 0xa01825, 0x1203825, 0x1e04025, 0x1c41025, 0x10c00010, 0x24c6ffff, 0x8d380000, 0xc04025, 0x33190003, 0x53200006, 0x8c4c0000, 0x8cea0000, 0x314b0003, 0x5560fffe, 0x8cea0000, 0x8c4c0000, 0x24630004, 0x24420004, 0xac6cfffc, 0x14c0fff2, 0x24c6ffff, 0x3e00008, 0x0]

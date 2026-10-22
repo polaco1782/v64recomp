@@ -448,6 +448,38 @@
       "problemMatcher": [
         "$gcc"
       ]
+    },
+    {
+      "label": "Configure Debug: Turok US v1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "turok-us-v12-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: Turok US v1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "turok-us-v12-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Turok US v1.2",
+      "problemMatcher": [
+        "$gcc"
+      ]
     }
   ]
 }

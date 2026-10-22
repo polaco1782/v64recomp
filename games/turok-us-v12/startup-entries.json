@@ -1,0 +1,121 @@
+{
+  "format_version": 1,
+  "rom_sha1": "c790c6da5b243bb41f675899cf8910a6f98ae788",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2147488512,
+      "origin": "checked-root",
+      "sha256": "4a8ad1dc90788bc659f4864b754a43320409d18bf0b401847fc51c3c991423a1",
+      "evidence": "Boot calls this entry at 0x80000620 after RNC decode and BSS clearing."
+    },
+    {
+      "vram": 2147582996,
+      "origin": "checked-root",
+      "sha256": "86c1ed5b2a2ff0c9fb50a5c18b6a4b688b99ca2ee5f360959ef9e87f16cde6ef",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147586460,
+      "origin": "checked-root",
+      "sha256": "6d531aa5be4c1cbf6fa5eb27eee9a822a2dd42b4ba6f936b7b0fa8e9598c42a2",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147623320,
+      "origin": "checked-root",
+      "sha256": "ced3af68bddec508ae050325e842b89f5caac4b56b29c376c6084435eaad540c",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147642344,
+      "origin": "checked-root",
+      "sha256": "8ae5c8453247a14782b4b9b0a4608d946f2a8e210e14a085565fb6ac9edad791",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147662488,
+      "origin": "checked-root",
+      "sha256": "73a13088cfbb895f51030920eb88f30b9ec9230c864e0639db0f669400a4e4cf",
+      "evidence": "osCreateThread callback a2 at 0x8002b974..0x8002b990; custom RSP/VI scheduler thread id 4"
+    },
+    {
+      "vram": 2147669972,
+      "origin": "checked-root",
+      "sha256": "6166bcd21cc7b48356fc96bafb13f79a8020c99959a512dcdeec8ecb1b8ed284",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147700908,
+      "origin": "checked-root",
+      "sha256": "b10ceec444c6cf276572add9e2601c77a855859291c024772bc505c3bf4e6733",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147706432,
+      "origin": "checked-root",
+      "sha256": "0d9856ba3da025e81460f3b1965558a7ffcb4cbd436c3af493cd15d8378a0cc5",
+      "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147810124,
+      "origin": "checked-root",
+      "sha256": "481093d00546195a9dd285e2e48494292aee5f0e0a45526c34515a170e4d7eec",
+      "evidence": "0x8004fdf8 passes a3 to 0x8004f990; record +0x10 consumed by jalr at 0x8004f9c4."
+    },
+    {
+      "vram": 2147810368,
+      "origin": "checked-root",
+      "sha256": "5b4c3565ff37dd144ab833a4dcf6cc02ae6d0936eeba591257e656105c215c95",
+      "evidence": "0x8004fdf8 passes a3 to 0x8004f990; record +0x10 consumed by jalr at 0x8004f9c4."
+    },
+    {
+      "vram": 2147810416,
+      "origin": "checked-root",
+      "sha256": "5b4c3565ff37dd144ab833a4dcf6cc02ae6d0936eeba591257e656105c215c95",
+      "evidence": "0x8004fdf8 passes a3 to 0x8004f990; record +0x10 consumed by jalr at 0x8004f9c4."
+    },
+    {
+      "vram": 2148062912,
+      "origin": "checked-root",
+      "sha256": "ca5f5941420ec5f544fd182624741d04da2b16d801f9132686c22cf09af18f11",
+      "evidence": "osCreateThread callback a2 at 0x8008d674..0x8008d690; audio manager thread id 3"
+    },
+    {
+      "vram": 2148064212,
+      "origin": "checked-root",
+      "sha256": "5f3b3db9563ad316eeb285033e0cacf16e920829e964cf7f735b887a6f76b2f7",
+      "evidence": "Audio initialization 0x8008d3dc..0x8008d3e4 stores DMA constructor at audio config +0x10; read by audio driver."
+    },
+    {
+      "vram": 2148196288,
+      "origin": "checked-root",
+      "sha256": "937a2f9f50af54448bb3013ef8fb55ecac900bac425557719840c097d711ee40",
+      "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
+    },
+    {
+      "vram": 2148198284,
+      "origin": "checked-root",
+      "sha256": "ab938b013c88555910f1a2530a6dead5061e5dcadb70b2c2a1d86e0ee658cb78",
+      "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
+    },
+    {
+      "vram": 2148199708,
+      "origin": "checked-root",
+      "sha256": "d67274b1fde372808235ee4beb2687b0cd77d2c9b1704036d222cdc62ec317f8",
+      "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
+    },
+    {
+      "vram": 2148203456,
+      "origin": "checked-root",
+      "sha256": "7ac4c86f60fa0f137cf96653f061a730f75f1bd3f0325e84e2a29ab15fae5002",
+      "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
+    },
+    {
+      "vram": 2148203732,
+      "origin": "checked-root",
+      "sha256": "49326cf085188baa48298f310efd137012f579267ba5ac7ccf3fa211a352c67b",
+      "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
+    }
+  ]
+}

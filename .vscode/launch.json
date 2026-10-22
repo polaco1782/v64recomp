@@ -294,6 +294,27 @@
         }
       ],
       "preLaunchTask": "Build Debug: Resident Evil 2 US revision 1"
+    },
+    {
+      "name": "Debug: Turok US v1.2",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/turok-us-v12-debug/bin/turok-us-v12",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Turok US v1.2"
     }
   ]
 }
