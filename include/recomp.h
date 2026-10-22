@@ -32,7 +32,7 @@ typedef struct MipsContext {
     uint64_t gpr[32];
     uint64_t hi, lo;
     uint32_t fpr[32], fcr31;
-    uint32_t pc; /* Debug instruction/call location; thread entry in Release. Not execution state. */
+    uint32_t pc;           /* Debug instruction/call location; thread entry in Release. Not execution state. */
     uint32_t fpr_high[32]; /* Independent upper words when Status.FR is one. */
     bool fpu_fr1;
 } MipsContext;
@@ -90,7 +90,7 @@ struct Runtime {
     void (*destroy_io)(Runtime *);
     void (*poll_io)(Runtime *);
     const RecompFunctionEntry **function_index; /* Sorted once at init; original registry order is retained. */
-    size_t *function_lookup; /* Hash slots hold the first sorted index + 1 for each guest address. */
+    size_t *function_lookup;                    /* Hash slots hold the first sorted index + 1 for each guest address. */
     size_t function_lookup_mask;
     RecompAddressResolver resolve_address;
     void (*prepare_call)(Runtime *, uint32_t);
@@ -99,7 +99,7 @@ struct Runtime {
     uint32_t (*canonical_function_address)(Runtime *, uint32_t);
     uint32_t (*relocated_address)(Runtime *, uint32_t section, uint32_t address);
     bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
-    uint32_t interrupt_mask; /* Logical SDK CPU/RCP interrupt mask. */
+    uint32_t interrupt_mask;  /* Logical SDK CPU/RCP interrupt mask. */
     RecompPageMapping page_mappings[32];
 #ifdef RECOMP_DEBUG
     /* Shared crash history; guest execution is serialized by the scheduler. */
@@ -114,22 +114,22 @@ struct Runtime {
 
 /* Count instructions separately from diagnostic call-site PC restoration. */
 #ifdef RECOMP_DEBUG
-#define RECOMP_TRACE(runtime, context, address) \
-    ((runtime)->debug_ops++, (context)->pc = (address))
+#define RECOMP_TRACE(runtime, context, address) ((runtime)->debug_ops++, (context)->pc = (address))
 #else
 #define RECOMP_TRACE(runtime, context, address) ((void)0)
 #endif
 
-bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t,
-                         const bool *, size_t);
+bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t, const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
 static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #ifdef RECOMP_DEBUG
     rt->recent_calls[rt->recent_call_next] = address;
     rt->recent_call_next = (rt->recent_call_next + 1) % 128;
-    if (rt->recent_call_count < 128) rt->recent_call_count++;
+    if (rt->recent_call_count < 128)
+        rt->recent_call_count++;
 #else
-    (void)rt; (void)address;
+    (void)rt;
+    (void)address;
 #endif
 }
 RecompFunction recomp_lookup(Runtime *, uint32_t);
@@ -163,7 +163,8 @@ static inline void recomp_prepare_direct_call(Runtime *rt, uint32_t address, uin
     recomp_record_call(rt, address);
     if (section >= rt->section_count || !rt->section_loaded[section])
         recomp_fail("unregistered or unloaded function", address);
-    if (rt->prepare_call) rt->prepare_call(rt, address);
+    if (rt->prepare_call)
+        rt->prepare_call(rt, address);
 }
 
 /* Fixed generated calls bind a unique entry in the compiled registry. Shared
@@ -173,14 +174,19 @@ void recomp_call_generated(Runtime *, MipsContext *, const RecompFunctionEntry *
 /* Floating-point helpers. Each operation restores the host environment
  * before returning, including when guest rounding differs between threads. */
 enum MipsFpFormat { MIPS_FP_S, MIPS_FP_D, MIPS_FP_W, MIPS_FP_L };
-enum MipsFpOperation { MIPS_FP_ADD, MIPS_FP_SUB, MIPS_FP_MUL, MIPS_FP_DIV,
-                       MIPS_FP_SQRT, MIPS_FP_ABS, MIPS_FP_NEG, MIPS_FP_MOV };
-void mips_fp_binary(MipsContext *, unsigned, unsigned, unsigned,
-                    enum MipsFpFormat, enum MipsFpOperation);
-void mips_fp_unary(MipsContext *, unsigned, unsigned,
-                   enum MipsFpFormat, enum MipsFpOperation);
-void mips_fp_convert(MipsContext *, unsigned, unsigned,
-                     enum MipsFpFormat, enum MipsFpFormat, int);
+enum MipsFpOperation {
+    MIPS_FP_ADD,
+    MIPS_FP_SUB,
+    MIPS_FP_MUL,
+    MIPS_FP_DIV,
+    MIPS_FP_SQRT,
+    MIPS_FP_ABS,
+    MIPS_FP_NEG,
+    MIPS_FP_MOV
+};
+void mips_fp_binary(MipsContext *, unsigned, unsigned, unsigned, enum MipsFpFormat, enum MipsFpOperation);
+void mips_fp_unary(MipsContext *, unsigned, unsigned, enum MipsFpFormat, enum MipsFpOperation);
+void mips_fp_convert(MipsContext *, unsigned, unsigned, enum MipsFpFormat, enum MipsFpFormat, int);
 void mips_fp_compare(MipsContext *, unsigned, unsigned, enum MipsFpFormat, unsigned);
 void mips_fp_set_control(MipsContext *, uint32_t);
 
@@ -319,10 +325,12 @@ uint64_t recomp_load_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
 void recomp_store_merge(Runtime *, uint32_t, uint64_t, unsigned, bool);
 
 static inline void recomp_checkpoint(Runtime *rt) {
-    if (rt->checkpoint) rt->checkpoint(rt, false);
+    if (rt->checkpoint)
+        rt->checkpoint(rt, false);
 }
 static inline void recomp_yield_checkpoint(Runtime *rt) {
-    if (rt->checkpoint) rt->checkpoint(rt, true);
+    if (rt->checkpoint)
+        rt->checkpoint(rt, true);
 }
 
 static inline bool mips_signed_less(uint64_t x, uint64_t y) {
@@ -331,12 +339,14 @@ static inline bool mips_signed_less(uint64_t x, uint64_t y) {
 static inline uint64_t mips_sra32(uint64_t x, unsigned count) {
     uint32_t value = (uint32_t)x;
     count &= 31;
-    if (count) value = (value >> count) | ((value & UINT32_C(0x80000000)) ? UINT32_MAX << (32 - count) : 0);
+    if (count)
+        value = (value >> count) | ((value & UINT32_C(0x80000000)) ? UINT32_MAX << (32 - count) : 0);
     return mips_s32(value);
 }
 static inline uint64_t mips_sra64(uint64_t value, unsigned count) {
     count &= 63;
-    if (count) value = (value >> count) | ((value & UINT64_C(0x8000000000000000)) ? UINT64_MAX << (64 - count) : 0);
+    if (count)
+        value = (value >> count) | ((value & UINT64_C(0x8000000000000000)) ? UINT64_MAX << (64 - count) : 0);
     return value;
 }
 static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
@@ -346,7 +356,8 @@ static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
         recomp_fail("signed ADD overflow", 0);
 #else
     uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a + b;
-    if (((a ^ result) & (b ^ result)) & UINT32_C(0x80000000)) recomp_fail("signed ADD overflow", 0);
+    if (((a ^ result) & (b ^ result)) & UINT32_C(0x80000000))
+        recomp_fail("signed ADD overflow", 0);
 #endif
     return mips_s32(result);
 }
@@ -357,7 +368,8 @@ static inline uint64_t mips_sub32(uint64_t x, uint64_t y) {
         recomp_fail("signed SUB overflow", 0);
 #else
     uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a - b;
-    if (((a ^ b) & (a ^ result)) & UINT32_C(0x80000000)) recomp_fail("signed SUB overflow", 0);
+    if (((a ^ b) & (a ^ result)) & UINT32_C(0x80000000))
+        recomp_fail("signed SUB overflow", 0);
 #endif
     return mips_s32(result);
 }
@@ -386,41 +398,53 @@ static inline void mips_div(MipsContext *ctx, uint64_t x, uint64_t y, bool is_si
 
 static inline void mips_dmult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
     /* Four 32-bit products preserve all 128 bits without compiler extensions. */
-    uint64_t x0=(uint32_t)x, x1=x>>32, y0=(uint32_t)y, y1=y>>32;
-    uint64_t low=x0*y0, middle=x1*y0+(low>>32), carry=middle>>32;
-    middle=(uint32_t)middle+x0*y1;
-    ctx->lo=(middle<<32)|(uint32_t)low;
-    ctx->hi=x1*y1+carry+(middle>>32);
+    uint64_t x0 = (uint32_t)x, x1 = x >> 32, y0 = (uint32_t)y, y1 = y >> 32;
+    uint64_t low = x0 * y0, middle = x1 * y0 + (low >> 32), carry = middle >> 32;
+    middle = (uint32_t)middle + x0 * y1;
+    ctx->lo = (middle << 32) | (uint32_t)low;
+    ctx->hi = x1 * y1 + carry + (middle >> 32);
     if (is_signed) {
-        if (x>>63) ctx->hi-=y;
-        if (y>>63) ctx->hi-=x;
+        if (x >> 63)
+            ctx->hi -= y;
+        if (y >> 63)
+            ctx->hi -= x;
     }
 }
 static inline void mips_ddiv(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
-    bool negative_x=is_signed && (x>>63), negative_y=is_signed && (y>>63);
-    if (!y) { ctx->lo=negative_x?1:UINT64_MAX; ctx->hi=x; return; }
-    uint64_t a=negative_x?UINT64_C(0)-x:x, b=negative_y?UINT64_C(0)-y:y;
-    uint64_t q=a/b, rem=a%b;
-    ctx->lo=negative_x!=negative_y?UINT64_C(0)-q:q;
-    ctx->hi=negative_x?UINT64_C(0)-rem:rem;
+    bool negative_x = is_signed && (x >> 63), negative_y = is_signed && (y >> 63);
+    if (!y) {
+        ctx->lo = negative_x ? 1 : UINT64_MAX;
+        ctx->hi = x;
+        return;
+    }
+    uint64_t a = negative_x ? UINT64_C(0) - x : x, b = negative_y ? UINT64_C(0) - y : y;
+    uint64_t q = a / b, rem = a % b;
+    ctx->lo = negative_x != negative_y ? UINT64_C(0) - q : q;
+    ctx->hi = negative_x ? UINT64_C(0) - rem : rem;
 }
 
 /* FR=0 pairs adjacent words; FR=1 has an independent 64-bit register at every index. */
 static inline uint64_t mips_fpr_pair(const MipsContext *ctx, unsigned index) {
-    if (index >= 32) recomp_fail("invalid FPU register", ctx->pc);
-    if (ctx->fpu_fr1) return ((uint64_t)ctx->fpr_high[index]<<32)|ctx->fpr[index];
-    if (index >= 31 || (index & 1)) recomp_fail("FR=0 double register must be even", ctx->pc);
-    return ((uint64_t)ctx->fpr[index+1]<<32)|ctx->fpr[index];
+    if (index >= 32)
+        recomp_fail("invalid FPU register", ctx->pc);
+    if (ctx->fpu_fr1)
+        return ((uint64_t)ctx->fpr_high[index] << 32) | ctx->fpr[index];
+    if (index >= 31 || (index & 1))
+        recomp_fail("FR=0 double register must be even", ctx->pc);
+    return ((uint64_t)ctx->fpr[index + 1] << 32) | ctx->fpr[index];
 }
 
 static inline void mips_set_fpr_pair(MipsContext *ctx, unsigned index, uint64_t value) {
-    if (index >= 32) recomp_fail("invalid FPU register", ctx->pc);
-    if (ctx->fpu_fr1) ctx->fpr_high[index]=(uint32_t)(value>>32);
+    if (index >= 32)
+        recomp_fail("invalid FPU register", ctx->pc);
+    if (ctx->fpu_fr1)
+        ctx->fpr_high[index] = (uint32_t)(value >> 32);
     else {
-        if (index >= 31 || (index & 1)) recomp_fail("FR=0 double register must be even", ctx->pc);
-        ctx->fpr[index+1]=(uint32_t)(value>>32);
+        if (index >= 31 || (index & 1))
+            recomp_fail("FR=0 double register must be even", ctx->pc);
+        ctx->fpr[index + 1] = (uint32_t)(value >> 32);
     }
-    ctx->fpr[index]=(uint32_t)value;
+    ctx->fpr[index] = (uint32_t)value;
 }
 
 #ifdef __cplusplus

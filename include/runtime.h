@@ -8,17 +8,31 @@ extern "C" {
 #endif
 
 /* N64 libultra o32 guest layouts; no host pointers are written to guest RAM. */
-enum { RECOMP_THREAD_BYTES = 0x1b0, RECOMP_QUEUE_BYTES = 24,
-       RECOMP_MESG_NOBLOCK = 0, RECOMP_MESG_BLOCK = 1,
-       RECOMP_OS_STOPPED = 1, RECOMP_OS_RUNNABLE = 2,
-       RECOMP_OS_RUNNING = 4, RECOMP_OS_WAITING = 8, RECOMP_OS_EVENTS = 15 };
+enum {
+    RECOMP_THREAD_BYTES = 0x1b0,
+    RECOMP_QUEUE_BYTES = 24,
+    RECOMP_MESG_NOBLOCK = 0,
+    RECOMP_MESG_BLOCK = 1,
+    RECOMP_OS_STOPPED = 1,
+    RECOMP_OS_RUNNABLE = 2,
+    RECOMP_OS_RUNNING = 4,
+    RECOMP_OS_WAITING = 8,
+    RECOMP_OS_EVENTS = 15
+};
 
 typedef enum RecompThreadState {
-    RECOMP_STOPPED, RECOMP_READY, RECOMP_RUNNING, RECOMP_WAIT_SEND,
-    RECOMP_WAIT_RECV, RECOMP_DEAD
+    RECOMP_STOPPED,
+    RECOMP_READY,
+    RECOMP_RUNNING,
+    RECOMP_WAIT_SEND,
+    RECOMP_WAIT_RECV,
+    RECOMP_DEAD
 } RecompThreadState;
 typedef enum RecompRunResult {
-    RECOMP_RUN_COMPLETE, RECOMP_RUN_WAITING, RECOMP_RUN_STOPPED, RECOMP_RUN_BUDGET
+    RECOMP_RUN_COMPLETE,
+    RECOMP_RUN_WAITING,
+    RECOMP_RUN_STOPPED,
+    RECOMP_RUN_BUDGET
 } RecompRunResult;
 typedef struct RecompThreadSnapshot {
     uint32_t object;
@@ -36,20 +50,20 @@ void recomp_set_trace_ceiling(uintptr_t);
 void recomp_on_host(Runtime *, void (*callback)(Runtime *, void *), void *);
 
 typedef struct RecompThreadName {
-    uint32_t entry; /* Original guest entry address, independent of guest ID. */
+    uint32_t entry;   /* Original guest entry address, independent of guest ID. */
     const char *name; /* Native pthread name: 1..15 bytes, excluding the NUL. */
 } RecompThreadName;
 
 typedef struct RecompSchedulerConfig {
-    uint32_t thread_tail; /* Guest address of an eight-byte tail sentinel. */
+    uint32_t thread_tail;                                          /* Guest address of an eight-byte tail sentinel. */
     uint32_t run_queue, active_queue, running_thread, event_table; /* Optional guest globals. */
-    size_t native_stack_size; /* Zero uses the pthread stack default. */
-    unsigned checkpoint_interval; /* Backedges per yield; zero selects 64. */
+    size_t native_stack_size;                                      /* Zero uses the pthread stack default. */
+    unsigned checkpoint_interval;                                  /* Backedges per yield; zero selects 64. */
     uint32_t stop_before_entry; /* Debugger stop before a thread's first instruction. */
     const uint32_t *stop_before_entries;
     size_t stop_before_count; /* Additional checked demo/debugger boundaries. */
-    bool fpu_fr1; /* SDK uses 0x230-byte threads with 32 independent 64-bit FPRs. */
-    uint32_t idle_thread; /* Optional priority-zero idle thread: return to the host instead of spinning. */
+    bool fpu_fr1;             /* SDK uses 0x230-byte threads with 32 independent 64-bit FPRs. */
+    uint32_t idle_thread;     /* Optional priority-zero idle thread: return to the host instead of spinning. */
     const RecompThreadName *thread_names; /* Optional game-owned table; must outlive the scheduler. */
     size_t thread_name_count;
 } RecompSchedulerConfig;
@@ -60,8 +74,8 @@ typedef struct RecompSchedulerConfig {
 bool recomp_scheduler_init(Runtime *, const RecompSchedulerConfig *);
 void recomp_scheduler_destroy(Runtime *);
 RecompRunResult recomp_scheduler_run(Runtime *, size_t max_resumes);
-void recomp_thread_create(Runtime *, uint32_t object, int32_t id, uint32_t entry,
-                          uint32_t argument, uint32_t stack, int32_t priority);
+void recomp_thread_create(Runtime *, uint32_t object, int32_t id, uint32_t entry, uint32_t argument, uint32_t stack,
+                          int32_t priority);
 void recomp_thread_start(Runtime *, uint32_t object);
 void recomp_thread_stop(Runtime *, uint32_t object); /* Zero selects current. */
 void recomp_thread_destroy(Runtime *, uint32_t object);
@@ -94,8 +108,8 @@ void recomp_clock_destroy(Runtime *);
 uint64_t recomp_count64(Runtime *);
 uint64_t recomp_get_time(Runtime *);
 void recomp_set_time(Runtime *, uint64_t);
-void recomp_timer_set(Runtime *, uint32_t timer, uint64_t countdown, uint64_t interval,
-                      uint32_t queue, uint32_t message);
+void recomp_timer_set(Runtime *, uint32_t timer, uint64_t countdown, uint64_t interval, uint32_t queue,
+                      uint32_t message);
 bool recomp_timer_stop(Runtime *, uint32_t timer);
 uint64_t recomp_clock_next_deadline(Runtime *); /* UINT64_MAX if none. */
 uint32_t recomp_clock_timer_sentinel(Runtime *);
@@ -115,8 +129,8 @@ typedef struct RecompPlatformConfig {
     uint32_t timer_list, current_time, base_counter, vi_intr_count;
     uint32_t app_nmi_buffer;
     uint32_t cart_handle, drive_handle; /* Optional SDK OSPiHandle storage. */
-    uint32_t sram_size; /* Zero or 32 KiB; PI domain 2 cartridge SRAM. */
-    const char *sram_path; /* Optional save image, valid until platform destroy. */
+    uint32_t sram_size;                 /* Zero or 32 KiB; PI domain 2 cartridge SRAM. */
+    const char *sram_path;              /* Optional save image, valid until platform destroy. */
     uint64_t vi_period_ticks;
     const RecompBootLoad *code_loads;
     size_t code_load_count;
@@ -132,8 +146,8 @@ bool recomp_platform_init(Runtime *, const RecompPlatformConfig *);
 void recomp_platform_destroy(Runtime *);
 RecompViState recomp_vi_state(Runtime *);
 typedef struct RecompViRegisters {
-    uint32_t status, origin, width, intr, current_line, burst, v_sync, h_sync,
-             leap, h_start, v_start, v_burst, x_scale, y_scale;
+    uint32_t status, origin, width, intr, current_line, burst, v_sync, h_sync, leap, h_start, v_start, v_burst, x_scale,
+        y_scale;
 } RecompViRegisters;
 /* Snapshot field-zero VI registers from the guest OSViMode. False before a mode is set. */
 bool recomp_vi_registers(Runtime *, RecompViRegisters *);
@@ -170,11 +184,11 @@ typedef struct RecompPad {
 } RecompPad;
 typedef struct RecompIOConfig {
     uint8_t connected_mask;
-    uint32_t eeprom_size; /* 0, 512 or 2048 bytes. */
+    uint32_t eeprom_size;    /* 0, 512 or 2048 bytes. */
     const char *eeprom_path; /* NULL keeps an in-memory device. Copied at init. */
     /* SI completion delay; zero completes at the next scheduler poll. */
     uint64_t si_transfer_ticks;
-    uint8_t pak_mask; /* One 32 KiB Controller Pak per selected port. */
+    uint8_t pak_mask;         /* One 32 KiB Controller Pak per selected port. */
     const char *pak_paths[4]; /* NULL keeps that Pak in memory. Copied at init. */
 } RecompIOConfig;
 typedef struct RecompIOStats {
@@ -250,8 +264,12 @@ void hook_os_strlen(Runtime *, MipsContext *);
 void hook_os_strchr(Runtime *, MipsContext *);
 
 typedef enum RecompTaskCompletion { RECOMP_SP_DONE, RECOMP_SP_YIELDED, RECOMP_DP_DONE } RecompTaskCompletion;
-enum { RECOMP_TASK_YIELDED = 1, RECOMP_TASK_DP_WAIT = 2, RECOMP_TASK_LOADABLE = 4,
-       RECOMP_TASK_USER_FLAGS = 0xf0 }; /* SDK OS_TASK_USR0..USR3: application metadata. */
+enum {
+    RECOMP_TASK_YIELDED = 1,
+    RECOMP_TASK_DP_WAIT = 2,
+    RECOMP_TASK_LOADABLE = 4,
+    RECOMP_TASK_USER_FLAGS = 0xf0
+}; /* SDK OS_TASK_USR0..USR3: application metadata. */
 typedef struct RecompTask {
     uint64_t token;
     uint32_t guest_address, words[16]; /* OSTask snapshot, guest pointers retained. */

@@ -7,7 +7,8 @@ static void debug_capture_startup(Runtime *rt) {
     uint8_t *data = malloc(BOOT_DATA_SIZE);
     require(data != NULL, "cannot allocate GoldenEye startup capture", 0);
     uint32_t physical = recomp_ram_address(rt, BOOT_DATA_ADDRESS, BOOT_DATA_SIZE);
-    for (uint32_t i = 0; i < BOOT_DATA_SIZE; i++) data[i] = rt->rdram[(physical + i) ^ 3];
+    for (uint32_t i = 0; i < BOOT_DATA_SIZE; i++)
+        data[i] = rt->rdram[(physical + i) ^ 3];
     bool wrote = fwrite(data, 1, BOOT_DATA_SIZE, stream) == BOOT_DATA_SIZE;
     free(data);
     int closed = fclose(stream);

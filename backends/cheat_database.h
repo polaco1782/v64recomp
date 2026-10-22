@@ -6,8 +6,14 @@
 #include <vector>
 
 namespace RecompCheats {
-struct Option { uint16_t value; std::string name; };
-struct Line { uint32_t address; uint16_t value, mask; };
+struct Option {
+    uint16_t value;
+    std::string name;
+};
+struct Line {
+    uint32_t address;
+    uint16_t value, mask;
+};
 struct Cheat {
     std::string name, note, source, problem;
     std::vector<Line> lines;
@@ -23,6 +29,6 @@ struct Catalog {
 };
 std::string rom_key(const Runtime *runtime);
 /* Background I/O only: never reads Runtime or touches ImGui. */
-Catalog load_catalog(const std::string &key, const std::filesystem::path &directory,
-                     bool refresh, const std::atomic<bool> &cancel);
+Catalog load_catalog(const std::string& key, const std::filesystem::path& directory, bool refresh,
+                     const std::atomic<bool>& cancel);
 }

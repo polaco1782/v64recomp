@@ -25,9 +25,11 @@ Use a desktop Vulkan session and a wall-time limit during investigation;
 crash reports, `--trace-calls`, `--input`, `--capture-every` and `--wav`.
 Routine diagnostic output stays in Debug. Replay frames count host presentations.
 
-Game-specific diagnostic tools live in `debug/check_musyx.c` and
-`debug/check_video_dsp.c`. Each source header includes its standalone sanitizer
-build command; keep their generated binaries under `build/`.
+Game-specific diagnostic tools live in `debug/`: `check_musyx.c`,
+`check_video_dsp.c` and `inspect_overlay.py`. The C source headers include their
+standalone sanitizer build commands; keep generated binaries under `build/`.
+The overlay inspector verifies cartridge identity and compares complete decoded
+images against private crash snapshots, without changing checked metadata.
 
 ## Loading model
 
@@ -42,8 +44,8 @@ The 16-byte record at `0x12ce0` gives cartridge `0x14420`, compressed size
 header followed by raw DEFLATE. `generate.py` verifies this record, EOF, decoded
 size and full SHA-256, then appends its bytes at analysis offset `0x4000000`.
 Overlay 3 follows at analysis offset `0x411e310`, overlay 2 at `0x4124fd0`
-and overlay 4 at `0x4131070`.
-The analysis SHA-1 is `378f7ee4db6fbc6cb0d595849e45c9ee2bd01f4f`.
+overlay 4 at `0x4131070` and overlay 5 at `0x413f650`.
+The analysis SHA-1 is `39cad0b1a053431fc281dbf0308288a8287b910c`.
 Prepared offsets must never be used for cartridge DMA or ROM import.
 
 At runtime the original translated inflater runs after native raw PI DMA;

@@ -6,7 +6,7 @@ rom_sha1 = "62ec19bead748c12d38f6c5a7ab0831edbd3d44b"
 rom_size = 0x4000000
 ram_size = 0x800000
 entry_symbol = "entry_point"
-code_sections = [".boot", ".main", ".overlay3", ".overlay2", ".overlay4"]
+code_sections = [".boot", ".main", ".overlay3", ".overlay2", ".overlay4", ".overlay5"]
 boot_sections = [".boot"]
 
 [discovery]
@@ -18,10 +18,13 @@ regions = [
   {name = ".overlay3", vram = 0x8015b030, rom_offset = 0x411e310, size = 0x6cc0},
   {name = ".overlay2", vram = 0x8017b410, rom_offset = 0x4124fd0, size = 0xc0a0, overlay_group = "movie_slot"},
   {name = ".overlay4", vram = 0x8017b410, rom_offset = 0x4131070, size = 0xe5e0, overlay_group = "movie_slot"},
+  {name = ".overlay5", vram = 0x8017b410, rom_offset = 0x413f650, size = 0x5200, overlay_group = "movie_slot"},
 ]
 # Counts are the unsigned SLTIU bounds before the checked JR, after any
 # index bias. Each digest covers the entire table, including default entries.
 jump_tables = [
+  # Overlay 5 dialog selection plus one is unsigned <5 at 0x8017bd24.
+  {section = ".overlay5", pc = 0x8017bd40, expected_word = 0x00400008, table_vram = 0x8017dde0, count = 5, sha256 = "30f104c4e70a909cab7f5a87cb6aff6e5e7cc21fbae6a15587cecd6665efd869"},
   # Overlay 4 status value is unsigned <12 at 0x8017ff34.
   {section = ".overlay4", pc = 0x8017ff50, expected_word = 0x00400008, table_vram = 0x801803b8, count = 12, sha256 = "a4dafabae32d176f02bc507cf70964d66a2deff594f8c7ac93da4eb7fd0e35ea"},
   # Overlay 4 switch bounds are unsigned <21 at 0x8017d2b4 / 0x8017e338.
@@ -55,6 +58,12 @@ jump_tables = [
 ]
 # Sound state 0..3 at 0x80012884, set by 0x80004ab4/4c20/4c5c/4c84.
 function_tables = [
+  # Overlay 5's state byte at 0x8017e5c9 indexes this complete handler array.
+  # Init clears it at 0x8017b9cc; the handlers set states (e.g. 1 at
+  # 0x8017b5b0, 3 at 0x8017b690, 4 at 0x8017b888, 5 at 0x8017b7dc).
+  {section = ".overlay5", pc = 0x8017b50c, expected_word = 0x0040f809, table_vram = 0x8017e530, count = 6, sha256 = "f58c61a34ebaf98fb7d0faec8eb0725f29d7bd4e4392318b820e9212140717ab"},
+  # Nested dialog states use the byte at 0x8017e5cc and a separate five-entry table.
+  {section = ".overlay5", pc = 0x8017bc08, expected_word = 0x0040f809, table_vram = 0x8017e548, count = 5, sha256 = "0442eda9d347efc44b9765934ba2ce7db4a3b353c992db9b965685bca57adf56"},
   # Overlay 3 states 0..4. The <2 test at 0x8015b08c selects extra drawing,
   # not the dispatch bound. State 1 increments to 2 at 0x8015b478;
   # state 0 selects 3 at 0x8015b218; state 3 increments to 4 at 0x8015d8a8.
@@ -109,6 +118,16 @@ vram = 0x8017b410
 size = 0xe5e0
 section = ".overlay4"
 sha256 = "f0f26b339f1cf183a296f14d882970ef088d03fa6525005e42f58743389ce857"
+
+[[discovery.overlays]]
+index = 5
+record_offset = 0x12d20
+rom_offset = 0x7af7a
+compressed_size = 0x15d8
+vram = 0x8017b410
+size = 0x5200
+section = ".overlay5"
+sha256 = "f417542488403149525e8ca61efcfc72808e78c97580ed5938f110da5629a1e8"
 
 [bootstrap]
 initial_rom_offset = 0x1000

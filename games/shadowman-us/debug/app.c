@@ -28,11 +28,13 @@ static uint64_t wall_origin;
 static FILE *input_script;
 static bool next_input;
 static unsigned next_input_frame;
-static RecompPad replay_pad = {.connected=true}, pending_pad = {.connected=true};
+static RecompPad replay_pad = {.connected = true}, pending_pad = {.connected = true};
 static void read_input(void) {
-    unsigned buttons; int x, y;
+    unsigned buttons;
+    int x, y;
     if (fscanf(input_script, "%u %u %d %d", &next_input_frame, &buttons, &x, &y) != 4) {
-        next_input = false; return;
+        next_input = false;
+        return;
     }
     pending_pad.buttons = (uint16_t)buttons;
     pending_pad.stick_x = (int8_t)x;
@@ -41,14 +43,15 @@ static void read_input(void) {
 }
 static uint64_t monotonic_ns(void) {
     struct timespec ts;
-    if (clock_gettime(CLOCK_MONOTONIC, &ts)) recomp_fail("Shadow Man host clock failed", 0);
-    return (uint64_t)ts.tv_sec*UINT64_C(1000000000)+(uint64_t)ts.tv_nsec;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts))
+        recomp_fail("Shadow Man host clock failed", 0);
+    return (uint64_t)ts.tv_sec * UINT64_C(1000000000) + (uint64_t)ts.tv_nsec;
 }
 static void pace(uint64_t deadline) {
     uint64_t now = monotonic_ns();
     if (deadline > now) {
-        uint64_t delta = deadline-now;
-        struct timespec ts = {(time_t)(delta/1000000000), (long)(delta%1000000000)};
+        uint64_t delta = deadline - now;
+        struct timespec ts = {(time_t)(delta / 1000000000), (long)(delta % 1000000000)};
         nanosleep(&ts, NULL);
     }
 }
@@ -58,29 +61,34 @@ static void check_zero(Runtime *rt, uint32_t start, uint32_t end) {
         require(recomp_load(rt, a, 4) == 0, "Shadow Man BSS was not cleared", a);
 }
 static void debug_boot_bss(Runtime *rt) {
-    check_zero(rt,BOOT_BOOT_BSS_START,BOOT_BOOT_BSS_END);
-    require(recomp_load(rt,BOOT_BOOT_BSS_END,4)==0xa5a5a5a5,"Shadow Man initial BSS clear overran",BOOT_BOOT_BSS_END);
-    boot_bss_cleared=true;
+    check_zero(rt, BOOT_BOOT_BSS_START, BOOT_BOOT_BSS_END);
+    require(recomp_load(rt, BOOT_BOOT_BSS_END, 4) == 0xa5a5a5a5, "Shadow Man initial BSS clear overran",
+            BOOT_BOOT_BSS_END);
+    boot_bss_cleared = true;
 }
 static void debug_system_bss(Runtime *rt) {
-    check_zero(rt,BOOT_BSS_START,BOOT_BSS_END);
-    require(recomp_load(rt,BOOT_BSS_END,4)==0xa5a5a5a5,"Shadow Man system BSS clear overran",BOOT_BSS_END);
-    system_bss_cleared=true;
+    check_zero(rt, BOOT_BSS_START, BOOT_BSS_END);
+    require(recomp_load(rt, BOOT_BSS_END, 4) == 0xa5a5a5a5, "Shadow Man system BSS clear overran", BOOT_BSS_END);
+    system_bss_cleared = true;
 }
 #include "hooks.h"
 static void prepare_call(Runtime *rt, uint32_t address) {
-    if (LOG_SHADOWMAN_CALLS) fprintf(stderr, "Shadow Man call 0x%08x\n", address);
-    shadowman_prepare_call(rt,address);
+    if (LOG_SHADOWMAN_CALLS)
+        fprintf(stderr, "Shadow Man call 0x%08x\n", address);
+    shadowman_prepare_call(rt, address);
 }
 static uint64_t guest_time(void *opaque) {
     (void)opaque;
-    if (wall_origin) return monotonic_ns()-wall_origin;
+    if (wall_origin)
+        return monotonic_ns() - wall_origin;
     return now_ns;
 }
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
-    (void)rt; (void)opaque;
+    (void)rt;
+    (void)opaque;
     require(task->words[0] == 1 || task->words[0] == 2, "Shadow Man unsupported RSP task type", task->guest_address);
-    if (!reached_task) first_task = *task;
+    if (!reached_task)
+        first_task = *task;
     reached_task = true;
     if (task->words[0] == 2) {
         require(recomp_audio_submit(audio, task), "Shadow Man audio microcode unsupported", task->words[4]);
@@ -92,7 +100,10 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 5) { fprintf(stderr, "usage: %s NORMALIZED_ROM REPORT FRAMES RENDERER_DATA\n", argv[0]); return 2; }
+    if (argc != 5) {
+        fprintf(stderr, "usage: %s NORMALIZED_ROM REPORT FRAMES RENDERER_DATA\n", argv[0]);
+        return 2;
+    }
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Shadow Man invalid frame count", 0);
@@ -101,35 +112,43 @@ int main(int argc, char **argv) {
     require(!interval || (*interval && !*end && capture_every <= UINT32_MAX), "Shadow Man invalid capture interval", 0);
     report_path = argv[2];
     Runtime rt;
-    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count,
-                               recomp_boot_sections, recomp_section_count), "Shadow Man runtime init failed", 0);
-    RecompGameOptions options={.rom=argv[1]};
-    uint8_t *rom=recomp_game_rom(&rt,&options,BOOT_ROM_SIZE,boot_sha1);
+    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
+                                recomp_section_count),
+            "Shadow Man runtime init failed", 0);
+    RecompGameOptions options = {.rom = argv[1]};
+    uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
     rt.prepare_call = prepare_call;
     rt.resolve_address = shadowman_resolve_address;
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
-    for (uint32_t a = BOOT_BSS_START; a <= BOOT_BSS_END; a += 4) recomp_store(&rt, a, 0xa5a5a5a5, 4);
-    for (size_t i = 0; i < sizeof(boot_parameters)/sizeof(boot_parameters[0]); i++)
+    for (uint32_t a = BOOT_BSS_START; a <= BOOT_BSS_END; a += 4)
+        recomp_store(&rt, a, 0xa5a5a5a5, 4);
+    for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
         recomp_store(&rt, boot_parameters[i][0], boot_parameters[i][1], 4);
-    RecompClockConfig clock = {.ticks_per_second=BOOT_COUNTER_HZ, .now_ns=guest_time};
-    RecompSchedulerConfig scheduler = {.thread_tail=0x800285d0, .run_queue=0x800285d8,
-        .active_queue=0x800285dc, .running_thread=0x800285e0, .event_table=0x800503b0,
-        .stop_before_entry=BOOT_STARTUP ? 0 : BOOT_MAIN_ENTRY, .fpu_fr1=true};
-    RecompPlatformConfig platform = {.vi_period_ticks=781250, .vi_clock=0x800285c0,
-        .app_nmi_buffer=0x8000031c};
-    require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler)
-            && recomp_platform_init(&rt, &platform), "Shadow Man native services init failed", 0);
+    RecompClockConfig clock = {.ticks_per_second = BOOT_COUNTER_HZ, .now_ns = guest_time};
+    RecompSchedulerConfig scheduler = {.thread_tail = 0x800285d0,
+                                       .run_queue = 0x800285d8,
+                                       .active_queue = 0x800285dc,
+                                       .running_thread = 0x800285e0,
+                                       .event_table = 0x800503b0,
+                                       .stop_before_entry = BOOT_STARTUP ? 0 : BOOT_MAIN_ENTRY,
+                                       .fpu_fr1 = true};
+    RecompPlatformConfig platform = {.vi_period_ticks = 781250, .vi_clock = 0x800285c0, .app_nmi_buffer = 0x8000031c};
+    require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler) &&
+                recomp_platform_init(&rt, &platform),
+            "Shadow Man native services init failed", 0);
     char pak_path[4096];
     require(snprintf(pak_path, sizeof(pak_path), "%s.mpk", argv[1]) < (int)sizeof(pak_path),
             "Controller Pak save path too long", 0);
-    RecompIOConfig io = {.connected_mask=1, .pak_mask=1, .pak_paths={pak_path}};
-    RecompTaskBackend backend = {.submit=submit};
+    RecompIOConfig io = {.connected_mask = 1, .pak_mask = 1, .pak_paths = {pak_path}};
+    RecompTaskBackend backend = {.submit = submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Shadow Man IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "Shadow Man");
     require(renderer != NULL, "Shadow Man renderer initialization failed", 0);
-    RecompAudioConfig ac = {.output_enabled=true, .playback=getenv("RECOMP_AUDIO_MUTE") == NULL,
-        .microcode=RECOMP_AUDIO_ABI1, .task_profile=&shadowman_audio_task_profile,
-        .wav_path=getenv("RECOMP_SHADOWMAN_WAV")};
+    RecompAudioConfig ac = {.output_enabled = true,
+                            .playback = getenv("RECOMP_AUDIO_MUTE") == NULL,
+                            .microcode = RECOMP_AUDIO_ABI1,
+                            .task_profile = &shadowman_audio_task_profile,
+                            .wav_path = getenv("RECOMP_SHADOWMAN_WAV")};
     audio = recomp_audio_create(&rt, &ac);
     require(audio != NULL, "Shadow Man audio initialization failed", 0);
     wall_origin = monotonic_ns();
@@ -144,8 +163,11 @@ int main(int argc, char **argv) {
     recomp_thread_start(&rt, 0x807ff000);
     uint64_t next_present = monotonic_ns();
     while (!frames || presentations < frames) {
-        RecompPad pad = {.connected=true};
-        if (!recomp_renderer_input(renderer, &pad)) { window_closed = true; break; }
+        RecompPad pad = {.connected = true};
+        if (!recomp_renderer_input(renderer, &pad)) {
+            window_closed = true;
+            break;
+        }
         if (input_script) {
             while (next_input && next_input_frame <= presentations) {
                 replay_pad = pending_pad;
@@ -154,21 +176,25 @@ int main(int argc, char **argv) {
             pad = replay_pad;
         }
         require(recomp_input_set(&rt, 0, &pad), "Shadow Man controller update failed", 0);
-        for (unsigned batch=0; batch<32; batch++) {
+        for (unsigned batch = 0; batch < 32; batch++) {
             RecompRunResult run = recomp_scheduler_run(&rt, 32);
-            if (run != RECOMP_RUN_BUDGET) break;
+            if (run != RECOMP_RUN_BUDGET)
+                break;
             RecompThreadSnapshot threads[32];
             size_t count = recomp_thread_snapshots(&rt, threads, 32);
             bool work = false;
-            for (size_t i=0; i<count; i++)
-                if (threads[i].state == RECOMP_READY && threads[i].id != 0) work = true;
-            if (!work) break;
+            for (size_t i = 0; i < count; i++)
+                if (threads[i].state == RECOMP_READY && threads[i].id != 0)
+                    work = true;
+            if (!work)
+                break;
         }
         require(recomp_renderer_present(renderer), "Shadow Man presentation failed", 0);
         presentations++;
-        if (capture_every && presentations%capture_every == 0 && graphics_tasks) {
+        if (capture_every && presentations % capture_every == 0 && graphics_tasks) {
             char capture[2048];
-            require(snprintf(capture, sizeof(capture), "%s.frame-%06u.ppm", report_path, presentations) < (int)sizeof(capture),
+            require(snprintf(capture, sizeof(capture), "%s.frame-%06u.ppm", report_path, presentations) <
+                        (int)sizeof(capture),
                     "Shadow Man frame capture path too long", 0);
             require(recomp_renderer_capture(renderer, capture), "Shadow Man frame capture failed", 0);
         }
@@ -185,37 +211,43 @@ int main(int argc, char **argv) {
     RecompRendererStats rs = recomp_renderer_stats(renderer);
     RecompAudioStats as = recomp_audio_stats(audio);
     RecompIOStats ios = recomp_io_stats(&rt);
-    require(boot_bss_cleared && system_bss_cleared && tlb_installed,
-            "Shadow Man rendered without verified startup", BOOT_MAIN_ENTRY);
+    require(boot_bss_cleared && system_bss_cleared && tlb_installed, "Shadow Man rendered without verified startup",
+            BOOT_MAIN_ENTRY);
     RecompThreadSnapshot threads[16];
     size_t count = recomp_thread_snapshots(&rt, threads, 16);
     const RecompThreadSnapshot *main_thread = NULL;
-    for (size_t i = 0; i < count; i++) if (threads[i].id == 0) main_thread = &threads[i];
+    for (size_t i = 0; i < count; i++)
+        if (threads[i].id == 0)
+            main_thread = &threads[i];
     require(main_thread != NULL && main_thread->id == 0 && main_thread->priority == 0,
             "Shadow Man application thread ABI mismatch", BOOT_MAIN_ENTRY);
     FILE *f = fopen(report_path, "w");
     require(f != NULL, "cannot open Shadow Man report", 0);
-    int written = fprintf(f, "{\"boot_bss_cleared\":true,\"system_bss_cleared\":true,\"tlb_verified\":true,"
-            "\"main_state\":\"%s\",\"main_entry\":%u,\"main_thread\":%u,"
-            "\"main_id\":%d,\"main_priority\":%d,\"main_stack\":%u,\"registered_functions\":%zu,"
-            "\"first_task_type\":%u,\"first_task_ucode\":%u,\"gameplay_executed\":false,\"task_words\":[",
-            "rendered_startup",
-            BOOT_MAIN_ENTRY, main_thread->object, main_thread->id,
-            main_thread->priority, (uint32_t)main_thread->context.gpr[29], recomp_function_count, first_task.words[0], first_task.words[4]);
-    for (unsigned i=0; i<16; i++) fprintf(f, "%s%u", i ? "," : "", first_task.words[i]);
-    fprintf(f, "],\"graphics_tasks\":%u,\"presentations\":%u,\"sp_callbacks\":%" PRIu64
-            ",\"dp_callbacks\":%" PRIu64 ",\"window_closed\":%s,\"audio_tasks\":%" PRIu64
-            ",\"audio_frames\":%" PRIu64 ",\"audio_peak\":%u,\"audio_underruns\":%" PRIu64 ",\"audio_resets\":%" PRIu64
+    int written = fprintf(f,
+                          "{\"boot_bss_cleared\":true,\"system_bss_cleared\":true,\"tlb_verified\":true,"
+                          "\"main_state\":\"%s\",\"main_entry\":%u,\"main_thread\":%u,"
+                          "\"main_id\":%d,\"main_priority\":%d,\"main_stack\":%u,\"registered_functions\":%zu,"
+                          "\"first_task_type\":%u,\"first_task_ucode\":%u,\"gameplay_executed\":false,\"task_words\":[",
+                          "rendered_startup", BOOT_MAIN_ENTRY, main_thread->object, main_thread->id,
+                          main_thread->priority, (uint32_t)main_thread->context.gpr[29], recomp_function_count,
+                          first_task.words[0], first_task.words[4]);
+    for (unsigned i = 0; i < 16; i++)
+        fprintf(f, "%s%u", i ? "," : "", first_task.words[i]);
+    fprintf(f,
+            "],\"graphics_tasks\":%u,\"presentations\":%u,\"sp_callbacks\":%" PRIu64 ",\"dp_callbacks\":%" PRIu64
+            ",\"window_closed\":%s,\"audio_tasks\":%" PRIu64 ",\"audio_frames\":%" PRIu64
+            ",\"audio_peak\":%u,\"audio_underruns\":%" PRIu64 ",\"audio_resets\":%" PRIu64
             ",\"controller_reads\":%" PRIu64 ",\"controller_queries\":%" PRIu64 "}\n",
-            graphics_tasks, presentations, rs.sp_callbacks, rs.dp_callbacks, window_closed ? "true" : "false",
-            as.tasks, as.frames, as.peak, as.queue_underruns, as.queue_resets, ios.reads_completed, ios.queries_completed);
+            graphics_tasks, presentations, rs.sp_callbacks, rs.dp_callbacks, window_closed ? "true" : "false", as.tasks,
+            as.frames, as.peak, as.queue_underruns, as.queue_resets, ios.reads_completed, ios.queries_completed);
     int closed = fclose(f);
     require(written > 0 && closed == 0, "cannot write Shadow Man report", 0);
     puts(BOOT_STARTUP ? "Shadow Man submitted its original RSP tasks."
-                     : "Shadow Man native bootstrap reached its original application thread.");
+                      : "Shadow Man native bootstrap reached its original application thread.");
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
-    if (input_script) fclose(input_script);
+    if (input_script)
+        fclose(input_script);
     recomp_runtime_destroy(&rt);
     free(rom);
     return 0;

@@ -15,7 +15,7 @@ typedef struct PerfectDark {
 } PerfectDark;
 
 /* Both frontends use the original bootstrap, native services and frame timing. */
-void perfectdark_start(PerfectDark *,const RecompGameOptions *);
-void perfectdark_step(PerfectDark *,const RecompPad *);
+void perfectdark_start(PerfectDark *, const RecompGameOptions *);
+void perfectdark_step(PerfectDark *, const RecompPad *);
 void perfectdark_stop(PerfectDark *);
 #endif

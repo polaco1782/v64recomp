@@ -10,17 +10,22 @@
  * and prevents the owner rebuilding draw data while it is being submitted. */
 class RecompCheatMenu {
 public:
-    RecompCheatMenu(RT64::Application &, Runtime *, const char *data_path);
+    RecompCheatMenu(RT64::Application&, Runtime *, const char *data_path);
     ~RecompCheatMenu();
-    void event(const SDL_Event &);
+    void event(const SDL_Event&);
     void update();
     void draw(plume::RenderCommandList *);
-    bool open() const { return visible.load(); }
-    bool captures_input() const { return visible || release_inputs; }
+    bool open() const {
+        return visible.load();
+    }
+    bool captures_input() const {
+        return visible || release_inputs;
+    }
+
 private:
     void start_download(bool refresh);
     void window();
-    RT64::Application &app;
+    RT64::Application& app;
     Runtime *runtime;
     ImGuiContext *context = nullptr;
     VkDevice device = VK_NULL_HANDLE;

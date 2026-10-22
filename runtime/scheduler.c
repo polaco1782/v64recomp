@@ -46,7 +46,10 @@ struct RecompScheduler {
     NativeThread *threads, *current;
     NativeQueue *queues;
     uint64_t order;
-    struct { NativeQueue *queue; uint32_t message; } events[RECOMP_OS_EVENTS];
+    struct {
+        NativeQueue *queue;
+        uint32_t message;
+    } events[RECOMP_OS_EVENTS];
     atomic_flag pending_lock;
     uint32_t pending[PENDING_EVENTS];
     unsigned pending_first, pending_count;
@@ -67,7 +70,8 @@ static _Thread_local NativeThread *guest_thread;
 #ifdef RECOMP_DEBUG
 RecompDebugStats recomp_debug_stats(Runtime *rt) {
     RecompDebugStats stats = {.ops = rt->debug_ops};
-    if (rt->platform) stats.vis = recomp_vi_state(rt).retraces;
+    if (rt->platform)
+        stats.vis = recomp_vi_state(rt).retraces;
     if (rt->tasks) {
         RecompTaskStats tasks = recomp_task_stats(rt);
         stats.rsp_tasks = tasks.submissions;
@@ -78,10 +82,13 @@ RecompDebugStats recomp_debug_stats(Runtime *rt) {
     if (rt->scheduler) {
         stats.interrupt_events = rt->scheduler->debug_interrupt_events;
         for (NativeThread *t = rt->scheduler->threads; t; t = t->next) {
-            if (t->state == RECOMP_DEAD) continue;
+            if (t->state == RECOMP_DEAD)
+                continue;
             stats.threads++;
-            if (t->state == RECOMP_READY || t->state == RECOMP_RUNNING) stats.runnable++;
-            if (t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV) stats.waiting++;
+            if (t->state == RECOMP_READY || t->state == RECOMP_RUNNING)
+                stats.runnable++;
+            if (t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV)
+                stats.waiting++;
         }
     }
     return stats;
@@ -92,44 +99,49 @@ static const char *debug_state_name(RecompThreadState state) {
     return names[state];
 }
 bool recomp_debug_current_thread(Runtime *rt, int32_t *id, uint32_t *object) {
-    if (!guest_thread || guest_thread->runtime != rt) return false;
+    if (!guest_thread || guest_thread->runtime != rt)
+        return false;
     *id = guest_thread->id;
     *object = guest_thread->object;
     return true;
 }
 static void debug_status(Runtime *rt) {
     struct timespec now;
-    if (clock_gettime(CLOCK_MONOTONIC, &now)) return;
+    if (clock_gettime(CLOCK_MONOTONIC, &now))
+        return;
     RecompScheduler *s = rt->scheduler;
     uint64_t seconds = (uint64_t)now.tv_sec;
-    if (seconds < s->debug_next_status) return;
+    if (seconds < s->debug_next_status)
+        return;
     s->debug_next_status = seconds + 1;
-    unsigned states[RECOMP_DEAD+1] = {0};
-    for (NativeThread *t=s->threads; t; t=t->next) states[t->state]++;
+    unsigned states[RECOMP_DEAD + 1] = {0};
+    for (NativeThread *t = s->threads; t; t = t->next)
+        states[t->state]++;
     RECOMP_LOG("status", "threads ready=%u running=%u stopped=%u wait_send=%u wait_recv=%u dead=%u",
-        states[RECOMP_READY], states[RECOMP_RUNNING], states[RECOMP_STOPPED],
-        states[RECOMP_WAIT_SEND], states[RECOMP_WAIT_RECV], states[RECOMP_DEAD]);
+               states[RECOMP_READY], states[RECOMP_RUNNING], states[RECOMP_STOPPED], states[RECOMP_WAIT_SEND],
+               states[RECOMP_WAIT_RECV], states[RECOMP_DEAD]);
     if (rt->platform) {
         RecompViState vi = recomp_vi_state(rt);
-        RECOMP_LOG("status", "VI retraces=%" PRIu64 " framebuffer=0x%08" PRIx32 " black=%s",
-            vi.retraces, vi.current_framebuffer, vi.black?"yes":"no");
+        RECOMP_LOG("status", "VI retraces=%" PRIu64 " framebuffer=0x%08" PRIx32 " black=%s", vi.retraces,
+                   vi.current_framebuffer, vi.black ? "yes" : "no");
     }
     if (rt->io) {
         RecompIOStats io = recomp_io_stats(rt);
-        RECOMP_LOG("status", "input reads=%" PRIu64 " EEPROM reads=%" PRIu64
-            " writes=%" PRIu64 " save_failures=%" PRIu64,
-            io.reads_completed, io.eeprom_reads, io.eeprom_writes, io.persistence_failures);
+        RECOMP_LOG("status",
+                   "input reads=%" PRIu64 " EEPROM reads=%" PRIu64 " writes=%" PRIu64 " save_failures=%" PRIu64,
+                   io.reads_completed, io.eeprom_reads, io.eeprom_writes, io.persistence_failures);
     }
     if (rt->tasks) {
         RecompTaskStats tasks = recomp_task_stats(rt);
         RECOMP_LOG("status", "RSP tasks=%" PRIu64 " pending=%zu SP events=%" PRIu64 " DP events=%" PRIu64,
-            tasks.submissions, tasks.pending_records, tasks.sp_events, tasks.dp_events);
+                   tasks.submissions, tasks.pending_records, tasks.sp_events, tasks.dp_events);
     }
 }
 #endif
 
 static RecompScheduler *scheduler(Runtime *rt) {
-    if (!rt->scheduler) recomp_fail("scheduler not initialized", 0);
+    if (!rt->scheduler)
+        recomp_fail("scheduler not initialized", 0);
     return rt->scheduler;
 }
 void recomp_on_host(Runtime *rt, void (*callback)(Runtime *, void *), void *userdata) {
@@ -145,7 +157,8 @@ void recomp_on_host(Runtime *rt, void (*callback)(Runtime *, void *), void *user
     s->host_callback = callback;
     s->host_userdata = userdata;
     pthread_cond_signal(&s->returned);
-    while (s->host_callback) pthread_cond_wait(&guest_thread->resume, &s->mutex);
+    while (s->host_callback)
+        pthread_cond_wait(&guest_thread->resume, &s->mutex);
 }
 
 static void report_guest_failure(Runtime *rt, void *opaque) {
@@ -157,45 +170,56 @@ static void guest_failure(const RecompFailureInfo *info, void *opaque) {
 }
 
 static void join_thread(RecompScheduler *s, NativeThread *t) {
-    if (!t->native_live) return;
+    if (!t->native_live)
+        return;
     t->exiting = true;
     pthread_cond_signal(&t->resume);
     pthread_mutex_unlock(&s->mutex);
-    if (pthread_join(t->native, NULL)) recomp_fail("pthread join failed", t->object);
+    if (pthread_join(t->native, NULL))
+        recomp_fail("pthread join failed", t->object);
     pthread_mutex_lock(&s->mutex);
     t->native_live = false;
 }
 
-size_t recomp_thread_snapshots(Runtime *rt,RecompThreadSnapshot *out,size_t capacity) {
-    if (!rt->scheduler || !out) return 0;
-    size_t count=0;
-    for (NativeThread *t=rt->scheduler->threads;t && count<capacity;t=t->next)
-        out[count++]=(RecompThreadSnapshot){.object=t->object,.id=t->id,.priority=t->priority,
-            .state=t->state,.current=t==rt->scheduler->current,.context=t->context};
+size_t recomp_thread_snapshots(Runtime *rt, RecompThreadSnapshot *out, size_t capacity) {
+    if (!rt->scheduler || !out)
+        return 0;
+    size_t count = 0;
+    for (NativeThread *t = rt->scheduler->threads; t && count < capacity; t = t->next)
+        out[count++] = (RecompThreadSnapshot){.object = t->object,
+                                              .id = t->id,
+                                              .priority = t->priority,
+                                              .state = t->state,
+                                              .current = t == rt->scheduler->current,
+                                              .context = t->context};
     return count;
 }
 
 static uint64_t ticket(RecompScheduler *s) {
-    if (s->order == UINT64_MAX) recomp_fail("scheduler order exhausted", 0);
+    if (s->order == UINT64_MAX)
+        recomp_fail("scheduler order exhausted", 0);
     return ++s->order;
 }
 
 static NativeThread *thread(Runtime *rt, uint32_t object) {
     RecompScheduler *s = scheduler(rt);
     if (!object) {
-        if (!s->current) recomp_fail("no current guest thread", 0);
+        if (!s->current)
+            recomp_fail("no current guest thread", 0);
         return s->current;
     }
     uint32_t key = recomp_ram_address(rt, object, s->config.fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES);
     for (NativeThread *t = s->threads; t; t = t->next)
-        if (t->key == key) return t;
+        if (t->key == key)
+            return t;
     recomp_fail("unknown guest thread", object);
 }
 
 static NativeQueue *queue(Runtime *rt, uint32_t object) {
     uint32_t key = recomp_ram_address(rt, object, RECOMP_QUEUE_BYTES);
     for (NativeQueue *q = scheduler(rt)->queues; q; q = q->next)
-        if (q->key == key) return q;
+        if (q->key == key)
+            return q;
     recomp_fail("unknown message queue", object);
 }
 
@@ -203,12 +227,13 @@ static bool before(const NativeThread *a, const NativeThread *b) {
     return a->priority > b->priority || (a->priority == b->priority && a->order < b->order);
 }
 
-static NativeThread *best(RecompScheduler *s, RecompThreadState state, NativeQueue *q,
-                          NativeThread *after) {
+static NativeThread *best(RecompScheduler *s, RecompThreadState state, NativeQueue *q, NativeThread *after) {
     NativeThread *result = NULL;
     for (NativeThread *t = s->threads; t; t = t->next) {
-        if (t->state != state || (q && t->wait_queue != q) || (after && !before(after, t))) continue;
-        if (!result || before(t, result)) result = t;
+        if (t->state != state || (q && t->wait_queue != q) || (after && !before(after, t)))
+            continue;
+        if (!result || before(t, result))
+            result = t;
     }
     return result;
 }
@@ -218,7 +243,8 @@ static bool host_idle(RecompScheduler *s, const NativeThread *t) {
 }
 
 static void save_context_checked(Runtime *rt, NativeThread *t) {
-    static const unsigned registers[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,28,29,30,31};
+    static const unsigned registers[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+                                         16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31};
     for (unsigned i = 0; i < sizeof(registers) / sizeof(registers[0]); i++)
         recomp_store(rt, t->object + 0x20 + i * 8, t->context.gpr[registers[i]], 8);
     recomp_store(rt, t->object + 0x108, t->context.lo, 8);
@@ -242,7 +268,8 @@ static void context_word_pair(uint32_t *words, uint64_t value) {
 }
 
 static void cache_context(NativeThread *t) {
-    static const unsigned registers[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,28,29,30,31};
+    static const unsigned registers[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+                                         16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31};
     for (unsigned i = 0; i < sizeof(registers) / sizeof(registers[0]); i++)
         context_word_pair(t->saved_context + i * 2, t->context.gpr[registers[i]]);
     context_word_pair(t->saved_context + (0x108 - 0x20) / 4, t->context.lo);
@@ -251,8 +278,7 @@ static void cache_context(NativeThread *t) {
     t->saved_context[(0x12c - 0x20) / 4] = t->context.fcr31;
     if (t->context.fpu_fr1) {
         for (unsigned i = 0; i < 32; i++)
-            context_word_pair(t->saved_context + (0x130 - 0x20) / 4 + i * 2,
-                              mips_fpr_pair(&t->context, i));
+            context_word_pair(t->saved_context + (0x130 - 0x20) / 4 + i * 2, mips_fpr_pair(&t->context, i));
     } else {
         for (unsigned i = 0; i < 32; i++)
             t->saved_context[(0x130 - 0x20) / 4 + (i ^ 1)] = t->context.fpr[i];
@@ -263,7 +289,8 @@ static void cache_context(NativeThread *t) {
 static void sync_context_range(uint8_t *ram, const uint8_t *saved, size_t bytes) {
     /* Guest/native code can modify a parked thread's saved context. Compare
      * live RAM rather than trusting the cache as evidence that RAM is current. */
-    if (memcmp(ram, saved, bytes)) memcpy(ram, saved, bytes);
+    if (memcmp(ram, saved, bytes))
+        memcpy(ram, saved, bytes);
 }
 #endif
 
@@ -271,9 +298,9 @@ static void save_context(Runtime *rt, NativeThread *t) {
 #if RECOMP_LITTLE_ENDIAN_HOST
     size_t bytes = t->context.fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES;
     uint32_t physical = t->object & UINT32_C(0x1fffffff);
-    if (recomp_direct_address(t->object) && physical < rt->rdram_size
-            && bytes <= rt->rdram_size - physical) {
-        if (!t->context_cached || t->running) cache_context(t);
+    if (recomp_direct_address(t->object) && physical < rt->rdram_size && bytes <= rt->rdram_size - physical) {
+        if (!t->context_cached || t->running)
+            cache_context(t);
         /* Validate the complete direct-RAM span in Debug and Release. Mapped
          * objects keep per-field resolution and the original write ordering. */
         physical = recomp_ram_address_write_slow(rt, t->object + 0x20, bytes - 0x20);
@@ -291,7 +318,8 @@ static void save_context(Runtime *rt, NativeThread *t) {
 static void sync_list(Runtime *rt, RecompThreadState state, NativeQueue *q, uint32_t head) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *first = best(s, state, q, NULL);
-    if (head) recomp_store(rt, head, first ? first->object : s->config.thread_tail, 4);
+    if (head)
+        recomp_store(rt, head, first ? first->object : s->config.thread_tail, 4);
     for (NativeThread *t = first; t;) {
         NativeThread *next = best(s, state, q, t);
         recomp_store(rt, t->object, next ? next->object : s->config.thread_tail, 4);
@@ -304,44 +332,52 @@ static void sync_guest(Runtime *rt) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *active = NULL, *previous = NULL;
     for (NativeThread *t = s->threads; t; t = t->next) {
-        if (t->state == RECOMP_DEAD) continue;
-        unsigned state = t->state == RECOMP_RUNNING ? RECOMP_OS_RUNNING
-                       : t->state == RECOMP_READY ? RECOMP_OS_RUNNABLE
-                       : t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV ? RECOMP_OS_WAITING
-                       : RECOMP_OS_STOPPED;
+        if (t->state == RECOMP_DEAD)
+            continue;
+        unsigned state = t->state == RECOMP_RUNNING                                     ? RECOMP_OS_RUNNING
+                         : t->state == RECOMP_READY                                     ? RECOMP_OS_RUNNABLE
+                         : t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV ? RECOMP_OS_WAITING
+                                                                                        : RECOMP_OS_STOPPED;
         recomp_store(rt, t->object + 4, (uint32_t)t->priority, 4);
         recomp_store(rt, t->object + 0x10, state, 2);
         /* Waiting-thread next links belong to their queue. Preserve them
          * unless that queue's waiter list is being updated below. */
-        if(t->state!=RECOMP_WAIT_SEND && t->state!=RECOMP_WAIT_RECV)
+        if (t->state != RECOMP_WAIT_SEND && t->state != RECOMP_WAIT_RECV)
             recomp_store(rt, t->object, 0, 4);
         uint32_t queue_head = t->wait_queue ? t->wait_queue->object + (t->wait_kind == RECOMP_WAIT_SEND ? 4 : 0)
-                            : t->state == RECOMP_RUNNING ? s->config.run_queue : 0;
+                              : t->state == RECOMP_RUNNING ? s->config.run_queue
+                                                           : 0;
         recomp_store(rt, t->object + 8, queue_head, 4);
         recomp_store(rt, t->object + 0x0c, 0, 4);
         save_context(rt, t);
-        if (!active) active = t;
-        if (previous) recomp_store(rt, previous->object + 0x0c, t->object, 4);
+        if (!active)
+            active = t;
+        if (previous)
+            recomp_store(rt, previous->object + 0x0c, t->object, 4);
         previous = t;
     }
-    if (s->config.active_queue) recomp_store(rt, s->config.active_queue, active ? active->object : 0, 4);
-    if (s->config.running_thread) recomp_store(rt, s->config.running_thread,
-        s->current && s->current->state == RECOMP_RUNNING ? s->current->object : 0, 4);
+    if (s->config.active_queue)
+        recomp_store(rt, s->config.active_queue, active ? active->object : 0, 4);
+    if (s->config.running_thread)
+        recomp_store(rt, s->config.running_thread,
+                     s->current && s->current->state == RECOMP_RUNNING ? s->current->object : 0, 4);
     sync_list(rt, RECOMP_READY, NULL, s->config.run_queue);
     for (NativeQueue *q = s->queues; q; q = q->next) {
         /* Overlay storage can be reused after a queue is no longer needed.
          * A cached empty queue must not rewrite memory now owned by assets. */
-        if (!q->wait_lists_dirty) continue;
+        if (!q->wait_lists_dirty)
+            continue;
         sync_list(rt, RECOMP_WAIT_RECV, q, q->object);
         sync_list(rt, RECOMP_WAIT_SEND, q, q->object + 4);
-        q->wait_lists_dirty=false;
+        q->wait_lists_dirty = false;
     }
 }
 
 static void ready(RecompScheduler *s, NativeThread *t) {
-    RECOMP_LOG_SAMPLED("thread", "ready id=%" PRId32 " thread=0x%08" PRIx32 " priority=%" PRId32,
-        t->id, t->object, t->priority);
-    if (t->wait_queue) t->wait_queue->wait_lists_dirty=true;
+    RECOMP_LOG_SAMPLED("thread", "ready id=%" PRId32 " thread=0x%08" PRIx32 " priority=%" PRId32, t->id, t->object,
+                       t->priority);
+    if (t->wait_queue)
+        t->wait_queue->wait_lists_dirty = true;
     t->state = RECOMP_READY;
     t->wait_queue = NULL;
     t->order = ticket(s);
@@ -350,16 +386,18 @@ static void ready(RecompScheduler *s, NativeThread *t) {
 static void suspend(Runtime *rt, RecompThreadState state) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *t = thread(rt, 0);
-    RECOMP_LOG_SAMPLED("thread", "suspend id=%" PRId32 " thread=0x%08" PRIx32
-        " state=%s queue=0x%08" PRIx32 " pc=0x%08" PRIx32,
-        t->id, t->object, debug_state_name(state), t->wait_queue?t->wait_queue->object:0, t->context.pc);
-    if (t->wait_queue) t->wait_queue->wait_lists_dirty=true;
+    RECOMP_LOG_SAMPLED(
+        "thread", "suspend id=%" PRId32 " thread=0x%08" PRIx32 " state=%s queue=0x%08" PRIx32 " pc=0x%08" PRIx32, t->id,
+        t->object, debug_state_name(state), t->wait_queue ? t->wait_queue->object : 0, t->context.pc);
+    if (t->wait_queue)
+        t->wait_queue->wait_lists_dirty = true;
     t->state = state;
     t->order = ticket(s);
     sync_guest(rt);
     t->running = false;
     pthread_cond_signal(&s->returned);
-    while (!t->running && !t->exiting) pthread_cond_wait(&t->resume, &s->mutex);
+    while (!t->running && !t->exiting)
+        pthread_cond_wait(&t->resume, &s->mutex);
     if (t->exiting) {
         pthread_mutex_unlock(&s->mutex);
         pthread_exit(NULL);
@@ -376,13 +414,15 @@ static void preempt(Runtime *rt) {
 static void wake(Runtime *rt, NativeQueue *q, RecompThreadState state) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *t = best(s, state, q, NULL);
-    if (t) ready(s, t);
+    if (t)
+        ready(s, t);
 }
 
 static void retire(NativeThread *t) {
     RECOMP_LOG("thread", "retired id=%" PRId32 " thread=0x%08" PRIx32, t->id, t->object);
     t->state = RECOMP_DEAD;
-    if (t->wait_queue) t->wait_queue->wait_lists_dirty=true;
+    if (t->wait_queue)
+        t->wait_queue->wait_lists_dirty = true;
     t->wait_queue = NULL;
     save_context(t->runtime, t);
     recomp_store(t->runtime, t->object, 0, 4);
@@ -407,13 +447,16 @@ static void *enter(void *opaque) {
     pthread_setname_np(pthread_self(), name);
     pthread_mutex_lock(&s->mutex);
     RECOMP_LOG("thread", "entered pthread id=%" PRId32 " entry=0x%08" PRIx32, t->id, t->context.pc);
-    while (!t->running && !t->exiting) pthread_cond_wait(&t->resume, &s->mutex);
+    while (!t->running && !t->exiting)
+        pthread_cond_wait(&t->resume, &s->mutex);
     if (!t->exiting) {
         const RecompSchedulerConfig *config = &s->config;
         bool stop = config->stop_before_entry == t->context.pc;
         for (size_t i = 0; i < config->stop_before_count; i++)
-            if (config->stop_before_entries[i] == t->context.pc) stop = true;
-        if (stop) suspend(t->runtime, RECOMP_STOPPED);
+            if (config->stop_before_entries[i] == t->context.pc)
+                stop = true;
+        if (stop)
+            suspend(t->runtime, RECOMP_STOPPED);
         t->entry(t->runtime, &t->context);
         retire(t);
     }
@@ -424,7 +467,8 @@ static void *enter(void *opaque) {
 }
 
 static void lock_pending(RecompScheduler *s) {
-    while (atomic_flag_test_and_set_explicit(&s->pending_lock, memory_order_acquire)) { }
+    while (atomic_flag_test_and_set_explicit(&s->pending_lock, memory_order_acquire)) {
+    }
 }
 
 static void deliver_events(Runtime *rt) {
@@ -440,38 +484,51 @@ static void deliver_events(Runtime *rt) {
             s->pending_count--;
         }
         atomic_flag_clear_explicit(&s->pending_lock, memory_order_release);
-        if (!present) break;
+        if (!present)
+            break;
 #ifdef RECOMP_DEBUG
         s->debug_interrupt_events++;
 #endif
         if (s->events[event].queue)
-            (void)recomp_queue_send(rt, s->events[event].queue->object, s->events[event].message, RECOMP_MESG_NOBLOCK, false);
+            (void)recomp_queue_send(rt, s->events[event].queue->object, s->events[event].message, RECOMP_MESG_NOBLOCK,
+                                    false);
     }
 }
 
 static void poll_on_host(Runtime *rt, void *unused) {
     (void)unused;
     RecompScheduler *s = scheduler(rt);
-    if (s->polling) return;
+    if (s->polling)
+        return;
     /* A timer/VI/DMA service finishes updating its records before guest code
      * can run. Otherwise queue-send preemption could reenter that service. */
     s->polling = true;
     if (!rt->platform || rt->platform_initialized) {
-        if (rt->poll_clock) rt->poll_clock(rt);
-        if (rt->poll_platform) rt->poll_platform(rt);
-        if (rt->poll_tasks) rt->poll_tasks(rt);
-        if (rt->poll_io) rt->poll_io(rt);
+        if (rt->poll_clock)
+            rt->poll_clock(rt);
+        if (rt->poll_platform)
+            rt->poll_platform(rt);
+        if (rt->poll_tasks)
+            rt->poll_tasks(rt);
+        if (rt->poll_io)
+            rt->poll_io(rt);
     }
     deliver_events(rt);
     s->polling = false;
 }
 
-static void poll(Runtime *rt) { recomp_on_host(rt, poll_on_host, NULL); }
+static void poll(Runtime *rt) {
+    recomp_on_host(rt, poll_on_host, NULL);
+}
 
 static void checkpoint(Runtime *rt, bool force_yield) {
-    if (rt->interrupts_disabled) return;
+    if (rt->interrupts_disabled)
+        return;
     RecompScheduler *s = scheduler(rt);
-    if (!guest_thread) { poll(rt); return; }
+    if (!guest_thread) {
+        poll(rt);
+        return;
+    }
     /* The host polls between dispatches. Avoid a kernel rendezvous at every
      * backedge; the configured interval bounds service/preemption latency. */
     unsigned interval = s->config.checkpoint_interval ? s->config.checkpoint_interval : 64;
@@ -484,32 +541,45 @@ static void checkpoint(Runtime *rt, bool force_yield) {
 }
 
 bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
-    if (rt->scheduler || !config || !config->thread_tail || config->thread_tail % 4) return false;
-    if (config->thread_name_count && !config->thread_names) return false;
+    if (rt->scheduler || !config || !config->thread_tail || config->thread_tail % 4)
+        return false;
+    if (config->thread_name_count && !config->thread_names)
+        return false;
     for (size_t i = 0; i < config->thread_name_count; i++) {
         const RecompThreadName *name = &config->thread_names[i];
-        if (!name->entry || name->entry % 4 || !name->name || !name->name[0]
-            || strlen(name->name) >= 16) return false;
+        if (!name->entry || name->entry % 4 || !name->name || !name->name[0] || strlen(name->name) >= 16)
+            return false;
         for (size_t j = 0; j < i; j++)
-            if (config->thread_names[j].entry == name->entry) return false;
+            if (config->thread_names[j].entry == name->entry)
+                return false;
     }
-    if (config->stop_before_count && !config->stop_before_entries) return false;
+    if (config->stop_before_count && !config->stop_before_entries)
+        return false;
     recomp_ram_address(rt, config->thread_tail, 8);
     if (config->idle_thread) {
-        if (config->idle_thread % 4) return false;
+        if (config->idle_thread % 4)
+            return false;
         recomp_ram_address(rt, config->idle_thread, config->fpu_fr1 ? 0x230 : RECOMP_THREAD_BYTES);
     }
     uint32_t globals[] = {config->run_queue, config->active_queue, config->running_thread, config->event_table};
     for (unsigned i = 0; i < sizeof(globals) / sizeof(globals[0]); i++) {
-        if (globals[i] % 4) return false;
-        if (globals[i]) recomp_ram_address(rt, globals[i], i == 3 ? RECOMP_OS_EVENTS * 8 : 4);
+        if (globals[i] % 4)
+            return false;
+        if (globals[i])
+            recomp_ram_address(rt, globals[i], i == 3 ? RECOMP_OS_EVENTS * 8 : 4);
     }
     RecompScheduler *s = calloc(1, sizeof(*s));
-    if (!s) return false;
+    if (!s)
+        return false;
     s->owner = pthread_self();
-    if (pthread_mutex_init(&s->mutex, NULL)) { free(s); return false; }
+    if (pthread_mutex_init(&s->mutex, NULL)) {
+        free(s);
+        return false;
+    }
     if (pthread_cond_init(&s->returned, NULL)) {
-        pthread_mutex_destroy(&s->mutex); free(s); return false;
+        pthread_mutex_destroy(&s->mutex);
+        free(s);
+        return false;
     }
     s->config = *config;
     s->pending_lock = (atomic_flag)ATOMIC_FLAG_INIT;
@@ -519,15 +589,18 @@ bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
     recomp_store(rt, config->thread_tail, 0, 4);
     recomp_store(rt, config->thread_tail + 4, UINT32_MAX, 4);
     if (config->event_table)
-        for (unsigned i = 0; i < RECOMP_OS_EVENTS * 8; i++) recomp_store(rt, config->event_table + i, 0, 1);
+        for (unsigned i = 0; i < RECOMP_OS_EVENTS * 8; i++)
+            recomp_store(rt, config->event_table + i, 0, 1);
     sync_guest(rt);
     return true;
 }
 
 void recomp_scheduler_destroy(Runtime *rt) {
     RecompScheduler *s = rt->scheduler;
-    if (!s) return;
-    if (s->current) recomp_fail("cannot destroy scheduler inside a guest thread", s->current->object);
+    if (!s)
+        return;
+    if (s->current)
+        recomp_fail("cannot destroy scheduler inside a guest thread", s->current->object);
     pthread_mutex_lock(&s->mutex);
     for (NativeThread *t = s->threads; t;) {
         NativeThread *next = t->next;
@@ -565,11 +638,13 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         NativeThread *t = best(s, RECOMP_READY, NULL, NULL);
         /* Poll first so timers and backend receipts can wake real work even
          * when the only runnable guest was the idle thread on entry. */
-        if (!t || host_idle(s, t)) break;
+        if (!t || host_idle(s, t))
+            break;
         s->current = t;
         t->state = RECOMP_RUNNING;
-        RECOMP_LOG_SAMPLED("thread", "dispatch id=%" PRId32 " thread=0x%08" PRIx32
-            " priority=%" PRId32 " pc=0x%08" PRIx32, t->id, t->object, t->priority, t->context.pc);
+        RECOMP_LOG_SAMPLED("thread",
+                           "dispatch id=%" PRId32 " thread=0x%08" PRIx32 " priority=%" PRId32 " pc=0x%08" PRIx32, t->id,
+                           t->object, t->priority, t->context.pc);
         sync_guest(rt);
         /* __osDispatch restores each thread's CPU IE and interrupt masks.
          * A thread may block in a critical section; its disabled state must
@@ -591,23 +666,28 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         rt->interrupts_disabled = owner_interrupts_disabled;
         rt->interrupt_mask = owner_interrupt_mask;
         s->current = NULL;
-        if (t->state == RECOMP_RUNNING) recomp_fail("pthread returned without a state transition", t->object);
-        if (t->state == RECOMP_DEAD) join_thread(s, t);
+        if (t->state == RECOMP_RUNNING)
+            recomp_fail("pthread returned without a state transition", t->object);
+        if (t->state == RECOMP_DEAD)
+            join_thread(s, t);
         sync_guest(rt);
     }
     NativeThread *next = best(s, RECOMP_READY, NULL, NULL);
     pthread_mutex_unlock(&s->mutex);
-    if (next) return host_idle(s, next) ? RECOMP_RUN_WAITING : RECOMP_RUN_BUDGET;
+    if (next)
+        return host_idle(s, next) ? RECOMP_RUN_WAITING : RECOMP_RUN_BUDGET;
     bool stopped = false;
     for (NativeThread *t = s->threads; t; t = t->next) {
-        if (t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV) return RECOMP_RUN_WAITING;
-        if (t->state == RECOMP_STOPPED) stopped = true;
+        if (t->state == RECOMP_WAIT_SEND || t->state == RECOMP_WAIT_RECV)
+            return RECOMP_RUN_WAITING;
+        if (t->state == RECOMP_STOPPED)
+            stopped = true;
     }
     return stopped ? RECOMP_RUN_STOPPED : RECOMP_RUN_COMPLETE;
 }
 
-void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t entry,
-                          uint32_t argument, uint32_t stack, int32_t priority) {
+void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t entry, uint32_t argument, uint32_t stack,
+                          int32_t priority) {
     RecompScheduler *s = scheduler(rt);
     if (!object || object % 8 || stack % 8 || priority < 0 || priority > 255)
         recomp_fail("invalid thread object/stack/priority", object);
@@ -622,14 +702,16 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
              * loader thread. Discard its suspended native call stack before
              * resetting the guest context. Runnable/waiting threads still
              * own their context and cannot be overwritten. */
-            if (t->state != RECOMP_DEAD &&
-                    (t->state != RECOMP_STOPPED || t->wait_queue || t == s->current))
+            if (t->state != RECOMP_DEAD && (t->state != RECOMP_STOPPED || t->wait_queue || t == s->current))
                 recomp_fail("thread object is already active", object);
-            if (t->state != RECOMP_DEAD) retire(t);
+            if (t->state != RECOMP_DEAD)
+                retire(t);
             *link = t->next;
-            if (!guest_thread) pthread_mutex_lock(&s->mutex);
+            if (!guest_thread)
+                pthread_mutex_lock(&s->mutex);
             join_thread(s, t);
-            if (!guest_thread) pthread_mutex_unlock(&s->mutex);
+            if (!guest_thread)
+                pthread_mutex_unlock(&s->mutex);
             pthread_cond_destroy(&t->resume);
             free(t);
             break;
@@ -637,8 +719,13 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
         link = &t->next;
     }
     NativeThread *t = calloc(1, sizeof(*t));
-    if (!t) recomp_fail("thread allocation failed", object);
-    t->runtime = rt; t->object = object; t->key = key; t->id = id; t->priority = priority;
+    if (!t)
+        recomp_fail("thread allocation failed", object);
+    t->runtime = rt;
+    t->object = object;
+    t->key = key;
+    t->id = id;
+    t->priority = priority;
     /* SDK osCreateThread starts with SR=0xff03 and RCP mask=0x3f. */
     t->interrupt_mask = UINT32_C(0x003fff01);
     t->state = RECOMP_STOPPED;
@@ -649,35 +736,45 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     t->context.gpr[31] = mips_s32(UINT32_C(0xf0000000));
     t->context.fcr31 = UINT32_C(0x01000800);
     t->context.fpu_fr1 = s->config.fpu_fr1;
-    if (pthread_cond_init(&t->resume, NULL)) { free(t); recomp_fail("pthread condition allocation failed", object); }
+    if (pthread_cond_init(&t->resume, NULL)) {
+        free(t);
+        recomp_fail("pthread condition allocation failed", object);
+    }
     pthread_attr_t attributes;
-    if (pthread_attr_init(&attributes)) recomp_fail("pthread attribute allocation failed", object);
+    if (pthread_attr_init(&attributes))
+        recomp_fail("pthread attribute allocation failed", object);
     if (s->config.native_stack_size && pthread_attr_setstacksize(&attributes, s->config.native_stack_size))
         recomp_fail("invalid pthread stack size", object);
     int created = pthread_create(&t->native, &attributes, enter, t);
     pthread_attr_destroy(&attributes);
     if (created) {
-        pthread_cond_destroy(&t->resume); free(t); recomp_fail("pthread allocation failed", object);
+        pthread_cond_destroy(&t->resume);
+        free(t);
+        recomp_fail("pthread allocation failed", object);
     }
     t->native_live = true;
-    t->next = s->threads; s->threads = t;
-    for (unsigned i = 0; i < bytes; i++) recomp_store(rt, object + i, 0, 1);
+    t->next = s->threads;
+    s->threads = t;
+    for (unsigned i = 0; i < bytes; i++)
+        recomp_store(rt, object + i, 0, 1);
     recomp_store(rt, object + 0x14, (uint32_t)id, 4);
     recomp_store(rt, object + 0x118, s->config.fpu_fr1 ? 0x0400ff03 : 0xff03, 4);
     recomp_store(rt, object + 0x128, 0x3f, 4);
     sync_guest(rt);
-    RECOMP_LOG("thread", "created pthread id=%" PRId32 " thread=0x%08" PRIx32
-        " entry=0x%08" PRIx32 " arg=0x%08" PRIx32 " stack=0x%08" PRIx32 " priority=%" PRId32,
-        id, object, entry, argument, stack, priority);
+    RECOMP_LOG("thread",
+               "created pthread id=%" PRId32 " thread=0x%08" PRIx32 " entry=0x%08" PRIx32 " arg=0x%08" PRIx32
+               " stack=0x%08" PRIx32 " priority=%" PRId32,
+               id, object, entry, argument, stack, priority);
 }
 
 void recomp_thread_start(Runtime *rt, uint32_t object) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *t = thread(rt, object);
     RECOMP_LOG("thread", "start id=%" PRId32 " thread=0x%08" PRIx32, t->id, t->object);
-    if (t->state == RECOMP_DEAD) recomp_fail("cannot restart a destroyed thread", t->object);
+    if (t->state == RECOMP_DEAD)
+        recomp_fail("cannot restart a destroyed thread", t->object);
     if (t->state == RECOMP_STOPPED && t->wait_queue) {
-        t->wait_queue->wait_lists_dirty=true;
+        t->wait_queue->wait_lists_dirty = true;
         t->state = t->wait_kind;
         t->order = ticket(s);
         wake(rt, t->wait_queue, t->wait_kind);
@@ -691,75 +788,106 @@ void recomp_thread_start(Runtime *rt, uint32_t object) {
 void recomp_thread_stop(Runtime *rt, uint32_t object) {
     NativeThread *t = thread(rt, object);
     RECOMP_LOG("thread", "stop id=%" PRId32 " thread=0x%08" PRIx32, t->id, t->object);
-    if (t->state == RECOMP_DEAD) recomp_fail("cannot stop a destroyed thread", t->object);
-    if (t->wait_queue) t->wait_queue->wait_lists_dirty=true;
-    if (t == scheduler(rt)->current) suspend(rt, RECOMP_STOPPED);
-    else { t->state = RECOMP_STOPPED; sync_guest(rt); }
+    if (t->state == RECOMP_DEAD)
+        recomp_fail("cannot stop a destroyed thread", t->object);
+    if (t->wait_queue)
+        t->wait_queue->wait_lists_dirty = true;
+    if (t == scheduler(rt)->current)
+        suspend(rt, RECOMP_STOPPED);
+    else {
+        t->state = RECOMP_STOPPED;
+        sync_guest(rt);
+    }
 }
 
 void recomp_thread_destroy(Runtime *rt, uint32_t object) {
     NativeThread *t = thread(rt, object);
-    if (t->state == RECOMP_DEAD) return;
+    if (t->state == RECOMP_DEAD)
+        return;
     retire(t);
     if (t == scheduler(rt)->current) {
         suspend(rt, RECOMP_DEAD);
         recomp_fail("destroyed thread was resumed", t->object);
     } else {
         RecompScheduler *s = scheduler(rt);
-        if (!guest_thread) pthread_mutex_lock(&s->mutex);
+        if (!guest_thread)
+            pthread_mutex_lock(&s->mutex);
         join_thread(s, t);
-        if (!guest_thread) pthread_mutex_unlock(&s->mutex);
+        if (!guest_thread)
+            pthread_mutex_unlock(&s->mutex);
         sync_guest(rt);
     }
 }
 
-void recomp_thread_yield(Runtime *rt) { suspend(rt, RECOMP_READY); }
-int32_t recomp_thread_priority(Runtime *rt, uint32_t object) { return thread(rt, object)->priority; }
-int32_t recomp_thread_id(Runtime *rt, uint32_t object) { return thread(rt, object)->id; }
-RecompThreadState recomp_thread_state(Runtime *rt, uint32_t object) { return thread(rt, object)->state; }
-const MipsContext *recomp_thread_context(Runtime *rt, uint32_t object) { return &thread(rt, object)->context; }
+void recomp_thread_yield(Runtime *rt) {
+    suspend(rt, RECOMP_READY);
+}
+int32_t recomp_thread_priority(Runtime *rt, uint32_t object) {
+    return thread(rt, object)->priority;
+}
+int32_t recomp_thread_id(Runtime *rt, uint32_t object) {
+    return thread(rt, object)->id;
+}
+RecompThreadState recomp_thread_state(Runtime *rt, uint32_t object) {
+    return thread(rt, object)->state;
+}
+const MipsContext *recomp_thread_context(Runtime *rt, uint32_t object) {
+    return &thread(rt, object)->context;
+}
 
 void recomp_thread_set_priority(Runtime *rt, uint32_t object, int32_t priority) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *t = thread(rt, object);
-    if (priority < 0 || priority > 255 || t->state == RECOMP_DEAD) recomp_fail("invalid thread priority update", object);
+    if (priority < 0 || priority > 255 || t->state == RECOMP_DEAD)
+        recomp_fail("invalid thread priority update", object);
     if (t->priority != priority) {
-        RECOMP_LOG("thread", "priority id=%" PRId32 " thread=0x%08" PRIx32 " old=%" PRId32 " new=%" PRId32,
-            t->id, t->object, t->priority, priority);
-        if (t->wait_queue) t->wait_queue->wait_lists_dirty=true;
+        RECOMP_LOG("thread", "priority id=%" PRId32 " thread=0x%08" PRIx32 " old=%" PRId32 " new=%" PRId32, t->id,
+                   t->object, t->priority, priority);
+        if (t->wait_queue)
+            t->wait_queue->wait_lists_dirty = true;
         t->priority = priority;
-        if (t->state != RECOMP_RUNNING && t->state != RECOMP_STOPPED) t->order = ticket(s);
+        if (t->state != RECOMP_RUNNING && t->state != RECOMP_STOPPED)
+            t->order = ticket(s);
         sync_guest(rt);
         preempt(rt);
     }
 }
 
 void recomp_queue_create(Runtime *rt, uint32_t object, uint32_t messages, int32_t count) {
-    RECOMP_LOG("queue", "create queue=0x%08" PRIx32 " buffer=0x%08" PRIx32 " capacity=%" PRId32, object, messages, count);
+    RECOMP_LOG("queue", "create queue=0x%08" PRIx32 " buffer=0x%08" PRIx32 " capacity=%" PRId32, object, messages,
+               count);
     RecompScheduler *s = scheduler(rt);
     if (!object || object % 4 || messages % 4 || count <= 0 || (size_t)count > rt->rdram_size / 4)
         recomp_fail("invalid message queue/buffer/capacity", object);
     uint32_t key = recomp_ram_address(rt, object, RECOMP_QUEUE_BYTES);
     recomp_ram_address(rt, messages, (size_t)count * 4);
     NativeQueue *q;
-    for (q = s->queues; q && q->key != key; q = q->next) { }
+    for (q = s->queues; q && q->key != key; q = q->next) {
+    }
     if (!q) {
         q = calloc(1, sizeof(*q));
-        if (!q) recomp_fail("message queue allocation failed", object);
-        q->object = object; q->key = key; q->next = s->queues; s->queues = q;
+        if (!q)
+            recomp_fail("message queue allocation failed", object);
+        q->object = object;
+        q->key = key;
+        q->next = s->queues;
+        s->queues = q;
     } else {
         for (NativeThread *t = s->threads; t; t = t->next)
-            if (t->wait_queue == q) recomp_fail("cannot reset a queue with suspended waiters", object);
+            if (t->wait_queue == q)
+                recomp_fail("cannot reset a queue with suspended waiters", object);
     }
     recomp_store(rt, q->object + 8, 0, 4);
     recomp_store(rt, q->object + 12, 0, 4);
     recomp_store(rt, q->object + 16, (uint32_t)count, 4);
     recomp_store(rt, q->object + 20, messages, 4);
-    q->wait_lists_dirty=true;
+    q->wait_lists_dirty = true;
     sync_guest(rt);
 }
 
-typedef struct QueueFields { uint32_t valid, first, count, messages; } QueueFields;
+typedef struct QueueFields {
+    uint32_t valid, first, count, messages;
+} QueueFields;
 static QueueFields fields(Runtime *rt, NativeQueue *q) {
     QueueFields f = {(uint32_t)recomp_load(rt, q->object + 8, 4), (uint32_t)recomp_load(rt, q->object + 12, 4),
                      (uint32_t)recomp_load(rt, q->object + 16, 4), (uint32_t)recomp_load(rt, q->object + 20, 4)};
@@ -773,9 +901,10 @@ int32_t recomp_queue_send(Runtime *rt, uint32_t object, uint32_t message, int32_
     /* libultra's nonblocking send rejects a zero-capacity queue before it
      * touches wait lists or the message buffer. A BSS queue can receive early
      * timer deliveries before osCreateMesgQueue initializes it. */
-    if(object && flag==RECOMP_MESG_NOBLOCK) {
-        recomp_ram_address(rt,object,RECOMP_QUEUE_BYTES);
-        if(recomp_load(rt,object+8,4)==0 && recomp_load(rt,object+16,4)==0)return -1;
+    if (object && flag == RECOMP_MESG_NOBLOCK) {
+        recomp_ram_address(rt, object, RECOMP_QUEUE_BYTES);
+        if (recomp_load(rt, object + 8, 4) == 0 && recomp_load(rt, object + 16, 4) == 0)
+            return -1;
     }
     NativeQueue *q = queue(rt, object);
     QueueFields f = fields(rt, q);
@@ -785,19 +914,23 @@ int32_t recomp_queue_send(Runtime *rt, uint32_t object, uint32_t message, int32_
             return -1;
         }
         NativeThread *t = thread(rt, 0);
-        t->wait_queue = q; t->wait_kind = RECOMP_WAIT_SEND;
+        t->wait_queue = q;
+        t->wait_kind = RECOMP_WAIT_SEND;
         suspend(rt, RECOMP_WAIT_SEND);
         f = fields(rt, q);
     }
     uint32_t index = (f.first + f.valid) % f.count;
-    if (jam) { f.first = (f.first + f.count - 1) % f.count; index = f.first; }
+    if (jam) {
+        f.first = (f.first + f.count - 1) % f.count;
+        index = f.first;
+    }
     recomp_store(rt, f.messages + index * 4, message, 4);
     recomp_store(rt, q->object + 12, f.first, 4);
     recomp_store(rt, q->object + 8, f.valid + 1, 4);
     if (RECOMP_WATCH_QUEUE(object))
-        RECOMP_LOG("queue-watch", "send queue=%08" PRIx32 " message=%08" PRIx32 " valid=%u id=%d pc=%08" PRIx32,
-            object, message, f.valid + 1, scheduler(rt)->current ? scheduler(rt)->current->id : 0,
-            scheduler(rt)->current ? scheduler(rt)->current->context.pc : 0);
+        RECOMP_LOG("queue-watch", "send queue=%08" PRIx32 " message=%08" PRIx32 " valid=%u id=%d pc=%08" PRIx32, object,
+                   message, f.valid + 1, scheduler(rt)->current ? scheduler(rt)->current->id : 0,
+                   scheduler(rt)->current ? scheduler(rt)->current->context.pc : 0);
     wake(rt, q, RECOMP_WAIT_RECV);
     sync_guest(rt);
     preempt(rt);
@@ -809,30 +942,35 @@ int32_t recomp_queue_recv(Runtime *rt, uint32_t object, uint32_t destination, in
      * Zelda polls a zero-initialized queue for its unused disk audio medium. */
     if (object && !flag) {
         recomp_ram_address(rt, object, RECOMP_QUEUE_BYTES);
-        if (!recomp_load(rt, object + 8, 4)) return -1;
+        if (!recomp_load(rt, object + 8, 4))
+            return -1;
     }
     NativeQueue *q = queue(rt, object);
     if (destination) {
-        if (destination % 4) recomp_fail("unaligned message destination", destination);
+        if (destination % 4)
+            recomp_fail("unaligned message destination", destination);
         recomp_ram_address(rt, destination, 4);
     }
     QueueFields f = fields(rt, q);
     while (!f.valid) {
-        if (!flag) return -1;
+        if (!flag)
+            return -1;
         if (RECOMP_WATCH_QUEUE(object))
-            RECOMP_LOG("queue-watch", "wait queue=%08" PRIx32 " id=%d pc=%08" PRIx32,
-                object, thread(rt, 0)->id, thread(rt, 0)->context.pc);
+            RECOMP_LOG("queue-watch", "wait queue=%08" PRIx32 " id=%d pc=%08" PRIx32, object, thread(rt, 0)->id,
+                       thread(rt, 0)->context.pc);
         NativeThread *t = thread(rt, 0);
-        t->wait_queue = q; t->wait_kind = RECOMP_WAIT_RECV;
+        t->wait_queue = q;
+        t->wait_kind = RECOMP_WAIT_RECV;
         suspend(rt, RECOMP_WAIT_RECV);
         f = fields(rt, q);
     }
-    if (destination) recomp_store(rt, destination, recomp_load(rt, f.messages + f.first * 4, 4), 4);
+    if (destination)
+        recomp_store(rt, destination, recomp_load(rt, f.messages + f.first * 4, 4), 4);
     if (RECOMP_WATCH_QUEUE(object))
-        RECOMP_LOG("queue-watch", "recv queue=%08" PRIx32 " message=%08" PRIx32 " valid=%u id=%d pc=%08" PRIx32,
-            object, (uint32_t)recomp_load(rt, f.messages + f.first * 4, 4), f.valid - 1,
-            scheduler(rt)->current ? scheduler(rt)->current->id : 0,
-            scheduler(rt)->current ? scheduler(rt)->current->context.pc : 0);
+        RECOMP_LOG("queue-watch", "recv queue=%08" PRIx32 " message=%08" PRIx32 " valid=%u id=%d pc=%08" PRIx32, object,
+                   (uint32_t)recomp_load(rt, f.messages + f.first * 4, 4), f.valid - 1,
+                   scheduler(rt)->current ? scheduler(rt)->current->id : 0,
+                   scheduler(rt)->current ? scheduler(rt)->current->context.pc : 0);
     recomp_store(rt, q->object + 12, (f.first + 1) % f.count, 4);
     recomp_store(rt, q->object + 8, f.valid - 1, 4);
     wake(rt, q, RECOMP_WAIT_SEND);
@@ -843,8 +981,10 @@ int32_t recomp_queue_recv(Runtime *rt, uint32_t object, uint32_t destination, in
 
 int32_t recomp_queue_peek(Runtime *rt, uint32_t object, uint32_t *message) {
     QueueFields f = fields(rt, queue(rt, object));
-    if (!f.valid) return -1;
-    if (!message) recomp_fail("missing queue peek destination", object);
+    if (!f.valid)
+        return -1;
+    if (!message)
+        recomp_fail("missing queue peek destination", object);
     *message = (uint32_t)recomp_load(rt, f.messages + f.first * 4, 4);
     return 0;
 }
@@ -852,7 +992,8 @@ int32_t recomp_queue_peek(Runtime *rt, uint32_t object, uint32_t *message) {
 void recomp_event_bind(Runtime *rt, uint32_t event, uint32_t object, uint32_t message) {
     RECOMP_LOG("queue", "bind event=%" PRIu32 " queue=0x%08" PRIx32 " message=0x%08" PRIx32, event, object, message);
     RecompScheduler *s = scheduler(rt);
-    if (event >= RECOMP_OS_EVENTS) recomp_fail("invalid OS event", event);
+    if (event >= RECOMP_OS_EVENTS)
+        recomp_fail("invalid OS event", event);
     s->events[event].queue = object ? queue(rt, object) : NULL;
     s->events[event].message = message;
     if (s->config.event_table) {
@@ -863,7 +1004,8 @@ void recomp_event_bind(Runtime *rt, uint32_t event, uint32_t object, uint32_t me
 
 bool recomp_event_post(Runtime *rt, uint32_t event) {
     RecompScheduler *s = rt->scheduler;
-    if (!s || event >= RECOMP_OS_EVENTS) return false;
+    if (!s || event >= RECOMP_OS_EVENTS)
+        return false;
     lock_pending(s);
     bool accepted = s->pending_count < PENDING_EVENTS;
     if (accepted) {

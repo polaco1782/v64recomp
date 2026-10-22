@@ -1,16 +1,19 @@
 #pragma once
 static bool tlb_installed, application_started, system_initialized;
-static uint32_t interrupt_mask=0x3fff01;
+static uint32_t interrupt_mask = 0x3fff01;
 static void shadowman_prepare_call(Runtime *rt, uint32_t address) {
     if (address >= BOOT_GAME_VRAM && address < BOOT_GAME_VRAM + BOOT_GAME_SIZE) {
         for (unsigned i = 0; i < 16; i++) {
             uint8_t expected = rt->rom[BOOT_GAME_ROM_OFFSET + address - BOOT_GAME_VRAM + i];
-            require(recomp_load(rt, address+i, 1) == expected,
-                    "Shadow Man executable page differs from translated ROM", address+i);
+            require(recomp_load(rt, address + i, 1) == expected,
+                    "Shadow Man executable page differs from translated ROM", address + i);
         }
     }
 }
-void hook_shadowman_cache(Runtime *rt, MipsContext *ctx) { (void)rt; (void)ctx; }
+void hook_shadowman_cache(Runtime *rt, MipsContext *ctx) {
+    (void)rt;
+    (void)ctx;
+}
 void hook_shadowman_int_mask(Runtime *rt, MipsContext *ctx) {
     uint32_t previous = interrupt_mask;
     interrupt_mask = (uint32_t)ctx->gpr[4];
@@ -22,11 +25,12 @@ void hook_shadowman_ai_busy(Runtime *rt, MipsContext *ctx) {
 }
 void hook_shadowman_map_tlb(Runtime *rt, MipsContext *ctx) {
     uint32_t index = (uint32_t)ctx->gpr[4], sp = (uint32_t)ctx->gpr[29];
-    uint32_t even = (uint32_t)ctx->gpr[7], odd = (uint32_t)recomp_load(rt, sp+16, 4);
-    require(index < 32 && recomp_load(rt, sp+20, 4) == 7,
-            "Shadow Man TLB requires a global SDK mapping", ctx->pc);
-    if (even == UINT32_MAX && odd == UINT32_MAX) rt->page_mappings[index] = (RecompPageMapping){0};
-    else recomp_map_pages(rt, index, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], even, odd);
+    uint32_t even = (uint32_t)ctx->gpr[7], odd = (uint32_t)recomp_load(rt, sp + 16, 4);
+    require(index < 32 && recomp_load(rt, sp + 20, 4) == 7, "Shadow Man TLB requires a global SDK mapping", ctx->pc);
+    if (even == UINT32_MAX && odd == UINT32_MAX)
+        rt->page_mappings[index] = (RecompPageMapping){0};
+    else
+        recomp_map_pages(rt, index, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], even, odd);
 }
 void hook_shadowman_unmap_tlb(Runtime *rt, MipsContext *ctx) {
     unsigned index = (unsigned)ctx->gpr[4];
@@ -42,12 +46,14 @@ void hook_shadowman_motor_stop(Runtime *rt, MipsContext *ctx) {
 }
 void hook_shadowman_pi_raw_dma(Runtime *rt, MipsContext *ctx) {
     uint32_t offset = (uint32_t)ctx->gpr[5], address = (uint32_t)ctx->gpr[6], bytes = (uint32_t)ctx->gpr[7];
-    if (offset >= 0xb0000000 && offset < 0xb2000000) offset -= 0xb0000000;
-    if (offset >= 0x10000000 && offset < 0x12000000) offset -= 0x10000000;
-    require(ctx->gpr[4] == 0 && offset <= rt->rom_size && bytes <= rt->rom_size-offset,
+    if (offset >= 0xb0000000 && offset < 0xb2000000)
+        offset -= 0xb0000000;
+    if (offset >= 0x10000000 && offset < 0x12000000)
+        offset -= 0x10000000;
+    require(ctx->gpr[4] == 0 && offset <= rt->rom_size && bytes <= rt->rom_size - offset,
             "Shadow Man unsupported raw PI DMA", offset);
-    recomp_copy_to_ram(rt, address, rt->rom+offset, bytes);
-    if (offset == BOOT_GAME_ROM_OFFSET && bytes >= ((BOOT_GAME_SIZE-1) & ~0xfffu))
+    recomp_copy_to_ram(rt, address, rt->rom + offset, bytes);
+    if (offset == BOOT_GAME_ROM_OFFSET && bytes >= ((BOOT_GAME_SIZE - 1) & ~0xfffu))
         rt->section_loaded[BOOT_GAME_SECTION] = true;
     require(recomp_event_post(rt, 8), "Shadow Man PI completion FIFO full", address);
     mips_set(ctx, 2, 0);

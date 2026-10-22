@@ -1,9 +1,15 @@
 #include "runtime.h"
 #include "runtime_debug.h"
 
-static uint32_t argument(MipsContext *ctx, unsigned index) { return (uint32_t)ctx->gpr[4 + index]; }
-static int32_t signed_argument(MipsContext *ctx, unsigned index) { return (int32_t)mips_i32(ctx->gpr[4 + index]); }
-static void result(MipsContext *ctx, int32_t value) { mips_set(ctx, 2, mips_s32((uint32_t)value)); }
+static uint32_t argument(MipsContext *ctx, unsigned index) {
+    return (uint32_t)ctx->gpr[4 + index];
+}
+static int32_t signed_argument(MipsContext *ctx, unsigned index) {
+    return (int32_t)mips_i32(ctx->gpr[4 + index]);
+}
+static void result(MipsContext *ctx, int32_t value) {
+    mips_set(ctx, 2, mips_s32((uint32_t)value));
+}
 
 void hook_os_disable_int(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
@@ -13,7 +19,8 @@ void hook_os_disable_int(Runtime *rt, MipsContext *ctx) {
 void hook_os_restore_int(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     rt->interrupts_disabled = !(argument(ctx, 0) & 1);
-    if (!rt->interrupts_disabled) recomp_checkpoint(rt);
+    if (!rt->interrupts_disabled)
+        recomp_checkpoint(rt);
 }
 void hook_os_set_int_mask(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
@@ -21,7 +28,8 @@ void hook_os_set_int_mask(Runtime *rt, MipsContext *ctx) {
     rt->interrupt_mask = argument(ctx, 0);
     rt->interrupts_disabled = !(rt->interrupt_mask & 1);
     result(ctx, (int32_t)previous);
-    if (!rt->interrupts_disabled) recomp_checkpoint(rt);
+    if (!rt->interrupts_disabled)
+        recomp_checkpoint(rt);
 }
 
 void hook_os_virtual_to_physical(Runtime *rt, MipsContext *ctx) {
@@ -36,11 +44,11 @@ void hook_os_virtual_to_physical(Runtime *rt, MipsContext *ctx) {
         mips_set(ctx, 2, recomp_ram_address(rt, physical, 1));
         return;
     }
-    for (unsigned i=0;i<32;i++) {
-        const RecompPageMapping *m=&rt->page_mappings[i];
-        if (m->installed && address>=m->virtual_base
-            && (uint64_t)address<(uint64_t)m->virtual_base+2*m->page_size) {
-            mips_set(ctx,2,recomp_ram_address(rt,address,1));
+    for (unsigned i = 0; i < 32; i++) {
+        const RecompPageMapping *m = &rt->page_mappings[i];
+        if (m->installed && address >= m->virtual_base &&
+            (uint64_t)address < (uint64_t)m->virtual_base + 2 * m->page_size) {
+            mips_set(ctx, 2, recomp_ram_address(rt, address, 1));
             return;
         }
     }
@@ -53,8 +61,8 @@ void hook_os_create_thread(Runtime *rt, MipsContext *ctx) {
     uint32_t sp = (uint32_t)ctx->gpr[29];
     uint32_t stack = (uint32_t)recomp_load(rt, sp + 16, 4);
     int32_t priority = (int32_t)mips_i32(recomp_load(rt, sp + 20, 4));
-    recomp_thread_create(rt, argument(ctx, 0), signed_argument(ctx, 1), argument(ctx, 2),
-                         argument(ctx, 3), stack, priority);
+    recomp_thread_create(rt, argument(ctx, 0), signed_argument(ctx, 1), argument(ctx, 2), argument(ctx, 3), stack,
+                         priority);
 }
 void hook_os_start_thread(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
@@ -70,7 +78,8 @@ void hook_os_destroy_thread(Runtime *rt, MipsContext *ctx) {
 }
 void hook_os_yield_thread(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
-    (void)ctx; recomp_thread_yield(rt);
+    (void)ctx;
+    recomp_thread_yield(rt);
 }
 void hook_os_get_thread_pri(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
@@ -107,27 +116,31 @@ void hook_os_set_event_mesg(Runtime *rt, MipsContext *ctx) {
 void hook_os_writeback_dcache_all(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     /* CPU-generated code and native backends share coherent host RAM. */
-    (void)rt; (void)ctx;
+    (void)rt;
+    (void)ctx;
 }
 void hook_os_cache_range(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     /* Cache instructions operate on cache tags, without reading the addressed
      * RAM. SDK callers also pass ROM aliases and entire virtual ranges.
      * Native CPU and backend snapshots already provide coherent storage. */
-    (void)rt; (void)ctx;
+    (void)rt;
+    (void)ctx;
 }
 void hook_os_dp_set_status(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     /* Native task submission owns RDP execution; hardware freeze/flush and
      * performance-counter requests do not leave a pending MMIO operation. */
-    (void)rt; (void)ctx;
+    (void)rt;
+    (void)ctx;
 }
 void hook_os_dp_get_status(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     RECOMP_TRACE_OS(rt, ctx);
-    result(ctx,0);
+    result(ctx, 0);
 }
 void hook_os_dp_get_counters(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
-    for(unsigned i=0;i<4;i++)recomp_store(rt,argument(ctx,0)+i*4,0,4);
+    for (unsigned i = 0; i < 4; i++)
+        recomp_store(rt, argument(ctx, 0) + i * 4, 0, 4);
 }

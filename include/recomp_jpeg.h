@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 typedef struct RecompJpegProfile {
-    uint32_t descriptor[6]; /* Boot/code/data addresses and task sizes. */
+    uint32_t descriptor[6];        /* Boot/code/data addresses and task sizes. */
     uint32_t fingerprint_bytes[3]; /* Initialized images, excluding DMEM BSS. */
     const char *sha256[3];
 } RecompJpegProfile;

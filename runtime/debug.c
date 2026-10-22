@@ -16,7 +16,8 @@ static void settings(void) {
     const char *value = getenv("RECOMP_DEBUG_FULL");
     full = value && !strcmp(value, "1");
     value = getenv("RECOMP_DEBUG_QUEUE");
-    if (value) watched_queue = (uint32_t)strtoul(value, NULL, 0);
+    if (value)
+        watched_queue = (uint32_t)strtoul(value, NULL, 0);
     (void)clock_gettime(CLOCK_MONOTONIC, &origin);
 }
 bool recomp_debug_watch_queue(uint32_t object) {
@@ -36,7 +37,7 @@ void recomp_debug_log(const char *category, const char *format, ...) {
     pthread_once(&settings_once, settings);
     struct timespec now = origin;
     (void)clock_gettime(CLOCK_MONOTONIC, &now);
-    double seconds = (double)(now.tv_sec-origin.tv_sec) + (now.tv_nsec-origin.tv_nsec)*1e-9;
+    double seconds = (double)(now.tv_sec - origin.tv_sec) + (now.tv_nsec - origin.tv_nsec) * 1e-9;
     flockfile(stderr);
     fprintf(stderr, "[debug +%.3fs][%s] ", seconds, category);
     va_list args;
@@ -51,10 +52,9 @@ void recomp_debug_os(Runtime *rt, const MipsContext *ctx, const char *name, uint
     int32_t id = 0;
     uint32_t object = 0;
     bool guest = recomp_debug_current_thread(rt, &id, &object);
-    recomp_debug_log("os", "%s count=%" PRIu64 " caller=%s id=%" PRId32
-        " thread=0x%08" PRIx32 " pc=0x%08" PRIx32 " ra=0x%08" PRIx32
-        " a0..a3=[0x%08" PRIx32 ",0x%08" PRIx32 ",0x%08" PRIx32 ",0x%08" PRIx32 "]",
-        name, count, guest ? "guest" : "host", id, object, ctx->pc,
-        (uint32_t)ctx->gpr[31], (uint32_t)ctx->gpr[4], (uint32_t)ctx->gpr[5],
-        (uint32_t)ctx->gpr[6], (uint32_t)ctx->gpr[7]);
+    recomp_debug_log("os",
+                     "%s count=%" PRIu64 " caller=%s id=%" PRId32 " thread=0x%08" PRIx32 " pc=0x%08" PRIx32
+                     " ra=0x%08" PRIx32 " a0..a3=[0x%08" PRIx32 ",0x%08" PRIx32 ",0x%08" PRIx32 ",0x%08" PRIx32 "]",
+                     name, count, guest ? "guest" : "host", id, object, ctx->pc, (uint32_t)ctx->gpr[31],
+                     (uint32_t)ctx->gpr[4], (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], (uint32_t)ctx->gpr[7]);
 }

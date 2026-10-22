@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "rom_sha1": "378f7ee4db6fbc6cb0d595849e45c9ee2bd01f4f",
+  "rom_sha1": "39cad0b1a053431fc281dbf0308288a8287b910c",
   "complete": false,
   "entries": [
     {
@@ -509,6 +509,13 @@
       "origin": "checked-root",
       "sha256": "7a5297c54acb5063463a0ec9db4ec03d8c4211695321f337042cf111e5328f28",
       "evidence": "Direct movie-state JAL 0x8009f73c in 0x8009f60c; section-qualified to overlay 2 because overlay 4 reuses the slot"
+    },
+    {
+      "vram": 2149037220,
+      "section": ".overlay5",
+      "origin": "checked-root",
+      "sha256": "8da149cfaf2e60f4c53525053c9dbbce6a615f7f0f4ab19fd33a5e31ca906760",
+      "evidence": "Module table record 4 at 0x8010b300 selects overlay 5 and callback 0x8017b4a4; menu handler 0x8015d6cc calls module loader 0x8004cca8 with index 4; full decoded RAM SHA-256 matched"
     }
   ]
 }

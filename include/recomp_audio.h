@@ -6,27 +6,27 @@ extern "C" {
 #endif
 typedef struct RecompAudio RecompAudio;
 typedef enum RecompAudioMicrocode {
-    RECOMP_AUDIO_ABI1=0,
-    RECOMP_AUDIO_ABI1_LINEAR=1,
-    RECOMP_AUDIO_NEAD_OOT=2,
-    RECOMP_AUDIO_NAUDIO_MP3=3,
-    RECOMP_AUDIO_NAUDIO_CBFD=4,
-    RECOMP_AUDIO_NAUDIO=5,
-    RECOMP_AUDIO_MUSYX_V1=6,
+    RECOMP_AUDIO_ABI1 = 0,
+    RECOMP_AUDIO_ABI1_LINEAR = 1,
+    RECOMP_AUDIO_NEAD_OOT = 2,
+    RECOMP_AUDIO_NAUDIO_MP3 = 3,
+    RECOMP_AUDIO_NAUDIO_CBFD = 4,
+    RECOMP_AUDIO_NAUDIO = 5,
+    RECOMP_AUDIO_MUSYX_V1 = 6,
 } RecompAudioMicrocode;
 typedef struct RecompAudioTaskProfile {
-    uint32_t descriptor[6]; /* Expected boot/code/data addresses and task sizes. */
+    uint32_t descriptor[6];        /* Expected boot/code/data addresses and task sizes. */
     uint32_t fingerprint_bytes[3]; /* Initialized bytes, excluding DMEM BSS. */
     const char *sha256[3];
 } RecompAudioTaskProfile;
 typedef struct RecompAudioConfig {
     const char *wav_path; /* Optional little-endian stereo PCM capture. */
-    bool playback;       /* SDL device is opened lazily on the first active AI buffer. */
-    bool output_enabled; /* Disable during accelerated startup; synthesis continues. */
+    bool playback;        /* SDL device is opened lazily on the first active AI buffer. */
+    bool output_enabled;  /* Disable during accelerated startup; synthesis continues. */
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile; /* Game-owned static recognition data; required for submit. */
-    unsigned prebuffer_ms; /* Zero uses 80 ms; a game may request up to 200 ms. */
-    const char *trace_path; /* Optional CSV of AI admission and playback queue timing. */
+    unsigned prebuffer_ms;                      /* Zero uses 80 ms; a game may request up to 200 ms. */
+    const char *trace_path;                     /* Optional CSV of AI admission and playback queue timing. */
 } RecompAudioConfig;
 typedef struct RecompAudioStats {
     uint64_t tasks, commands, ai_buffers, frames, nonzero_samples, clipped_samples, synth_ns;
