@@ -14,6 +14,7 @@ if(NOT EXISTS "${RECOMP_RT64_SOURCE}/CMakeLists.txt")
     message(FATAL_ERROR "Populate RECOMP_RT64_SOURCE before building RT64")
 endif()
 add_subdirectory("${RECOMP_RT64_SOURCE}" rt64 EXCLUDE_FROM_ALL)
+include("${CMAKE_CURRENT_LIST_DIR}/StableProjection.cmake")
 
 # Keep optimized native renderer stacks usable by the built-in CPU sampler.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

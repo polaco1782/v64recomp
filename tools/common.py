@@ -106,6 +106,22 @@ def validate_hook_prefix(rom: bytes, offset: int, address: int, available: int, 
     return len(expected)
 
 
+def shared_return_delay_slot(rom: bytes, section: dict, pc: int, left: dict, right: dict) -> bool:
+    """A checked entry may also be another function's terminal JR RA delay slot.
+
+    The same instruction executes on both paths. No other overlapping body or
+    fallthrough is authorized by this rule; normal entry/ROM checks still apply.
+    """
+    entry, owner = (left, right) if left['vram'] == pc else (right, left)
+    owned = owner.get('instruction_addresses', range(owner['vram'], owner['vram'] + owner['size'], 4))
+    if (entry['vram'] != pc or owner['vram'] >= pc
+            or entry['section'] != owner['section']
+            or pc - 4 not in owned or max(owned) != pc):
+        return False
+    offset = section['rom_offset'] + pc - 4 - section['vram']
+    return rom[offset:offset + 4] == bytes.fromhex('03e00008')
+
+
 def load_metadata(path: Path, rom: bytes) -> dict:
     metadata = json.loads(path.read_text())
     if metadata.get("format_version") != 1:
@@ -126,7 +142,7 @@ def load_metadata(path: Path, rom: bytes) -> dict:
         if section.get('sha256') != hashlib.sha256(rom[offset:offset + size]).hexdigest():
             raise RecompError(f"section bytes do not match metadata: {section['name']}")
     seen = set()
-    claimed = set()
+    claimed = {}
     for function in metadata["functions"]:
         section = sections.get(function["section"])
         if section is None:
@@ -190,7 +206,7 @@ def load_metadata(path: Path, rom: bytes) -> dict:
             if pc % 4 or not address <= pc < address + size:
                 raise RecompError(f"instruction outside function: {function['name']}")
             key = (function['section'], pc)
-            if key in claimed:
+            if key in claimed and not shared_return_delay_slot(rom, section, pc, claimed[key], function):
                 raise RecompError('overlapping function ranges or instruction ownership')
-            claimed.add(key)
+            claimed.setdefault(key, function)
     return metadata

@@ -4,6 +4,12 @@
   "complete": false,
   "entries": [
     {
+      "vram": 2147486840,
+      "origin": "checked-root",
+      "sha256": "d912f6eb149abecc6d138853ceb55f5d253ef992ae02f99aefc37ce729dcf984",
+      "evidence": "RNC2 wrapper materializes this entry at 0x80000c18..0x80000c24. Its first move also occupies the terminal JR RA delay slot at 0x80000c74."
+    },
+    {
       "vram": 2147488512,
       "origin": "checked-root",
       "sha256": "4a8ad1dc90788bc659f4864b754a43320409d18bf0b401847fc51c3c991423a1",
@@ -14,6 +20,24 @@
       "origin": "checked-root",
       "sha256": "86c1ed5b2a2ff0c9fb50a5c18b6a4b688b99ca2ee5f360959ef9e87f16cde6ef",
       "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147584032,
+      "origin": "checked-root",
+      "sha256": "89eb1be4386fbf70d7ff060691f5461ba4392c8023dcff0e173a2ee784e003ba",
+      "evidence": "Nested resource completion callback passed as a3 to 0x8002d248, consumed through record +8 by 0x8002cfac."
+    },
+    {
+      "vram": 2147584128,
+      "origin": "checked-root",
+      "sha256": "23e0d4c50b64e5cd0140b7be0876011a098179637996cd485c41c8c8e950f468",
+      "evidence": "Nested resource callbacks: a3 passed to 0x8002d248; record +8 callback is consumed by 0x8002ce30 and directly by 0x8002d424."
+    },
+    {
+      "vram": 2147586416,
+      "origin": "checked-root",
+      "sha256": "ef71f48101f706a2bf04442898a4e4fb7361df1636d039de57ae66fe20a86424",
+      "evidence": "Nested resource callbacks: a3 passed to 0x8002d248; record +8 callback is consumed by 0x8002ce30 and directly by 0x8002d424."
     },
     {
       "vram": 2147586460,
@@ -34,6 +58,12 @@
       "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
     },
     {
+      "vram": 2147655140,
+      "origin": "checked-root",
+      "sha256": "a151bdbfc81cdb6e2cf54abdfc68cc32cdd0245846c807b5b3d64f554f25166e",
+      "evidence": "Resource registration at 0x8002b398 passes this constant in a2; 0x8002d248 stores it in record +4; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
       "vram": 2147662488,
       "origin": "checked-root",
       "sha256": "73a13088cfbb895f51030920eb88f30b9ec9230c864e0639db0f669400a4e4cf",
@@ -46,6 +76,132 @@
       "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
     },
     {
+      "vram": 2147682716,
+      "origin": "checked-root",
+      "sha256": "09a4a2e6dc0aa8719c873cf05c4aa7b16d6e5afe9ccc7bd67a0577b88bf5af84",
+      "evidence": "Eight-byte swap callback: 0x800303e8..0x800303f8 passes pointer in fifth stack argument to sort 0x80035488; consumed at 0x80035560."
+    },
+    {
+      "vram": 2147688820,
+      "origin": "checked-root",
+      "sha256": "49a71dde1faf5469d698863b398274290be3446e933ad5d6de50c60ae3e94ba4",
+      "evidence": "Resource relocation callback: 0x800305cc..0x800305d4 stores pointer in sp+0x74; 0x80030634 reloads a2 for registration at 0x80030644. Second path stores sp+0x60 at 0x80030d64 and registers at 0x80030dc0."
+    },
+    {
+      "vram": 2147690020,
+      "origin": "checked-root",
+      "sha256": "6141b822535502beaa57d69bd3db44c8d101b77e8aad1b1943da558056ea902b",
+      "evidence": "Resource registration at 0x80033f9c passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147690184,
+      "origin": "checked-root",
+      "sha256": "a03b524a4db6a61f6194167931294fb2febda95c3dec8036aacd36c6e004ff7e",
+      "evidence": "Resource registration at 0x80033f9c passes this constant in a2; 0x8002d248 stores it in record +4; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147691360,
+      "origin": "checked-root",
+      "sha256": "fb620290ccb054ab5803e95eb7bb415129ceb16b347aead83930f5591381dcb7",
+      "evidence": "Resource registration at 0x80033784 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147691560,
+      "origin": "checked-root",
+      "sha256": "33d9688a5bce13e648f3b04e1dbccdd85e7194cab08d42983b073753d5f1b08e",
+      "evidence": "Resource registration at 0x80033784 passes this constant in a2; 0x8002d248 stores it in record +4; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147694352,
+      "origin": "checked-root",
+      "sha256": "8b8d20cb641e73c462db4d9b826ed460964b056671067d764295ba9426b29e79",
+      "evidence": "Resource registration at 0x80034030 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147694604,
+      "origin": "checked-root",
+      "sha256": "109404d095ec477a4b9a6ec43115c92eb16f5903fdcc587637edbd9d518c74f2",
+      "evidence": "Resource registration at 0x80034030 passes this constant in a2; 0x8002d248 stores it in record +4; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147695916,
+      "origin": "checked-root",
+      "sha256": "010b363b4202fe77939bc77eaa8fe0af77c83c182ec57aa6b53a40f2e290804f",
+      "evidence": "Resource registration at 0x800340a8 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147696564,
+      "origin": "checked-root",
+      "sha256": "b10ceec444c6cf276572add9e2601c77a855859291c024772bc505c3bf4e6733",
+      "evidence": "Resource registration at 0x800341b0 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697100,
+      "origin": "checked-root",
+      "sha256": "a7b184b6d5e6c7ec6117d75cc5905cc27ba774549c70bb18da8532b3acfadd73",
+      "evidence": "Resource registration at 0x8003426c passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697144,
+      "origin": "checked-root",
+      "sha256": "23e0d4c50b64e5cd0140b7be0876011a098179637996cd485c41c8c8e950f468",
+      "evidence": "Resource registration at 0x800342e8 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697284,
+      "origin": "checked-root",
+      "sha256": "855e7da36890196b6b1126920120a99628781a4733e72bb2992afaa7d23052a9",
+      "evidence": "Resource registration at 0x80034374 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697408,
+      "origin": "checked-root",
+      "sha256": "23e0d4c50b64e5cd0140b7be0876011a098179637996cd485c41c8c8e950f468",
+      "evidence": "Resource registration at 0x800343f0 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697548,
+      "origin": "checked-root",
+      "sha256": "855e7da36890196b6b1126920120a99628781a4733e72bb2992afaa7d23052a9",
+      "evidence": "Resource registration at 0x8003447c passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697672,
+      "origin": "checked-root",
+      "sha256": "23e0d4c50b64e5cd0140b7be0876011a098179637996cd485c41c8c8e950f468",
+      "evidence": "Resource registration at 0x800344d0 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697812,
+      "origin": "checked-root",
+      "sha256": "9ab2785feea6bc32fe0fa5651742914b0b5c911d32b28224c6abc5fdbe4917cc",
+      "evidence": "Resource registration at 0x80034528 passes this constant in a3; 0x8002d248 stores it in record +8; consumers 0x8002cf8c/0x8002cfac."
+    },
+    {
+      "vram": 2147697896,
+      "origin": "checked-root",
+      "sha256": "6f3ada8d4d974004b2c8f1872b0cb9a45fbd3f3c6c24395700b0c30cb9bbfaf1",
+      "evidence": "Nested resource completion callback passed as a3 to 0x8002d248, consumed through record +8 by 0x8002cfac."
+    },
+    {
+      "vram": 2147698064,
+      "origin": "checked-root",
+      "sha256": "9212e39e62ba29cf463fa69f455da42f31a0b6e03d16be92d35ec826dbaa3ba9",
+      "evidence": "Nested resource callbacks: a3 passed to 0x8002d248; record +8 callback is consumed by 0x8002ce30 and directly by 0x8002d424."
+    },
+    {
+      "vram": 2147699696,
+      "origin": "checked-root",
+      "sha256": "5a672cdcd1f58a5bf043d2e15b3b7863c11592f41e9eae3e11e46acbadeda1f4",
+      "evidence": "Nested resource callbacks: a3 passed to 0x8002d248; record +8 callback is consumed by 0x8002ce30 and directly by 0x8002d424."
+    },
+    {
+      "vram": 2147700772,
+      "origin": "checked-root",
+      "sha256": "ba0bda4a2e4e73ed5bfab21bf6ee2401cdb447d63a7e46b068a0173d089feb39",
+      "evidence": "Nested resource callbacks: a3 passed to 0x8002d248; record +8 callback is consumed by 0x8002ce30 and directly by 0x8002d424."
+    },
+    {
       "vram": 2147700908,
       "origin": "checked-root",
       "sha256": "b10ceec444c6cf276572add9e2601c77a855859291c024772bc505c3bf4e6733",
@@ -56,6 +212,12 @@
       "origin": "checked-root",
       "sha256": "0d9856ba3da025e81460f3b1965558a7ffcb4cbd436c3af493cd15d8378a0cc5",
       "evidence": "Resource registration 0x8002d248 stores a2/a3 in record +4/+8; callbacks consumed at 0x8002cf8c and 0x8002d424."
+    },
+    {
+      "vram": 2147723600,
+      "origin": "checked-root",
+      "sha256": "26a61ec3cf2118895e37eb0438980dc7df3ffb34713c6482821738f8c68b58f5",
+      "evidence": "Actor rotation callback: 0x8001ee80..0x8001ee90 stores this pointer in actor +0x184 for scene 0x7d03; renderer loads actor +0x184 at 0x80018d00 and calls with output quaternion a0 and actor a1 at 0x80018d18."
     },
     {
       "vram": 2147810124,
@@ -76,16 +238,58 @@
       "evidence": "0x8004fdf8 passes a3 to 0x8004f990; record +0x10 consumed by jalr at 0x8004f9c4."
     },
     {
+      "vram": 2147810516,
+      "origin": "checked-root",
+      "sha256": "7ab8b668ccb95f39e8fdd981e596b8e6faf96b4f01585fabc07349073b16c450",
+      "evidence": "Resource completion callback passed as fifth argument at 0x8004fd58 to wrapper 0x80034f2c, forwarded as a3 to resource registration 0x8002d248 and consumed through record +8 at 0x8002cfac. Both constant fifth-argument call sites of this wrapper were reviewed."
+    },
+    {
+      "vram": 2148003396,
+      "origin": "checked-root",
+      "sha256": "d4041afeaa97b6bd62976a40a74dad6433c1410244f344b168ae4617a7086c66",
+      "evidence": "Weapon selection barrel callback: constructor 0x8007f0c4 stores callback at object +0x40 through 0x8007f14c/0x8007f150; renderer 0x800839d8 loads that field and calls at 0x80083a18. Original source names corroborate InitWeaponSelectDraw/DrawWeaponSelectItem; ROM producer and consumer establish the addresses."
+    },
+    {
+      "vram": 2148003476,
+      "origin": "checked-root",
+      "sha256": "bccc951b7c3ed12f6c812e3d4068043cbe7b1ccce1969bc827ce754a9eebed94",
+      "evidence": "Weapon selection barrel callback: constructor 0x8007f0c4 stores callback at object +0x44 through 0x8007f14c/0x8007f150; renderer 0x800839d8 loads that field and calls at 0x80083ba4. Original source names corroborate InitWeaponSelectDraw/DrawWeaponSelectItem; ROM producer and consumer establish the addresses."
+    },
+    {
+      "vram": 2148054688,
+      "origin": "checked-root",
+      "sha256": "7ab8b668ccb95f39e8fdd981e596b8e6faf96b4f01585fabc07349073b16c450",
+      "evidence": "Resource completion callback: 0x8008b66c..0x8008b684 passes pointer as fifth stack argument to 0x80034f2c; wrapper forwards completion registration to 0x8002d248, consumed at 0x8002cfac."
+    },
+    {
       "vram": 2148062912,
       "origin": "checked-root",
       "sha256": "ca5f5941420ec5f544fd182624741d04da2b16d801f9132686c22cf09af18f11",
       "evidence": "osCreateThread callback a2 at 0x8008d674..0x8008d690; audio manager thread id 3"
     },
     {
+      "vram": 2148063832,
+      "origin": "checked-root",
+      "sha256": "37bc8b3df048000b3c120c318b7b5bc1f29a54c4e82b6f9fd6e1dfff5f58b55c",
+      "evidence": "Audio DMA constructor 0x8008dbd4 returns this callback in v0 for the audio driver."
+    },
+    {
       "vram": 2148064212,
       "origin": "checked-root",
       "sha256": "5f3b3db9563ad316eeb285033e0cacf16e920829e964cf7f735b887a6f76b2f7",
       "evidence": "Audio initialization 0x8008d3dc..0x8008d3e4 stores DMA constructor at audio config +0x10; read by audio driver."
+    },
+    {
+      "vram": 2148151036,
+      "origin": "checked-root",
+      "sha256": "e5c28f7ae13b06e213283fc743c1ffcaa62daacfab6ec64043296df1a4fb2c55",
+      "evidence": "SDK audio player event handler: constructor stores pointer at player +8 at 0x800a3650; driver invokes registered player callback at 0x800a5344."
+    },
+    {
+      "vram": 2148153100,
+      "origin": "checked-root",
+      "sha256": "179030bba23da3b6731f42f16d0dc57f410a51cfcd1b2f550c54dbf6f3c3c805",
+      "evidence": "SDK audio player event handler: constructor stores pointer at player +8 at 0x800a3d38; driver invokes registered player callback at 0x800a5344."
     },
     {
       "vram": 2148196288,
@@ -106,6 +310,12 @@
       "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
     },
     {
+      "vram": 2148202044,
+      "origin": "checked-root",
+      "sha256": "e50865db27aa6491a24e89ee4af723dfbf1d4967d568d5e802c56c3f57462e2a",
+      "evidence": "SDK audio synthesis pull callbacks stored in filter +4 by the verified constructors."
+    },
+    {
       "vram": 2148203456,
       "origin": "checked-root",
       "sha256": "7ac4c86f60fa0f137cf96653f061a730f75f1bd3f0325e84e2a29ab15fae5002",
@@ -116,6 +326,18 @@
       "origin": "checked-root",
       "sha256": "49326cf085188baa48298f310efd137012f579267ba5ac7ccf3fa211a352c67b",
       "evidence": "SDK audio filter constructors pass pull callback as a1 to 0x800b1620, stored in filter +4 for synthesis dispatch."
+    },
+    {
+      "vram": 2148211928,
+      "origin": "checked-root",
+      "sha256": "9f31d2a4394d1792b8030d2403a52f23e369979a5e3e09d8a8275828364feb62",
+      "evidence": "alFx constructor 0x800adb14..0x800adb24 stores this parameter handler at filter +0x28, paired with alFxPull at +4."
+    },
+    {
+      "vram": 2148212556,
+      "origin": "checked-root",
+      "sha256": "60b19b7386d429bad018395e447fb400fc917d295027314d890ff4148f0fdf5d",
+      "evidence": "SDK audio synthesis pull callbacks stored in filter +4 by the verified constructors."
     }
   ]
 }

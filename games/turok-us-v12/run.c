@@ -2,7 +2,8 @@
 #include "run.h"
 #include "generated.h"
 #include "renderer.h"
-#include "recomp_audio.h"
+#include "audio.h"
+#include "graphics.h"
 #include "turok_config.h"
 #include <inttypes.h>
 #include <openssl/sha.h>
@@ -35,6 +36,28 @@ static void read_input(void) {
     }
 }
 #endif
+/* Turok uses C-buttons to move and the N64 stick to look. Swap live host
+ * inputs here so arrows/left stick move and IJKL/right stick look. Debug
+ * replays remain original N64 inputs, independent of the host bindings. */
+static void map_controls(RecompPad *pad) {
+    const uint16_t look = pad->buttons & 0x000f;
+    const int x = pad->stick_x, y = pad->stick_y;
+    pad->buttons &= ~0x000f;
+    if (y > 20)
+        pad->buttons |= 0x0008;
+    if (y < -20)
+        pad->buttons |= 0x0004;
+    if (x < -20)
+        pad->buttons |= 0x0002;
+    if (x > 20)
+        pad->buttons |= 0x0001;
+    pad->stick_x = ((look & 0x0001) != 0) * 80 - ((look & 0x0002) != 0) * 80;
+    pad->stick_y = ((look & 0x0008) != 0) * 80 - ((look & 0x0004) != 0) * 80;
+    if (pad->stick_x && pad->stick_y) {
+        pad->stick_x = pad->stick_x * 7 / 10;
+        pad->stick_y = pad->stick_y * 7 / 10;
+    }
+}
 static uint64_t guest_time(void *opaque) {
     (void)opaque;
     return recomp_game_monotonic() - wall_origin;
@@ -141,6 +164,8 @@ int turok_run(const RecompGameOptions *options, const char *report) {
     }
     const char *capture = getenv("RECOMP_TUROK_CAPTURE_EVERY");
     unsigned capture_every = capture ? (unsigned)strtoul(capture, NULL, 10) : 0;
+    const char *capture_begin = getenv("RECOMP_TUROK_CAPTURE_FROM");
+    unsigned capture_from = capture_begin ? (unsigned)strtoul(capture_begin, NULL, 10) : 0;
 #endif
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
         recomp_store(&rt, boot_parameters[i][0], boot_parameters[i][1], 4);
@@ -164,11 +189,12 @@ int turok_run(const RecompGameOptions *options, const char *report) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Turok IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "Turok");
     require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_microcode_hook(renderer, turok_bind_microcode);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,
                             .microcode = RECOMP_AUDIO_ABI1,
-                            .task_profile = NULL};
+                            .task_profile = &turok_audio_profile};
 #ifdef RECOMP_DEBUG
     ac.wav_path = getenv("RECOMP_TUROK_WAV");
 #endif
@@ -182,6 +208,7 @@ int turok_run(const RecompGameOptions *options, const char *report) {
         RecompPad pad = {.connected = true};
         if (!recomp_renderer_input(renderer, &pad))
             break;
+        map_controls(&pad);
 #ifdef RECOMP_DEBUG
         if (input) {
             while (next_input && input_frame <= frame) {
@@ -195,7 +222,7 @@ int turok_run(const RecompGameOptions *options, const char *report) {
         drain(&rt);
         require(recomp_renderer_present(renderer), "presentation failed", 0);
 #ifdef RECOMP_DEBUG
-        if (capture_every && (frame + 1) % capture_every == 0 && graphics_tasks && report) {
+        if (capture_every && frame + 1 >= capture_from && (frame + 1) % capture_every == 0 && graphics_tasks && report) {
             char path[4096];
             require(snprintf(path, sizeof(path), "%s.frame-%06u.ppm", report, frame + 1) < (int)sizeof(path),
                     "capture path too long", 0);

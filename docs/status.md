@@ -4,6 +4,8 @@ These are the established port milestones, not new full-game acceptance claims.
 
 - **Resident Evil 2 US header revision 1**: Experimental bring-up. Original main-image and overlay decompression run with full decoded-image verification. Opening logos, warning, movie and title menu render on the desktop; Start skips the movie. MusyX v1 synthesis and native video resize/conversion are integrated; gameplay, audible audio and save acceptance remain in progress. See the [port notes](../games/re2-us-v1/README.md).
 
+- **Turok: Dinosaur Hunter US v1.2**: Experimental partial conversion with original startup, main menu and first-person gameplay. Debug and Release build; bounded replays exercise input, firing, weapon selection, death/respawn and pause/resume with RT64 graphics and ABI1 PCM synthesis. Starting-camera fog/clipping was traced to unstable RT64 projection decomposition and corrected; the user confirmed the fix. A fingerprinted game-local L3DEX 1.00 adapter handles the automap. Full-game progression, save/reload and listening quality remain unverified. See the [port notes](../games/turok-us-v12/README.md).
+
 - **Super Mario 64 US**: Working gameplay baseline, with Castle Grounds movement/jumping and the castle lobby transition previously validated. Broader courses, ending and prolonged runs still need validation.
 - **GoldenEye 007 US**: Original startup, menus and playable Dam. CPU inventory is partial and remaining unsupported functions fail explicitly. Full-game progression remains unverified.
 - **Shadow Man US**: Original startup, graphics, audio and Controller Pak screen. Title/gameplay progression remains in progress; this is not a completed game port.

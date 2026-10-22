@@ -8,7 +8,7 @@ import hashlib
 from pathlib import Path
 import sys
 
-from common import RecompError, load_profile, load_rom, validate_hook_prefix, write_json
+from common import RecompError, load_profile, load_rom, validate_hook_prefix, write_json, shared_return_delay_slot
 from code_inventory import load_inventory, load_entry_inventory, complete_code
 from emit import constant_condition, decode, target
 from native_hooks import classify_native_bodies, resolve_native_hooks
@@ -454,12 +454,14 @@ def discover(rom: bytes, profile: dict) -> dict:
         if not queue:
             break
     owners, issues = {}, []
+    functions_by_key = {(f['section'], f['vram']): f for f in functions}
     conflicts = set()
     for function in functions:
         key = (function['section'], function['vram'])
         for pc in function['instruction_addresses']:
             word_key = (function['section'], pc)
-            if word_key in owners:
+            if word_key in owners and not shared_return_delay_slot(
+                    rom, sections[function['section']], pc, functions_by_key[owners[word_key]], function):
                 conflicts.update((key, owners[word_key]))
                 issues.append({'section': function['section'], 'vram': pc,
                                'reason': 'ambiguous instruction ownership; functions omitted pending review'})

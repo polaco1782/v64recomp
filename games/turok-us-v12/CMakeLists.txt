@@ -1,4 +1,6 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/turok.us.v12.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/turok-us-v12.mpk")
-set(RECOMP_GAME_SOURCES run.c)
+set(RECOMP_GAME_SOURCES run.c graphics.cpp)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
+target_include_directories(${RECOMP_GAME} SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
+target_compile_definitions(${RECOMP_GAME} PRIVATE HLSL_CPU FFX_GCC IMGUI_IMPL_VULKAN_NO_PROTOTYPES)

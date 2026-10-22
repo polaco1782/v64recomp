@@ -198,3 +198,18 @@ artifacts:
 Controlled runtime failures write JSON and word-swapped RDRAM snapshots. See
 [the build and crash workflow](../README.md). Host faults outside the runtime's
 checks require GDB or a host core dump.
+
+A checked function entry may coincide with another function's terminal `jr ra`
+delay slot. Both paths execute that word; the separately called entry then
+continues into its own body. Discovery and metadata validation permit exactly
+this one shared word, with the preceding `jr ra` checked against the ROM. Other
+body overlaps remain errors. Turok US v1.2 uses this arrangement at `0x80000c78`
+in its original RNC2 unpacker.
+
+The shared RT64 build applies `cmake/rt64/StableProjection.cmake` to a private build
+copy of the pinned math translation unit. Combined view/projection decomposition
+selects the largest view-axis component before dividing, avoiding a zero X pivot
+and amplification of 16.16 quantization around axis-aligned cameras. The source
+checkout is unchanged; a changed upstream calculation stops configuration for
+review. The correction was checked against the captured starting camera and
+quantized axis-aligned matrices at O0 and O2.

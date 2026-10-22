@@ -1,5 +1,6 @@
 """Prepare the pinned RNC1 program without changing cartridge offsets."""
 import hashlib
+from pathlib import Path
 from common import RecompError
 from rnc import decode_rnc1
 
@@ -10,9 +11,6 @@ def prepare(rom, profile, output):
     if len(raw) != boot['decoded_size'] or hashlib.sha256(raw).hexdigest() != boot['decoded_sha256']:
         raise RecompError('Turok program fingerprint mismatch')
     return rom + raw, profile
-
-
-from pathlib import Path
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:

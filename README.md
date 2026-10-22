@@ -80,6 +80,8 @@ Every game uses `games/<game>/profile.toml`, where `<game>` is `sm64-us`,
 `quake-us`, `quake2-us`, `duke-us`, `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or
 `conker-us` or `rayman2-us` (experimental; see the
 [Conker](games/conker-us/README.md) and [Rayman 2](games/rayman2-us/README.md) port notes).
+Turok: Dinosaur Hunter US v1.2 is registered as experimental `turok-us-v12`; see its
+[port notes](games/turok-us-v12/README.md).
 Resident Evil 2 US revision 1 is registered as experimental `re2-us-v1`; see its
 [bring-up notes](games/re2-us-v1/README.md).
 Quake II runs with the Expansion Pak enabled; see its [port notes](games/quake2-us/README.md).
@@ -101,6 +103,7 @@ The imported, normalized files have these filenames and MD5 checksums:
 | `re2.us.rev1.z64` | `1add2c0217662b307cdfd876b35fbf7a` |
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
 | `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
+| `turok.us.v12.z64` | `039875b92c0e4fef9797ec1744877b17` |
 
 After importing a ROM, build and run its game:
 
@@ -150,7 +153,7 @@ See [ROM content packaging](docs/rom-packaging.md) for supported layouts,
 removal reports and the limits of code stripping.
 
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `quake2-us`, `duke-us`,
-`duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us` / `rayman2-us` / `re2-us-v1`. ROMs, saves, texture packs and crash dumps stay
+`duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us` / `rayman2-us` / `re2-us-v1` / `turok-us-v12`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
 
 The equivalent explicit CMake configuration is:
