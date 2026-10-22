@@ -25,11 +25,17 @@ Use a desktop Vulkan session and a wall-time limit during investigation;
 crash reports, `--trace-calls`, `--input`, `--capture-every` and `--wav`.
 Routine diagnostic output stays in Debug. Replay frames count host presentations.
 
+Cartridge saves use 32 KiB SRAM at `local/saves/re2-us-v1.sra` (override with
+`--save`). The previous `.mpk` path was a Controller Pak image and is kept
+separate. The default controller has no Pak attached.
+
 Game-specific diagnostic tools live in `debug/`: `check_musyx.c`,
 `check_video_dsp.c` and `inspect_overlay.py`. The C source headers include their
 standalone sanitizer build commands; keep generated binaries under `build/`.
 The overlay inspector verifies cartridge identity and compares complete decoded
-images against private crash snapshots, without changing checked metadata.
+images against private crash snapshots, without changing checked metadata. For an enemy patch variant, pass e.g.
+`--index 39 --source-index 11`; `--ram` then compares its entire reconstructed
+second-slot image.
 
 ## Loading model
 
@@ -43,9 +49,11 @@ The 16-byte record at `0x12ce0` gives cartridge `0x14420`, compressed size
 `0x5e1ef`, and decoded RAM `0x80018a80..0x80136d90`. It starts with a two-byte
 header followed by raw DEFLATE. `generate.py` verifies this record, EOF, decoded
 size and full SHA-256, then appends its bytes at analysis offset `0x4000000`.
-Overlay 3 follows at analysis offset `0x411e310`, overlay 2 at `0x4124fd0`
+Overlay 3 follows at analysis offset `0x411e310`, overlay 2 at `0x4124fd0`,
 overlay 4 at `0x4131070` and overlay 5 at `0x413f650`.
-The analysis SHA-1 is `39cad0b1a053431fc281dbf0308288a8287b910c`.
+Enemy overlay 11 follows at `0x4144850`; its second-slot variant (record 39)
+follows at `0x41513e0`. The analysis SHA-1 is
+`923396abc251e332452edcb1494965de8c465d40`.
 Prepared offsets must never be used for cartridge DMA or ROM import.
 
 At runtime the original translated inflater runs after native raw PI DMA;
@@ -61,6 +69,9 @@ SDK replacements use complete-body fingerprints in `tools/symbols.json`.
 Checked callback roots and switch tables remain partial; their presence does
 not classify every mapped byte. Some OS bodies are modified SDK variants;
 identification CRCs alone were not used to authorize native replacements.
+The character-confirmation SRAM wait uses the complete-body-verified
+`osEPiStartDma` binding; its 32 KiB read/write completion and persistence are
+verified. Main gameplay thread entries and their bounded switches are included.
 
 ## Runtime bring-up
 
@@ -69,7 +80,17 @@ The original loader inflates overlays 3 (`0x8015b030`, size `0x6cc0`) and
 RAM. The adapter invalidates overlapping compiled sections before decompression
 and checks the complete decoded hash before activation. The reused loader
 thread retires its stopped native stack before receiving a new entry/context.
-Other overlay records and the overlapping scene slots remain incomplete.
+Enemy type 0x10 is included in both fixed slots. Record 11 inflates to
+`0x80161cf0..0x8016e880`; record 39 is a raw byte-patch list for the same image
+at `0x8016e880..0x8017b410`. The original loader at `0x8003287c` inflates the
+source into the selected slot and applies (big-endian u16 delta, byte value,
+padding) records at `0x80032ac0..0x80032ae4`. Its 1,910 patches modify
+instructions and data pointers. Generation reproduces the complete second
+layout from ROM bytes and compiles both variants; it does not depend on a RAM
+dump. Runtime validates the complete original image after inflation, invalidates
+the overwritten slot, and enables the patched variant only after its complete
+hash matches. The original translated patch loop still runs. Other enemy
+overlays and module records remain incomplete.
 
 F3DEX.Rej and other graphics lists reach RT64; their zero `data_size` is
 permitted because F3DEX follows list terminators. Native video tasks authenticate
@@ -125,3 +146,10 @@ resize/conversion cores. Its authors describe comparison against actual RSP
 execution. Locally, the ROM program boundaries, captured task parameters and
 constants, full executable hashes, synthetic arithmetic and rendered warning
 screen have been checked; an independent RSP differential run has not been done.
+
+The enemy byte-patch format and complete second-slot image were established
+locally from the original loader and captured RAM. RE2 Studio's pinned overlay
+reader enumerates records but only decompresses DEFLATE payloads; its cached
+source did not implement these raw patch records. The public OpenBiohazard2
+project is a Go/OpenGL engine reimplementation, not a matching decompilation of
+this N64 revision.

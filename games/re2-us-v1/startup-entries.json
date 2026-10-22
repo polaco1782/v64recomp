@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "rom_sha1": "39cad0b1a053431fc281dbf0308288a8287b910c",
+  "rom_sha1": "923396abc251e332452edcb1494965de8c465d40",
   "complete": false,
   "entries": [
     {
@@ -516,6 +516,86 @@
       "origin": "checked-root",
       "sha256": "8da149cfaf2e60f4c53525053c9dbbce6a615f7f0f4ab19fd33a5e31ca906760",
       "evidence": "Module table record 4 at 0x8010b300 selects overlay 5 and callback 0x8017b4a4; menu handler 0x8015d6cc calls module loader 0x8004cca8 with index 4; full decoded RAM SHA-256 matched"
+    },
+    {
+      "vram": 2148111868,
+      "origin": "checked-root",
+      "sha256": "4d00eceeb344355cb4458113b3416120e5557ee257b4ac4f6817ba9b5aa4467f",
+      "evidence": "Main module table record 7 at 0x8010b318 stores 0x800995fc at +4; module slot entry +0x1b8 is passed as a2 to osCreateThread at 0x8004cb60. Character-confirmation crash records this exact thread entry. Verified main-image prologue and direct callees."
+    },
+    {
+      "vram": 2148123504,
+      "origin": "checked-root",
+      "sha256": "10cf1d2489ef6b0689cb39beee5fc2d52ae7a229e2c318355587483d016fa999",
+      "evidence": "Main module table record 5 at 0x8010b308 stores 0x8009c370 at +4; slot entry +0x1b8 is passed as a2 to osCreateThread at 0x8004cb60. Actual post-character thread-5 creation confirms the entry; reviewed main-image prologue and callees."
+    },
+    {
+      "vram": 2147823424,
+      "origin": "checked-root",
+      "sha256": "c7f03df6534ba6d211b4f238e6c003ab8ca81952cb2186eb76535f4e129800b6",
+      "evidence": "Checked callback argument a1 to 0x8004cd54 at 0x80099edc; setter stores a1 in module slot +0x1b8 and marks it runnable. 0x8004cb50 loads that entry into osCreateThread a2. Reviewed complete callback body and direct callees."
+    },
+    {
+      "vram": 2148117740,
+      "origin": "checked-root",
+      "sha256": "19c24c68df61f0ae516d7da0537bb689b19a49eac231eb19e335745073f5d17a",
+      "evidence": "Checked callback argument a1 to 0x8004cd54 at 0x8009ac90; setter stores a1 in module slot +0x1b8 and marks it runnable. 0x8004cb50 loads that entry into osCreateThread a2. Reviewed complete callback body and direct callees."
+    },
+    {
+      "vram": 2147500244,
+      "origin": "checked-root",
+      "sha256": "b2a11709693e85233dddd195f09ced6c3bbe3cd8b03c335a3cfc3a79d285d6bf",
+      "evidence": "Fixed Huffman-table allocator: 0x80004148 materializes address and 0x8000414c stores callback in temporary stream +0x20; huft builder 0x80003c30 loads it and JALR 0x80003c50 passes opaque/count/8. Reviewed complete ten-instruction body. Reached by gameplay-resource inflate after character selection."
+    },
+    {
+      "vram": 2148222196,
+      "origin": "checked-root",
+      "sha256": "c880f3a7fd7a2479039b2e6102cf76700858fe0bc0cd53061596a484c41549af",
+      "evidence": "Audio stream transfer callback: 0x800b38e8 materializes it and 0x800b38f4 stores fifth argument to 0x800b4930. Initializer loads caller stack +0x10 at 0x800b4958 and stores stream +0x190 at 0x800b4990; 0x800b4b1c loads it for JALR 0x800b4b30. Reviewed complete 16-instruction body and queue-completion ABI."
+    },
+    {
+      "vram": 2148231212,
+      "origin": "checked-root",
+      "sha256": "a6a6fd6154f7dad2091fedbf166dd9e289b6f3c89e4e3f32818869607fe60cb5",
+      "evidence": "CPU audio filter helper selected in t3 by 0x800b6634 through four checked never-taken BLTZAL link-address calculations; consumed by eight JALR t3 calls in 0x800b6788. Reviewed all four entries through common saturation tail 0x800b686c..0x800b68c0, input/output t2/t4 and preserved t3/t5 ABI."
+    },
+    {
+      "vram": 2148231236,
+      "origin": "checked-root",
+      "sha256": "a8cb34c91c024b33bb88c950cc54170e6d3dc6c75d416498a7d0c7900b4f41e1",
+      "evidence": "CPU audio filter helper selected in t3 by 0x800b6634 through four checked never-taken BLTZAL link-address calculations; consumed by eight JALR t3 calls in 0x800b6788. Reviewed all four entries through common saturation tail 0x800b686c..0x800b68c0, input/output t2/t4 and preserved t3/t5 ABI."
+    },
+    {
+      "vram": 2148231252,
+      "origin": "checked-root",
+      "sha256": "13b6fb701d8b31ff07501228a412934f37027b831f9d23c32a4be54f140811f3",
+      "evidence": "CPU audio filter helper selected in t3 by 0x800b6634 through four checked never-taken BLTZAL link-address calculations; consumed by eight JALR t3 calls in 0x800b6788. Reviewed all four entries through common saturation tail 0x800b686c..0x800b68c0, input/output t2/t4 and preserved t3/t5 ABI."
+    },
+    {
+      "vram": 2148231276,
+      "origin": "checked-root",
+      "sha256": "c8d5c23642ea7f46373344799a29c0f6ff8100e6c87887f9bbf9b572388a277d",
+      "evidence": "CPU audio filter helper selected in t3 by 0x800b6634 through four checked never-taken BLTZAL link-address calculations; consumed by eight JALR t3 calls in 0x800b6788. Reviewed all four entries through common saturation tail 0x800b686c..0x800b68c0, input/output t2/t4 and preserved t3/t5 ABI."
+    },
+    {
+      "vram": 2148222072,
+      "origin": "checked-root",
+      "sha256": "8f7ea06897c8f9476e99f31b62186102beed20d60c507f8e0a0f849f15a46337",
+      "evidence": "Streamed voice callback: 0x800b3bf4 forms s7 and 0x800b3cdc passes it as ninth argument (+0x20) to 0x800a924c. Initializer loads caller +0x20 at 0x800a92e0 and stores voice slot +4 at 0x800a92ec; consumer JALR sites 0x800a9188/91d8 load slot +4. Reviewed complete 0x7c-byte body, five-argument ABI and return value."
+    },
+    {
+      "section": ".overlay11",
+      "vram": 2148932848,
+      "origin": "checked-root",
+      "sha256": "743ed7772817bd8c5180151cce6a766a0c4e6ac00c4c377c4685e08694cfb1db",
+      "evidence": "Enemy type 0x10: slot entry initialized by 0x800324a8, selected/stored in actor handler table by 0x8003287c, called with actor a0 at 0x80065304/0x8006534c; slot 1 is record 11 plus complete record 39 byte patches."
+    },
+    {
+      "section": ".overlay39",
+      "vram": 2148984960,
+      "origin": "checked-root",
+      "sha256": "743ed7772817bd8c5180151cce6a766a0c4e6ac00c4c377c4685e08694cfb1db",
+      "evidence": "Enemy type 0x10: slot entry initialized by 0x800324a8, selected/stored in actor handler table by 0x8003287c, called with actor a0 at 0x80065304/0x8006534c; slot 1 is record 11 plus complete record 39 byte patches."
     }
   ]
 }

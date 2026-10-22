@@ -34,6 +34,19 @@ class Event(C.Union):
     _fields_ = [('key', KeyEvent), ('pad', C.c_long * 24)]
 
 
+class WindowAttributes(C.Structure):
+    # Xlib's XWindowAttributes, including fields following map_state so that
+    # XGetWindowAttributes can safely write the complete native structure.
+    _fields_ = [(name, C.c_int) for name in
+                ('x', 'y', 'width', 'height', 'border_width', 'depth')] + [
+        ('visual', D), ('root', W), ('window_class', C.c_int),
+        ('bit_gravity', C.c_int), ('win_gravity', C.c_int), ('backing_store', C.c_int),
+        ('backing_planes', W), ('backing_pixel', W), ('save_under', C.c_int),
+        ('colormap', W), ('map_installed', C.c_int), ('map_state', C.c_int),
+        ('all_event_masks', C.c_long), ('your_event_mask', C.c_long),
+        ('do_not_propagate_mask', C.c_long), ('override_redirect', C.c_int), ('screen', D)]
+
+
 class X11:
     def __init__(self):
         self.lib = C.CDLL('libX11.so.6')
@@ -43,6 +56,7 @@ class X11:
             'XInternAtom': ([D, C.c_char_p, C.c_int], W),
             'XQueryTree': ([D, W, C.POINTER(W), C.POINTER(W), C.POINTER(C.POINTER(W)), C.POINTER(C.c_uint)], C.c_int),
             'XGetWindowProperty': ([D, W, W, C.c_long, C.c_long, C.c_int, W, C.POINTER(W), C.POINTER(C.c_int), C.POINTER(W), C.POINTER(W), C.POINTER(C.c_void_p)], C.c_int),
+            'XGetWindowAttributes': ([D, W, C.POINTER(WindowAttributes)], C.c_int),
             'XStringToKeysym': ([C.c_char_p], W),
             'XKeysymToKeycode': ([D, W], C.c_ubyte),
             'XRaiseWindow': ([D, W], C.c_int),
@@ -87,13 +101,21 @@ class X11:
         pending = [(self.root, 0)]
         while pending:
             window, depth = pending.pop()
-            if self.pid(window) == pid:
+            if self.pid(window) == pid and self.viewable(window):
                 return window
             if depth < 4:
                 pending.extend((child, depth+1) for child in self.children(window))
         return None
 
+    def viewable(self, window: int) -> bool:
+        attributes = WindowAttributes()
+        return bool(self.lib.XGetWindowAttributes(self.display, window, C.byref(attributes))
+            and attributes.window_class == 1 and attributes.map_state == 2
+            and attributes.width > 0 and attributes.height > 0)
+
     def key(self, window: int, name: str, pressed: bool) -> None:
+        if not self.viewable(window):
+            raise RecompError('the child window is not viewable for keyboard replay')
         self.lib.XRaiseWindow(self.display, window)
         self.lib.XSetInputFocus(self.display, window, 1, 0)
         code = self.lib.XKeysymToKeycode(self.display, self.lib.XStringToKeysym(name.encode()))

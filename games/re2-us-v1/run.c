@@ -16,6 +16,8 @@ static uint64_t wall_origin;
 static bool boot_retired;
 static bool main_loaded;
 static uint32_t loading_address, loading_size, loading_compressed;
+static unsigned loading_source;
+static unsigned pending_patch = UINT32_MAX;
 #ifdef RECOMP_DEBUG
 static unsigned graphics_tasks;
 static FILE *input;
@@ -87,20 +89,52 @@ static uint64_t guest_time(void *opaque) {
     (void)opaque;
     return recomp_game_monotonic() - wall_origin;
 }
+static bool image_matches(Runtime *rt, uint32_t address, uint32_t size, const uint8_t expected[32]) {
+    uint8_t *image = malloc(size), digest[32];
+    unsigned length = 0;
+    recomp_game_require(image != NULL, "cannot verify RE2 overlay", address);
+    (void)recomp_ram_address(rt, address, size);
+    for (uint32_t i = 0; i < size; i++)
+        image[i] = (uint8_t)recomp_load(rt, address + i, 1);
+    bool ok =
+        EVP_Digest(image, size, digest, &length, EVP_sha256(), NULL) && length == 32 && !memcmp(digest, expected, 32);
+    free(image);
+    return ok;
+}
 static void prepare_call(Runtime *rt, uint32_t address) {
 #ifdef RECOMP_DEBUG
     if (getenv("RECOMP_TRACE_CALLS"))
         fprintf(stderr, "RE2 call 0x%08x\n", address);
 #endif
+    /* Lookup checks loaded sections before prepare_call. The actor dispatcher
+     * runs after the original loader's DMA and patch loop, before its first
+     * enemy lookup. Verify once here; doing so in high-priority SDK callbacks
+     * while the loader is blocked would delay its PI/VI progress. */
+    if (pending_patch != UINT32_MAX && address == 0x80065220) {
+        recomp_game_require(image_matches(rt, re2_overlays[pending_patch].address, re2_overlays[pending_patch].size,
+                                          re2_overlays[pending_patch].sha256),
+                            "RE2 patched overlay differs from compiled image", re2_overlays[pending_patch].address);
+        rt->section_loaded[re2_overlays[pending_patch].section] = true;
+#ifdef RECOMP_DEBUG
+        fprintf(stderr, "RE2 verified patched overlay at 0x%08x\n", re2_overlays[pending_patch].address);
+#endif
+        pending_patch = UINT32_MAX;
+    }
     const MipsContext *call =
         address == 0x800045dc || address == BOOT_INFLATE_CLEANUP ? recomp_thread_context(rt, 0) : NULL;
-    if (address == 0x800045dc && call && (uint32_t)call->gpr[31] == 0x8004cc38) {
+    if (address == 0x800045dc && call &&
+        ((uint32_t)call->gpr[31] == 0x8004cc38 || (uint32_t)call->gpr[31] == 0x80032840)) {
         recomp_game_require(!loading_compressed, "concurrent RE2 overlay decompression", address);
         loading_address = (uint32_t)call->gpr[6];
         loading_compressed = (uint32_t)call->gpr[7];
+        loading_size = 0;
+        loading_source = UINT32_MAX;
         for (unsigned i = 0; i < sizeof(re2_overlays) / sizeof(re2_overlays[0]); i++)
-            if (re2_overlays[i].address == loading_address && re2_overlays[i].compressed_size == loading_compressed)
+            if (!re2_overlays[i].patched && re2_overlays[i].cartridge == (uint32_t)call->gpr[5] &&
+                re2_overlays[i].compressed_size == loading_compressed) {
                 loading_size = re2_overlays[i].size;
+                loading_source = i;
+            }
         (void)recomp_ram_address(rt, loading_address, loading_size);
         for (unsigned i = 0; i < sizeof(re2_overlays) / sizeof(re2_overlays[0]); i++) {
             if ((uint64_t)loading_address < (uint64_t)re2_overlays[i].address + re2_overlays[i].size &&
@@ -108,7 +142,8 @@ static void prepare_call(Runtime *rt, uint32_t address) {
                 rt->section_loaded[re2_overlays[i].section] = false;
         }
     }
-    if (address == BOOT_INFLATE_CLEANUP && call && (uint32_t)call->gpr[31] == 0x8004cc48) {
+    if (address == BOOT_INFLATE_CLEANUP && call &&
+        ((uint32_t)call->gpr[31] == 0x8004cc48 || (uint32_t)call->gpr[31] == 0x80032850)) {
         uint32_t stream = (uint32_t)call->gpr[4];
         uint32_t produced = (uint32_t)recomp_load(rt, stream + 0x14, 4);
         recomp_game_require(loading_compressed && produced && (!loading_size || produced == loading_size) &&
@@ -116,25 +151,20 @@ static void prepare_call(Runtime *rt, uint32_t address) {
                                 recomp_load(rt, stream + 0xc, 4) == loading_address + produced,
                             "RE2 overlay inflater did not produce the complete image", loading_address);
         loading_size = produced;
-        bool matched = false;
-        for (unsigned i = 0; i < sizeof(re2_overlays) / sizeof(re2_overlays[0]); i++) {
-            if (re2_overlays[i].address != loading_address || re2_overlays[i].size != loading_size)
-                continue;
-            uint8_t *image = malloc(loading_size), digest[32];
-            unsigned length = 0;
-            recomp_game_require(image != NULL, "cannot verify RE2 overlay", loading_address);
-            for (uint32_t j = 0; j < loading_size; j++)
-                image[j] = (uint8_t)recomp_load(rt, loading_address + j, 1);
-            bool ok = EVP_Digest(image, loading_size, digest, &length, EVP_sha256(), NULL) && length == 32 &&
-                      !memcmp(digest, re2_overlays[i].sha256, 32);
-            free(image);
-            if (ok) {
-                rt->section_loaded[re2_overlays[i].section] = true;
-                matched = true;
-                break;
-            }
+        recomp_game_require(loading_source != UINT32_MAX &&
+                                image_matches(rt, loading_address, loading_size, re2_overlays[loading_source].sha256),
+                            "RE2 decompressed overlay has no verified compiled mapping", loading_address);
+        if (re2_overlays[loading_source].address == loading_address)
+            rt->section_loaded[re2_overlays[loading_source].section] = true;
+        else {
+            pending_patch = UINT32_MAX;
+            for (unsigned i = 0; i < sizeof(re2_overlays) / sizeof(re2_overlays[0]); i++)
+                if (re2_overlays[i].patched && re2_overlays[i].address == loading_address &&
+                    re2_overlays[i].size == loading_size)
+                    pending_patch = i;
+            recomp_game_require(pending_patch != UINT32_MAX, "RE2 enemy slot has no compiled patch variant",
+                                loading_address);
         }
-        recomp_game_require(matched, "RE2 decompressed overlay has no verified compiled mapping", loading_address);
         loading_size = loading_compressed = 0;
     }
     /* The startup loader calls inflate cleanup only after producing all bytes.
@@ -188,12 +218,14 @@ int re2_run(const RecompGameOptions *options, const char *report) {
                                      .vi_clock = BOOT_VI_CLOCK,
                                      .clock_rate = BOOT_CLOCK_RATE,
                                      .final_rom = BOOT_FINAL_ROM,
-                                     .app_nmi_buffer = 0x8000031c};
+                                     .app_nmi_buffer = 0x8000031c,
+                                     .sram_size = 32768,
+                                     .sram_path = options->save};
     wall_origin = recomp_game_monotonic();
     recomp_game_require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler) &&
                             recomp_platform_init(&rt, &platform),
                         "RE2 services init failed", 0);
-    RecompIOConfig io = {.connected_mask = 1, .pak_mask = 1, .pak_paths = {options->save}};
+    RecompIOConfig io = {.connected_mask = 1};
     RecompTaskBackend backend = {.submit = submit, .validate_custom_data = re2_video_validate};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "RE2 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "Resident Evil 2");
