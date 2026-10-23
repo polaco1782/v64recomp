@@ -41,10 +41,56 @@ roots = [
   {name = "mainproc", vram = 0x103298},
   {name = "application", vram = 0x103210},
 ]
+transfers = [
+  # func_002d2b40 selects 20-byte records through the pointers at 0x80045b64.
+  # The first word of each of the 135 records at .game 0x2190b8..0x219b44
+  # is a callback or null; the full record block hashes to
+  # 09de4a1c80ca1b55bca7e6054406c48c98ad010ef8105eb5f093b2ad213b36f9.
+  {pc = 0x2d2bcc, expected_word = 0xa0f809, kind = "call", targets = [0x2d2fc0, 0x2d338c, 0x2d33d4, 0x2d33e4, 0x2d3788, 0x2d3790, 0x2d37d4, 0x2d37e4, 0x2d381c, 0x2d383c, 0x2d3874, 0x2d3894, 0x2d38b4, 0x2d38d4, 0x2d3938, 0x2d3968, 0x2d3998, 0x2d39c8, 0x2d39f8, 0x2d3a48, 0x2d3a78, 0x2d3c88]},
+  # func_002d6340 calls word 1 of eight-byte (size, callback) records at
+  # .game 0x2188a0..0x218a40, followed by the 0xffffffff terminator.
+  # The 52 records hash to 289d0a1ccbef217eb73ae663393765433bf9ca5e03514cf8557da4a3cb79fd05.
+  {pc = 0x2d63a4, expected_word = 0x40f809, kind = "call", targets = [
+    0x2d3d50, 0x2d3db8, 0x2d3de4, 0x2d3e18, 0x2d3ef4, 0x2d3f2c, 0x2d3f68, 0x2d3ff8,
+    0x2d4058, 0x2d4280, 0x2d42b0, 0x2d42d0, 0x2d4334, 0x2d4390, 0x2d43a4, 0x2d43c4,
+    0x2d43f4, 0x2d4408, 0x2d441c, 0x2d448c, 0x2d44a0, 0x2d44c0, 0x2d4538, 0x2d4594,
+    0x2d45d8, 0x2d45ec, 0x2d4644, 0x2d4658, 0x2d4678, 0x2d472c, 0x2d4d30, 0x2d4dac,
+    0x2d4e18, 0x2d4e84, 0x2d4f38, 0x2d5004, 0x2d51b4, 0x2d5220, 0x2d523c, 0x2d5250,
+    0x2d5268, 0x2d5294, 0x2d52c4, 0x2d52d8, 0x2d5400, 0x2d54dc, 0x2d54ec, 0x2d5600,
+  ]},
+]
 fallthroughs = [
   {pc = 0x80000430, expected_word = 0x2404001e, target = 0x80000434, reason = "Native boundary for the inline startup TLB installation"},
 ]
 jump_tables = [
+  {pc = 0x249b94, expected_word = 0x400008, table_vram = 0x202da0, count = 0x5, sha256 = "031e4a9850ac0d072be643671a768b7faa951349ab84e77a35d41b68e2a32581"},
+  {pc = 0x24a9a4, expected_word = 0x400008, table_vram = 0x202e18, count = 0x6, sha256 = "bb6e128f2842a3c4a38e706d3fd2e77a290f51d7682fdbf4f5d59c771c94810d"},
+  {pc = 0x24d48c, expected_word = 0x400008, table_vram = 0x203008, count = 0x5, sha256 = "6ac48c999661ab9bd84f607153785b594142dd39164ccf4dc5639295d31a967e"},
+  {pc = 0x24dc94, expected_word = 0x400008, table_vram = 0x203048, count = 0x5, sha256 = "8dc86c2e90189b9abc98d63027a48ecc7208ef0abea15a7b8a42992525f900ff"},
+  {pc = 0x2508bc, expected_word = 0x400008, table_vram = 0x2031e8, count = 0x7, sha256 = "fd865a2eaf1f474923a88c4054b6a473ad27979ac2903851e41311b566c20538"},
+  {pc = 0x251c38, expected_word = 0x400008, table_vram = 0x2032b0, count = 0x6, sha256 = "a2e792d33370d9b2620ec4454b1c5267215bc4cfd7dfe2065c1b4d6983ce73d8"},
+  {pc = 0x25372c, expected_word = 0x400008, table_vram = 0x203380, count = 0x5, sha256 = "7a46b3cfb396ab23f614befc6f8c38ded5fd6bc747fadcb905ad7c290318ad04"},
+  {pc = 0x253bd8, expected_word = 0x400008, table_vram = 0x2033a8, count = 0x5, sha256 = "15298de01442ed7b7ae6dfb108a83add4750bbd2f990f2214e6c82fdb1a160c6"},
+  {pc = 0x253f64, expected_word = 0x400008, table_vram = 0x2033d8, count = 0x7, sha256 = "1f0ce957652fd8bc6686a460ad6c5fefbc2a5984ac41a21820200a6b01661164"},
+  {pc = 0x2572e8, expected_word = 0x400008, table_vram = 0x203760, count = 0x5, sha256 = "0b4031aed230a30d2749cb83c48a2614a412840cf5abbbf99e641330c80e0ad1"},
+  {pc = 0x2596ac, expected_word = 0x400008, table_vram = 0x2038b0, count = 0x6, sha256 = "d821fef0869e4b1f9333cd013123239ca2287bdb9300879d794b5274a381b136"},
+  {pc = 0x109bb4, expected_word = 0x400008, table_vram = 0x1006a0, count = 0x13, sha256 = "1f57769f9d60f9c27cd8242a5d7d966a02e524e0552ff312d56f0cd9bc682a7f"},
+  {pc = 0x243080, expected_word = 0x400008, table_vram = 0x2027f8, count = 0x6, sha256 = "8d09b73c3ac2090b6d125fce283385580d98a7d40077fbcb2e05696ee0c2ea26"},
+  {pc = 0x2430f4, expected_word = 0x400008, table_vram = 0x202810, count = 0x5, sha256 = "73393bc15b6539938ebd78fcbdfc141011a88a14f79e8b3c4de29dc4e99d30ff"},
+  {pc = 0x243160, expected_word = 0x400008, table_vram = 0x202828, count = 0x5, sha256 = "2d306ad4732ee052d450e2b930a590e655da814b8599380aa477e3013a5c2d5a"},
+  {pc = 0x2437b0, expected_word = 0x400008, table_vram = 0x202840, count = 0x5, sha256 = "9ffba3fdaa6effed469124ea34c9f014e8441c291cf8b386f142b41826c2a313"},
+  {pc = 0x243b4c, expected_word = 0x400008, table_vram = 0x202858, count = 0x5, sha256 = "e7824a6e2826f0a496c1e3286e08f9f8159ca27c0d0a8f2a95dab9236399cd9c"},
+  {pc = 0x243d68, expected_word = 0x400008, table_vram = 0x202870, count = 0x5, sha256 = "f847f5d6ee06b0dabd24b6d973c5fe3c765599e161e2e22ea37b5128ed0a13ae"},
+  {pc = 0x243e94, expected_word = 0x400008, table_vram = 0x202888, count = 0x5, sha256 = "0d20c1b99f704190a9c5211bcf1d97915c675981c02c37a29c13a4e6aebd56d1"},
+  {pc = 0x24429c, expected_word = 0x400008, table_vram = 0x2028b0, count = 0x5, sha256 = "bcf9f854377cf3ef6a423348ffcc5db49fa34e2888f3d207a65df15e081acbd5"},
+  {pc = 0x244a90, expected_word = 0x400008, table_vram = 0x2028f0, count = 0x5, sha256 = "61f687955daa751acd8e3b3dcbac702be762060ab22ad5ba528ac2906d7b2fd3"},
+  {pc = 0x244bb0, expected_word = 0x400008, table_vram = 0x202908, count = 0x5, sha256 = "d6b0997fcf29f9c1ea19deb8c188841e0546d7534f8305cdaf8225fa1faf6042"},
+  {pc = 0x2454d0, expected_word = 0x400008, table_vram = 0x202930, count = 0x6, sha256 = "7982af9c957d3cc7a2e8d446f2bb0420efd29607d3b58423386837d947e5c2f7"},
+  {pc = 0x227248, expected_word = 0x400008, table_vram = 0x2001c0, count = 0x26, sha256 = "8cbed1f115219a6a341faa9be9a7af65c7a526e845973add03d0f0a4ec286004"},
+  {pc = 0x227324, expected_word = 0x400008, table_vram = 0x200258, count = 0x54, sha256 = "bb3516bb5bad925c6c902ead29f8eb25a1c3d841def742a5b2151b2b4bf5e76f"},
+  {pc = 0x2d40a0, expected_word = 0x400008, table_vram = 0x21abc0, count = 0x5, sha256 = "7c2578686aa30c4de91093c08377ab46e9279d2d4a235c5c13308071206f0793"},
+  {pc = 0x2d4760, expected_word = 0x400008, table_vram = 0x21abd8, count = 0x2f, sha256 = "3e530b1ea51b7729517292a17ae70daf8229f5151548f1ea7a69a116003df7c0"},
+  {pc = 0x2d530c, expected_word = 0x400008, table_vram = 0x21acb0, count = 0x10, sha256 = "7f49aaa1c192b9b63b0d8ca8557afc2568eaf33d57f17ecd9bef0780acb4364c"},
   {pc = 0x23b488, expected_word = 0x400008, table_vram = 0x2024b8, count = 0x5, sha256 = "d169b59aa57f7f4ab3aca3c0b9a00452973c6e94dc348b5305b93a3153a03fcc"},
   {pc = 0x2c2518, expected_word = 0x400008, table_vram = 0x218300, count = 0x1d, sha256 = "3af372a8abad29d970f9c9bd8d3cee00f61642f642859801164d9bec93687d56"},
   {pc = 0x10a158, expected_word = 0x400008, table_vram = 0x100730, count = 0x14, sha256 = "cfc70ff0f4d52f9859c64c54a9818803c99e34631db73179760bbd7bb864852b"},
@@ -148,6 +194,31 @@ jump_tables = [
 # func_00261428 searches 640 records of four words and calls word 2.
 # All duplicate callbacks are covered by one representative index per target.
 function_tables = [
+  # 549 scene records of 44 bytes at .game 0x203a10..0x20986c;
+  # word 7 is the callback invoked by func_0025b6c0.
+  {pc = 0x25b73c, expected_word = 0x40f809, table_vram = 0x203a10, count = 0x1797, indices = [
+    0x12, 0x54, 0xac, 0x130, 0x15c, 0x167, 0x17d, 0x193, 0x1a9, 0x1bf, 0x1eb, 0x222,
+    0x22d, 0x238, 0x24e, 0x26f, 0x2a6, 0x2bc, 0x4d7, 0x4ed, 0x4f8, 0x503, 0x781, 0x831,
+    0x85d, 0x873, 0x89f, 0x8aa, 0x8c0, 0x8cb, 0x8e1, 0x8ec, 0x8f7, 0x92e, 0x939, 0x944,
+    0x965, 0x97b, 0x986, 0x9c8, 0x9d3, 0x9f4, 0xa4c, 0xadb, 0xb33, 0xbb7, 0xbc2, 0xbf9,
+    0xce0, 0xceb, 0xd17, 0xd22, 0xd85, 0xdd2, 0xddd, 0xdf3, 0xe09, 0xe14, 0xe1f, 0xe2a,
+    0xe82, 0xecf, 0xeda, 0xefb, 0xf06, 0xf1c, 0xf27, 0xf7f, 0xfab, 0xfc1, 0x1019, 0x1050,
+    0x1066, 0x110b, 0x11b0, 0x1229, 0x12ad, 0x12fa, 0x13c0, 0x1444, 0x1465, 0x147b, 0x14de, 0x152b,
+    0x1583, 0x158e, 0x15e6, 0x15f1, 0x15fc, 0x1607, 0x1612, 0x161d, 0x1628, 0x1633, 0x163e, 0x1649,
+    0x1654, 0x165f, 0x16b7, 0x16ee, 0x16f9, 0x1704, 0x170f, 0x171a, 0x1725, 0x1746, 0x1751, 0x1767,
+    0x1772
+  ], sha256 = "6456b35e0fa7e8225410b3f6acc5c24b1ee5b6f4e009be25ba3557276f7771e3"},
+  # 39 object callbacks in the system image, bounded by zero words.
+  {pc = 0x2466e4, expected_word = 0x40f809, table_vram = 0x12d4b8, count = 0x27, sha256 = "305225abc0dc84025c9629fac55a2ed5aea7aee46ff2526d6411a39d62413dbe"},
+  # Object vtables in the system image occupy 0x00136be0..0x00136db0;
+  # two zero words and float data follow the 116 code pointers.
+  {pc = 0x296f04, expected_word = 0x40f809, table_vram = 0x136be0, count = 0x74, sha256 = "6495122c17dddec71284f887db6e0de64e97f5c6582b5c2721a725ff3b4e0653"},
+  {pc = 0x296f38, expected_word = 0x40f809, table_vram = 0x136be0, count = 0x74, sha256 = "6495122c17dddec71284f887db6e0de64e97f5c6582b5c2721a725ff3b4e0653"},
+  # Two system-image callbacks at 0x80036954; the next word is "BADD" data.
+  {pc = 0x292d68, expected_word = 0x40f809, table_vram = 0x136954, count = 0x2, sha256 = "d32f4b12af92c4df2c6ff79d7c935c3dcf5c1ec9292e232d37a74b753742a607"},
+  # The ten system-image callbacks copied to RAM at 0x80030ee0;
+  # func_00268e6c indexes this table before its indirect call.
+  {pc = 0x268e88, expected_word = 0x40f809, table_vram = 0x130ee0, count = 0xa, sha256 = "92315660cb6eac1d5dda16bd1288c611b869d0a9b78f769b1852c7cb89ee4e48"},
   {pc = 0x272ebc, expected_word = 0x40f809, table_vram = 0x212078, count = 0x68a, indices = [0x17, 0x32, 0x4d, 0x68, 0x83, 0x9e, 0xb9, 0xd4, 0xef, 0x10a, 0x125, 0x24e, 0x269, 0x284, 0x29f, 0x2ba, 0x2d5, 0x2f0, 0x30b, 0x326, 0x341, 0x35c, 0x377, 0x392, 0x3e3, 0x3fe, 0x419, 0x434, 0x46a, 0x4bb, 0x527, 0x542, 0x593, 0x5ae, 0x5c9, 0x5e4, 0x5ff, 0x61a], sha256 = "e3f6cb189086bbd3625dbd1326e67467fd80f9a8664e1ed7978fa0b18c6ca776"},
   {pc = 0x2614bc, expected_word = 0x40f809, table_vram = 0x20b440, count = 0xa00, indices = [0x2, 0xe, 0x46, 0x4a, 0x5a, 0x10e, 0x122, 0x126, 0x136, 0x13e, 0x18e, 0x1ee, 0x5de, 0x69a, 0x76e, 0x9f2, 0x9fa], sha256 = "ca99acef6539e41a46f22fbbef16d60b7a047dbe731e8e3fea3b96c977dcb1b4"},
 ]

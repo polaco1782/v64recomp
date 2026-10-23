@@ -147,7 +147,7 @@ def discover(rom: bytes, profile: dict) -> dict:
         current_section = table.get('section')
         address, count = table['table_vram'], table['count']
         section = mapping(address) if type(address) is int else None
-        if (type(address) is not int or type(count) is not int or address % 4 or not 0 < count <= 4096
+        if (type(address) is not int or type(count) is not int or address % 4 or not 0 < count <= 8192
                 or section is None or address + count * 4 > section['vram'] + section['size']):
             raise RecompError('invalid or unmapped checked dispatch table')
         offset = section['rom_offset'] + address - section['vram']

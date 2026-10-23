@@ -239,6 +239,27 @@
       "origin": "checked-root"
     },
     {
+      "vram": 1086796,
+      "sha256": "d89c1d30e3f48dc7be4fca32f8fd0b3dad7207094e0455375ca4a00430ca1241",
+      "origin": "checked-root",
+      "reference_pc": 1087708,
+      "reason": "Constant a3 callback passed to func_00239398 for linked-object dispatch"
+    },
+    {
+      "vram": 1087152,
+      "sha256": "dd61a27cea5981def30274e08055d87bf20596ba75150a4f026094591e2bd087",
+      "origin": "checked-root",
+      "reference_pc": 1087920,
+      "reason": "func_00109918 passes this callback in a3 to func_00239398 for linked-object dispatch"
+    },
+    {
+      "vram": 1088212,
+      "sha256": "2b0c9729fa3cafd49dea0e54a670be5efcc49f2fda2cd8a08d797b8ccda1c568",
+      "origin": "checked-root",
+      "reference_pc": 1088868,
+      "reason": "System callback passed as a3 to func_00239398 at 0x00109d64 and invoked through the registered callback at 0x0023934c"
+    },
+    {
       "vram": 1092496,
       "sha256": "9fd6243fd8fe0d553052167e6c8edc20351e58ab024066d784ecdf4789b9fd74",
       "origin": "checked-root"
@@ -795,6 +816,13 @@
       "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
     },
     {
+      "vram": 2265888,
+      "sha256": "1634e526772663e6d8ad328d6bf66277f74d298eb62c45f40f555e069d1e51dd",
+      "origin": "checked-root",
+      "reference_pc": 2497732,
+      "reason": "Constant a3 callback passed to func_00239398 for linked-object dispatch"
+    },
+    {
       "vram": 2272136,
       "sha256": "bc3b08934111ece2b6544d361187fc20e12c3b49add6657fef62a7fcf5fb66fa",
       "origin": "checked-root"
@@ -967,6 +995,20 @@
       "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
     },
     {
+      "vram": 2405428,
+      "sha256": "638d199a188810e58e1308bbbc34f91b78b283745afca1cf84b2da3a134bb2dd",
+      "origin": "checked-root",
+      "reference_vram": 2120580,
+      "reason": "Scene object callback at record offset 0x1c, invoked by func_0025b6c0 at 0x0025b73c"
+    },
+    {
+      "vram": 2405552,
+      "sha256": "3a13f29cf344724bcf6eb78e5f42d9156c79618f66272d7d2e4afc7c89a7b40b",
+      "origin": "checked-root",
+      "reference_pc": 2471740,
+      "reason": "Callback at +0x1c in 44-byte scene records; ROM image pointers at 0x1df591c and 0x1df5948; called through func_0025b6c0"
+    },
+    {
       "vram": 2414844,
       "sha256": "bc3b08934111ece2b6544d361187fc20e12c3b49add6657fef62a7fcf5fb66fa",
       "origin": "checked-root",
@@ -979,6 +1021,20 @@
       "origin": "checked-root",
       "reference_pc": 2473660,
       "reason": "Original scene object initializer invoked through the object record at offset 0x1c"
+    },
+    {
+      "vram": 2422092,
+      "sha256": "b587bf50138abb11da82a7a7e129916b2c2d9d1ee24a22c42ae5fbf491a0b1b2",
+      "origin": "checked-root",
+      "reference_pc": 2497492,
+      "reason": "Constant a3 callback passed to func_00239398 for linked-object dispatch"
+    },
+    {
+      "vram": 2424896,
+      "sha256": "983782f99c262b52ded75d5d0aa83de26bbd1d94a49f2a3f506234f2232f9559",
+      "origin": "checked-root",
+      "reference_pc": 2471740,
+      "reason": "ROM scene-record callback at .game 0x205814 (+0x1c in a 44-byte record), invoked by func_0025b6c0"
     },
     {
       "vram": 2430228,
@@ -1030,11 +1086,25 @@
       "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
     },
     {
+      "vram": 2466624,
+      "sha256": "cfd7d13326936d9b766b36f8d8f96f34be8fbc1c7bbc97a67476130e8b58734e",
+      "origin": "checked-root",
+      "reference_vram": 2120316,
+      "reason": "Scene object callback at record offset 0x1c, invoked by func_0025b6c0 at 0x0025b73c"
+    },
+    {
       "vram": 2471068,
       "sha256": "91d1c7550fc3e3c686886aa23ee91e3873eb507541facdd41bb89a368ef1b2b9",
       "origin": "checked-root",
       "reference_vram": 2117148,
       "reason": "Scene object callback at offset 0x1c, enabled by flag 0x80 and invoked at 0x0025bebc"
+    },
+    {
+      "vram": 2471616,
+      "sha256": "a9e4b8efcd0987ace88471691ea9d84d9bd1583cf6eb3505ecf6dab801e6e370",
+      "origin": "checked-root",
+      "reference_pc": 2535004,
+      "reason": "func_0026a828 passes this callback in a3 to func_00239398 for linked-object dispatch"
     },
     {
       "vram": 2475072,
@@ -1084,6 +1154,13 @@
       "origin": "checked-root",
       "reference_pc": 2486848,
       "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
+    },
+    {
+      "vram": 2581540,
+      "sha256": "6abc215e8f2a61b48c1388e7915fc7b04e500dd5b7bb85404e0d10c05d55129e",
+      "origin": "checked-root",
+      "reference_pc": 2567784,
+      "reason": "Constant a3 callback passed to func_00239398 for linked-object dispatch"
     },
     {
       "vram": 2586960,
@@ -1338,6 +1415,34 @@
       "reason": "Update callback at offset 0x60 in a pinned 108-byte actor record"
     },
     {
+      "vram": 2747324,
+      "sha256": "b243cd5ee8bee85ea7aa2bed5f3fed86743cd120ab52da2976e549a5c704bdcf",
+      "origin": "checked-root",
+      "reference_vram": 1273144,
+      "reason": "ROM vtable at 0x00136d38 is used through object offset 0x48 by func_00296d8c"
+    },
+    {
+      "vram": 2776148,
+      "sha256": "f08cb076488915d888522d593099dab1e9339139c25c7378ae2123d98bbd1bb5",
+      "origin": "checked-root",
+      "reference_vram": 1272808,
+      "reason": "ROM vtable at 0x00136be8 is used through object offset 0x48 by func_00296d8c"
+    },
+    {
+      "vram": 2880948,
+      "sha256": "e46bea696c96879bf38a9b6bb41db54f805f3c0a1ade8da10036398cc38bf3bd",
+      "origin": "checked-root",
+      "reference_pc": 2881936,
+      "reason": "func_002bf8ec stores this callback in a linked object read by func_0023934c"
+    },
+    {
+      "vram": 2881420,
+      "sha256": "02d650d19bebeff5129fffc9934290e4d0642ad696acef7de592b23974beea06",
+      "origin": "checked-root",
+      "reference_pc": 2882080,
+      "reason": "func_002bf8ec stores this callback at offset 0x10 in a linked object read by func_0023934c"
+    },
+    {
       "vram": 2885236,
       "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
       "origin": "checked-root",
@@ -1345,11 +1450,25 @@
       "reason": "Scene callback passed in a3 to func_00239174 and stored in linked object records at offset 0x10"
     },
     {
+      "vram": 2901432,
+      "sha256": "1a834b92ff8970096bfa8eae54a93ec4d7c4ede9a23d2ee2950c28882dbac870",
+      "origin": "checked-root",
+      "reference_pc": 2350496,
+      "reason": "ROM pointer at 0x3b11c initializes record callback offset 0x28, called by func_0023dd00"
+    },
+    {
       "vram": 2946592,
       "sha256": "48e2c26da6f257c004b29895aed45e4850aef79b8fd59d2743822e0d1a55e0d8",
       "origin": "checked-root",
       "reference_pc": 2305468,
       "reason": "Resource initializer passed in a2 to func_002365b8 by the main menu loader"
+    },
+    {
+      "vram": 2959952,
+      "sha256": "d75fe58051c563f2e4ccfd416ae0d40419cdb3309ab47d7b3266460cf6c68139",
+      "origin": "checked-root",
+      "reference_pc": 2960876,
+      "reason": "Constant a3 callback passed to func_00239398 for linked-object dispatch"
     },
     {
       "vram": 2972540,
