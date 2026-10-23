@@ -103,6 +103,7 @@ struct Runtime {
     uint32_t (*relocated_address)(Runtime *, uint32_t section, uint32_t address);
     bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
     uint32_t interrupt_mask;  /* Logical SDK CPU/RCP interrupt mask. */
+    uint32_t interrupt_global_mask_address; /* Optional guest __OSGlobalIntMask for SDK variants. */
     RecompPageMapping page_mappings[32];
 #ifdef RECOMP_DEBUG
     /* Shared crash history; guest execution is serialized by the scheduler. */

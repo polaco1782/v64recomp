@@ -36,27 +36,19 @@ static void read_input(void) {
     }
 }
 #endif
-/* Turok uses C-buttons to move and the N64 stick to look. Swap live host
- * inputs here so arrows/left stick move and IJKL/right stick look. Debug
- * replays remain original N64 inputs, independent of the host bindings. */
+/* Keep horizontal stick input for analog turning. Swap only vertical live
+ * input: arrows/left stick move forward/back, while I/K/right stick look
+ * up/down. J/L/right stick retain C-button strafing. Debug replays remain
+ * original N64 inputs, independent of the host bindings. */
 static void map_controls(RecompPad *pad) {
-    const uint16_t look = pad->buttons & 0x000f;
-    const int x = pad->stick_x, y = pad->stick_y;
-    pad->buttons &= ~0x000f;
+    const uint16_t look = pad->buttons & 0x000c;
+    const int y = pad->stick_y;
+    pad->buttons &= ~0x000c;
     if (y > 20)
         pad->buttons |= 0x0008;
     if (y < -20)
         pad->buttons |= 0x0004;
-    if (x < -20)
-        pad->buttons |= 0x0002;
-    if (x > 20)
-        pad->buttons |= 0x0001;
-    pad->stick_x = ((look & 0x0001) != 0) * 80 - ((look & 0x0002) != 0) * 80;
     pad->stick_y = ((look & 0x0008) != 0) * 80 - ((look & 0x0004) != 0) * 80;
-    if (pad->stick_x && pad->stick_y) {
-        pad->stick_x = pad->stick_x * 7 / 10;
-        pad->stick_y = pad->stick_y * 7 / 10;
-    }
 }
 static uint64_t guest_time(void *opaque) {
     (void)opaque;

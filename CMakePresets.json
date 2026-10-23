@@ -315,6 +315,26 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "1080-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/1080-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "1080-us",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "1080-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/1080-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "1080-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -466,6 +486,16 @@
     {
       "name": "turok-us-v12-debug",
       "configurePreset": "turok-us-v12-debug",
+      "jobs": 4
+    },
+    {
+      "name": "1080-us-release",
+      "configurePreset": "1080-us-release",
+      "jobs": 4
+    },
+    {
+      "name": "1080-us-debug",
+      "configurePreset": "1080-us-debug",
       "jobs": 4
     }
   ],
@@ -858,6 +888,20 @@
           "type": "build",
           "name": "turok-us-v12-debug"
         }
+      ]
+    },
+    {
+      "name": "1080-us-release",
+      "steps": [
+        {"type": "configure", "name": "1080-us-release"},
+        {"type": "build", "name": "1080-us-release"}
+      ]
+    },
+    {
+      "name": "1080-us-debug",
+      "steps": [
+        {"type": "configure", "name": "1080-us-debug"},
+        {"type": "build", "name": "1080-us-debug"}
       ]
     }
   ]

@@ -2,6 +2,8 @@
 
 These are the established port milestones, not new full-game acceptance claims.
 
+- **1080 Snowboarding JU revision 0**: First graphics verified. Debug and Release render the Nintendo 64 logo and complete 90-frame desktop replays with exit 0. Original USO loading, checked relocations/imports, RT64 F3DEX and NEAD audio task execution are integrated. Menus, riding, later module transitions, audible accuracy and gameplay save/reload remain unvalidated. Standard OS signatures live in the shared JSON catalog. See the [port notes](../games/1080-us/README.md) and [handoff](../games/1080-us/RESUME.md).
+
 - **Resident Evil 2 US header revision 1**: Experimental bring-up. Original main-image and overlay decompression run with full decoded-image verification. Opening logos, warning, movie and title menu render on the desktop; Start skips the movie. MusyX v1 synthesis and native video resize/conversion are integrated; gameplay, audible audio and save acceptance remain in progress. See the [port notes](../games/re2-us-v1/README.md).
 
 - **Turok: Dinosaur Hunter US v1.2**: Experimental partial conversion with original startup, main menu and first-person gameplay. Debug and Release build; bounded replays exercise input, firing, weapon selection, death/respawn and pause/resume with RT64 graphics and ABI1 PCM synthesis. Starting-camera fog/clipping was traced to unstable RT64 projection decomposition and corrected; the user confirmed the fix. A fingerprinted game-local L3DEX 1.00 adapter handles the automap. Full-game progression, save/reload and listening quality remain unverified. See the [port notes](../games/turok-us-v12/README.md).

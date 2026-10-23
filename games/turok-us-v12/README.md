@@ -22,11 +22,12 @@ The normalized ROM is `local/turok.us.v12.z64`, size `0x800000`, SHA-1
 `c7ed00dee20f4235823bcf50d32fa5d6862d6fce`. Other games and revisions are rejected.
 Controller Pak data persists at `local/saves/turok-us-v12.mpk`.
 
-Live input swaps Turok's original movement and look directions in the game
-adapter: arrows/left stick move; I/J/K/L/right stick look. Movement becomes
-C-button directions above a 20-unit stick threshold; look uses the shared
-80-unit digital stick range (56 diagonally). Other buttons keep their shared
-bindings. Menu stick navigation therefore uses I/J/K/L/right stick as well.
+Live input maps arrows/left stick to forward/backward movement and analog
+left/right turning. I/K/right-stick vertical look up/down; J/L/right-stick
+horizontal strafe. Only the vertical stick and C-button directions are swapped
+in the game adapter. Forward/backward movement uses a 20-unit stick threshold;
+vertical looking uses an 80-unit digital stick range. Horizontal turning keeps
+the host stick's analog value. Other buttons retain their shared bindings.
 Debug replay files retain original N64 button/stick semantics and bypass this
 host remap.
 

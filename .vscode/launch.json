@@ -315,6 +315,21 @@
         }
       ],
       "preLaunchTask": "Build Debug: Turok US v1.2"
+    },
+    {
+      "name": "Debug: 1080 Snowboarding JU",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/1080-us-debug/bin/1080-us",
+      "args": ["--frames", "1"],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [{"description": "Enable GDB pretty printing", "text": "-enable-pretty-printing", "ignoreFailures": true}],
+      "preLaunchTask": "Build Debug: 1080 Snowboarding JU"
     }
   ]
 }

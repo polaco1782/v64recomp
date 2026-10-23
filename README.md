@@ -85,11 +85,15 @@ Turok: Dinosaur Hunter US v1.2 is registered as experimental `turok-us-v12`; see
 [port notes](games/turok-us-v12/README.md).
 Resident Evil 2 US revision 1 is registered as experimental `re2-us-v1`; see its
 [bring-up notes](games/re2-us-v1/README.md).
+1080 Snowboarding JU revision 0 is registered as partial `1080-us`. Debug and
+Release render the Nintendo 64 logo in bounded desktop replays; menus and riding
+remain unvalidated. See the [port notes](games/1080-us/README.md).
 Quake II runs with the Expansion Pak enabled; see its [port notes](games/quake2-us/README.md).
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
 | --- | --- |
+| `1080.ju.z64` | `fa27089c425dbab99f19245c5c997613` |
 | `duke-zero-hour.us.z64` | `026789d47db5fe202a76f89797b33ac7` |
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
 | `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |

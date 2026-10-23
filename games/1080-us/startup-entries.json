@@ -1,0 +1,385 @@
+{
+  "format_version": 1,
+  "rom_sha1": "79cd1166c365e5809dec9b62e6d40d6032d5db3a",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2147484768,
+      "origin": "checked-root",
+      "sha256": "3f87072e7f19a8f2b0806ccd9d96b80f78da8e5d3ff9ac85c3b6e4c1af4cbf25",
+      "evidence": "Entry stub at 0x80000424 materializes 0x80000460 in t2 and jumps there at 0x80000430."
+    },
+    {
+      "vram": 2147484848,
+      "origin": "checked-root",
+      "sha256": "1bbefa881e3db5c6bfa6b58a1b41521392d79b67c1e3de334256fe3d54774fb2",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001adc, 0x80001ae0; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147485608,
+      "origin": "checked-root",
+      "sha256": "1b2da0fe276f726327ef3dc943f1e06faacfde961cda42cb096aeeba660cd358",
+      "evidence": "USO loader dispatch record +0x80 is set at 0x80001af0 and called at 0x80000a58; observed runtime target."
+    },
+    {
+      "vram": 2147486676,
+      "origin": "checked-root",
+      "sha256": "cda26557c2ae20f1900de7cf37297ddd022e35b974d04f4d6a27c5f723b5536e",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a74; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147486812,
+      "origin": "checked-root",
+      "sha256": "774ea97047f115f1fff6946c4b7da8a5e5f58c04b4ba70d61628c4b02a0f339e",
+      "evidence": "Kernel 0x80001ae8 stores this entry in USO loader dispatch record +0xa0."
+    },
+    {
+      "vram": 2147486960,
+      "origin": "checked-root",
+      "sha256": "0b29d01c8afd14f29d433f97c44ae2adba97917c7e9a075cabebb3ce85a3b920",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x800019ec; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147487212,
+      "origin": "direct-jal",
+      "sha256": "887917b98b1b25f305a82eb080b24f60d5cb85124d965ed4e8f35ce7594865a5",
+      "evidence": "Kernel main calls USO file loader from 0x8000048c."
+    },
+    {
+      "vram": 2147488044,
+      "origin": "checked-root",
+      "sha256": "033b7d8417e9c73943b5075f2955ed3b64606d2d5e8e4c9a04d857419eeb470f",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a24; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147488344,
+      "origin": "checked-root",
+      "sha256": "abec852878fa3f2872d453572c17964bf6741a062f96e8904b91d4d486dc6727",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a2c; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147488396,
+      "origin": "checked-root",
+      "sha256": "5d3536ce5dc468b285786e0775341b82e5df6e4f02c84e131a5cd3ee8a8cafb8",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a30; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147488960,
+      "origin": "checked-root",
+      "sha256": "5d5e66529291d0c72bc7f22796576a2477697158fc813672d202551f43100d18",
+      "evidence": "Kernel 0x80001aec stores this distinct entry in USO loader dispatch record +0x90."
+    },
+    {
+      "vram": 2147488972,
+      "origin": "checked-root",
+      "sha256": "c231a0ac939b65edef1b16a614177aab342755fdc01fb1bff47c679facbc3cd9",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a8c, 0x80001a90, 0x80001a9c; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489000,
+      "origin": "checked-root",
+      "sha256": "635ac224061e08632ecaf1d64b7a7772fd1795be705eb1c10dc084a1bd49f3dc",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a38; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489452,
+      "origin": "checked-root",
+      "sha256": "86197b6b792fdfec8b793a5ce5c7d707e6c9403adb7942878b06e50eae88f4d5",
+      "evidence": "Kernel 0x80001af4 stores this distinct entry in USO loader dispatch record +0x5c."
+    },
+    {
+      "vram": 2147489468,
+      "origin": "checked-root",
+      "sha256": "b4e0ceffad47a3e2ee7c1ea2a9016c531e11e0eaca7c424fa4cb9316cd0e1bc5",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a78; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489608,
+      "origin": "checked-root",
+      "sha256": "98a991f7f8d2320fad53040e67e6d91601aec61d558e50c9466df9d4ccb301fa",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a88; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489812,
+      "origin": "checked-root",
+      "sha256": "1683863487f73da2ebd33b57dff2a8b68cbb23ce0734fa53b955d6f72c160a10",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a7c; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489888,
+      "origin": "checked-root",
+      "sha256": "389fe25db6e9715f5ca45c14acdc5443b095e7b050d30b9897411cc73839a2b2",
+      "evidence": "Kernel 0x80001af8 stores this distinct entry in USO loader dispatch record +0x60."
+    },
+    {
+      "vram": 2147489904,
+      "origin": "checked-root",
+      "sha256": "0921a94e194d75c6782dd334a058206e7ae40c78d6387175ce33f0c78e29c208",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a84; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489940,
+      "origin": "checked-root",
+      "sha256": "1ee8958af7e693edf864a48d624abd5d9b45f11635a1fa22c0655682d9529d88",
+      "evidence": "USO loader dispatch callback stored by kernel at 0x80001a80; separate closed body and preceding return checked in cartridge."
+    },
+    {
+      "vram": 2147489948,
+      "origin": "checked-root",
+      "sha256": "9eb9ee400f0d0f6763fc819e87a187fc9ef8b8112ecd176ed9ef8500cb7b0fca",
+      "evidence": "Kernel 0x80001afc stores this distinct entry in USO loader dispatch record +0x94."
+    },
+    {
+      "vram": 2148600796,
+      "origin": "checked-root",
+      "sha256": "cda26557c2ae20f1900de7cf37297ddd022e35b974d04f4d6a27c5f723b5536e",
+      "evidence": "Runtime loader callback read from 0x80012c40 and called at kernel 0x80000a58; relocated Text entry follows a checked JR RA."
+    },
+    {
+      "vram": 2148601100,
+      "origin": "checked-root",
+      "sha256": "955b78384025056f7ecf4a5d9ae71e2028ad98730bb2bdaee605763a9796b95f",
+      "evidence": "Bootup thread at 0x80110f0c supplies this entry to osCreateThread at 0x80110f40; checked relocated Text entry and preceding JR RA."
+    },
+    {
+      "vram": 2148601612,
+      "origin": "checked-root",
+      "sha256": "2eb932f1eaf584e95df4b14b083b14b70a0ae769b828807a9c5fdda55589f827",
+      "evidence": "Bootup function pointer supplied as osCreateThread entry at 0x80111058; checked relocated Text entry and preceding JR RA delay slot."
+    },
+    {
+      "vram": 2148602092,
+      "origin": "checked-root",
+      "sha256": "34ecddfd2e26cdaca7c8764eb8187a54815893a50a0b3725a18d521cb2d21501",
+      "evidence": "Kernel 0x80001108 calls this bootup.uso dispatch-table entry in the first bounded run. Raw Text offset 0x7b29c and all 15,543 relocations were checked against guest-loaded RAM."
+    },
+    {
+      "vram": 2148660536,
+      "origin": "checked-root",
+      "sha256": "af503431fa994ce60747d259d9dac9e238ed7822be535792b0040b5d31e020b6",
+      "evidence": "Bootup thread 2 calls thread creation at 0x8011f4e8 with this entry; checked relocated Text entry and preceding JR RA."
+    },
+    {
+      "vram": 2148448864,
+      "origin": "checked-root",
+      "sha256": "9ad752202dede763f3be39e1ca813d8fb19970eeb324e72bfe6f62efc5d3bbac",
+      "evidence": "Boot object 0x8001fff8 vtable 0x80070388 slot +0x5c, called by 0x800a46f4 with adjusted this pointer. Target captured in crash-3-982611675975303 and verified in prepared Text."
+    },
+    {
+      "vram": 2148395524,
+      "origin": "checked-root",
+      "sha256": "354983fe0c0a14431a734de358e76e77d14ba5e610fdaf59e09d398d6ab02506",
+      "evidence": "Thread 5 entry passed in a2 to checked osCreateThread at 0x800deb88, thread object 0x8005b908; observed crash-3-982697923561566."
+    },
+    {
+      "vram": 2148603948,
+      "origin": "checked-root",
+      "sha256": "25732295032a44849e129cba56bd3d53eb32e3b2b20d7d6c3e746c9576609de9",
+      "evidence": "Thread 6 entry passed to osCreateThread at 0x801111ec, object 0x8005b488, argument 0x8005a488; crash-3-982998026611313 and prepared Text verified."
+    },
+    {
+      "vram": 2148503524,
+      "origin": "checked-root",
+      "sha256": "7d641ed08e831485c6a0f5b1482dd49221b7e550220bd909bfc127a6f5d8369c",
+      "evidence": "Virtual method call at 0x800f8d1c from object+0x28 table slot+0x5c; captured target in crash-3-983027241893169. Complete leaf at 0x800f8fe4..0x800f9008 computes object aspect ratio."
+    },
+    {
+      "vram": 2148503080,
+      "origin": "checked-root",
+      "sha256": "5b4043001bc72702ec0fc22f4355f3436a3c066b86afb6af1878bf52ea5b2e5a",
+      "evidence": "Virtual method target called by 0x800e30c0 during camera construction; crash-3-983066247789467 records dispatch. Prepared Text entry and preceding return verified."
+    },
+    {
+      "vram": 2148493124,
+      "origin": "checked-root",
+      "sha256": "08a903d09c8c94a97cefec21a519d73e3ab94c8d0ccbc4d7c14f6b7b3a6e7034",
+      "evidence": "Virtual callback in 0x800f67bc, dispatch at 0x800f6a68; crash-3-983136916172862 verifies target and ABI. Prepared Text entry and preceding return checked."
+    },
+    {
+      "vram": 2148498196,
+      "origin": "checked-root",
+      "sha256": "c0fb92f4c110c5b9d91cbe8eb751ab0683b51a8b4d022cb95018e1ce980e0cf4",
+      "evidence": "Thread 4 entry passed to osCreateThread at 0x800f7a80, object 0x8005c8f0, argument 0x8022ac98; crash-3-983175264212033 and prepared Text verified."
+    },
+    {
+      "vram": 2148496592,
+      "origin": "checked-root",
+      "sha256": "0035866bf6db49617414868d25023df058b04751ee6526bd9461256eb0b1129e",
+      "evidence": "Virtual callback from 0x800f1020; crash-3-983639683524136 records target during frame setup. Prepared Text entry and preceding return checked."
+    },
+    {
+      "vram": 2148160036,
+      "origin": "checked-root",
+      "sha256": "96f05f6830ba6e8e82805afa38b0d75ad76844da4bbf80a3ad2acb01b8366dc0",
+      "evidence": "Boot object virtual callback at 0x800ebbfc; crash-3-983676145079044 records target and this-pointer ABI. Prepared Text entry and preceding return checked."
+    },
+    {
+      "vram": 2148160084,
+      "origin": "checked-root",
+      "sha256": "96f05f6830ba6e8e82805afa38b0d75ad76844da4bbf80a3ad2acb01b8366dc0",
+      "evidence": "Virtual callback in 0x800ebc88; crash-3-983707086655148 records target. Complete wrapper calls 0x800ebcdc with unchanged this pointer."
+    },
+    {
+      "vram": 2148449316,
+      "origin": "checked-root",
+      "sha256": "360387cda4d9bce157982d1af3573ccb1bc25d4c38f91854d9a20972628f3c29",
+      "evidence": "Boot object vtable slot +0x64 called at 0x800ebf10; crash-3-983974222669874. Complete body 0x800ebc24..0x800ebc88 and preceding return checked."
+    },
+    {
+      "vram": 2148411988,
+      "origin": "checked-root",
+      "sha256": "cba5e66409eb712ca73b806ce4d9cc8e7d5bef9ed4663108613c4dd928f0debe",
+      "evidence": "Boot object vtable slot +0x14 called at 0x800ebc4c; crash-3-984011361955193. Body 0x800e2a54..0x800e2af8 traverses child objects and invokes the same slot; child vtables and preceding return checked."
+    },
+    {
+      "vram": 2148412652,
+      "origin": "checked-root",
+      "sha256": "9411ad40865f1a05439c98daf7089933c62fd63703c3a996366530c3d5151858",
+      "evidence": "Object event dispatch slot +0x2c from 0x800e2e20; crash-3-984053923748372. Complete body 0x800e2cec..0x800e2e20 handles event codes 2/12/13/14 and returns; preceding function return checked."
+    },
+    {
+      "vram": 2148157564,
+      "origin": "checked-root",
+      "sha256": "d4652150ee07685018e2d94e474d0699363a6af6d894c31916e7fe4f9867318d",
+      "evidence": "Boot virtual initialization callback from 0x800ebc88, observed crash-3-984086384033261. Complete body 0x800a487c..0x800a4948 and preceding return checked."
+    },
+    {
+      "vram": 2148448020,
+      "origin": "checked-root",
+      "sha256": "353ad7e74432eae21a6bae9deaacbb9b13f44919fc3d4eb74a3ab1dc058bce5e",
+      "evidence": "Loader allocator callback stored at dispatch +0x34 by 0x80110dfc and invoked by kernel; crash-3-984158272598802. Complete wrapper 0x800eb714..0x800eb734 calls 0x800eb604 unchanged ABI."
+    },
+    {
+      "vram": 2148584472,
+      "origin": "checked-root",
+      "sha256": "850a6f2509d45bde3911ec8fbd9c6685c7618806e155d1507bf31c41d3dadda2",
+      "evidence": "Resource constructor virtual callback in 0x800e25c4, reached via 0x8010cb08; crash-3-984207398072947. Full body 0x8010cc18..0x8010ccc8 allocates and initializes counted elements; preceding return checked."
+    },
+    {
+      "vram": 2148608480,
+      "origin": "checked-root",
+      "sha256": "850a6f2509d45bde3911ec8fbd9c6685c7618806e155d1507bf31c41d3dadda2",
+      "evidence": "Resource constructor virtual callback in 0x800e25c4, reached through 0x80112d40; crash-3-984370100804901. Complete counted initialization body 0x801129e0..0x80112a7c and preceding return checked."
+    },
+    {
+      "vram": 2148609460,
+      "origin": "checked-root",
+      "sha256": "3cc22c50b1d94477fb947fadc3eb42823b337da27186133b9d64c2e42907934c",
+      "evidence": "Element factory callback in 0x80112890, crash-3-984399913475846. Complete body 0x80112db4..0x80112e1c allocates a 0x30-byte object and installs vtable 0x80092a58; preceding return checked."
+    },
+    {
+      "vram": 2148609564,
+      "origin": "checked-root",
+      "sha256": "abef4bd11cd3936fa8bdc476377f6e3dc00c589eba72260838856f14fda6002e",
+      "evidence": "Element initialization vtable 0x80092a58 slot +0x0c called by 0x80112828; crash-3-984444029345067. Body 0x80112e1c..0x80112e4c zeroes fields then calls base initializer."
+    },
+    {
+      "vram": 2148609612,
+      "origin": "checked-root",
+      "sha256": "f80337130f0a9eec95405f589dd1ccf2e8bb993c67616e57ff61dfc58ca7b9eb",
+      "evidence": "Element parser vtable 0x80092a58 slot +0x2c; crash-3-984494384273185. Complete 0x80112e4c..0x80112fc0 body and tag-plus-one switch bound 6 checked."
+    },
+    {
+      "vram": 2149998784,
+      "origin": "checked-root",
+      "sha256": "3aa260d496dc201bac8bb079ab21a135ce057de7b37d412da86597cc31715c18",
+      "evidence": "n64proc.uso first virtual scene callback at bootup PC 0x800a74b4; crash-3-984516658512926. All 267 Text words reconstructed from original cartridge relocations and matched against live image."
+    },
+    {
+      "vram": 2148609984,
+      "origin": "checked-root",
+      "sha256": "70648e2ba641fbcdab74a2105d68bc8f095e2e84b9ba04935b20c9bcc6e23f01",
+      "evidence": "Element lazy-load vtable 0x80092a58 slot +0x14 reached from GUI 0x8024f228 through 0x80112b58; crash-3-984933444165716. Complete 0x80112fc0..0x80113068 body and preceding return checked."
+    },
+    {
+      "vram": 2148450812,
+      "origin": "checked-root",
+      "sha256": "75d075a5316a61d6616d7a6dc2f977b87fc301b3b1f648cca73eb973e995146a",
+      "evidence": "Boot object frame virtual slot +0x24 reached from 0x800df370; crash-3-984960941853397. Full traversal body 0x800ec1fc..0x800ec398 and preceding return checked."
+    },
+    {
+      "vram": 2148577912,
+      "origin": "checked-root",
+      "sha256": "d8c8bf77b8b43ff6fbd8c79a67fca798965102c513bdd9d894c1e846c14ec2f5",
+      "evidence": "Child frame callback in traversal 0x800e2be4; crash-3-984987321492638. Original two-instruction leaf JR RA with SW A0,0(SP) delay slot; translated unchanged."
+    },
+    {
+      "vram": 2148160788,
+      "origin": "checked-root",
+      "sha256": "ebe06526c54525bd5cdd514b1c4575b56e805141899a4e139bb99ae6ec4cad33",
+      "evidence": "Child frame callback from 0x800e2be4, crash-3-985025050435069. Full body 0x800a5514..0x800a55bc checked; virtual slots +0x6c and +0x64 consumed."
+    },
+    {
+      "vram": 2149999380,
+      "origin": "checked-root",
+      "sha256": "95ce82bbc42d53068567440b4261089f6059946e1ff9b58fcca1191b7daf62e2",
+      "evidence": "n64proc object 0x803ffb28 vtable 0x80263d48 slot +0x6c read by 0x800a5548. Full body 0x80266314..0x80266408 updates scene countdown/fade and ends via 0x800a57a4."
+    },
+    {
+      "vram": 2148161056,
+      "origin": "checked-root",
+      "sha256": "feffd7f4684b65b1e7e1c9806fa9a4e77a9fb00caf9fafafacee2d409f1fae19",
+      "evidence": "Same n64proc vtable slot +0x64 consumed at 0x800a5598. Full leaf 0x800a5620..0x800a5644 schedules callback 0x800a7518 at global 0x80020028."
+    },
+    {
+      "vram": 2148451224,
+      "origin": "checked-root",
+      "sha256": "517f6a7c8036624715c5be275265c874f7b93ffbfea5b84b3be5fefb9e565046",
+      "evidence": "Boot object drawing callback from 0x800df370; crash-3-985105632689359. Complete body 0x800ec398..0x800ec44c traverses object +0x2c and invokes child virtual +0x1c."
+    },
+    {
+      "vram": 2148493984,
+      "origin": "checked-root",
+      "sha256": "552cf64a7656af1ab064972a88c67651f550f0f2e6bf9d5cb5cf3fd994a85863",
+      "evidence": "Drawing traversal 0x800ec404 consumes child 0x803e7198 vtable 0x800870c0 slot +0x1c in crash-3-985105632689359. Camera/display-list setup entry and preceding return checked."
+    },
+    {
+      "vram": 2148493008,
+      "origin": "checked-root",
+      "sha256": "cbec522f17fdf7a7bd06cdce39f55090f7c28eeed3910f5352df30212ea70aeb",
+      "evidence": "Camera virtual +0x64 called at 0x800f6bc0, crash-3-985148887132035. Full body 0x800f66d0..0x800f6744 constructs drawing buffers and traverses children via 0x800e2af8."
+    },
+    {
+      "vram": 2148160956,
+      "origin": "checked-root",
+      "sha256": "ebe06526c54525bd5cdd514b1c4575b56e805141899a4e139bb99ae6ec4cad33",
+      "evidence": "Scene drawing virtual callback from camera child traversal; crash-3-985183580513219. Full body 0x800a55bc..0x800a5620 checked, including GUI import installed by loader."
+    },
+    {
+      "vram": 2149999624,
+      "origin": "checked-root",
+      "sha256": "28c7d0c4f89acbdc753a739b170a47ab85607be5d124e09085215eb20b89d3c6",
+      "evidence": "Scene drawing vtable 0x80263d48 slot +0x74 consumed at 0x800a55f0; same crash. Full body 0x80266408..0x802664d4 submits logo resources to GUI drawing routines."
+    },
+    {
+      "vram": 2149911784,
+      "origin": "checked-root",
+      "sha256": "04b674298593dfee68570fd926428d068233c806034236ab8ea944bd0d44393c",
+      "evidence": "GUI texture command emitter callback in 0x8024f34c, reached from n64proc drawing; crash-3-985437806165990. Entry stores o32 argument then emits FD/F5/E6/F4 command words; preceding return and prepared module bytes checked."
+    },
+    {
+      "vram": 2148175516,
+      "origin": "checked-root",
+      "sha256": "38942582857058cc663373854b4bccfa70f9a64851df68745445e680fc262135",
+      "evidence": "Nested drawing virtual +0x1c callback from 0x800e2af8; crash-3-985467226103377. Fade/display-state entry and preceding function return checked in linked bootup Text."
+    },
+    {
+      "vram": 2148488444,
+      "origin": "checked-root",
+      "sha256": "baa733485aeefb2c1995db805c7c0f646de0d932b2731e50a5c19ab523792b28",
+      "evidence": "Display pipeline callback in 0x800ef398; crash-3-985496450093753. Full body 0x800f54fc..0x800f5564 traverses counted resource pointers and invokes 0x800f4d08; preceding return checked."
+    },
+    {
+      "vram": 2148380256,
+      "origin": "checked-root",
+      "sha256": "7a8faf0e32e90e72c7141bed5974948e4211765546ab48a7fe520ac3fb54a286",
+      "evidence": "Audio callback in 0x800d06d0; crash-3-985520169270594. Original complete JR RA/NOP body at 0x800dae60..0x800dae68, translated unchanged."
+    },
+    {
+      "vram": 2148384200,
+      "origin": "checked-root",
+      "sha256": "f40f989e9379b1148c6bd3aa75eb9936311f35cb550f8693e12baae81310bc1f",
+      "evidence": "Audio callback materialized at 0x800db7d0..0x800db7dc and registered through 0x800d1104; consumed by 0x800d06d0 in crash-3289161-985619148393228. Complete body 0x800dbdc8..0x800dbf20 updates three audio control states through 0x800dbd54 and 0x800d1128; preceding return checked."
+    }
+  ]
+}

@@ -480,6 +480,23 @@
       "problemMatcher": [
         "$gcc"
       ]
+    },
+    {
+      "label": "Configure Debug: 1080 Snowboarding JU",
+      "type": "process",
+      "command": "cmake",
+      "args": ["--preset", "1080-us-debug"],
+      "options": {"cwd": "${workspaceFolder}"},
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug: 1080 Snowboarding JU",
+      "type": "process",
+      "command": "cmake",
+      "args": ["--build", "--preset", "1080-us-debug", "-j", "4"],
+      "options": {"cwd": "${workspaceFolder}"},
+      "dependsOn": "Configure Debug: 1080 Snowboarding JU",
+      "problemMatcher": ["$gcc"]
     }
   ]
 }

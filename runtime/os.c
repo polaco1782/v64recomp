@@ -32,6 +32,24 @@ void hook_os_set_int_mask(Runtime *rt, MipsContext *ctx) {
         recomp_checkpoint(rt);
 }
 
+/* SDK variant with __OSGlobalIntMask filtering. Its MTC0 sequence preserves
+ * Status.IE while replacing only IM bits; RCP bits use the same global mask. */
+void hook_os_set_int_mask_global(Runtime *rt, MipsContext *ctx) {
+    RECOMP_TRACE_OS(rt, ctx);
+    if (!rt->interrupt_global_mask_address)
+        recomp_fail("SDK global interrupt mask is not configured", ctx->pc);
+    uint32_t global = (uint32_t)recomp_load(rt, rt->interrupt_global_mask_address, 4);
+    uint32_t enabled = rt->interrupts_disabled ? 0u : 1u;
+    uint32_t previous = (rt->interrupt_mask & UINT32_C(0xff00)) | enabled | (~global & UINT32_C(0xff00));
+    uint32_t rcp = rt->interrupt_mask & UINT32_C(0x003f0000);
+    if (rcp)
+        rcp |= ~global & UINT32_C(0x003f0000);
+    rt->interrupt_mask = (argument(ctx, 0) & global & UINT32_C(0x003fff00)) | enabled;
+    result(ctx, (int32_t)(previous | rcp));
+    if (enabled)
+        recomp_checkpoint(rt);
+}
+
 void hook_os_virtual_to_physical(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t address = argument(ctx, 0);

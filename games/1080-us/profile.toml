@@ -1,0 +1,142 @@
+# 1080 Snowboarding, shared Japanese/US cartridge, header revision 0.
+# The cartridge header points at 0x80100400, but the resident kernel's
+# original load/execute mapping is ROM 0x1000 -> 0x80000400. The first stub
+# clears BSS and jumps to the kernel main at 0x80000460.
+
+[[boundaries]]
+symbol = "__osProbeTLB"
+vram = 0x80005120
+kind = "unsupported_function"
+reason = "Privileged TLB probe needs an exact native mapping; fail if the loader reaches it"
+expected_words = [0x40085000, 0x310900ff]
+
+# Bootup SDK paths requiring exact CP0/TLB or exception semantics. These remain
+# fail-closed until a replay proves one is needed and its complete ABI is mapped.
+[[boundaries]]
+symbol = "func_801150dc"
+vram = 0x801150dc
+kind = "unsupported_function"
+reason = "Bootup thread yield requires native scheduler dispatch"
+expected_words = [0x3c058009, 0x8ca54e80, 0x40086000]
+
+[[boundaries]]
+symbol = "func_80115234"
+vram = 0x80115234
+kind = "unsupported_function"
+reason = "Bootup thread dispatch uses CP0 EPC and ERET"
+expected_words = [0x3c048009, 0x0c045489, 0x24844e78]
+
+[[boundaries]]
+symbol = "func_80117d50"
+vram = 0x80117d50
+kind = "unsupported_function"
+reason = "Bootup TLB probe/read requires exact native mapping"
+expected_words = [0x40085000, 0x310900ff, 0x2401e000, 0x00815024]
+
+[[boundaries]]
+symbol = "func_8011a7d0"
+vram = 0x8011a7d0
+kind = "unsupported_function"
+reason = "Bootup CP0 Compare timer path needs verified native scheduling"
+expected_words = [0x40845800, 0x03e00008, 0x00000000]
+
+[game]
+name = "1080 Snowboarding (JU, revision 0)"
+rom = "../../local/1080.ju.z64"
+rom_sha1 = "79cd1166c365e5809dec9b62e6d40d6032d5db3a"
+rom_size = 0x1000000
+ram_size = 0x400000
+entry_symbol = "entry_point"
+code_sections = [".kernel", ".bootup", ".bootup_rodata", ".n64proc", ".gui"]
+boot_sections = [".kernel"]
+
+[discovery]
+entry_vram = 0x80000400
+entry_inventory = "startup-entries.json"
+regions = [
+  # Text ends at cartridge 0xae60. The mapped rodata/data contains the
+  # checked local switch tables; BSS starts after cartridge 0xb7c0.
+  {name = ".kernel", vram = 0x80000400, rom_offset = 0x1000, size = 0xa7c0},
+  # Prepared bootup.uso Text, including the game_libs subrange. This is an
+  # analysis image after verified guest relocations, not a cartridge DMA span.
+  {name = ".bootup", vram = 0x80095e50, rom_offset = 0x1000000, size = 0x89910},
+  {name = ".gui", vram = 0x8024cbb0, rom_offset = 0x108c2e0, size = 0x4880},
+  {name = ".n64proc", vram = 0x802660b0, rom_offset = 0x108beb0, size = 0x430},
+  {name = ".bootup_rodata", vram = 0x80065240, rom_offset = 0x1089910, size = 0x25a0},
+]
+uso = {module_rom_offset = 0xd9fe28, text_rom_offset = 0xdd0a6c, text_vram = 0x80095e50, text_size = 0x89910, reloc_rom_offset = 0xe620ec, reloc_count = 15543, symbols = "uso-symbols.json", sha256 = "551aab4e973d0a93f9e16ba0ca176af4c3163fc51e5bd603c825815c520606df"}
+uso_modules = [
+  {name = ".n64proc", module_rom_offset = 0x5926dc, text_rom_offset = 0x594a58, text_vram = 0x802660b0, text_size = 0x430, reloc_rom_offset = 0x5950b0, reloc_count = 49, symbols = "n64proc-symbols.json", sha256 = "97dcb76448830fd50072355c163aa7f3522f643d564e58bb4a2ca3113e6a0fae"},
+  {name = ".gui", module_rom_offset = 0x58d4ac, text_rom_offset = 0x58d534, text_vram = 0x8024cbb0, text_size = 0x4880, reloc_rom_offset = 0x592048, reloc_count = 131, symbols = "gui-symbols.json", sha256 = "0f7d604d522d42e95c6a985bd4a18878dca8b1eb2c236b71eaa7e46917fade44"},
+]
+uso_rodata = {rom_offset = 0xd9fe44, vram = 0x80065240, size = 0x25a0, reloc_rom_offset = 0xe95950, reloc_count = 922, sha256 = "9dda666006893a12307e02c08293f2d25e73d3c3d67770100c87c5c798537f38"}
+allow_registered_indirect_calls = true
+transfers = [
+  # The entry stub sets t2 to 0x80000460 before this tail jump.
+  {pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80000460]},
+]
+jump_tables = [
+  {pc = 0x800db9b8, expected_word = 0x01c00008, table_vram = 0x80066b7c, count = 11, sha256 = "c7723876bcf4b9fc7539af4dd98fe192fee9dd3186b60845927431db75483e1a"},
+  {pc = 0x800db854, expected_word = 0x03000008, table_vram = 0x80066b40, count = 15, sha256 = "f27e60b57211347854b2b272576c0a1eb466b885d2635bd0b71d2de1a4ccc865"},
+  {pc = 0x800db680, expected_word = 0x01800008, table_vram = 0x80066b20, count = 8, sha256 = "277ca8dcd739be760f0d7591116a74c11b734322810b1820d22f216fcf33a5e4"},
+  {pc = 0x800db5fc, expected_word = 0x01400008, table_vram = 0x80066af0, count = 12, sha256 = "1bfb6895286b20f6b1471984aaccb33689fb5afa10ae11dc6d0d9aa44158e18c"},
+  {pc = 0x800db088, expected_word = 0x01000008, table_vram = 0x80066ab4, count = 14, sha256 = "c80a7a69e74244709a9516c1329b275810a428a04e7c4032eb1f30375a995cc5"},
+  # Element tag plus one, unsigned bound 6 at 0x80112ea0.
+  {pc = 0x80112eb8, expected_word = 0x01e00008, table_vram = 0x80067460, count = 6, sha256 = "5fa0a5370eb40c773d9f887ddbd30731dba7f516cf485191541607dece488a59"},
+  # Resource tag minus one, unsigned bound 5 at 0x8010c490.
+  {pc = 0x8010c4a8, expected_word = 0x01c00008, table_vram = 0x800672c0, count = 5, sha256 = "2fa0f9ef6496843bd33a0e492035ce944382f67f0b812f478963ac434398ea8e"},
+  # State switch at 0x800a703c has unsigned bound 9.
+  {pc = 0x800a7058, expected_word = 0x03200008, table_vram = 0x80065e60, count = 9, sha256 = "2fbdd17ef9f74e2129fbc66f20569f0ca7a2a3bb661ec6819a6d142fd697deb0"},
+  {pc = 0x800ce688, expected_word = 0x03200008, table_vram = 0x800660f4, count = 5, sha256 = "a545ccaff7445db7d5327c8204c1387ccf8c05b6a9911ae75abc81746113e4b7"},
+  # Sequencer switches: each table extent follows the unsigned SLTIU before its JR.
+  {pc = 0x800cde64, expected_word = 0x01a00008, table_vram = 0x800660e0, count = 5, sha256 = "7fc352bdfdf28a07e7f2d03fc7fdac62592087737e5193ccb8009c6ab6f9178e"},
+  {pc = 0x800d0c88, expected_word = 0x01c00008, table_vram = 0x80066120, count = 12, sha256 = "d2580b892e942e3c1436abc14a856792dc9e919a979ac8600c8e5eb27b6fbbb2"},
+  {pc = 0x800d0ca8, expected_word = 0x01e00008, table_vram = 0x80066150, count = 16, sha256 = "7531227378e2bdf999826cb14b7ad3db676b30687d0867de55be20944eecdfae"},
+  {pc = 0x800d1354, expected_word = 0x01400008, table_vram = 0x80066190, count = 14, sha256 = "fbea289dc6d766aed5b2ae57b98799dd6a56298357d5fea8799ff7a2c9f64da7"},
+  {pc = 0x800d1894, expected_word = 0x01e00008, table_vram = 0x800661c8, count = 14, sha256 = "55ad712a3d23e44cf741258d9a5bcf77555fbfe5490c9f79135a4de0c05c0d35"},
+  {pc = 0x800d41b0, expected_word = 0x01c00008, table_vram = 0x80066230, count = 9, sha256 = "2b964bc5868ee4a40bc8503829801094a39eb994094ad708857fa872f9005008"},
+  {pc = 0x800d4560, expected_word = 0x01c00008, table_vram = 0x80066260, count = 14, sha256 = "0b6dbda9e23194dd9a59f4f607ddb2c67b7b7475d15ec6d82f98c98529bcf68a"},
+  {pc = 0x800d5290, expected_word = 0x01c00008, table_vram = 0x8006629c, count = 15, sha256 = "224aa92ff24a2a616404ed479afa480c0b88e163b9d372b21f33b7d13511750f"},
+  {pc = 0x800d57ec, expected_word = 0x03000008, table_vram = 0x800662d8, count = 5, sha256 = "cbba67c79a1debd3569931bb0eb4f88dc1775a66431d51ab4a2a61675bed38a3"},
+  {pc = 0x800d61a8, expected_word = 0x03200008, table_vram = 0x800662f0, count = 66, sha256 = "cc38d7b555f904a8c8c535ba2befe5c67d94b2f02944d7694bf96caf7a6eb62f"},
+  {pc = 0x800d69c8, expected_word = 0x01400008, table_vram = 0x800663f8, count = 41, sha256 = "be9d0f596f355c79a693ca3ede91f48b746c0c4df8643bd5254c19bdc2976f2a"},
+  {pc = 0x800d6b14, expected_word = 0x01600008, table_vram = 0x8006649c, count = 97, sha256 = "bdaaea50838cca66c8b9ee8e007478fbacbf2b03b228349b2f71ceee931f240d"},
+  {pc = 0x800d6e0c, expected_word = 0x01000008, table_vram = 0x80066620, count = 45, sha256 = "bb346a13e7dddb35b4ff610827c039d35efde2017d68f133f53a6d3740f77f20"},
+  {pc = 0x800d7274, expected_word = 0x01e00008, table_vram = 0x800666d4, count = 113, sha256 = "9e35a903e1886722d0e1be508deb07a61893b10fd6612a9f272eec256323317b"},
+  {pc = 0x800f8e50, expected_word = 0x01e00008, table_vram = 0x80066dc4, count = 9, sha256 = "4431fdeb897d5b987922e65aa21725b08bff583332ddcdcc663d02af15dc4b08"},
+  {pc = 0x800e2f14, expected_word = 0x01c00008, table_vram = 0x80066c5c, count = 9, sha256 = "293e9d4f2bdbcf072e77cf98afd427160c3195bbe90bfe9fa6c7e04f501ef7ee"},
+  {pc = 0x800da1c0, expected_word = 0x01e00008, table_vram = 0x800669e4, count = 49, sha256 = "dbf79540704fec84012bae9c27a88d51a2fe1e3b20a0ae6e724dddf5abea54f7"},
+  {pc = 0x800da0bc, expected_word = 0x01a00008, table_vram = 0x80066990, count = 21, sha256 = "df6213c8357c82bf3c5ba84a5c296b02866650f8b06dea770cdf3530860dfee5"},
+  # Checked unsigned bounds: 5 at 0x800cb698, 8 at 0x800de8b4, 9 at 0x800ef044.
+  {pc = 0x800cb6b0, expected_word = 0x01000008, table_vram = 0x800660bc, count = 5, sha256 = "ae9f1ec2a6af2a716751253b6cb7817c5f3339e709da2d8652a196703e5dea48"},
+  {pc = 0x800de8cc, expected_word = 0x01c00008, table_vram = 0x80066bf8, count = 8, sha256 = "223bd1915d4ecf6c24f683cba3b3b0f1d7b2c90f70a8715e54fc226bfc68d8f3"},
+  {pc = 0x800ef064, expected_word = 0x03000008, table_vram = 0x80066d7c, count = 9, sha256 = "e05558a097ad6b42a1f1cf703aa7f5434ca21b30638e28d0b06e3f4508944098"},
+  # Format character minus 0x45, unsigned bound 0x34 at 0x8011871c.
+  {pc = 0x80118734, expected_word = 0x01e00008, table_vram = 0x80067634, count = 52, sha256 = "e281e976cc4a4af23829a705e8eadaeb9b1bd8dbd3d3e4cf986805b63fd9e5d7"},
+  # Original unsigned SLTIU bounds at 0x80001f90 and 0x800024a4.
+  {pc = 0x80001fac, expected_word = 0x01c00008, table_vram = 0x8000a63c, count = 4, sha256 = "ecc6e692b3dd91d8958c66be5911ed695dde9064633c08b545ee312caa9217ac"},
+  {pc = 0x800024bc, expected_word = 0x01a00008, table_vram = 0x8000a64c, count = 12, sha256 = "67a206df8503f6f53eb5074fbe2255a9827325003de1ef181a71b9cacddcaaf8"},
+]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0xa7c0
+bss_start = 0x8000abc0
+bss_end = 0x8001ffa0
+kernel_main = 0x80000460
+initial_bootup_sha256 = "1a7c94c794028a09ff001d4fae47039afed676931bcf67ba300650018a53b48a"
+global_interrupt_mask = 0x80094ed0
+clock_rate = 0x80094ec0
+vi_clock = 0x80094ec8
+final_rom = 0x80062840
+sram_size = 0x8000
+counter_hz = 46875000
+vi_period_ticks = 781250
+diagnostic_thread_tail = 0x803fffe0
+
+[bootstrap.parameters]
+0x80000300 = 1
+# Original IPL3 at cartridge 0x6d8/0x6dc writes CIC ID 6103 here.
+0x80000310 = 0x17d7
+0x80000318 = 0x400000

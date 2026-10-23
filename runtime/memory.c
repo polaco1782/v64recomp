@@ -298,7 +298,7 @@ uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
         bus &= UINT32_C(0x1fffffff);
     /* Native PI copies run atomically between guest dispatches. Queued requests
      * are software messages; no PI bus transfer remains active in guest code. */
-    if (bytes == 4 && bus == UINT32_C(0x04600010) && rt->platform_initialized)
+    if (bytes == 4 && bus == UINT32_C(0x04600010) && rt->platform)
         return 0;
     /* Some games read cartridge integrity words directly instead of calling
      * osPiRawReadIo. Use the attached, verified canonical ROM, never RDRAM. */

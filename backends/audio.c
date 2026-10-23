@@ -294,7 +294,7 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
     a->debug.command_index++;
     if (a->debug.history_count < RECOMP_AUDIO_HISTORY)
         a->debug.history_count++;
-    if (a->microcode == RECOMP_AUDIO_NEAD_OOT) {
+    if (a->microcode == RECOMP_AUDIO_NEAD_OOT || a->microcode == RECOMP_AUDIO_NEAD_1080) {
         validate_nead(a, w1, w2, pc);
         return;
     }
@@ -544,7 +544,7 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
         (config->microcode != RECOMP_AUDIO_ABI1 && config->microcode != RECOMP_AUDIO_ABI1_LINEAR &&
          config->microcode != RECOMP_AUDIO_NEAD_OOT && config->microcode != RECOMP_AUDIO_NAUDIO_MP3 &&
          config->microcode != RECOMP_AUDIO_NAUDIO_CBFD && config->microcode != RECOMP_AUDIO_NAUDIO &&
-         config->microcode != RECOMP_AUDIO_MUSYX_V1))
+         config->microcode != RECOMP_AUDIO_MUSYX_V1 && config->microcode != RECOMP_AUDIO_NEAD_1080))
         return NULL;
     RecompAudio *a = calloc(1, sizeof(*a));
     if (!a)
@@ -648,6 +648,8 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
     uint64_t start = timer_ns();
     if (a->microcode == RECOMP_AUDIO_NEAD_OOT)
         alist_process_nead_oot(&a->hle);
+    else if (a->microcode == RECOMP_AUDIO_NEAD_1080)
+        alist_process_nead_1080(&a->hle);
     else if (a->microcode == RECOMP_AUDIO_NAUDIO)
         alist_process_naudio(&a->hle);
     else if (a->microcode == RECOMP_AUDIO_NAUDIO_MP3)
