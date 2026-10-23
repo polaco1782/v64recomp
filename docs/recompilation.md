@@ -224,3 +224,12 @@ conversion leaves blue sky visible outside those masks. The correction retains
 the game's commands and ordinary depth testing. The replacement is guarded
 against upstream source changes. The fixed-point interpretation also matches
 [GLideN64's primitive-depth decoder](https://github.com/gonetz/GLideN64/blob/master/src/gDP.cpp#L104-L108).
+
+`cmake/rt64/LookAtMatching.cmake` patches the build copy of the frame matcher.
+Look-at indices encode a per-vertex texture-generation enable bit; draw-time
+geometry mode alone does not establish that a vertex has a look-at entry.
+Matching checks that bit and the face, vertex, data, and mapping bounds before
+adding candidates. It also excludes candidates from other workloads because
+the existing matching loop indexes the first workload's arrays. Invalid or
+unsupported candidates retain their original data without look-at interpolation.
+The replacement is guarded against upstream source changes.

@@ -18,7 +18,7 @@ from common import RecompError, load_metadata, write_json
 from emit import SUPPORTED, decode, target
 from export_analysis_rom import load_analysis_rom
 from generate_game import GAMES
-from metadata_candidates import materialized_entries, owned_ranges
+from metadata_candidates import indexed_call_tables, materialized_entries, owned_ranges
 
 
 def probe_body(rom, section, address, owners, entries, transfers, limit):
@@ -138,6 +138,8 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
     transfers = {(f['section'],t['pc']):t for f in metadata['functions']
                  for t in f.get('indirect_transfers',[])}
     records = {}
+    table_uses = []
+    table_candidates = []
     skipped_interior = 0
 
     def mappings(address, size=16, preferred=None):
@@ -170,6 +172,12 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             # Preserve counts but bound reports for frequently repeated script operands.
             if len(item['references'])<64 and reference not in item['references']:
                 item['references'].append(reference)
+            elif reference.get('kind') == 'indexed-table-call' and reference not in item['references']:
+                # Raw asset pointers must not crowd out the active consumer.
+                replace = next((n for n, r in enumerate(item['references'])
+                                if r['kind'] == 'image-pointer'), None)
+                if replace is not None:
+                    item['references'][replace] = reference
         return added
 
     # Local switch labels must not become function candidates just because their
@@ -207,6 +215,8 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             # Replaced original bodies are not active callback producers.
             if function.get('origin') in ('native-replacement','unsupported-boundary'):
                 continue
+            table_uses.extend(dict(use, section=function['section'], function=function['name'])
+                              for use in indexed_call_tables(rom, function))
             text = [dict(s,section=s['id']) for s in sections
                     if s['id'] == function['section'] or not any(
                         s['id'] != other['id'] and s['vram'] < other['vram'] + other['size']
@@ -225,6 +235,43 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                 for use in candidate['address_uses']:
                     record(candidate['vram'],dict(use,section=function['section'],
                         function=function['name'],rom_offset=function['rom_offset']+use['pc']-function['vram']))
+        # Bound the diagnostic scan, not the runtime selector. Adjacent pointer
+        # runs can be separate tables; even a clean run needs manual review.
+        resolved_tables = []
+        for use in table_uses:
+            section = mapping(use['table_vram'], 4, use['section'])
+            if section is not None:
+                resolved_tables.append((use, section))
+        bases = {(s['id'], use['table_vram']) for use, s in resolved_tables}
+        for use, section in resolved_tables:
+            base = use['table_vram']
+            words, targets = 0, set()
+            stop = 'scan-limit'
+            for index in range(256):
+                address = base + index * 4
+                offset = section['rom_offset'] + address - section['vram']
+                if address + 4 > section['vram'] + section['size']:
+                    stop = 'mapping-end'
+                    break
+                if index and (section['id'], address) in bases:
+                    stop = 'next-dispatch-base'
+                    break
+                if offset in excluded_offsets or offset in owned_offsets:
+                    stop = 'checked-switch-or-owned-code'
+                    break
+                value = int.from_bytes(rom[offset:offset+4], 'big')
+                if value and mapping(value, preferred=use['section']) is None:
+                    stop = 'non-pointer-word'
+                    break
+                words += 1
+                if not value:
+                    continue
+                targets.add(value)
+                record(value, dict(use, kind='indexed-table-call', table_section=section['id'],
+                                   table_index=index, rom_offset=offset))
+            if targets:
+                table_candidates.append(dict(use, table_section=section['id'], scanned_words=words,
+                    stop_reason=stop, bounds_verified=False, target_count=len(targets)))
     pending = deque(records)
     checked = set()
     while pending:
@@ -244,7 +291,8 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                 body['status'] = 'review'
         item['body'] = body
         kinds = {r['kind'] for r in item['references']}
-        strong = bool(kinds & {'constant-indirect-call','call-argument','stored-address','candidate-direct-call'})
+        strong = bool(kinds & {'constant-indirect-call','call-argument','stored-address','candidate-direct-call',
+                              'indexed-table-call'})
         item['confidence'] = ('likely' if body['status']=='closed' and (strong or
                               body['stack_prologue'] and kinds!={'stack-prologue'})
                               else 'review')
@@ -268,14 +316,23 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             rejected[body['issues'][0]['reason']] += 1
         else:
             candidates.append(item)
-    candidates.sort(key=lambda c:(order[c['confidence']],c['section'],c['vram']))
+    candidates.sort(key=lambda c:(order[c['confidence']],
+        not any(r['kind']=='indexed-table-call' for r in c['references']),c['section'],c['vram']))
+    table_likely = Counter()
+    for candidate in candidates:
+        if candidate['confidence'] == 'likely':
+            table_likely.update({(r['section'], r['pc'], r['table_vram'])
+                                 for r in candidate['references'] if r['kind']=='indexed-table-call'})
+    for table in table_candidates:
+        table['likely_missing_targets'] = table_likely[table['section'], table['pc'], table['table_vram']]
+    table_candidates.sort(key=lambda t: (-t['likely_missing_targets'], t['section'], t['pc']))
     return dict(format_version=1,game=metadata['game'],rom_sha1=metadata['rom_sha1'],
         candidates_only=True,complete_code_inventory=complete,
         summary=dict(Counter(c['confidence'] for c in candidates)),
         rejected_pointer_candidates=dict(rejected),
         excluded_owned_interiors=skipped_interior,
         warning='Heuristics do not prove callback ABI, table bounds, code ownership or playability. Review sources and bodies before adding checked entries.',
-        candidates=candidates)
+        indirect_tables=table_candidates, candidates=candidates)
 
 
 def main():
@@ -299,9 +356,16 @@ def main():
                                 max_instructions=args.max_instructions)
     write_json(args.output,report)
     print(f"{metadata['game']}: {report['summary']}; {args.output}")
+    for table in [t for t in report['indirect_tables'] if t['likely_missing_targets']][:10]:
+        print(f"  Table {table['table_vram']:#010x} -> call {table['pc']:#010x}: "
+              f"{table['likely_missing_targets']} likely missing targets; "
+              f"scanned {table['scanned_words']} words, {table['stop_reason']} (bounds unverified)")
     for candidate in [c for c in report['candidates'] if c['confidence']=='likely'][:30]:
+        tables = [r for r in candidate['references'] if r['kind']=='indexed-table-call']
+        evidence = (f"; table {tables[0]['table_vram']:#010x}[{tables[0]['table_index']}]"
+                    f" -> call {tables[0]['pc']:#010x} (bounds unverified)" if tables else '')
         print(f"  {candidate['vram']:#010x} s{candidate['section']}: "
-              f"{candidate['body']['instructions']} instructions, {candidate['reference_count']} references")
+              f"{candidate['body']['instructions']} instructions, {candidate['reference_count']} references{evidence}")
     print('Candidates only; no profiles, inventories or runtime registrations were changed.')
 
 

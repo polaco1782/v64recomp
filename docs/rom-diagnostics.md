@@ -96,6 +96,19 @@ body checks expose unsupported transfers and overlaps. Use
 source evidence for an entry that was registered after an older crash. A likely
 candidate still needs source/ABI and ownership review before becoming a root.
 
+The scanner also follows constant-base, word-indexed `lw` values into `jalr`
+through owned control flow. `indexed-table-call` references connect a candidate
+to its table slot, pointer load and call site. The CLI lists tables with likely
+missing targets first, and prioritizes their candidates over raw pointer hits.
+The `indirect_tables` records describe a bounded scan (at most 256 words), its
+stopping reason and `bounds_verified = false`. A neighboring observed base can
+be an alias into the same table; a run of code pointers does not establish the
+selector's legal range. Verify complete bounds, bytes and ABI before adding a
+checked table. Conflicting paths discard address expressions, calls discard
+volatile registers, and replaced native bodies do not supply active consumers.
+Run the ROM-free regression checks with
+`.venv/bin/python tools/check_function_candidates.py`.
+
 Task code/data sizes can include padding, DMEM BSS or adjacent cartridge data.
 An ASCII identifier anywhere in that full span does not establish the executing
 microcode. Check the initialized spans, descriptor producer and command format.

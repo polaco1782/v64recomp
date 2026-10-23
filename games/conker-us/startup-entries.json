@@ -252,6 +252,12 @@
       "origin": "checked-root",
       "sha256": "c84ecd7e6e17fbe20742eab0407a5f3058a5af14b7619000bba09d10421fda74",
       "note": "Scene callback materialized at 0x15010904/08, stored at 0x800e0934, read at 0x151c1674"
+    },
+    {
+      "vram": 353455300,
+      "origin": "checked-root",
+      "sha256": "3b597824368633f38fac7b24613e68bdb5878c879539db2a4ab6f53f0a7963d6",
+      "note": "Effect callback passed as stack argument 8 at 0x15114ee4, stored in record+0x14 at 0x1000fb90 and called at 0x1001187c; also passed in a0 at 0x15114f2c. Complete 24-instruction leaf body reviewed."
     }
   ]
 }

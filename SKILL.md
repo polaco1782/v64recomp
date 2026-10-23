@@ -187,13 +187,22 @@ ownership before adding entries. Do not blindly apply another game's analyzer.
 
 Use the maintained command-line tools before writing investigation snippets:
 
-- Generation writes `function-candidates.json` for every game before translation.
-  Review its likely missing entries before gameplay: it combines owned address
-  materializations/copies/stores/call arguments, image-wide pointers (including
-  script/assets outside CPU mappings), stack frames and bounded candidate body
-  walks. Inspect source sites, calling convention, ownership and whole tables
-  before promoting candidates to checked entries. The scan does not register
-  guesses or authorize native replacements. For already registered targets, use
+- For every new ROM, use the heuristic function scanner before the first gameplay
+  replay and review it again after a coherent discovery correction. Generation
+  already writes `function-candidates.json`; inspect its `likely` candidates and
+  `indirect_tables`, not just summary counts. To print the ranked table/candidate
+  evidence, run `tools/inspect_function_candidates.py --game <game> --metadata
+  <matching-symbols.json> --output build/<game>-function-candidates.json` with the
+  repository Python environment. Prefer the table families connected to owned
+  `jalr` call sites over isolated raw pointers. `indexed-table-call` references
+  provide the pointer load, table base, slot and consumer PC; the bounded scan
+  does not establish the selector's legal range (`bounds_verified` stays false).
+  Inspect complete table bounds, bytes, calling convention and instruction
+  ownership before promoting entries into checked metadata. Also inspect table
+  targets marked `review`: reaching the bounded body-probe limit does not rule
+  out a real callback. Never bulk-register
+  the candidate list. See [ROM diagnostics](docs/rom-diagnostics.md) for report
+  interpretation and scanner regression checks. For already registered targets, use
   `tools/inspect_function_candidates.py --game <game> --metadata PATH
   --include-registered --output build/<game>-function-candidates.json`.
 - Shared discovery automatically follows constant callback arguments when a

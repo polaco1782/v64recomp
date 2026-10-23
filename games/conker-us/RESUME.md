@@ -1,4 +1,4 @@
-# Conker US native bring-up — 2026-10-18
+# Conker US native bring-up — 2026-10-22
 
 Continue with the repository's `SKILL.md`. The port now has a native executable;
 it is still being brought up through the intro. Playable acceptance is pending.
@@ -128,7 +128,113 @@ Raw discovery, without the explicit failing runtime boundaries:
   `0x1509f850` at `0x1509f9a8` and `0x1509fbb4` must unwind the native callback
   and dispatcher too. Checked `unwind_calls` and `nonlocal_return_calls` model
   this behavior; tests execute normal, aborted and invalid-stack returns.
-- Latest raw report: 4392 functions, 4329 ready, 62 hooked, one unsupported OS
+- The `0x15149a94` failure at `0x1513d090` is a missing entry in a loaded
+  `.game` section. Crash `crash-3029754-951298606939099.json` selects slot 14
+  at `0x80089d98` using object `0x801e6648` byte `+0x71`; RAM table bytes match
+  the prepared image. The same dispatcher uses selectors `+0x70/+0x72`.
+  All three tables are now checked: `0x80089cb8` (42 slots), `0x80089d60`
+  (44 slots), and `0x80089e10` (42 slots). Slot zero bypasses each call;
+  display-list data begins at `0x80089eb8`. The existing heuristic report
+  already listed the failed entry as likely; it now also links indexed table
+  candidates to their owned call sites without registering them automatically.
+- The next desktop failure was `0x15110600` at `0x1511027c`: descriptor byte
+  `+8` from `*(0x800b0df0)` selected slot 3 of `0x800891d8`. The scanner's
+  indexed-call evidence identified this five-slot table; all entries are now
+  checked. Non-pointer descriptor data starts at `0x800891ec` and is read by
+  slot 4's callback `0x15111af4`. That callback also needs the six-way local
+  switch at `0x15112058`, bounded by `sltiu <6` at `0x15112040`, now checked.
+- The rebuilt Debug desktop replay entered both `0x15149a94` and `0x15110600`
+  under one-shot GDB breakpoints. The original crash snapshot also executes
+  `0x15149a94` through its real helper at `-O0` and `-O2`, returning 1 with
+  SP/RA preserved. That replay next reached missing callback `0x1504cb98` at
+  `0x1504ab2c` (about 44 seconds): scanner evidence links slot 1 of
+  `0x80086014` to this caller and `0x150229cc`. Its body exceeds the scanner's
+  default 4096-instruction probe; the subsequent review below resolves it.
+  Matching crash: `crash-3043890-952532484847811.json`; diagnostics and replay
+  log: `build/conker-callback-15149a94/remaining-dispatch/` and
+  `build/conker-callback-15149a94/replay-final.log`. This is still intro
+  bring-up, not a completed bounded replay or gameplay acceptance.
+- Crash `crash-3056188-954298516735744.json` confirms the same missing
+  `0x1504cb98` with `.game` loaded. Object `0x800cc2d0` word `+0` is 1;
+  slot 1 of `0x80086014` contains the target, and all 43 RAM slots match the
+  prepared image. The table ends before non-pointer data at `0x800860c0`.
+  Its 37 non-null slots select 35 distinct, reviewed callback entries; they
+  are now checked at `0x1504ab2c`. The alternate caller `0x150229cc` permits
+  only selectors 4 and 27. The original target's 4462-instruction flow closes
+  with a larger probe, and no table target overlaps an existing instruction.
+  Callback `0x150538cc` also requires local switches at `0x15053f94` (17)
+  and `0x15054078` (15). Newly reached helpers require `0x15064338` (12)
+  and `0x15065b7c` (66). All four selector bounds and table hashes are checked.
+  The Debug workflow builds successfully; matching original build, table
+  review, diagnosis and validation artifacts are under
+  `build/conker-callback-1504cb98/`.
+  Desktop GDB replay confirms `0x1504cb98` executes and returns to its caller.
+- That replay next found `0x151797b0` at `0x151689f8`, recorded in
+  `crash-3063380-954863104849768.json`. Object `0x8023c348` byte `+0xb2` is 1;
+  slot 1 of `0x8008c9c8` holds the target and all 22 slots match the ROM.
+  The neighboring dispatch base `0x8008ca20` bounds the table. Its 19 non-null
+  entries are now checked for both callers: `0x151689f8` (signed byte `+0xb2`)
+  and `0x15167ea8` (signed byte `+0x2f`). Both skip -1 and NULL targets.
+  Each callback's control flow closes without overlap; all direct callees
+  were already registered. Matching evidence is under
+  `build/conker-callback-1504cb98/next-dispatch/`.
+  The following desktop replay confirms both `0x1504cb98` and `0x151797b0`
+  execute and return to their callers.
+- That replay reached actor callback `0x1513ca6c` at `0x1513cb8c`, recorded
+  in `crash-3065402-955170473636220.json`. Object `0x802389b8` flags `+0x58`
+  are `0x40000000`, so bit 22 is clear and the dispatcher selects slot zero,
+  ignoring byte `+0x19`. Table `0x80089ef8` has 13 slots, followed by another
+  13-slot table at `0x80089f2c` used by `0x1513cbd8` with the same selector.
+  Both tables match RAM and are now checked. The next word at `0x80089f60`
+  is a separate callback pointer loaded without indexing at `0x1513cfb8`;
+  it is checked separately. Entries and their newly reached direct callees
+  pass control-flow review without ownership overlap.
+  Desktop replay confirms `0x1513ca6c` executes and returns.
+- The same actor family then reached `0x1513c8d4` at `0x1513c9e4`, recorded
+  in `crash-3068875-955532022108696.json`. Its four-slot table at `0x80089ee8`
+  ends at the first table above and selects two distinct callbacks,
+  `0x1513c8d4`/`0x1513c900`. Descriptor word `+0x18` bit 12 enables byte
+  selector `+0x1f`; otherwise the dispatcher uses zero. All four RAM slots
+  match the ROM, both callback entries have closed control flow and are now
+  checked. The table follows display-list data, which is excluded.
+  Desktop replay confirms all four callbacks (`0x1504cb98`, `0x151797b0`,
+  `0x1513ca6c`, `0x1513c8d4`) execute and return, progressing past 48 seconds.
+- The next missing target, `0x15114cc4` at `0x1001187c`, is an effect-record
+  callback (initially described as a sort callback). Crash
+  `crash-3071044-955802559186255.json` records `.game` loaded. At `0x15114ec4`
+  the producer stores its address in stack argument 8 for `0x1000fa64`;
+  constructor `0x1000fb54/90` stores it at record `+0x14`, and updater
+  `0x10011848/7c` loads/calls that field. `0x15114f2c` also passes it in a0
+  to `0x1001001c`. Its complete 24-instruction leaf body lies between a
+  preceding return and entry `0x15114d24`, with no instruction overlap.
+  It is now a fingerprinted checked entry in `startup-entries.json`.
+  Evidence: `build/conker-callback-1504cb98/remaining-sort-callback/`.
+  The Debug workflow builds; desktop GDB replay confirms entry and return
+  from `0x15114cc4`. Log: `build/conker-callback-1504cb98/replay-effect-callback.log`.
+  The next unresolved target is `0x1518e524` at `0x1518df14`, recorded in
+  `crash-3074857-956146090672667.json`. Matching diagnostics are under
+  `build/conker-callback-1504cb98/remaining-after-effect/`. The bounded
+  replay stopped before bounded completion; the following correction resolves
+  that blocker. Gameplay acceptance remains pending.
+- `0x1518e524` is selected at `0x1518df14` by descriptor `0x8008ea80`
+  byte `+0x3f` = 0, slot 0 of `0x8008d620`. Both entries in that table
+  and the adjacent table `0x8008d628` match the crash RAM. The latter is
+  read at `0x1518d7ec` using signed byte `+0x21`, with -1 bypassing the call.
+  All four targets are reviewed, closed callback bodies and are now checked
+  in `profile.toml`. The second table ends at the data-pointer array at
+  `0x8008d630`; those data addresses are excluded from callback discovery.
+  The matching original executable and generated files are preserved as
+  `conker-us-before-1518e524` and `generated-before-1518e524/` under
+  `build/conker-callback-1504cb98/`.
+  The Debug workflow builds and desktop GDB replay confirms `0x1518e524`
+  executes and returns. The run completes all 4200 presentations in 70.002
+  seconds and exits normally, with 1942 graphics tasks, 2087 audio tasks,
+  1516160 synthesized audio frames and 2400163 nonzero samples. No further
+  missing callback occurs in this bounded run. Log and preserved report:
+  `build/conker-callback-1504cb98/replay-1518e524.log` and
+  `build/conker-callback-1504cb98/boot-report-1518e524.json`. This validates
+  intro replay progress; interactive gameplay and Release replay remain pending.
+- Latest generation: 4747 functions, 4684 ready, 62 hooked, one unsupported OS
   exception-return routine (`0x100078b4`). The inventory remains partial.
   Generation counts are not gameplay proof.
 - Title/menu navigation, gameplay, 3D lighting accuracy,

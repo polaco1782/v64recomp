@@ -113,7 +113,8 @@ interior captures; OOT's callback analyzer proposes roots for checked inventorie
 The shared crash inspector reads both release and debug reports. Use the
 matching executable and generated sources to resolve addresses accurately.
 
-To display the original MIPS for a generated function, run:
+To display the original MIPS and available recompiled x86-64 instructions for a
+generated function in one run, use:
 
 ```sh
 .venv/bin/python tools/disassemble_function.py recomp_s3_7f068008
@@ -139,6 +140,16 @@ game and verifies the ROM bytes before disassembly. It uses the game's preparati
 hook for compressed code and prints only instructions owned by that function.
 Use `--game goldeneye-us` to select a game, or `--metadata PATH` to select an exact
 build's `symbols.json`. `--rom PATH` accepts an already prepared analysis image.
+Both architectures are displayed by default. Select `--arch mips` for only MIPS,
+`--arch x86` for only x86-64, or `--arch both` for both. The x86-only mode does not
+load or prepare the ROM; the MIPS-only mode does not invoke `objdump`.
+When equivalent metadata copies exist, lookup prefers a build with an executable,
+then the newest metadata. The tool uses GNU `objdump` to append Intel-syntax host
+disassembly from that build's `bin/<game>`. Use `--binary PATH` to select an
+executable explicitly, paired with its matching `--metadata PATH`. The output
+identifies both paths and notes if the binary predates the metadata. Without a
+binary, `objdump`, or a retained function symbol, MIPS output remains available
+and the tool explains why host disassembly is unavailable.
 
 Every game uses the same core failure calls: `recomp_fail(message, address)` and
 `recomp_game_require(condition, message, address)`. The shared ROM loader installs
