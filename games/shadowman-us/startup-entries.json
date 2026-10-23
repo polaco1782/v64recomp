@@ -540,6 +540,13 @@
       "origin": "checked-root"
     },
     {
+      "vram": 1152128,
+      "sha256": "f93ad57246aaa21c8fddc5672c47ed3ab45c377afd5c9f9ecbf4beb23ce10b73",
+      "origin": "checked-root",
+      "reference_pc": 1118488,
+      "reason": "ROM callback passed in a1 to func_00112120, also installed by func_00119e54; reached through func_001122b0"
+    },
+    {
       "vram": 1154120,
       "sha256": "3485ad8eaca44cc5488ce0d51e872d0d7a02fe278bc337480ba443d9215eccd3",
       "origin": "checked-root"

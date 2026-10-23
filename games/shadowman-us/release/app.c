@@ -59,6 +59,8 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Shadow Man IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Shadow Man");
     require(renderer != NULL, "renderer initialization failed", 0);
+    /* Early presentation never draws this game's buffered startup frames. */
+    recomp_renderer_set_frame_rate(renderer, 0);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .microcode = RECOMP_AUDIO_ABI1,

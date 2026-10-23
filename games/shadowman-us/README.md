@@ -1,6 +1,18 @@
 # Shadow Man US
 
-Original startup, graphics, audio and Controller Pak screen. Title/gameplay progression remains in progress; this is not a completed game port.
+Original startup, graphics, audio, Controller Pak screen and title screen are
+working in the bounded desktop replay. Gameplay remains unverified; this is not
+a completed game port.
+
+Both configurations use native frame timing and VI-driven presentation. RT64's
+early-presentation mode submits graphics for this game without producing display
+draws, leaving the window black. The checked profile includes scene and object
+callback tables; the entry inventory covers callbacks installed by guest code.
+
+Validation: Debug and Release builds pass. A Debug desktop run completed 1,800
+presentations (2,644 graphics tasks and 6,353 audio tasks) without a missing-function
+failure, with visible loading and animated title screens. No interactive gameplay
+acceptance is claimed by this run.
 
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/shadowman-us/profile.toml --rom /path/to/rom`.
