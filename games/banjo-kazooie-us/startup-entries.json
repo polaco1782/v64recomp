@@ -1,0 +1,1644 @@
+{
+  "complete": false,
+  "entries": [
+    {
+      "evidence": "Worker setup 0x80240804/10 materializes a2=0x80240924; osCreateThread 0x80240820 passes ID 2, priority 10, stack 0x8027eb10, object 0x8027e160. Runtime confirms creation after entering core2. Worker intentionally loops on its queue.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "62b7e13252f65749129c0fb540d3c58d3787c40fbd7a210c4e0efce455c1aca4",
+      "vram": 2149845284
+    },
+    {
+      "evidence": "N synthesis constructor 0x8025cbb4/cc installs pull callback 0x8025fe6c in synth->mainBus (+0x3c)->handler (+4) when effects are enabled. Main-bus consumer 0x80262e88/8c/90 follows these same fields and calls t9. Candidate has a closed 186-instruction body; runtime confirms invocation.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "60858c0a0484eea95a1607bc67003c28a0e89e36a1f0d3308316aa305ce19b80",
+      "vram": 2149973612
+    },
+    {
+      "evidence": "N synthesis constructor 0x8025cbd8/e0 installs 0x80260160 at mainBus+4 when effects are disabled. Same typed pull consumer 0x80262e90; effects callback also directly calls this target at 0x8025fea8. Closed 41-instruction body.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "6c68c09f82668f020a2df28cf6d2859c287dd4eabc38a905dd547346e680f76f",
+      "vram": 2149974368
+    },
+    {
+      "evidence": "Sequence-player constructor 0x8025ebfc/ec04 stores handler 0x8025e438 at player +8 and registers it at 0x8025ec0c. NAudio frame consumer 0x8025c738/3c loads +8 and invokes it; runtime confirms this target. Event dispatch requires its separately checked switch table.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "e5c28f7ae13b06e213283fc743c1ffcaa62daacfab6ec64043296df1a4fb2c55",
+      "vram": 2149966904
+    },
+    {
+      "evidence": "Player registration 0x802431dc/e8 stores 0x8024324c in ALPlayer.handler (+8); NAudio frame 0x8025c738/3c loads +8 into t9 and calls it with the player. Candidate body closes after 43 instructions; runtime confirms callback invocation.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "f4d7961f4156bac6452f38cd8d64a67a3ceaf6b434d889bf0d082270dd1e2095",
+      "vram": 2149855820
+    },
+    {
+      "evidence": "Audio manager setup 0x8023fe3c/48 materializes a2=0x8023fe80; osCreateThread 0x8023fe58 passes ID 4, priority 50, stack 0x8027cff0, object 0x8027bf58. Confirmed by runtime creation after NAudio voice initialization.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "de74970f7f535a6b1d4b5d7d48f13d717ca5278425001bd2e491617541aa27d4",
+      "vram": 2149842560
+    },
+    {
+      "evidence": "Audio config setup 0x8023fcbc/f4 stores 0x802403b8 at ALSynConfig.dmaproc (+0x10). NAudio voice constructor loads its callback argument at 0x80260264 and calls t9 at 0x8026026c. Complete 0x38-byte initializer returns the DMA callback 0x80240204.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "544ed14bb7f041fa6620bbbd0701b7d20519e25e687713fe7e3e84dcd3dae969",
+      "vram": 2149843896
+    },
+    {
+      "evidence": "DMA initializer 0x802403c4/d0 returns v0=0x80240204. Reviewed full 0x1b4-byte callback: searches the DMA cache, queues 512-byte osPiStartDma reads, and returns physical buffer plus odd-address adjustment. Matching reference code_1D00.c audioManager_DMAInitProc corroborates ABI.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "639930c0fe98f42779736aa4b351f88b762136fbe2411c91dfa1a76b88f29d4c",
+      "vram": 2149843460
+    },
+    {
+      "evidence": "Controller setup 0x8024f0a0/ac materializes a2=0x8024efb0; osCreateThread at 0x8024f0bc passes ID 7, priority 40, stack 0x802816e0, object 0x80281330. Runtime confirms creation; setup binds SI event and calls osContInit.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "681649f8c8b4644c8e694791b0f55947dd62234958f242ab4adc866e541c8580",
+      "vram": 2149904304
+    },
+    {
+      "evidence": "Task scheduler setup 0x80247698/a8 materializes a2=0x802473b4; osCreateThread at 0x802476b8 passes ID 5, priority 60, stack/object 0x80280428. Confirmed by runtime thread creation.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "d757651ca3cae9e0fe9193b5df95d7cdf3345e2fcb941b1ba7d1fc3830ab1928",
+      "vram": 2149872564
+    },
+    {
+      "evidence": "VI setup 0x8024bf54/60 materializes a2=0x8024c2f8; osCreateThread call 0x8024bf70 passes ID 0, priority 80, stack 0x80280e90 and thread object 0x802808e0. Runtime confirms this first VI worker creation.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "b6c75f2c2822fdc41c3257e9c66109094eac2ccd3c9265203a91e0433b37871f",
+      "vram": 2149892856
+    },
+    {
+      "evidence": "Boot 0x80000524 materializes 0x8023da20 in t9; JALR at 0x8000052c enters decoded core1 after both RareZip streams.",
+      "origin": "checked-root",
+      "sha256": "d46c693a1cc688f9d15d86e2f1cfe66d97003093e48f4272eba6259cb394709d",
+      "vram": 2149833248
+    },
+    {
+      "evidence": "mainThread_create at 0x8023e018 passes a2=0x8023df9c to osCreateThread at 0x8023e048; ID 6, priority 20, stack/object 0x8027bd38.",
+      "origin": "checked-root",
+      "sha256": "7a54e7136dfd15644dbbba08dd8a4e14c2adf5405b908b785bb28a3a0bda0a97",
+      "vram": 2149834652
+    },
+    {
+      "evidence": "0x80240bf4..0x80240c10 passes this entry as a2 to the verified osCreateThread at 0x80263ea0; ID 1, priority 0, stack 0x8027ed10.",
+      "origin": "checked-root",
+      "sha256": "bdf0730ab17638794b059492d8da7efdecb77b5dc5131604679ead036ba7fa36",
+      "vram": 2149846064
+    },
+    {
+      "body_sha256": "bf26164222b792411c6970041629b87b449422de66909f9e1d089ef01e3caf25",
+      "body_size": 48,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202252663,
+          "pc": 2150378456
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "BGS_func_803885DC",
+      "section": ".BGS",
+      "sha256": "73d73855b6ea994628368738ad2cd5f3ba918a9a1c409f9eb90bc35ca17bec67",
+      "vram": 2151187932
+    },
+    {
+      "body_sha256": "b949845122609bbded54553a8558aa1fc88639e2f4197599d6a1d252744f1e6b",
+      "body_size": 648,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202259576,
+          "pc": 2150381772
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "BGS_func_8038F1E0",
+      "section": ".BGS",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151215584
+    },
+    {
+      "body_sha256": "ea76620425ed37954a4e53e56901b4171af05d88eb2b6ef5510f3c6d0e56b60b",
+      "body_size": 116,
+      "direct_call_evidence": [
+        {
+          "caller": "warp_bgsEnterTanktupConditional",
+          "expected_word": 202259804,
+          "pc": 2150751516
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038F570",
+      "section": ".BGS",
+      "sha256": "52d5c1ff5bb3c414d51404cc5510e2ee4a67905d5c54e1c7849efdf6ea361d11",
+      "vram": 2151216496
+    },
+    {
+      "body_sha256": "9dc9f2004be88fcd0a1d8e7fef6f28b392889cb247841b99ca4a95f7e569b4f3",
+      "body_size": 12,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202251320,
+          "pc": 2150378424
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "CC_func_803870E0",
+      "section": ".CC",
+      "sha256": "5e82d5ee04647053e97e19f013b20e34d56cb34570535b5cbd9d649962a9d654",
+      "vram": 2151182560
+    },
+    {
+      "body_sha256": "d6cbc842fb4e28544bf7d14c05482fc884de6498488151132dc5d42c9a7f77c5",
+      "body_size": 12,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202251323,
+          "pc": 2150970252
+        },
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202251323,
+          "pc": 2150970300
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_803870EC",
+      "section": ".CC",
+      "sha256": "51d21a3908a0a2e73181ead06a369fd13017ff8705eb3173744692838b7b9f0f",
+      "vram": 2151182572
+    },
+    {
+      "body_sha256": "e3881b3a34b0785694f2c8a7b00075aba145b7f45e3719bd88147694b06fc3a2",
+      "body_size": 472,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202252136,
+          "pc": 2150381708
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "CC_func_80387DA0",
+      "section": ".CC",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151185824
+    },
+    {
+      "body_sha256": "10137a6609cd7bb4172c34c779a71a82ae392974b66d9a5d7a611eceb2ddde2f",
+      "body_size": 48,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_cc_release",
+          "expected_word": 202252341,
+          "pc": 2150771216
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_803880D4",
+      "section": ".CC",
+      "sha256": "de609ca9d26fb1abc050fe1cfeb55b223a93a8ab4a368be467590ac6a15c4412",
+      "vram": 2151186644
+    },
+    {
+      "body_sha256": "8bd67a9d5556a956eb9aed6e0d24e229803e3db0fc92973aafef29e0b89f978d",
+      "body_size": 120,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_cc_init",
+          "expected_word": 202252353,
+          "pc": 2150771256
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80388104",
+      "section": ".CC",
+      "sha256": "b4a61342c9663f6007454fa0490e1830ea11e91f906e6f8648c73119dfb14fa4",
+      "vram": 2151186692
+    },
+    {
+      "body_sha256": "ee12805891ce4709b9103906fbc7bb5838a2253cb6a52de7b69269c70bc4111d",
+      "body_size": 476,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_cc_update",
+          "expected_word": 202252383,
+          "pc": 2150771296
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038817C",
+      "section": ".CC",
+      "sha256": "c8ea11594b33990f630e2c08c2a93758f17a4458b0b4d7023780ee6290431dc3",
+      "vram": 2151186812
+    },
+    {
+      "body_sha256": "75204bf07dbaf1b8946bfe740a96d6aabb043079ba33a4dda058cf9503cab20f",
+      "body_size": 1004,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_cc_draw",
+          "expected_word": 202252760,
+          "pc": 2150771176
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "CC_func_80388760",
+      "section": ".CC",
+      "sha256": "dde172ea7a84fb8122fc04dca4cb8e0ca9c83b3c673535588450036fc2acda55",
+      "vram": 2151188320
+    },
+    {
+      "body_sha256": "d1edc108be5e0e8d2732b0a50200a83bd8b056deea1796f625aa1d4a0fd873ab",
+      "body_size": 160,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_cc_release",
+          "expected_word": 202253101,
+          "pc": 2150771208
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80388CB4",
+      "section": ".CC",
+      "sha256": "6fb0801b7aee4e5435fba58753d5d412e170584eb5e278b2e91c805e296bb943",
+      "vram": 2151189684
+    },
+    {
+      "body_sha256": "5d474760211dadcef5b7da8b6bc495a5856e5864570f5477485f68b79e035b88",
+      "body_size": 336,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_cc_init",
+          "expected_word": 202253141,
+          "pc": 2150771248
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80388D54",
+      "section": ".CC",
+      "sha256": "6fb0801b7aee4e5435fba58753d5d412e170584eb5e278b2e91c805e296bb943",
+      "vram": 2151189844
+    },
+    {
+      "body_sha256": "faf1664165f01ad04b593660d0cbaf38d3b71e2700d2ddbf32ebf3c08236ae14",
+      "body_size": 1364,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_cc_update",
+          "expected_word": 202253267,
+          "pc": 2150771288
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "CC_func_80388F4C",
+      "section": ".CC",
+      "sha256": "89db63887fec2344938804158adfea23bbc727c75a4eb635325901e71c5b802d",
+      "vram": 2151190348
+    },
+    {
+      "body_sha256": "fda4961f63309011dfd7575f46292be499697ba69b345a1070fa3bd5242df5d5",
+      "body_size": 128,
+      "direct_call_evidence": [
+        {
+          "caller": "game_defrag",
+          "expected_word": 202253608,
+          "pc": 2150517168
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_803894A0",
+      "section": ".CC",
+      "sha256": "89c5b988c715f6fcb1490cf846cdf45826d72e9eedbe31b4b07d3d013602702a",
+      "vram": 2151191712
+    },
+    {
+      "body_sha256": "d5e643ca73e525407f74db42fcdc9bead2c6dfd38515772272225b3d3ce74ec0",
+      "body_size": 1088,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202258139,
+          "pc": 2150381880
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "CCW_func_8038DB6C",
+      "section": ".CCW",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151209836
+    },
+    {
+      "body_sha256": "db905d77ef710e0a4ab4d17e74f910bb35a81009c7bf9b5cf2f030079b477a24",
+      "body_size": 152,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_fp_init",
+          "expected_word": 202254844,
+          "pc": 2150772208
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowy_init",
+      "section": ".FP",
+      "sha256": "d199dde53052e67ed8bbf27d7268c17809499926a72c66ac5937f90c6db27a79",
+      "vram": 2151196656
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_release",
+          "expected_word": 202254882,
+          "pc": 2150772152
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowy_end",
+      "section": ".FP",
+      "sha256": "6741e0c2b5bf36997910d35f0cec4dd1db8c1c0d51cf3312b1c9aea2b20fa8c1",
+      "vram": 2151196808
+    },
+    {
+      "body_sha256": "c5dec74928d0b5dad0312151844122c50f05492e867895429a42c8582a3705fc",
+      "body_size": 232,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_update",
+          "expected_word": 202254884,
+          "pc": 2150772264
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowy_update",
+      "section": ".FP",
+      "sha256": "54cbd75050063b136d78ee0f553f400efcea492133d52ce8d6e592f0cef4cb3d",
+      "vram": 2151196816
+    },
+    {
+      "body_sha256": "c330aaa34ae4f32d38e503c66afe1b6cb1950028308ed4e469c5edbd3a91c115",
+      "body_size": 24,
+      "direct_call_evidence": [
+        {
+          "caller": "__chSnowman_deathCallback",
+          "expected_word": 202254942,
+          "pc": 2150506588
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowy_decRemaining",
+      "section": ".FP",
+      "sha256": "d98722065f6eaa5bb8889007ac56fc80bbdf53bc1e3d2fe6ce14413cb9f06ab1",
+      "vram": 2151197048
+    },
+    {
+      "body_sha256": "0b3cb4cdf13a3f3ded0fcf996087b83c2cefc9908897bf66a292d5ae0b876e03",
+      "body_size": 36,
+      "direct_call_evidence": [
+        {
+          "caller": "chSnowman_update",
+          "expected_word": 202254948,
+          "pc": 2150506960
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowy_incTotal",
+      "section": ".FP",
+      "sha256": "b9bd41870c3742e914d2849fa5be67cc5efde39f5854a25739499f1f61f22ff2",
+      "vram": 2151197072
+    },
+    {
+      "body_sha256": "1ed4a8f9b168475cdef4d1f5c9543c4dc533bdea231d372a95e86b47bb64976d",
+      "body_size": 152,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_fp_init",
+          "expected_word": 202254960,
+          "pc": 2150772216
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowButton_init",
+      "section": ".FP",
+      "sha256": "d199dde53052e67ed8bbf27d7268c17809499926a72c66ac5937f90c6db27a79",
+      "vram": 2151197120
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_release",
+          "expected_word": 202254998,
+          "pc": 2150772160
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowButton_end",
+      "section": ".FP",
+      "sha256": "47949a3a5ef36b6ef94db2bc7d38b56df4d41a59ea6dba1d92336f47f6d54588",
+      "vram": 2151197272
+    },
+    {
+      "body_sha256": "30084cb587506128140acd05f09b02e939bff78cd5a3e6438b9f1c2f899c6f03",
+      "body_size": 224,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_update",
+          "expected_word": 202255000,
+          "pc": 2150772272
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSnowButton_update",
+      "section": ".FP",
+      "sha256": "2703532670a5c043b342c57c84af88e6179d4ad30cb9940970a9ed7810464613",
+      "vram": 2151197280
+    },
+    {
+      "body_sha256": "e7e19425490f8a3b6c4ec097b65a7a44234f88776327ad8642ef9d6b148a6ef2",
+      "body_size": 608,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_update",
+          "expected_word": 202255697,
+          "pc": 2150772280
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSlalom_update",
+      "section": ".FP",
+      "sha256": "0e0acd3d97f9e8acc371b0684231cf161dc14798980110742d136aea0a6222ee",
+      "vram": 2151200068
+    },
+    {
+      "body_sha256": "0f3cb9acb3d60ae0e5f8469a96b3085c74b00fb9ce640fce2f480c8abe32421e",
+      "body_size": 260,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_fp_init",
+          "expected_word": 202255849,
+          "pc": 2150772224
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSlalom_init",
+      "section": ".FP",
+      "sha256": "bddadcf93b9b499fc4a18db77884e7c8280a440d2d5f44f5c5046a1ad8fd5f6c",
+      "vram": 2151200676
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_release",
+          "expected_word": 202255914,
+          "pc": 2150772168
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSlalom_end",
+      "section": ".FP",
+      "sha256": "c9a8ca2d28befbaa699fcc998f377ce841c3d208f5f2511aec7895e49a4efa45",
+      "vram": 2151200936
+    },
+    {
+      "body_sha256": "e5941e32a884066b1e7e98b05f3d740f61332606d9b14815f6d8d9c0b41cda5f",
+      "body_size": 72,
+      "direct_call_evidence": [
+        {
+          "caller": "chHoneycomb_update",
+          "expected_word": 202256360,
+          "pc": 2150408364
+        },
+        {
+          "caller": "chBeeSwarm_update",
+          "expected_word": 202256360,
+          "pc": 2150431620
+        },
+        {
+          "caller": "chicecube_update",
+          "expected_word": 202256360,
+          "pc": 2151000756
+        },
+        {
+          "caller": "chBeehive_update",
+          "expected_word": 202256360,
+          "pc": 2150426996
+        },
+        {
+          "caller": "chSnowman_update",
+          "expected_word": 202256360,
+          "pc": 2150506988
+        },
+        {
+          "caller": "func_802D4CD4",
+          "expected_word": 202256360,
+          "pc": 2150452464
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maSlalom_isActive",
+      "section": ".FP",
+      "sha256": "fa334e90a166a7d49fbef6554d41f2dc6d2b8e336aec8dc8bf3de8b8ab81a09d",
+      "vram": 2151202720
+    },
+    {
+      "body_sha256": "44ed5c3ea9b8107043e22492229b09653a3f73278f0973262094b360bad050e8",
+      "body_size": 32,
+      "direct_call_evidence": [
+        {
+          "caller": "chSnowman_update",
+          "expected_word": 202258245,
+          "pc": 2150507004
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038DD14",
+      "section": ".FP",
+      "sha256": "35c265aff7a3182c0840b385a326f322e3c23f957f3b7234c90814c8f40b5795",
+      "vram": 2151210260
+    },
+    {
+      "body_sha256": "7f69e46a54210d102e3ed4095903ecb6512f84119bb095382c4019b6345810be",
+      "body_size": 56,
+      "direct_call_evidence": [
+        {
+          "caller": "chSnowman_update",
+          "expected_word": 202258253,
+          "pc": 2150507252
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038DD34",
+      "section": ".FP",
+      "sha256": "9ebd468e05630541a918c9edbd9b1313cf4d2d1f3a4a49745e5bc5f73f2b308a",
+      "vram": 2151210292
+    },
+    {
+      "body_sha256": "3c7a06f574e240a1c0e726ae7a354da7b26c4b5e00cb88a796ab5e0df95103b1",
+      "body_size": 1056,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202261705,
+          "pc": 2150381804
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "FP_func_80391324",
+      "section": ".FP",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151224100
+    },
+    {
+      "body_sha256": "a81d8032b7b98af80b8335c5f7c8b790ec47f4376f4f71ff5e042eea414a5bf0",
+      "body_size": 156,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_fp_init",
+          "expected_word": 202262064,
+          "pc": 2150772232
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_803918C0",
+      "section": ".FP",
+      "sha256": "d199dde53052e67ed8bbf27d7268c17809499926a72c66ac5937f90c6db27a79",
+      "vram": 2151225536
+    },
+    {
+      "body_sha256": "6ebfb11f21f570b3c6fbc0ac8e284aaba58fa1970ff7d69775ed812a3c0ccd65",
+      "body_size": 56,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_release",
+          "expected_word": 202262103,
+          "pc": 2150772176
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8039195C",
+      "section": ".FP",
+      "sha256": "12dfd86194c8367779bf80c7e386b02b42b8f94e2ca4afab458c2184e780ca48",
+      "vram": 2151225692
+    },
+    {
+      "body_sha256": "23f5d3f1af22f29d543ce8318e2dfdec92cb750a233383eb0b2e4e00a88d9b07",
+      "body_size": 92,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_fp_update",
+          "expected_word": 202262117,
+          "pc": 2150772288
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80391994",
+      "section": ".FP",
+      "sha256": "b6daf5326e52d591eb3ec10413ee6bda5ddd8e0877d0ccd843e5feab30a071ba",
+      "vram": 2151225748
+    },
+    {
+      "body_sha256": "acbf7b4d16a21d8d454b69b1b932ba46fc9b7654d9036acc169e0dff564ea880",
+      "body_size": 48,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202251334,
+          "pc": 2150378440
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "GV_func_80387118",
+      "section": ".GV",
+      "sha256": "27464577a63b176308b8a0bfd71ae495eb496a6c6b605fd8f9cebe73da9ce93e",
+      "vram": 2151182616
+    },
+    {
+      "body_sha256": "e5b0e7cbeb509bb9cedd3b8dce5ac43f995f967563e82a8c5e80c7c6596c529b",
+      "body_size": 56,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202258512,
+          "pc": 2150970480
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038E140",
+      "section": ".GV",
+      "sha256": "2d7e38b309bafaee2f3f2fe0a597c41d02fead101d8605f347dadd50011fa95f",
+      "vram": 2151211328
+    },
+    {
+      "body_sha256": "e7e471f48f2d8ba7ffc5f3d418c34e9d5d19a42b3ec64b36aa36a32c33263c54",
+      "body_size": 12,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202258526,
+          "pc": 2150970440
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038E178",
+      "section": ".GV",
+      "sha256": "0f98d9954dddb5f1d536e834a235a7c811d7ab90b25c4cf02bc810b886fda687",
+      "vram": 2151211384
+    },
+    {
+      "body_sha256": "0e143b34712912d5ff173d536cf2f17f897b827b5c4be222d6cc6ae4dde71486",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202258529,
+          "pc": 2150970448
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038E184",
+      "section": ".GV",
+      "sha256": "578c915574f2a462a3b67e29f021af5531cbd4c019f2c178ef9df98c2b1fe97c",
+      "vram": 2151211396
+    },
+    {
+      "body_sha256": "eec9f8e65ed68e8a98848ffaac2a500a3240594ba38606e8030225202f533eb2",
+      "body_size": 72,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202258623,
+          "pc": 2150970520
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038E2FC",
+      "section": ".GV",
+      "sha256": "9e18429a3368470aeea0886228d491dacf67556087fc44c49defbd5943ea45c9",
+      "vram": 2151211772
+    },
+    {
+      "body_sha256": "fbb8a26d5697977eccef2f8727abd22fde3406770a65fa048df40aa81bdf5a36",
+      "body_size": 104,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202258641,
+          "pc": 2150970496
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038E344",
+      "section": ".GV",
+      "sha256": "9e18429a3368470aeea0886228d491dacf67556087fc44c49defbd5943ea45c9",
+      "vram": 2151211844
+    },
+    {
+      "body_sha256": "97cf553cfececc656d2abee1bb370394f0c63aae9b67736fd9a35bde3f6dd85c",
+      "body_size": 876,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202259541,
+          "pc": 2150381724
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "GV_func_8038F154",
+      "section": ".GV",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151215444
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_release",
+          "expected_word": 202260440,
+          "pc": 2150771356
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038FF60",
+      "section": ".GV",
+      "sha256": "e6fcbc2a2ea98bc22cdc1d112ceb15cbe1cdceba9a9b24b5bd1bbc65b1e53f42",
+      "vram": 2151219040
+    },
+    {
+      "body_sha256": "697fe04c77a5a3309f01ac03b1ebe83835a8ffcc38e213947ce4d1091989f15f",
+      "body_size": 140,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_gv_init",
+          "expected_word": 202260442,
+          "pc": 2150771412
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038FF68",
+      "section": ".GV",
+      "sha256": "b6daf5326e52d591eb3ec10413ee6bda5ddd8e0877d0ccd843e5feab30a071ba",
+      "vram": 2151219048
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_update",
+          "expected_word": 202260477,
+          "pc": 2150771468
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038FFF4",
+      "section": ".GV",
+      "sha256": "82787025f30b9b375b76d6132de9b408d36681bcb5f4912b4527f1a5f79d8e8a",
+      "vram": 2151219188
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_release",
+          "expected_word": 202260542,
+          "pc": 2150771364
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_803900F8",
+      "section": ".GV",
+      "sha256": "c9a8ca2d28befbaa699fcc998f377ce841c3d208f5f2511aec7895e49a4efa45",
+      "vram": 2151219448
+    },
+    {
+      "body_sha256": "1dfa18a29371cdd388468c759e932faf25734136a09a57c96d8cd4d750cb4adc",
+      "body_size": 56,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_gv_init",
+          "expected_word": 202260544,
+          "pc": 2150771420
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80390100",
+      "section": ".GV",
+      "sha256": "504206ba5940046eee93133e055ad26d509fde4da0b49d3c4417d5ba18408682",
+      "vram": 2151219456
+    },
+    {
+      "body_sha256": "827dc792fad5112a6e2a0d6da3716b62e451d6c6615a4fdd332096b72349fa9a",
+      "body_size": 100,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_update",
+          "expected_word": 202260558,
+          "pc": 2150771476
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80390138",
+      "section": ".GV",
+      "sha256": "4ee4585e317dc60d4f87981537ccfbe98c0c54ce84caa82a4bffb1975787b783",
+      "vram": 2151219512
+    },
+    {
+      "body_sha256": "7965948764af94b8bf8aa3c92647cec41f33b23130823e9355eddb1398e3ca55",
+      "body_size": 32,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_release",
+          "expected_word": 202260731,
+          "pc": 2150771372
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "gv_matchingGame_reset",
+      "section": ".GV",
+      "sha256": "8ef5306ecf2242f79fe1fee347c0c93f1d00dc24a95675ade616dbfa8f1f9ebd",
+      "vram": 2151220204
+    },
+    {
+      "body_sha256": "8aa578604c2e8f272acee4f4a1d39873752ab1e5b32444668ff4266dde885931",
+      "body_size": 156,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_gv_init",
+          "expected_word": 202260739,
+          "pc": 2150771428
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "gv_matchingGame_init",
+      "section": ".GV",
+      "sha256": "0ba3dd55c0ce6c8b8ab978adffa48d54728d15c6127ddf2e1c081cf45194d6eb",
+      "vram": 2151220236
+    },
+    {
+      "body_sha256": "2a539c622afc20e696ad3b5d235e890b854101030aac2211f836e6ea0d55bf98",
+      "body_size": 976,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_update",
+          "expected_word": 202260778,
+          "pc": 2150771484
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "gv_matchingGame_update",
+      "section": ".GV",
+      "sha256": "c9aa88955cdf4b48e3c639fb4e0a02bb883d7fa77bcc5e4c4d7ac5425996bab8",
+      "vram": 2151220392
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_release",
+          "expected_word": 202261115,
+          "pc": 2150771380
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "gv_waterCtrl_end",
+      "section": ".GV",
+      "sha256": "e6fcbc2a2ea98bc22cdc1d112ceb15cbe1cdceba9a9b24b5bd1bbc65b1e53f42",
+      "vram": 2151221740
+    },
+    {
+      "body_sha256": "fe4550a9ab7535eba14677dcfbd968aae79bf40d8013a7a15c8fdaa076f18834",
+      "body_size": 160,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_gv_init",
+          "expected_word": 202261117,
+          "pc": 2150771436
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "gv_waterCtrl_init",
+      "section": ".GV",
+      "sha256": "2a32e7c2625013e186f747dbc9ba6ea88a3944a95ab8bdb5136a0d490038350e",
+      "vram": 2151221748
+    },
+    {
+      "body_sha256": "82ff4f53fcf1500acb6d14dd640f5df23e3bf894d2bd64785ead45a1a2d03b21",
+      "body_size": 312,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_gv_update",
+          "expected_word": 202261157,
+          "pc": 2150771492
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "gv_waterCtrl_update",
+      "section": ".GV",
+      "sha256": "b792c2e525269d9a419dea31330694d693afdaa729b8e643b1b60368007f3d14",
+      "vram": 2151221908
+    },
+    {
+      "body_sha256": "d4a37201effe2ca15a70505a2ff4cff8512f033ce88cd27b8cf8bc062a08bb32",
+      "body_size": 12,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803216D0",
+          "expected_word": 202251044,
+          "pc": 2150766620
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "mm_resetHuts",
+      "section": ".MM",
+      "sha256": "f71ccd2bbb44d0dfa7d8071d47c81c2b15616aac231c1fdc97c341419637f4f8",
+      "vram": 2151181456
+    },
+    {
+      "body_sha256": "b2d6279fed536f9e61393ff6ac35d5ef68dbad9ac6f1db3c8286294862645c2a",
+      "body_size": 228,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202252844,
+          "pc": 2150381756
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "MM_func_803888B0",
+      "section": ".MM",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151188656
+    },
+    {
+      "body_sha256": "fc1a8e60abfa07985a9e982c434a665b7fcb0b49813607f037c10b7c65afe15e",
+      "body_size": 32,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803216D0",
+          "expected_word": 202251416,
+          "pc": 2150766652
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "chFlowerpot_reset",
+      "section": ".MMM",
+      "sha256": "d4c0a5629d55cf47b7143e5e74fb4d09dd212b22c7854eb7461c4d11f4f46b7c",
+      "vram": 2151182944
+    },
+    {
+      "body_sha256": "518dd831f311de9d6522b5ed74e63d0802e1a2726c47c33ed1d47c415fd29b2f",
+      "body_size": 200,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202251472,
+          "pc": 2150970388
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "chFlowerpot_eggCollision",
+      "section": ".MMM",
+      "sha256": "0c6ddbd965a1ff80c378074e1e4868c06b249259457c30aad86a217032a693c9",
+      "vram": 2151183168
+    },
+    {
+      "body_sha256": "5bd403cb2390ea8b7c3dd52ec705e6bddee1287817fdfa990b9e0ce5bd7120ca",
+      "body_size": 616,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202253368,
+          "pc": 2150381692
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "MMM_func_803890E0",
+      "section": ".MMM",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151190752
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_mmm_release",
+          "expected_word": 202253647,
+          "pc": 2150771000
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038953C",
+      "section": ".MMM",
+      "sha256": "7b0bbd39b4ebbab993fd70e5b23304685e966d198f466eff0f405f70cc92a75b",
+      "vram": 2151191868
+    },
+    {
+      "body_sha256": "814d0401b9206afa07790afa0d68dbd92b301a1a83c51ea9b6a75b838aa971e3",
+      "body_size": 108,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_mmm_init",
+          "expected_word": 202253649,
+          "pc": 2150771048
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80389544",
+      "section": ".MMM",
+      "sha256": "5e180f53c00530010eb3135d7ea697dbb5568f81094fd4ffe3115b16a20b2bed",
+      "vram": 2151191876
+    },
+    {
+      "body_sha256": "da7258dd9029196d6fcefd45eee9d1c0ffc1c99765fa6a623835528afcf92c23",
+      "body_size": 412,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_mmm_update",
+          "expected_word": 202253723,
+          "pc": 2150771096
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038966C",
+      "section": ".MMM",
+      "sha256": "be8f636da213f3e64a5e783447fd1e7ab66a13cf0050dfa1afc87dd89a7c2421",
+      "vram": 2151192172
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_mmm_release",
+          "expected_word": 202254134,
+          "pc": 2150771008
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "MMM_func_80389CD8",
+      "section": ".MMM",
+      "sha256": "f10e5e336e5fb76e6def91eb6fe9dbb0a6adb09eaa07aced495e21d6525df078",
+      "vram": 2151193816
+    },
+    {
+      "body_sha256": "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_mmm_init",
+          "expected_word": 202254136,
+          "pc": 2150771056
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_80389CE0",
+      "section": ".MMM",
+      "sha256": "0819582a696db2dd6d4773ed84eaaace294bdc7745ad1fdbd80efa8874fa58e0",
+      "vram": 2151193824
+    },
+    {
+      "body_sha256": "0062751980478672e00d496ca85736c7b0ea69c136821a522d3adb8c25cfd3ad",
+      "body_size": 460,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803229C0",
+          "expected_word": 202254205,
+          "pc": 2150771144
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "code3420_handleOrganGame",
+      "section": ".MMM",
+      "sha256": "6f447eb4554b3a99df0172797ec806aea8cfa1c8f0be423701b9f8b8c8af5bec",
+      "vram": 2151194100
+    },
+    {
+      "body_sha256": "4b6a3917a658bbfe6c2b26024ce3781533169658969cf331c9d08557af8fb04a",
+      "body_size": 380,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_mmm_update",
+          "expected_word": 202254320,
+          "pc": 2150771104
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maOrgan_update",
+      "section": ".MMM",
+      "sha256": "04850b6d3b1b7ba168501108cd9af1634e3889792ebb07a0bcd2a2242c4bc4b8",
+      "vram": 2151194560
+    },
+    {
+      "body_sha256": "d74ef0ae74fa5fc3dfba3f4dbf8b7cf8ebeb4ab6ab7a60daa1fefa701ff56812",
+      "body_size": 32,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_mmm_release",
+          "expected_word": 202254949,
+          "pc": 2150771016
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038A994",
+      "section": ".MMM",
+      "sha256": "92ffb60d3ca34d6c24c272d0dd68d8869fda22491e080e96f5249d54c4d31486",
+      "vram": 2151197076
+    },
+    {
+      "body_sha256": "5d4e96913a27e9ba1d9b7543c46af583967ed7ae31247b011a454f56fcc2ed96",
+      "body_size": 124,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_mmm_init",
+          "expected_word": 202254957,
+          "pc": 2150771064
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038A9B4",
+      "section": ".MMM",
+      "sha256": "76c85ac6229494d6f3d89af4c83cc33ca90a5be3c36eac89e04af47c9cc96387",
+      "vram": 2151197108
+    },
+    {
+      "body_sha256": "2754a1111d9200ee88c43c43833140a04a73e00c6134222cc26ff086e1178e41",
+      "body_size": 372,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_mmm_update",
+          "expected_word": 202254993,
+          "pc": 2150771112
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038AA44",
+      "section": ".MMM",
+      "sha256": "00fe6fe27395dd7e0b064f2335fa040ba8d42e81f6e44e6aeb370c5dca673712",
+      "vram": 2151197252
+    },
+    {
+      "body_sha256": "268e571afc68dcce8bf4709bd3b4d57140b4e0d823fdf7c6a61e627c20581e08",
+      "body_size": 88,
+      "direct_call_evidence": [
+        {
+          "caller": "func_80351838",
+          "expected_word": 202255734,
+          "pc": 2150963340
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038B5D8",
+      "section": ".MMM",
+      "sha256": "854d7f7e322338391df5b44a0918c7b3719a4d10488f5c5e903c75b01968ceb2",
+      "vram": 2151200216
+    },
+    {
+      "body_sha256": "a3f148c9fcb0ee044aacf196dbcd5f769a3ffe0fa72a6c72ea6efaebd00439c4",
+      "body_size": 148,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202250775,
+          "pc": 2150970324
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038685C",
+      "section": ".RBB",
+      "sha256": "9ebd468e05630541a918c9edbd9b1313cf4d2d1f3a4a49745e5bc5f73f2b308a",
+      "vram": 2151180380
+    },
+    {
+      "body_sha256": "8d74adc39c39e79b4b457e061fa749d824a00810cff85132debba3c1330ab4a6",
+      "body_size": 1092,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202251026,
+          "pc": 2150381788
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "RBB_func_80386C48",
+      "section": ".RBB",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151181384
+    },
+    {
+      "body_sha256": "0dca4e11eae3deb6ee2c9f45e84485bb9dfd6dd75d330bd33a9010454b35c457",
+      "body_size": 48,
+      "direct_call_evidence": [
+        {
+          "caller": "func_80321854",
+          "expected_word": 202260410,
+          "pc": 2150766716
+        }
+      ],
+      "evidence": "Resident core2 JAL at 0x8032187c calls the RBB propeller stop entry. Complete 48-byte body checks RBB state byte at 0x803912c8 and calls its local state setter with a0=4.",
+      "origin": "checked-root",
+      "reference_name": "rbb_propellorCtrl_stop",
+      "section": ".RBB",
+      "sha256": "0803f9a0940bfb65baa2d9747dd491e51c35df7bfd7a613ebbfa112c233ede26",
+      "vram": 2151218920
+    },
+    {
+      "body_sha256": "a9aa982562f0bd1073ff4b08d2dc93f611c44a1eadf9bdc7b6b36d9db966279f",
+      "body_size": 40,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803216D0",
+          "expected_word": 202260422,
+          "pc": 2150766572
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "rbb_propellorCtrl_reset",
+      "section": ".RBB",
+      "sha256": "970dcd8eddcd17e1c5e7b5fc757e17b51add2b39e5f68a9e56befdcf6f43886a",
+      "vram": 2151218968
+    },
+    {
+      "body_sha256": "d2979b0ff4324e5e4d3a47648d36a5dedb7f4a691f4bf0354da9d0dc9bddb91b",
+      "body_size": 212,
+      "direct_call_evidence": [
+        {
+          "caller": "func_80321924",
+          "expected_word": 202260444,
+          "pc": 2150766908
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "rbb_propellorCtrl_update",
+      "section": ".RBB",
+      "sha256": "7ccd354772a04f8859e5df7f04fc25e39718884b7a5833e7e6c2d27eeace55b4",
+      "vram": 2151219056
+    },
+    {
+      "body_sha256": "7e8afacf81a4cd8ac1a5367004d0216bccfc39e6b408932b9cdc59498d5d8384",
+      "body_size": 388,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202250756,
+          "pc": 2150381676
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "SM_resetSpawnableActors",
+      "section": ".SM",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151180304
+    },
+    {
+      "body_sha256": "87506497337c503078b658b916ef9eb4961eb62b06349fd8ecf2dbe4e451e4e7",
+      "body_size": 8,
+      "direct_call_evidence": [
+        {
+          "caller": "gameSelect_initAndUpdate",
+          "expected_word": 202255020,
+          "pc": 2150390000
+        },
+        {
+          "caller": "gameSelect_initAndUpdate",
+          "expected_word": 202255020,
+          "pc": 2150390080
+        },
+        {
+          "caller": "gameSelect_update",
+          "expected_word": 202255020,
+          "pc": 2150387412
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038AAB0",
+      "section": ".SM",
+      "sha256": "3ce036423a25f62eb92b3016250e9d1f29354d2ff2aea00f19375a69d1a45b3c",
+      "vram": 2151197360
+    },
+    {
+      "body_sha256": "c24df5deec03aa0b12145a091a49b3acf5da4b774fa4ec99dffbec84dd72cc1e",
+      "body_size": 116,
+      "direct_call_evidence": [
+        {
+          "caller": "warp_ttcEnterNippersShell",
+          "expected_word": 202252945,
+          "pc": 2150751568
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "chNipper_isInState7",
+      "section": ".TTC",
+      "sha256": "52d5c1ff5bb3c414d51404cc5510e2ee4a67905d5c54e1c7849efdf6ea361d11",
+      "vram": 2151189060
+    },
+    {
+      "body_sha256": "3556932b7c53a631aa1b20eb3d20b8a63f321ab87fdd4543491ca6d025767d85",
+      "body_size": 440,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202252976,
+          "pc": 2150381740
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "code26D0_resetSpawnableActorsForTTC",
+      "section": ".TTC",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151189184
+    },
+    {
+      "body_sha256": "19bc3bb06f961c4d4b3ec69f1180048eff6b38f388fe086c34110a0fd707a45a",
+      "body_size": 196,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803531C8",
+          "expected_word": 202253529,
+          "pc": 2150970212
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "chLeaky_eggCollision",
+      "section": ".TTC",
+      "sha256": "c1a9578749918025b644835d5f33dd80dc2668cd7833006795d27e8651317ad6",
+      "vram": 2151191396
+    },
+    {
+      "body_sha256": "59d003cdea25b951389bf7fdd92ab9d1d056d06befe7a798a6a6a476c9b18815",
+      "body_size": 12,
+      "direct_call_evidence": [
+        {
+          "caller": "func_803216D0",
+          "expected_word": 202254241,
+          "pc": 2150766636
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "chTreasurehunt_resetProgress",
+      "section": ".TTC",
+      "sha256": "a4659090c67a99be144d45ee141193411b0643d53a61d8439aac9b637018363d",
+      "vram": 2151194244
+    },
+    {
+      "body_sha256": "cd516aec727a9d97ff0504542db9a62d268858f2aefd1e3112e364718e2ac863",
+      "body_size": 72,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_ttc_release",
+          "expected_word": 202255379,
+          "pc": 2150771552
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maCastle_release",
+      "section": ".TTC",
+      "sha256": "5942559ad85017e9f157c041c442e1c8b3b18a23127a602797ee80cf5421c12d",
+      "vram": 2151198796
+    },
+    {
+      "body_sha256": "836bbf9efc19a0fb91848908e4b900b5648de7933f0c2d91cfa4349c8e5777ce",
+      "body_size": 604,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_ttc_init",
+          "expected_word": 202255397,
+          "pc": 2150771584
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maCastle_init",
+      "section": ".TTC",
+      "sha256": "6c53531640710964f351e8bcf16ac355b38bc48126fb9830a266d47e169e7cbe",
+      "vram": 2151198868
+    },
+    {
+      "body_sha256": "b1676613ce7f2e1b2073ba47aa4bc1506436ba3fa83305728abc3c6fd8001dbc",
+      "body_size": 608,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_ttc_update",
+          "expected_word": 202255548,
+          "pc": 2150771616
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maCastle_update",
+      "section": ".TTC",
+      "sha256": "6c1d9d58e45c9beae5a15c668ad11358993e61dae2572f394b0f637638919403",
+      "vram": 2151199472
+    },
+    {
+      "body_sha256": "7512d744a778a22b82db4ebda726201b8f0fe305ed9cb5fc1668efddef325553",
+      "body_size": 20,
+      "direct_call_evidence": [
+        {
+          "caller": "__chCrab_802CB76C",
+          "expected_word": 202255700,
+          "pc": 2150414228
+        },
+        {
+          "caller": "__chCrab_802CB078",
+          "expected_word": 202255700,
+          "pc": 2150412448
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "maCastle_hasBanjoKazooieCodeBeenEntered",
+      "section": ".TTC",
+      "sha256": "60dd2462530cb55be01af1ab9400a932cedc958cee7513d8da9758bb349e0615",
+      "vram": 2151200080
+    },
+    {
+      "body_sha256": "c746456955dc3793a308dc6cff80c377b573a98c595320200900f234c904e00f",
+      "body_size": 44,
+      "direct_call_evidence": [
+        {
+          "caller": "func_80334ECC",
+          "expected_word": 202256355,
+          "pc": 2150846360
+        }
+      ],
+      "evidence": "Resident core2 JAL at 0x80334f98 calls this TTC secret-cheat validation function. The complete 44-byte body and TTC data load at 0x8038c980 match the public US rev0 symbol hypothesis; other level-slot images do not own this entry.",
+      "origin": "checked-root",
+      "reference_name": "maCastle_isSecretCheatCodeRelatedValueEqualToScrambledAddressValue",
+      "section": ".TTC",
+      "sha256": "86bda796e9433f9a1d83ea32be93b03e1e7f718bb529e0120d67a1b3b98ec842",
+      "vram": 2151202700
+    },
+    {
+      "body_sha256": "0de7a926199803459c749a99152d67968689829d6ff203261b74acd3fcf4d91c",
+      "body_size": 1600,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202256696,
+          "pc": 2150381660
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "cutscene_func_8038C4E0",
+      "section": ".cutscenes",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151204064
+    },
+    {
+      "body_sha256": "4fef6de26c2af414f21058c6fda46bcee27f942ab3c4375ab752307db04fc84d",
+      "body_size": 380,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202250492,
+          "pc": 2150381644
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "fight_addSpawnableActors",
+      "section": ".fight",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151179248
+    },
+    {
+      "body_sha256": "7960060692f74eff5208bb883016b69c4620723f489a77a730abcaeb52f4b488",
+      "body_size": 1476,
+      "direct_call_evidence": [
+        {
+          "caller": "spawnQueue_reset",
+          "expected_word": 202254385,
+          "pc": 2150381628
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "lair_func_8038A0C4",
+      "section": ".lair",
+      "sha256": "7520479a2e8ad676e15ccba347ce53aef35252d980272c50b078af641304ed19",
+      "vram": 2151194820
+    },
+    {
+      "body_sha256": "3c35e34d401c30cd517fae652a9eddf54c980ecb352bc109bcaa1ea63dd884b0",
+      "body_size": 184,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_lair_release",
+          "expected_word": 202257234,
+          "pc": 2150771744
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "lair_func_8038CD48",
+      "section": ".lair",
+      "sha256": "f6d8bef5200752016b4df21f0852d4c3cf2f620dba6bb5e2d79e38125c9ff2b5",
+      "vram": 2151206216
+    },
+    {
+      "body_sha256": "6da35c6f273a334f26df87e5e41bf84b6ce0b6c17596b8d2be419e490bdc3106",
+      "body_size": 404,
+      "direct_call_evidence": [
+        {
+          "caller": "overlay_lair_init",
+          "expected_word": 202257350,
+          "pc": 2150771776
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "lair_func_8038CF18",
+      "section": ".lair",
+      "sha256": "d199dde53052e67ed8bbf27d7268c17809499926a72c66ac5937f90c6db27a79",
+      "vram": 2151206680
+    },
+    {
+      "body_sha256": "28fdeeb3a3f7bb8295022e4fc2f8b74931f4083b128005c487faa4cb078fc44a",
+      "body_size": 1720,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_lair_update",
+          "expected_word": 202258476,
+          "pc": 2150771808
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "lair_func_8038E0B0",
+      "section": ".lair",
+      "sha256": "ee09480894c45f7c3702ac9e7f1b7a3c0341e63840c7b01976a27e175185bc66",
+      "vram": 2151211184
+    },
+    {
+      "body_sha256": "671bfbe9c56b48f97fd3fe3e0870e1c9c7c929fa823ace42ef5997854f25f0e5",
+      "body_size": 92,
+      "direct_call_evidence": [
+        {
+          "caller": "__overlay_lair_draw",
+          "expected_word": 202258906,
+          "pc": 2150771712
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "lair_func_8038E768",
+      "section": ".lair",
+      "sha256": "7ab8b668ccb95f39e8fdd981e596b8e6faf96b4f01585fabc07349073b16c450",
+      "vram": 2151212904
+    },
+    {
+      "body_sha256": "225283e7ecc4575859f8d417f175c7e2f035241fdba0022b2cbe3a77e1bebccd",
+      "body_size": 60,
+      "direct_call_evidence": [
+        {
+          "caller": "func_80334B20",
+          "expected_word": 202258929,
+          "pc": 2150845312
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "func_8038E7C4",
+      "section": ".lair",
+      "sha256": "914346fd163e7b73aa1d90d4eaa4a00dbdf22c90cbecab280432a85ef5d1be7a",
+      "vram": 2151212996
+    },
+    {
+      "body_sha256": "62acf366d862a1654c114489f0a292850db0bf2d7e4407219335a264c29ce967",
+      "body_size": 68,
+      "direct_call_evidence": [
+        {
+          "caller": "mapModel_opa_draw",
+          "expected_word": 202259128,
+          "pc": 2150667584
+        }
+      ],
+      "origin": "checked-root",
+      "reference_name": "jigsawPicture_isJigsawPictureComplete",
+      "section": ".lair",
+      "sha256": "69f2e611d7f7dc1a934f88c8d9395e20ee2d46d44a4abbf57a8859a1e3b2026a",
+      "vram": 2151213792
+    }
+  ],
+  "format_version": 1,
+  "reference": {
+    "canonical_image_sha1": "1fb13cad402518d3ae9a8dc4b52c5c54b2a4adc7",
+    "revision": "6820055ca076e94e30e53d917bd9e5f71c28ca20",
+    "scope": "Reviewed resident-to-level direct JALs only; not a complete function inventory",
+    "source_sha256": "2ea529ce97d8755064f351fdffdce5ff3fd3ff2cfbfea31a46a6f938f5720b63",
+    "url": "https://github.com/BanjoRecomp/BanjoRecompSyms"
+  },
+  "rom_sha1": "3aeb6a06c18f4a9fb8f457997f21564ef9dd41e2"
+}
