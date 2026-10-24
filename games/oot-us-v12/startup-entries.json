@@ -53132,6 +53132,11 @@
       "vram": 2158661324
     },
     {
+      "origin": "checked-root",
+      "sha256": "6bffd44c632eeffa16b6a5809432e349283253ce53a367fe02ffe05303fb7830",
+      "vram": 2158661376
+    },
+    {
       "origin": "stack-prologue",
       "sha256": "4910b07d6d95dac6705dbdcfaa1dea5ff8cfb28ec6a7721a57bed9b3227a24b0",
       "vram": 2158661392

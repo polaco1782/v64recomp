@@ -409,6 +409,31 @@ def discover(rom: bytes, profile: dict) -> dict:
         by_address = {}
         for f in functions:
             by_address.setdefault(f['vram'], []).append(f)
+        overlapping_sections = {
+            section['id'] for section in sections
+            if any(section['id'] != other['id']
+                   and section['vram'] < other['vram'] + other['size']
+                   and other['vram'] < section['vram'] + section['size']
+                   for other in sections)
+        }
+        unambiguous_sections = [dict(section, section=section['id']) for section in sections
+                                if section['id'] not in overlapping_sections]
+        owned_by_section = {section['id']: set() for section in sections}
+        for function in functions:
+            owned_by_section[function['section']].update(function['instruction_addresses'])
+        unambiguous_owned = set().union(*(owned_by_section[section['id']]
+                                          for section in unambiguous_sections))
+        text_by_section = {
+            section['id']: (unambiguous_sections if section['id'] not in overlapping_sections
+                            else [dict(other, section=other['id']) for other in sections
+                                  if other['id'] == section['id'] or other['id'] not in overlapping_sections])
+            for section in sections
+        }
+        owned_by_selection = {
+            section['id']: (unambiguous_owned if section['id'] not in overlapping_sections
+                            else unambiguous_owned | owned_by_section[section['id']])
+            for section in sections
+        }
         parameters = {}
         for function in functions:
             if function['discovery_errors'] or function['origin'] in ('native-replacement','unsupported-boundary'):
@@ -417,15 +442,8 @@ def discover(rom: bytes, profile: dict) -> dict:
             # Infer callbacks only where the caller selects a mapping, or the
             # target has one unambiguous mapping. Other overlay roots require
             # a checked inventory entry with an explicit section.
-            text = [dict(s,section=s['id']) for s in sections
-                    if s['id'] == current_section or not any(
-                        s['id'] != other['id'] and s['vram'] < other['vram'] + other['size']
-                        and other['vram'] < s['vram'] + s['size'] for other in sections)]
-            selected_sections = {s['id'] for s in text}
-            owned_addresses = {pc for f in functions if f['section'] in selected_sections
-                               for pc in f['instruction_addresses']}
-            candidates = materialized_entries(rom,{'functions':functions},text,
-                source_ranges=owned_ranges(function),owned_addresses=owned_addresses)
+            candidates = materialized_entries(rom,{'functions':functions},text_by_section[current_section],
+                source_ranges=owned_ranges(function),owned_addresses=owned_by_selection[current_section])
             for candidate in candidates:
                 sources = []
                 for use in candidate['address_uses']:

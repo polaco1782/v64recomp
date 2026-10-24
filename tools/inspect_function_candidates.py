@@ -191,6 +191,21 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             offset = s['rom_offset']+transfer['table_vram']-s['vram']
             excluded_offsets.update(range(offset,offset+transfer['table_count']*4,4))
     if scan:
+        overlapping_sections = {
+            section['id'] for section in sections
+            if any(section['id'] != other['id']
+                   and section['vram'] < other['vram'] + other['size']
+                   and other['vram'] < section['vram'] + section['size']
+                   for other in sections)
+        }
+        unambiguous_sections = [dict(section, section=section['id']) for section in sections
+                                if section['id'] not in overlapping_sections]
+        text_by_section = {
+            section['id']: (unambiguous_sections if section['id'] not in overlapping_sections
+                            else [dict(other, section=other['id']) for other in sections
+                                  if other['id'] == section['id'] or other['id'] not in overlapping_sections])
+            for section in sections
+        }
         for index,(value,) in enumerate(struct.iter_unpack('>I',rom)):
             if value>>24 not in prefixes or value%4:
                 continue
@@ -217,10 +232,6 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                 continue
             table_uses.extend(dict(use, section=function['section'], function=function['name'])
                               for use in indexed_call_tables(rom, function))
-            text = [dict(s,section=s['id']) for s in sections
-                    if s['id'] == function['section'] or not any(
-                        s['id'] != other['id'] and s['vram'] < other['vram'] + other['size']
-                        and other['vram'] < s['vram'] + s['size'] for other in sections)]
             if include_registered:
                 for pc in function['instruction_addresses']:
                     offset = function['rom_offset']+pc-function['vram']
@@ -229,7 +240,7 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                         address = ((pc+4)&0xf0000000)|((word&0x3ffffff)<<2)
                         record(address,dict(kind='direct-call',pc=pc,expected_word=word,
                             rom_offset=offset,section=function['section'],function=function['name']))
-            candidates = materialized_entries(rom,{'functions':[]},text,
+            candidates = materialized_entries(rom,{'functions':[]},text_by_section[function['section']],
                                                source_ranges=owned_ranges(function))
             for candidate in candidates:
                 for use in candidate['address_uses']:
