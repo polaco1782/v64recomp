@@ -42,7 +42,8 @@ avoiding undefined C operations. Source notices and the pinned revision apply.
 Local changes: an owner-thread validation callback before every command;
 explicit fixed-width envelope initialization arithmetic; wide ADPCM/filter
 accumulators; an ADPCM predictor bound check. The adapter bounds RAM/DMEM
-operands and treats upstream warnings as failures. Unsupported microcodes and
+operands and aborts the current task on upstream warnings, recording a shared
+warning snapshot before publishing task completion. Unsupported microcodes and
 resampling flags are rejected. Zelda NEAD command lists use a separate validated
 dispatch path; other NEAD variants are not enabled. The NEAD filter keeps its
 coefficient cache outside guest RAM, preserves the CPU-owned source table and

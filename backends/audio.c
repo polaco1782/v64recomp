@@ -8,6 +8,7 @@
 #include <SDL2/SDL.h>
 #include <openssl/evp.h>
 #include <stdarg.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +30,8 @@ struct RecompAudio {
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile;
     unsigned prebuffer_ms;
+    jmp_buf skip_task;
+    bool hle_active;
 };
 static uint64_t timer_ns(void) {
     struct timespec t;
@@ -75,19 +78,28 @@ static uint32_t address(RecompAudio *a, uint32_t word) {
         recomp_fail("audio segment address overflow", word);
     return (uint32_t)result;
 }
+static void skip_audio_task(RecompAudio *a, const char *message, uint32_t pc) {
+    if (!a->hle_active)
+        recomp_fail(message, pc);
+    recomp_warn(message, pc);
+    longjmp(a->skip_task, 1);
+}
 void HleWarnMessage(void *opaque, const char *message, ...) {
-    (void)opaque;
+    RecompAudio *a = opaque;
+    char detail[256], warning[288];
     va_list args;
     va_start(args, message);
-    fputs("audio HLE: ", stderr);
-    vfprintf(stderr, message, args);
-    fputc('\n', stderr);
+    vsnprintf(detail, sizeof(detail), message, args);
     va_end(args);
-    recomp_fail("unsupported audio HLE operation", 0);
+    snprintf(warning, sizeof(warning), "audio HLE: %s", detail);
+    uint32_t pc = a->debug.command_index
+                      ? a->debug.history[(a->debug.command_index - 1) % RECOMP_AUDIO_HISTORY].address
+                      : a->debug.list;
+    skip_audio_task(a, warning, pc);
 }
 int HleForwardTask(void *opaque) {
-    (void)opaque;
-    recomp_fail("unsupported forwarded audio microcode", 0);
+    HleWarnMessage(opaque, "unsupported forwarded audio microcode");
+    return 0;
 }
 void rsp_break(struct hle_t *hle, unsigned flags) {
     RecompAudio *a = hle->user_defined;
@@ -100,7 +112,7 @@ static void validate_nead(RecompAudio *a, uint32_t w1, uint32_t w2, uint32_t pc)
     unsigned op = w1 >> 24, flags = (w1 >> 16) & 255, count = s->count;
     unsigned lo = w1 & 65535, left = w2 >> 16, right = w2 & 65535, addr = w2 & 0xffffff;
     if (op >= 24 || op == 0 || op == 3 || op == 23)
-        recomp_fail("unknown Zelda audio command", pc);
+        skip_audio_task(a, "unknown Zelda audio command", pc);
     a->stats.commands++;
     a->stats.opcodes[op]++;
     switch (op) {
@@ -214,10 +226,10 @@ static void validate_nead(RecompAudio *a, uint32_t w1, uint32_t w2, uint32_t pc)
 static void validate_naudio(RecompAudio *a, uint32_t w1, uint32_t w2, uint32_t pc) {
     unsigned op = w1 >> 24, addr = w2 & 0xffffff;
     if (op > 15)
-        recomp_fail("unknown NAudio command", pc);
+        skip_audio_task(a, "unknown NAudio command", pc);
     bool standard = a->microcode == RECOMP_AUDIO_NAUDIO;
     if (standard && (op == 7 || op == 8))
-        recomp_fail("unsupported standard NAudio command", pc);
+        skip_audio_task(a, "unsupported standard NAudio command", pc);
     a->stats.commands++;
     a->stats.opcodes[op]++;
     switch (op) {
@@ -305,7 +317,7 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
     }
     unsigned op = w1 >> 24, flags = (w1 >> 16) & 255, count = s->count;
     if (op > 15)
-        recomp_fail("unknown ABI1 audio command", pc);
+        skip_audio_task(a, "unknown ABI1 audio command", pc);
     a->stats.commands++;
     a->stats.opcodes[op]++;
     switch (op) {
@@ -356,7 +368,7 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
             break;
         case 1:
             if (flags & ~3u)
-                recomp_fail("unsupported ABI1 ADPCM flags", pc);
+                skip_audio_task(a, "unsupported ABI1 ADPCM flags", pc);
             if (count && a->book_coefficients < 16)
                 recomp_fail("ADPCM without a codebook", pc);
             dmem_range(s->in, (align(count, 32) / 32) * 9);
@@ -367,7 +379,7 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
             break;
         case 5: {
             if (flags & ~1u)
-                recomp_fail("unsupported ABI1 resampling flags", pc);
+                skip_audio_task(a, "unsupported ABI1 resampling flags", pc);
             unsigned samples = align(count, 16) / 2, pitch = (w1 & 65535) * 2;
             if (s->in < 8)
                 recomp_fail("audio resampling history range", pc);
@@ -378,7 +390,7 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
         }
         case 3:
             if (flags & ~9u)
-                recomp_fail("unsupported ABI1 envelope flags", pc);
+                skip_audio_task(a, "unsupported ABI1 envelope flags", pc);
             sample_range(s->in, align(count, 16));
             sample_range(s->out, align(count, 16));
             sample_range(s->dry_right, align(count, 16));
@@ -646,20 +658,25 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
     memcpy(a->dmem + TASK_DATA_SIZE, &bytes, 4);
     a->task_done = false;
     uint64_t start = timer_ns();
-    if (a->microcode == RECOMP_AUDIO_NEAD_OOT)
-        alist_process_nead_oot(&a->hle);
-    else if (a->microcode == RECOMP_AUDIO_NEAD_1080)
-        alist_process_nead_1080(&a->hle);
-    else if (a->microcode == RECOMP_AUDIO_NAUDIO)
-        alist_process_naudio(&a->hle);
-    else if (a->microcode == RECOMP_AUDIO_NAUDIO_MP3)
-        alist_process_naudio_mp3(&a->hle);
-    else if (a->microcode == RECOMP_AUDIO_NAUDIO_CBFD)
-        alist_process_naudio_cbfd(&a->hle);
-    else if (a->microcode == RECOMP_AUDIO_ABI1_LINEAR)
-        alist_process_audio_ge(&a->hle);
-    else
-        alist_process_audio(&a->hle);
+    a->hle_active = true;
+    if (setjmp(a->skip_task) == 0) {
+        if (a->microcode == RECOMP_AUDIO_NEAD_OOT)
+            alist_process_nead_oot(&a->hle);
+        else if (a->microcode == RECOMP_AUDIO_NEAD_1080)
+            alist_process_nead_1080(&a->hle);
+        else if (a->microcode == RECOMP_AUDIO_NAUDIO)
+            alist_process_naudio(&a->hle);
+        else if (a->microcode == RECOMP_AUDIO_NAUDIO_MP3)
+            alist_process_naudio_mp3(&a->hle);
+        else if (a->microcode == RECOMP_AUDIO_NAUDIO_CBFD)
+            alist_process_naudio_cbfd(&a->hle);
+        else if (a->microcode == RECOMP_AUDIO_ABI1_LINEAR)
+            alist_process_audio_ge(&a->hle);
+        else
+            alist_process_audio(&a->hle);
+    } else
+        a->task_done = true; /* The rest of this list cannot be decoded safely. */
+    a->hle_active = false;
     a->stats.synth_ns += timer_ns() - start;
     if (!a->task_done)
         recomp_fail("audio DSP task did not finish", list);
@@ -681,7 +698,12 @@ static void execute_musyx(RecompAudio *a, uint32_t list, uint32_t count) {
     memcpy(a->dmem + TASK_DATA_SIZE, &count, 4);
     a->task_done = false;
     uint64_t start = timer_ns();
-    musyx_v1_task(&a->hle);
+    a->hle_active = true;
+    if (setjmp(a->skip_task) == 0)
+        musyx_v1_task(&a->hle);
+    else
+        a->task_done = true;
+    a->hle_active = false;
     a->stats.synth_ns += timer_ns() - start;
     if (!a->task_done)
         recomp_fail("MusyX task did not finish", list);

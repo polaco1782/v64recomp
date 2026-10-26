@@ -195,7 +195,8 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
     char path[4096], ram_path[4096], executable[4096];
     /* Keep earlier failures, including failures from simultaneous sessions. */
     uint64_t stamp = recomp_game_monotonic();
-    if (snprintf(path, sizeof(path), "%s/crash-%ld-%" PRIu64 ".json", crash_dir, (long)getpid(), stamp) >=
+    if (snprintf(path, sizeof(path), "%s/%s-%ld-%" PRIu64 ".json", crash_dir,
+                 info->warning ? "warning" : "crash", (long)getpid(), stamp) >=
             (int)sizeof(path) ||
         snprintf(ram_path, sizeof(ram_path), "%s.rdram.bin", path) >= (int)sizeof(ram_path))
         return;
@@ -221,8 +222,9 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         fprintf(f, "%02x", rom_sha1[i]);
     fputs("\",\"failure\":{\"message\":", f);
     quoted(f, info->message);
-    fprintf(f, ",\"address\":\"0x%08x\",\"requested_bytes\":%zu,\"ram_range\":%s},\"threads\":[", info->address,
-            info->requested_bytes, info->ram_range ? "true" : "false");
+    fprintf(f, ",\"address\":\"0x%08x\",\"requested_bytes\":%zu,\"ram_range\":%s,\"severity\":\"%s\"},\"threads\":[",
+            info->address, info->requested_bytes, info->ram_range ? "true" : "false",
+            info->warning ? "warning" : "fatal");
     RecompThreadSnapshot threads[64];
     size_t count = recomp_thread_snapshots(rt, threads, 64);
     if (count > 64)
@@ -276,7 +278,8 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
     fputs("}}\n", f);
     bool okay = !ferror(f);
     okay = fclose(f) == 0 && okay;
-    fprintf(stderr, "Crash report %s: %s\n", okay ? "written" : "incomplete", path);
+    fprintf(stderr, "%s report %s: %s\n", info->warning ? "Warning" : "Crash",
+            okay ? "written" : "incomplete", path);
 }
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, const uint8_t sha1[20]) {
     /* Positional diagnostic entry points may bypass recomp_game_options(). */

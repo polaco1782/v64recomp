@@ -157,6 +157,17 @@ the reporter in both modes, including positional diagnostic launches. Reports
 and RAM dumps go under `local/crashes/<game>/` by default; `--crash-dir` selects
 another directory through the common command-line interface.
 
+Recoverable HLE operations use `recomp_warn(message, address)`. It captures the
+same native stack, guest state and RAM snapshot once per message/address site
+(up to 32 sites per thread), writing `warning-*.json` and a matching RAM dump.
+The report marks
+`failure.severity` as `warning`; the process keeps running. Audio and JPEG HLE
+warnings skip the remainder of their current task and publish its completion.
+An unrecognized graphics microcode skips its display list and publishes SP/DP
+completion. Unsupported game-specific display-list commands skip that command.
+Visuals or audio from a skipped operation may be missing until the next task.
+Malformed task receipts and memory bounds remain fatal.
+
 The core writes ROM identity, failure details, loaded-section state, guest thread
 registers (GPRs, FPRs, HI/LO and FPU control), task words, native stack frames and
 a word-swapped RAM dump. Debug dispatch also retains the last 128 guest-call

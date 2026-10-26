@@ -3,30 +3,37 @@
 #include "memory.h"
 #include <openssl/evp.h>
 #include <stdarg.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 /* Keep JPEG callbacks separate from the audio adapter's HLE state. */
+typedef struct RecompJpegContext {
+    jmp_buf skip_task;
+    uint32_t address;
+    bool done;
+} RecompJpegContext;
 void recomp_jpeg_verbose(void *opaque, const char *message, ...) {
     (void)opaque;
     (void)message;
 }
 void recomp_jpeg_warn(void *opaque, const char *message, ...) {
-    (void)opaque;
+    RecompJpegContext *context = opaque;
+    char detail[256], warning[288];
     va_list args;
     va_start(args, message);
-    fputs("JPEG HLE: ", stderr);
-    vfprintf(stderr, message, args);
-    fputc('\n', stderr);
+    vsnprintf(detail, sizeof(detail), message, args);
     va_end(args);
-    recomp_fail("unsupported JPEG HLE operation", 0);
+    snprintf(warning, sizeof(warning), "JPEG HLE: %s", detail);
+    recomp_warn(warning, context->address);
+    longjmp(context->skip_task, 1);
 }
 void recomp_jpeg_break(struct hle_t *hle, unsigned flags) {
-    bool *done = hle->user_defined;
-    if (flags != SP_STATUS_TASKDONE || *done)
+    RecompJpegContext *context = hle->user_defined;
+    if (flags != SP_STATUS_TASKDONE || context->done)
         recomp_fail("invalid JPEG task completion", flags);
-    *done = true;
+    context->done = true;
 }
 static bool fingerprint(Runtime *rt, uint32_t address, uint32_t bytes, const char *hex) {
     if (!bytes || !hex || strlen(hex) != 64)
@@ -77,11 +84,14 @@ bool recomp_jpeg_decode_ps(Runtime *rt, const RecompTask *task, const RecompJpeg
     /* The task header and every coefficient/table/output span are validated
      * before upstream's unchecked, 24-bit word-swapped memory accessors run. */
     _Alignas(16) uint8_t dmem[4096] = {0};
-    bool done = false;
-    struct hle_t hle = {.dram = rt->rdram, .dmem = dmem, .user_defined = &done};
+    RecompJpegContext context = {.address = task->words[12]};
+    struct hle_t hle = {.dram = rt->rdram, .dmem = dmem, .user_defined = &context};
     *dmem_u32(&hle, TASK_DATA_PTR) = header;
-    jpeg_decode_PS(&hle);
-    if (!done)
+    if (setjmp(context.skip_task) == 0)
+        jpeg_decode_PS(&hle);
+    else
+        context.done = true;
+    if (!context.done)
         recomp_fail("JPEG decoder did not complete", task->guest_address);
     return true;
 }

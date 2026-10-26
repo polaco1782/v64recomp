@@ -38,8 +38,9 @@ bool fingerprint(RT64::State *s, uint32_t address, size_t size, const char *hex)
             return false;
     return true;
 }
-void unsupported(RT64::State *, RT64::DisplayList **dl) {
-    recomp_fail("Turok unsupported L3DEX command", (*dl)->w0);
+void unsupported(RT64::State *state, RT64::DisplayList **dl) {
+    recomp_warn("Turok unsupported L3DEX command",
+                uint32_t(reinterpret_cast<uintptr_t>(*dl) - reinterpret_cast<uintptr_t>(state->RDRAM)));
 }
 void reset(RT64::State *s) {
     RT64::GBI_F3D::reset(s);
@@ -63,7 +64,11 @@ void line(RT64::State *s, RT64::DisplayList **dl) {
     const uint32_t mode = rsp->geometryModeStack[rsp->geometryModeStackSize - 1];
     // The verified automap is unlit and orthographic. Do not silently approximate
     // GPU lighting, fog or perspective clipping if another path starts using it.
-    recomp_game_require(!(mode & (G_LIGHTING | G_FOG | G_TEXTURE_GEN)), "Turok unsupported L3DEX geometry mode", mode);
+    if (mode & (G_LIGHTING | G_FOG | G_TEXTURE_GEN)) {
+        recomp_warn("Turok unsupported L3DEX geometry mode",
+                    uint32_t(reinterpret_cast<uintptr_t>(*dl) - reinterpret_cast<uintptr_t>(s->RDRAM)));
+        return;
+    }
     auto& draw = s->ext.workloadQueue->workloads[s->ext.workloadQueue->writeCursor].drawData;
     const unsigned ia = rsp->indices[a], ib = rsp->indices[b];
     recomp_game_require(ia < draw.posScreen.size() && ib < draw.posScreen.size(), "Turok L3DEX vertex index invalid",
@@ -74,10 +79,12 @@ void line(RT64::State *s, RT64::DisplayList **dl) {
     // while retaining the rejection of perspective and behind-camera lines.
     const auto &matrix = rsp->modelViewProjMatrix;
     const float w = matrix[3][3];
-    recomp_game_require(matrix[0][3] == 0.0f && matrix[1][3] == 0.0f && matrix[2][3] == 0.0f &&
-                            std::isfinite(w) && w > 0.0f && draw.posTransformed[ia][3] == w &&
-                            draw.posTransformed[ib][3] == w,
-                        "Turok unsupported perspective L3DEX line", word);
+    if (matrix[0][3] != 0.0f || matrix[1][3] != 0.0f || matrix[2][3] != 0.0f ||
+        !std::isfinite(w) || w <= 0.0f || draw.posTransformed[ia][3] != w || draw.posTransformed[ib][3] != w) {
+        recomp_warn("Turok unsupported perspective L3DEX line",
+                    uint32_t(reinterpret_cast<uintptr_t>(*dl) - reinterpret_cast<uintptr_t>(s->RDRAM)));
+        return;
+    }
     const float dx = q[0] - p[0], dy = q[1] - p[1];
     const float length = std::hypot(dx, dy);
     const float width = 1.5f + int8_t(word & 255) * 0.5f;

@@ -26,7 +26,8 @@ after synthesis returns. Source coefficients remain CPU-owned across filter exec
 Games provide pinned task addresses and boot/text/data microcode hashes through
 `games/<game>/audio.h`. The shared adapter validates these fingerprints and each
 command's RAM/DMEM ranges, alignment and supported flags. Unknown microcodes,
-commands and unsupported resampling flags fail explicitly. Revision, license and
+commands and unsupported resampling flags report a warning and skip the current
+audio task. Invalid RAM/DMEM ranges and task receipts remain fatal. Revision, license and
 local changes are in [third_party/rsp-hle/README.md](../third_party/rsp-hle/README.md).
 
 MusyX v1 (`RECOMP_AUDIO_MUSYX_V1`) uses 0xa10-byte subframe descriptors rather

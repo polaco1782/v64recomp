@@ -14,6 +14,13 @@ static _Thread_local RecompFailureHandler failure_handler;
 static _Thread_local void *failure_userdata;
 static _Thread_local bool reporting_failure, failed_ram_range;
 static _Thread_local size_t failed_bytes;
+typedef struct RecompWarningSite {
+    uint32_t address;
+    uint64_t message_hash;
+} RecompWarningSite;
+static _Thread_local RecompWarningSite warning_sites[32];
+static _Thread_local unsigned warning_site_count;
+static _Thread_local bool warning_limit_reported;
 static _Thread_local uintptr_t trace_ceiling;
 void recomp_set_trace_ceiling(uintptr_t ceiling) {
     trace_ceiling = ceiling;
@@ -45,6 +52,41 @@ void recomp_dispatch_failure(const RecompFailureInfo *info) {
             failure_handler(info, failure_userdata);
     }
     abort();
+}
+void recomp_dispatch_warning(const RecompFailureInfo *info) {
+    if (reporting_failure)
+        return;
+    reporting_failure = true;
+    if (failure_handler)
+        failure_handler(info, failure_userdata);
+    reporting_failure = false;
+}
+void recomp_warn(const char *message, uint32_t address) {
+    if (reporting_failure)
+        return;
+    uint64_t hash = UINT64_C(14695981039346656037);
+    for (const unsigned char *p = (const unsigned char *)message; *p; p++)
+        hash = (hash ^ *p) * UINT64_C(1099511628211);
+    for (unsigned i = 0; i < warning_site_count; i++)
+        if (warning_sites[i].address == address && warning_sites[i].message_hash == hash)
+            return;
+    if (warning_site_count == sizeof(warning_sites) / sizeof(warning_sites[0])) {
+        if (!warning_limit_reported) {
+            fputs("recomp warning: diagnostic report limit reached\n", stderr);
+            warning_limit_reported = true;
+        }
+        return;
+    }
+    warning_sites[warning_site_count++] = (RecompWarningSite){.address = address, .message_hash = hash};
+    fprintf(stderr, "recomp warning: %s (0x%08x)\n", message, address);
+    RecompFailureInfo info = {.message = message, .address = address, .warning = true};
+    (void)_Unwind_Backtrace(trace_frame, &info);
+    fputs("Native call stack:\n", stderr);
+    backtrace_symbols_fd(info.native_frames, (int)info.native_frame_count, 2);
+    reporting_failure = true;
+    if (failure_handler)
+        failure_handler(&info, failure_userdata);
+    reporting_failure = false;
 }
 _Noreturn void recomp_fail(const char *message, uint32_t address) {
     fprintf(stderr, "recomp: %s (0x%08x)\n", message, address);

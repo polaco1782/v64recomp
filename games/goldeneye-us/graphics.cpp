@@ -23,11 +23,17 @@ static void goldeneyeRdpHalf1(RT64::State *state, RT64::DisplayList **dl) {
     std::memcpy(stream.data(), *dl, bytes);
     std::array<uint32_t, GoldenEyePackets::maxTriangleWords> words{};
     size_t unpacked = 0;
-    if (!GoldenEyePackets::unpackTriangle(stream.data(), wordCount, words.data(), words.size(), unpacked))
-        recomp_fail("GoldenEye malformed RDP triangle half commands", uint32_t(pointer - base));
+    if (!GoldenEyePackets::unpackTriangle(stream.data(), wordCount, words.data(), words.size(), unpacked)) {
+        recomp_warn("GoldenEye malformed RDP triangle half commands", uint32_t(pointer - base));
+        *dl += wordCount - 1;
+        return;
+    }
     GoldenEyePackets::Mesh mesh;
-    if (!GoldenEyePackets::makeMesh(words.data(), unpacked, state->rdp->otherMode.textPersp() == G_TP_PERSP, mesh))
-        recomp_fail("GoldenEye invalid RDP triangle edges/coefficients", uint32_t(pointer - base));
+    if (!GoldenEyePackets::makeMesh(words.data(), unpacked, state->rdp->otherMode.textPersp() == G_TP_PERSP, mesh)) {
+        recomp_warn("GoldenEye invalid RDP triangle edges/coefficients", uint32_t(pointer - base));
+        *dl += unpacked - 1;
+        return;
+    }
     if (mesh.triangles)
         state->rdp->drawTris(mesh.triangles, mesh.position.data(), mesh.texcoord.data(), mesh.color.data(),
                              (words[0] >> 16) & 7, (words[0] >> 19) & 7);

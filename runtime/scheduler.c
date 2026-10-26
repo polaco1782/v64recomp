@@ -163,7 +163,11 @@ void recomp_on_host(Runtime *rt, void (*callback)(Runtime *, void *), void *user
 
 static void report_guest_failure(Runtime *rt, void *opaque) {
     (void)rt;
-    recomp_dispatch_failure(opaque);
+    const RecompFailureInfo *info = opaque;
+    if (info->warning)
+        recomp_dispatch_warning(info);
+    else
+        recomp_dispatch_failure(info);
 }
 static void guest_failure(const RecompFailureInfo *info, void *opaque) {
     recomp_on_host(opaque, report_guest_failure, (void *)info);

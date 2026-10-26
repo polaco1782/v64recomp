@@ -146,7 +146,7 @@ static void interrupts() {
     }
 }
 
-static void process_graphics(RecompRenderer *s) {
+static bool process_graphics(RecompRenderer *s) {
     uint64_t start = monotonic_ns();
     trace_frame(s, "graphics_begin", s->code);
     bool custom =
@@ -156,20 +156,25 @@ static void process_graphics(RecompRenderer *s) {
         s->app->interpreter->UCode.dataAddress = UINT32_MAX;
     }
     if (custom && (!s->app->interpreter->hleGBI || s->app->interpreter->UCode.textAddress != s->code ||
-                   s->app->interpreter->UCode.dataAddress != s->data))
-        recomp_fail("custom graphics microcode binding is incomplete", s->code);
+                   s->app->interpreter->UCode.dataAddress != s->data)) {
+        recomp_warn("custom graphics microcode binding is incomplete", s->code);
+        return false;
+    }
     s->custom_gbi = custom;
     // Quake alternates F3DEX.NoN and F3DLP.Rej. Let RT64 select the cached
     // decoder and its variant flags; it prints diagnostics if lookup fails.
     s->app->interpreter->loadUCodeGBI(s->code, s->data, true);
-    if (!s->app->interpreter->hleGBI)
-        recomp_fail("RT64 did not recognize the graphics microcode", s->code);
+    if (!s->app->interpreter->hleGBI) {
+        recomp_warn("RT64 did not recognize the graphics microcode", s->code);
+        return false;
+    }
     if (s->graphics_hook)
         s->graphics_hook(s->app->interpreter.get(), s->rt->rdram_size, &s->stats.rdp_triangles);
     s->app->processDisplayLists(s->rt->rdram, s->list, 0, true);
     s->textureFiles.collect(*s->app->textureCache);
     s->stats.submit_ns += monotonic_ns() - start;
     trace_frame(s, "graphics_end", s->dp_seen);
+    return true;
 }
 static void process_present(RecompRenderer *s) {
     uint64_t start = monotonic_ns();
@@ -401,7 +406,16 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
     trace_frame(s, "graphics_submit", s->code);
     /* The task hook parks the guest in recomp_on_host. RT64 captures geometry,
      * textures and readbacks before returning; its GPU queues stay asynchronous. */
-    process_graphics(s);
+    if (!process_graphics(s)) {
+        /* A rejected display list did not touch RT64's queues. Publish empty
+         * SP and DP completion so the guest can keep submitting tasks. */
+        if (!recomp_task_complete(s->rt, task->token, RECOMP_SP_DONE) ||
+            !recomp_task_complete(s->rt, task->token, RECOMP_DP_DONE))
+            recomp_fail("cannot complete skipped graphics task", task->guest_address);
+        s->token = 0;
+        s->stats.graphics_tasks++;
+        return true;
+    }
     trace_frame(s, "graphics_receipt");
     if (!s->sp_seen || !recomp_task_complete(s->rt, task->token, RECOMP_SP_DONE))
         recomp_fail("graphics task missing SP receipt", task->guest_address);

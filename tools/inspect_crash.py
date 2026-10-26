@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Show a native game crash report and resolve its compiled C source locations."""
+"""Show a native game crash or warning report and resolve its compiled C source locations."""
 from __future__ import annotations
 import argparse
 import json
@@ -42,7 +42,8 @@ def inspect_crash(path: Path, resolve: bool = True) -> dict:
     if report.get('format_version')!=1:raise ValueError('unsupported crash report format')
     failure=report['failure'];game=report['game']
     width=f"; requested {failure['requested_bytes']} bytes" if failure['ram_range'] else ''
-    print(f"{failure['message']}: {failure['address']}{width}")
+    severity=failure.get('severity','fatal')
+    print(f"{severity.capitalize()}: {failure['message']}: {failure['address']}{width}")
     if 'level' in game:
         print(f"Level {game['level']}, area {game['area']}, action {game['action']}; {game['play_frames']} playable frames")
     else:print(game.get('name','Native game'))
@@ -79,7 +80,7 @@ def main() -> int:
     args=parser.parse_args();path=args.report
     if path is None:
         directory=Path(__file__).resolve().parents[1]
-        reports=[p for base in (directory/'local/crashes',directory/'build') for pattern in ('crash-*.json','*.crash.json') for p in base.rglob(pattern)]
+        reports=[p for base in (directory/'local/crashes',directory/'build') for pattern in ('crash-*.json','warning-*.json','*.crash.json') for p in base.rglob(pattern)]
         if not reports:raise ValueError(f'no crash reports in {directory}')
         path=max(reports,key=lambda p:p.stat().st_mtime_ns)
     inspect_crash(path, resolve=not args.no_resolve);return 0

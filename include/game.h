@@ -17,7 +17,8 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *options);
 /* Load/verify external or embedded ROM content; the caller owns the allocation.
  * Embedded builds default to the sanitized image; --rom selects an original ROM.
  * Install the common crash reporter for this runtime.
- * Games report fatal errors with recomp_fail() or recomp_game_require(). */
+ * Games report fatal errors with recomp_fail() or recomp_game_require(), and
+ * recoverable skipped operations with recomp_warn(). */
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *options, size_t bytes, const uint8_t sha1[20]);
 uint64_t recomp_game_monotonic(void);
 void recomp_game_sleep(uint64_t deadline);

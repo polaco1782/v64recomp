@@ -148,14 +148,18 @@ typedef struct RecompFailureInfo {
     uint32_t address;
     size_t requested_bytes;
     bool ram_range;
+    bool warning;
     void *native_frames[64];
     size_t native_frame_count;
 } RecompFailureInfo;
 typedef void (*RecompFailureHandler)(const RecompFailureInfo *, void *);
-/* Owner-thread observer for controlled runtime failures, before abort(). */
+/* Owner-thread observer for controlled failures and recoverable warnings. */
 void recomp_set_failure_handler(RecompFailureHandler, void *);
-/* Forward a failure captured on another thread to this thread's observer. */
+/* Forward a diagnostic captured on another thread to this thread's observer. */
 void recomp_dispatch_failure(const RecompFailureInfo *);
+/* Report a recoverable operation through the same diagnostic observer. */
+void recomp_dispatch_warning(const RecompFailureInfo *);
+void recomp_warn(const char *, uint32_t);
 #ifdef __cplusplus
 [[noreturn]] void recomp_fail(const char *, uint32_t);
 #else

@@ -47,8 +47,9 @@ hlslpp::float3 inverse_direction(RT64::RSP *rsp, hlslpp::float3 v) {
     return unit(
         hlslpp::mul(hlslpp::float4(v, 0), hlslpp::transpose(rsp->modelMatrixStack[rsp->modelMatrixStackSize - 1])).xyz);
 }
-void unsupported(RT64::State *, RT64::DisplayList **dl) {
-    recomp_fail("Conker unsupported graphics command", (*dl)->w0);
+void unsupported(RT64::State *state, RT64::DisplayList **dl) {
+    recomp_warn("Conker unsupported graphics command",
+                uint32_t(reinterpret_cast<uintptr_t>(*dl) - reinterpret_cast<uintptr_t>(state->RDRAM)));
 }
 void reset(RT64::State *state) {
     state->rsp->setClipRatioAll(2);
