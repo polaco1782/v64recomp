@@ -1,18 +1,33 @@
 # Shadow Man US
 
-Original startup, graphics, audio, Controller Pak screen and title screen are
-working in the bounded desktop replay. Gameplay remains unverified; this is not
-a completed game port.
+Original startup, audio, Controller Pak screen, main menu and rendered level
+progression work in desktop runs. Movement and animation transitions have been
+exercised, but later levels and a complete playthrough remain unverified. This
+is still an incomplete port.
 
-Both configurations use native frame timing and VI-driven presentation. RT64's
-early-presentation mode submits graphics for this game without producing display
-draws, leaving the window black. The checked profile includes scene and object
-callback tables; the entry inventory covers callbacks installed by guest code.
+Both configurations use native frame timing and VI-driven presentation. The
+game's custom VI mode starts at framebuffer row zero, whereas RT64 estimates
+the framebuffer base by subtracting a scanline. The shared renderer normalizes
+its VI snapshot using the OS swap address for this case. This avoids displaying
+an offset RAM fallback instead of the rendered GPU image; guest VI state is
+preserved. Loading can still take a while, and loading/HUD images retain visible
+grain that has not been established as matching original hardware.
 
-Validation: Debug and Release builds pass. A Debug desktop run completed 1,800
-presentations (2,644 graphics tasks and 6,353 audio tasks) without a missing-function
-failure, with visible loading and animated title screens. No interactive gameplay
-acceptance is claimed by this run.
+The checked profile covers menu callbacks, sound-ID remapping, animation events
+and transitions, and scene collision callbacks. Additional constant callbacks
+passed through object traversals are recorded in the ROM-bound entry inventory.
+Each addition was checked against its producer, consumer and ROM bytes; no
+missing-function stubs are used. Keyboard traces confirm directional input
+returns to `(0,0)` on release.
+
+Validation on 2026-10-26: Debug and Release build successfully. The updated
+Release completed a 6,000-presentation desktop run in 145.8 seconds with no
+crash or timeout, with movement/action input and visible level captures. The
+final Debug app completed 2,200 presentations through the opening cinematic,
+with 4,383 graphics tasks, 4,754 audio tasks, nonzero PCM output and no audio
+underruns or resets. Its replay driver flagged the uncaptured 90-second
+screenshot as incomplete because the app finished its frame budget at 80 seconds.
+The shared renderer also passed a 600-presentation GoldenEye startup smoke run.
 
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/shadowman-us/profile.toml --rom /path/to/rom`.

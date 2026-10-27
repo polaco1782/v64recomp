@@ -10,7 +10,7 @@ These are the established port milestones, not new full-game acceptance claims.
 
 - **Super Mario 64 US**: Working gameplay baseline, with Castle Grounds movement/jumping and the castle lobby transition previously validated. Broader courses, ending and prolonged runs still need validation.
 - **GoldenEye 007 US**: Original startup, menus and playable Dam. CPU inventory is partial and remaining unsupported functions fail explicitly. Full-game progression remains unverified.
-- **Shadow Man US**: Original startup, graphics, audio and Controller Pak screen. Title/gameplay progression remains in progress; this is not a completed game port.
+- **Shadow Man US**: Original startup, audio, Controller Pak, menus and rendered level progression. Framebuffer selection and checked menu/animation/collision callbacks are repaired; movement has been exercised. Loading/HUD grain and later-level coverage remain unverified; this is not a completed game port.
 - **Quake 64 US**: Original menu and playable first level, with movement, turning and shotgun firing previously observed. Full-game stability and saves remain unverified.
 - **Quake II US revision 0**: Expansion Pak enabled with 8 MiB RDRAM. Debug and Release build; a bounded Debug replay reaches Strogg Outpost with first-person rendering, controller input and nonzero standard NAudio output. The user confirmed that the game runs well and requested no further testing. Full-game progression, save/reload and sustained audio quality remain unverified. See the [port notes](../games/quake2-us/README.md).
 - **Duke Nukem 64 US**: Original menus and first level with RT64 graphics, ABI1 audio and live input. Full-game progression remains unverified.

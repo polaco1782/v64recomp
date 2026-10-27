@@ -1002,6 +1002,20 @@
       "reason": "ROM state callback written to 0x80052778 and invoked by the main loop at 0x0021d9e0"
     },
     {
+      "vram": 2395260,
+      "sha256": "98ca6ee0c751914c41522bfc7d586b78be06ea85b1e4201352c648e34fd1983d",
+      "origin": "checked-root",
+      "reference_pc": 2397408,
+      "reason": "Caller at 0x2494e0 supplies this constant in a1 to func_00266c04. The wrapper preserves it in s2 and forwards it in a2 to func_00266ba4 (0x266c58, 0x266ca0, 0x266ce4, 0x266d28, 0x266d4c). That traversal calls the callback at 0x266bd8 with the matching object in a0. Complete ROM body verified; 0x248c7c is an original two-instruction return, while 0x2a290c checks object collision geometry."
+    },
+    {
+      "vram": 2403144,
+      "sha256": "1f15daa3661dfaadaf928dc83197644e109164bdbf66754158ec045062f86ca4",
+      "origin": "checked-root",
+      "reference_pc": 2417280,
+      "reason": "Caller at 0x24e280 passes this constant callback in a1 (including its delay slot) to func_00266d74. That wrapper preserves a1 in s1 and forwards it as a2 to func_00266ba4 at 0x266df0; the bounded-by-null object traversal calls it at 0x266bd8 with the matching object in a0. Verified complete callback body and object ABI."
+    },
+    {
       "vram": 2405428,
       "sha256": "638d199a188810e58e1308bbbc34f91b78b283745afca1cf84b2da3a134bb2dd",
       "origin": "checked-root",
@@ -1028,6 +1042,13 @@
       "origin": "checked-root",
       "reference_pc": 2473660,
       "reason": "Original scene object initializer invoked through the object record at offset 0x1c"
+    },
+    {
+      "vram": 2420964,
+      "sha256": "2c5b95218cf2e2ebe607cd6296b0159e5d4e877c240f956f467fa150369110a3",
+      "origin": "checked-root",
+      "reference_pc": 2421432,
+      "reason": "Caller at 0x24f2b8 passes this constant callback in a1 (including its delay slot) to func_00266d74. That wrapper preserves a1 in s1 and forwards it as a2 to func_00266ba4 at 0x266df0; the bounded-by-null object traversal calls it at 0x266bd8 with the matching object in a0. Verified complete callback body and object ABI."
     },
     {
       "vram": 2422092,
@@ -1429,11 +1450,25 @@
       "reason": "ROM vtable at 0x00136d38 is used through object offset 0x48 by func_00296d8c"
     },
     {
+      "vram": 2763020,
+      "sha256": "a7919c523791ad68014b9d0828e04f24ae92ba1246c3ddcfcb47ecc176746c3c",
+      "origin": "checked-root",
+      "reference_pc": 2763652,
+      "reason": "Caller at 0x2a2b84 supplies this constant in a1 to func_00266c04. The wrapper preserves it in s2 and forwards it in a2 to func_00266ba4 (0x266c58, 0x266ca0, 0x266ce4, 0x266d28, 0x266d4c). That traversal calls the callback at 0x266bd8 with the matching object in a0. Complete ROM body verified; 0x248c7c is an original two-instruction return, while 0x2a290c checks object collision geometry."
+    },
+    {
       "vram": 2776148,
       "sha256": "f08cb076488915d888522d593099dab1e9339139c25c7378ae2123d98bbd1bb5",
       "origin": "checked-root",
       "reference_vram": 1272808,
       "reason": "ROM vtable at 0x00136be8 is used through object offset 0x48 by func_00296d8c"
+    },
+    {
+      "vram": 2861016,
+      "sha256": "9e10ab5ec93612b1ffdb573a5721309ab832d152ecdaf549f01ee65e9cebf21c",
+      "origin": "checked-root",
+      "reference_pc": 2385896,
+      "reason": "ROM 0x3b0cc descriptor has count 1 and event pointer 0x8003a4b4. Its 12-byte event (SHA-256 8d40cceb89b608403c6b20ac33ce474efc75088852e6726e11d8a2e487cc9aeb) holds this callback at +4. func_00246720 bounds the index by descriptor count and calls the non-null callback at 0x2467e8. Nine-instruction no-argument leaf sets two animation flags, then returns."
     },
     {
       "vram": 2880948,
@@ -1455,6 +1490,13 @@
       "origin": "checked-root",
       "reference_pc": 2474068,
       "reason": "Scene callback passed in a3 to func_00239174 and stored in linked object records at offset 0x10"
+    },
+    {
+      "vram": 2891388,
+      "sha256": "8d458cb42b520e71bf26c5fd90010e3138316f3449b6915cde5d71a6706dfb08",
+      "origin": "checked-root",
+      "reference_pc": 2893736,
+      "reason": "func_002c2654 materializes this callback in s0 at 0x2c27a0/0x2c27a4 and passes it as a0 to func_0023959c; that function saves a0 in s2 and calls it at 0x239604 with object and object+8 arguments. Complete 14-instruction body returns at 0x2c1eb0."
     },
     {
       "vram": 2901432,

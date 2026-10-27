@@ -63,6 +63,15 @@ fallthroughs = [
   {pc = 0x80000430, expected_word = 0x2404001e, target = 0x80000434, reason = "Native boundary for the inline startup TLB installation"},
 ]
 jump_tables = [
+  # Collision handler selector (signed halfword minus 2) is bounded to 35 cases.
+  {pc = 0x2489f4, expected_word = 0x400008, table_vram = 0x202cc8, count = 35, sha256 = "0cedbdf5e5c8e3aa7f7a953b992d429100c0554d98c6764c3b8ae20e58d15596"},
+  # Sound-selection helpers bound their surface selector to 19 cases.
+  {pc = 0x109288, expected_word = 0x400008, table_vram = 0x100640, count = 19, sha256 = "21b8b8f78a29f0dcf6ff8eafe2785483b8674974872c7bafbf899d1d4e2cdfe4"},
+  {pc = 0x1090f4, expected_word = 0x400008, table_vram = 0x1005f0, count = 19, sha256 = "dcedb57a2fba07b9ef129aac96ca00cbf061289dbafdbd79dbf525c5bc8d91de"},
+  # Menu helpers bound (selector - 2) to six cases.
+  {pc = 0x2d9884, expected_word = 0x400008, table_vram = 0x2d6df0, count = 6, sha256 = "66146aed6328a982a67b0bec89f1bdc4c481deff53cdb6ba66870083babfab8e"},
+  {pc = 0x2d9370, expected_word = 0x400008, table_vram = 0x2d6dc0, count = 6, sha256 = "9f88ed6e4ae5891b60c313d7119558a4693232c13e588b7b2875326d281fc1b3"},
+  {pc = 0x2d9790, expected_word = 0x400008, table_vram = 0x2d6dd8, count = 6, sha256 = "5c3298317b6c76ab5097622f5dc8e210cc2f9eedbb73e44d095307e32d5df91f"},
   {pc = 0x24c8b8, expected_word = 0x400008, table_vram = 0x202ef8, count = 0x12, sha256 = "ab6712e689367df1e440974ca2beb9ae27a803306983201ee048359751129fa2"},
   {pc = 0x24c9f8, expected_word = 0x400008, table_vram = 0x202f50, count = 0x13, sha256 = "53de31d06d0f363c3f5453193b6b756a945902488ca05c225068eddcad18ca20"},
   {pc = 0x24f980, expected_word = 0x400008, table_vram = 0x203110, count = 0x7, sha256 = "0c604c78f98365c8d95939f8b16c38c5456960c31062acd6e4d38f6867d73afd"},
@@ -199,6 +208,34 @@ jump_tables = [
 # func_00261428 searches 640 records of four words and calls word 2.
 # All duplicate callbacks are covered by one representative index per target.
 function_tables = [
+  # The same 549 scene descriptors used by func_0025b6c0 also carry
+  # collision callbacks at +0x24. func_002bd2b0 follows object+0x88,
+  # requires type 2, and calls descriptor word 9 with that object.
+  {pc = 0x2bd374, expected_word = 0xa0f809, table_vram = 0x203a10, count = 0x1797, indices = [64, 548, 559, 625, 1285, 2242, 2363, 2517, 2550, 2583, 2638, 2891, 3001, 3067, 3298, 3606, 3617, 3881, 3969, 4013, 4035, 4189, 4783, 5014, 5344, 5663, 5905, 5916], sha256 = "6456b35e0fa7e8225410b3f6acc5c24b1ee5b6f4e009be25ba3557276f7771e3"},
+  # Word 2 of the 264 animation records at 0x13a4f4 references exactly
+  # these 89 eight-byte transition descriptors at 0x80039a1c..0x80039ce4.
+  # func_0023df7c resolves the previous animation (56-byte stride), then
+  # calls the non-null descriptor word 1 at 0x23e028 when leaving it.
+  {pc = 0x23e028, expected_word = 0x40f809, table_vram = 0x139a1c, count = 178, indices = [5, 7, 9, 11, 17, 21, 23, 25, 35, 39, 43, 49, 79, 81, 89, 91, 111, 141, 145, 147, 165, 173], sha256 = "2b5f41eb9939f5c84dbd883c5de5ad8c32ef45455061e7cb0d8bd48a8ef3a6bf"},
+  # In-game menu descriptor at 0x201424 supplies 21 callbacks at
+  # 0x8002d118, ending before the OPEN string. func_00228a8c passes it
+  # to func_0022adb0 at 0x228be8; the same +0x18 object callback ABI
+  # is consumed at 0x229ff8 (and 0x22a294).
+  {pc = 0x229ff8, expected_word = 0x40f809, table_vram = 0x12d118, count = 21, sha256 = "c6b271389d6ffd7875d4d906c3083e137b41ea24fc0ad0a01c0e694c034baff8"},
+  # Animation descriptor at ROM 0x38094 gives two 12-byte events at
+  # 0x800373d0. func_00246720 bounds the event index by that count and
+  # calls each non-null word 1. Other counted animations reuse both targets.
+  {pc = 0x2467e8, expected_word = 0x80f809, table_vram = 0x1373d0, count = 6, indices = [1, 4], sha256 = "38c997db3f1910d820f720630e1e4063ca7af0ed3c918d74b2edc42e8f76760e"},
+  # func_00109318 bounds sound IDs to 0..510, then indexes 12-byte
+  # records at 0x8001e5b0. Words 1 and 2 remap the ID via callbacks.
+  {pc = 0x109378, expected_word = 0x40f809, table_vram = 0x11e5b0, count = 1533, indices = [1, 295, 739, 823, 940, 1015, 1018, 1102, 1108, 1426, 1489], sha256 = "e451e5f173804e510699bf2bef99b67fd01eb22e70395afbd78a390822f50bf2"},
+  {pc = 0x109394, expected_word = 0x40f809, table_vram = 0x11e5b0, count = 1533, indices = [374, 617], sha256 = "e451e5f173804e510699bf2bef99b67fd01eb22e70395afbd78a390822f50bf2"},
+  # Menu descriptor at .game 0x2d6d80 points to 21 callbacks at 0x80046308,
+  # followed by its distinct resource table at 0x8004635c. func_002d810c
+  # passes that descriptor to func_0022adb0, which resolves one-based IDs
+  # into object callback fields (+0x18..+0x24); func_00229f98 calls +0x18.
+  # Crash RAM at 0x80196b4c confirmed table slot 8 (0x002daa8c).
+  {pc = 0x22a294, expected_word = 0x40f809, table_vram = 0x146308, count = 21, sha256 = "7f18735071f9fa9a8512a8d11bff66345c694ebe74d2cef76eca488caab256c1"},
   # Five adjacent object callbacks following the data pointer at 0x217894.
   {pc = 0x2a61a0, expected_word = 0x40f809, table_vram = 0x217898, count = 0x5, sha256 = "ee8430cc2de5de2b0925febe3fd4979194577ae6f0ae04b22013f6026164277c"},
   # Constructor callbacks at +8 in the 135 checked 20-byte scene records.

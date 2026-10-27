@@ -73,6 +73,20 @@ struct RecompRenderer {
     }
     void sync_vi() {
         (void)recomp_vi_registers(rt, &vi);
+        // RT64 estimates the color-image base by subtracting a scanline from
+        // VI_ORIGIN. Custom modes can start at row zero (Shadow Man does),
+        // which otherwise selects unrelated RAM instead of the GPU image.
+        // The OS swap state supplies the actual base even for CPU-drawn
+        // loading images. Normalize only the renderer's copy when the guest
+        // mode starts at that base, preserving modes with a scanline offset.
+        const RT64::VI decoded = app->core.decodeVI();
+        const RecompViState guest = recomp_vi_state(rt);
+        if (decoded.visible() && guest.framebuffer &&
+            vi.origin == recomp_ram_address(rt, guest.framebuffer, 1)) {
+            const uint32_t rowOffset = vi.origin - decoded.fbAddress();
+            if (rowOffset && uint64_t(vi.origin) + rowOffset < rt->rdram_size)
+                vi.origin += rowOffset;
+        }
     }
 };
 static RecompRenderer *active_renderer;
