@@ -1,12 +1,14 @@
 #ifndef RECOMP_H
 #define RECOMP_H
 
+#include "host.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#if defined(_WIN32) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 #define RECOMP_LITTLE_ENDIAN_HOST 1
 #else
 #define RECOMP_LITTLE_ENDIAN_HOST 0
@@ -15,6 +17,12 @@
 /* Set to 0 to disable optional intrinsics; compiler -D overrides this default. */
 #ifndef USE_INTRISICS
 #define USE_INTRISICS 1
+#endif
+#if USE_INTRISICS && (defined(__SSE2__) || defined(_M_X64))
+#include <emmintrin.h>
+#endif
+#if USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)
+#include <intrin.h>
 #endif
 
 /* Sign-extend to the 64-bit GPR bit pattern; each argument is evaluated once. */
@@ -350,9 +358,18 @@ static inline bool mips_signed_less(uint64_t x, uint64_t y) {
 static inline uint64_t mips_sra32(uint64_t x, unsigned count) {
     uint32_t value = (uint32_t)x;
     count &= 31;
-    if (count)
-        value = (value >> count) | ((value & UINT32_C(0x80000000)) ? UINT32_MAX << (32 - count) : 0);
-    return mips_s32(value);
+#if USE_INTRISICS && (defined(__SSE2__) || defined(_M_X64))
+    return mips_s32(_mm_cvtsi128_si32(_mm_sra_epi32(_mm_cvtsi32_si128((int32_t)value),
+                                                  _mm_cvtsi32_si128((int)count))));
+#else
+    /* Shift the magnitude below the sign bit, then subtract its weight.
+     * MSVC /O2 can miscompile conditional sign-fill after a truncating SLL,
+     * retaining the sign of the pre-SLL value (e.g. 0xffce03e8 -> -64536
+     * instead of 1000 for SLL 16; SRA 16). Unsigned subtraction also handles
+     * count zero without a shift by the word width. */
+    uint32_t sign = value & UINT32_C(0x80000000);
+    return mips_s32(((value ^ sign) >> count) - (sign >> count));
+#endif
 }
 static inline uint64_t mips_sra64(uint64_t value, unsigned count) {
     count &= 63;
@@ -365,6 +382,10 @@ static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
     int32_t result;
     if (__builtin_add_overflow((int32_t)x, (int32_t)y, &result))
         recomp_fail("signed ADD overflow", 0);
+#elif USE_INTRISICS && defined(_MSC_VER) && _MSC_VER >= 1937 && defined(_M_X64)
+    int32_t result;
+    if (_add_overflow_i32(0, (int32_t)x, (int32_t)y, &result))
+        recomp_fail("signed ADD overflow", 0);
 #else
     uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a + b;
     if (((a ^ result) & (b ^ result)) & UINT32_C(0x80000000))
@@ -373,15 +394,29 @@ static inline uint64_t mips_add32(uint64_t x, uint64_t y) {
     return mips_s32(result);
 }
 static inline uint64_t mips_add64(uint64_t x, uint64_t y) {
+#if USE_INTRISICS && (defined(__GNUC__) || defined(__clang__))
+    int64_t result;
+    if (__builtin_add_overflow((int64_t)x, (int64_t)y, &result))
+        recomp_fail("signed DADD overflow", 0);
+#elif USE_INTRISICS && defined(_MSC_VER) && _MSC_VER >= 1937 && defined(_M_X64)
+    __int64 result;
+    if (_add_overflow_i64(0, (__int64)x, (__int64)y, &result))
+        recomp_fail("signed DADD overflow", 0);
+#else
     uint64_t result = x + y;
     if ((~(x ^ y) & (x ^ result)) & UINT64_C(0x8000000000000000))
         recomp_fail("signed DADD overflow", 0);
-    return result;
+#endif
+    return (uint64_t)result;
 }
 static inline uint64_t mips_sub32(uint64_t x, uint64_t y) {
 #if USE_INTRISICS && (defined(__GNUC__) || defined(__clang__))
     int32_t result;
     if (__builtin_sub_overflow((int32_t)x, (int32_t)y, &result))
+        recomp_fail("signed SUB overflow", 0);
+#elif USE_INTRISICS && defined(_MSC_VER) && _MSC_VER >= 1937 && defined(_M_X64)
+    int32_t result;
+    if (_sub_overflow_i32(0, (int32_t)x, (int32_t)y, &result))
         recomp_fail("signed SUB overflow", 0);
 #else
     uint32_t a = (uint32_t)x, b = (uint32_t)y, result = a - b;
@@ -394,7 +429,12 @@ static inline int64_t mips_i32(uint64_t x) {
     return (int64_t)(uint32_t)x - ((x & UINT64_C(0x80000000)) ? INT64_C(4294967296) : 0);
 }
 static inline void mips_mult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
+#if USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)
+    uint64_t result = is_signed ? (uint64_t)__emul((int32_t)x, (int32_t)y)
+                                : __emulu((uint32_t)x, (uint32_t)y);
+#else
     uint64_t result = is_signed ? (uint64_t)(mips_i32(x) * mips_i32(y)) : (uint64_t)(uint32_t)x * (uint32_t)y;
+#endif
     ctx->lo = mips_s32((uint32_t)result);
     ctx->hi = mips_s32((uint32_t)(result >> 32));
 }
@@ -414,6 +454,22 @@ static inline void mips_div(MipsContext *ctx, uint64_t x, uint64_t y, bool is_si
 }
 
 static inline void mips_dmult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
+#if USE_INTRISICS && defined(__SIZEOF_INT128__)
+    unsigned __int128 product = is_signed ? (unsigned __int128)((__int128)(int64_t)x * (__int128)(int64_t)y)
+                                         : (unsigned __int128)x * y;
+    ctx->lo = (uint64_t)product;
+    ctx->hi = (uint64_t)(product >> 64);
+#elif USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)
+    if (is_signed) {
+        __int64 high;
+        ctx->lo = (uint64_t)_mul128((__int64)x, (__int64)y, &high);
+        ctx->hi = (uint64_t)high;
+    } else {
+        unsigned __int64 high;
+        ctx->lo = _umul128(x, y, &high);
+        ctx->hi = high;
+    }
+#else
     /* Four 32-bit products preserve all 128 bits without compiler extensions. */
     uint64_t x0 = (uint32_t)x, x1 = x >> 32, y0 = (uint32_t)y, y1 = y >> 32;
     uint64_t low = x0 * y0, middle = x1 * y0 + (low >> 32), carry = middle >> 32;
@@ -426,6 +482,7 @@ static inline void mips_dmult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_
         if (y >> 63)
             ctx->hi -= x;
     }
+#endif
 }
 static inline void mips_ddiv(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
     bool negative_x = is_signed && (x >> 63), negative_y = is_signed && (y >> 63);

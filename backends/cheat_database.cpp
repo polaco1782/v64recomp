@@ -4,20 +4,19 @@
 #include <cctype>
 #include <cerrno>
 #include <cstdio>
-#include <fcntl.h>
 #include <fstream>
+#include <curl/curl.h>
+#include <mutex>
+#include <memory>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <regex>
 #include <set>
-#include <signal.h>
-#include <spawn.h>
 #include <sstream>
 #include <stdexcept>
-#include <sys/stat.h>
-#include <sys/wait.h>
 #include <thread>
-#include <unistd.h>
 
-extern char **environ;
 namespace RecompCheats {
 namespace {
 constexpr size_t MaxBytes = 8 * 1024 * 1024;
@@ -88,91 +87,115 @@ std::string read(const std::filesystem::path& path) {
         return {};
     return text;
 }
-// Run curl directly, with no shell or curlrc. TLS verification remains enabled.
-// The child has both curl timeouts and an independent size/cancellation bound.
+// Use libcurl on both hosts: HTTPS only, verified TLS, bounded size and cancellation.
+struct Download {
+    std::string bytes;
+    const std::atomic<bool>& cancel;
+};
+size_t receive(char *data, size_t size, size_t count, void *opaque) {
+    auto& state = *static_cast<Download *>(opaque);
+    if (count && size > MaxBytes / count)
+        return 0;
+    size_t bytes = size * count;
+    if (state.cancel || bytes > MaxBytes - state.bytes.size())
+        return 0;
+    try {
+        state.bytes.append(data, bytes);
+    } catch (...) {
+        return 0;
+    }
+    return bytes;
+}
+int progress(void *opaque, curl_off_t, curl_off_t, curl_off_t, curl_off_t) {
+    return static_cast<Download *>(opaque)->cancel ? 1 : 0;
+}
 std::string download(const std::string& url, const std::filesystem::path& destination,
                      const std::atomic<bool>& cancel) {
-    std::string temporary = destination.string() + ".XXXXXX";
-    int fd = mkstemp(temporary.data());
-    if (fd < 0)
-        throw std::runtime_error("Cannot create cheat download cache");
-    fcntl(fd, F_SETFD, FD_CLOEXEC);
-    posix_spawn_file_actions_t actions;
-    posix_spawn_file_actions_init(&actions);
-    posix_spawn_file_actions_adddup2(&actions, fd, STDOUT_FILENO);
-    posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
-    const char *arguments[] = {"curl",
-                               "--disable",
-                               "--fail",
-                               "--location",
-                               "--silent",
-                               "--proto",
-                               "=https",
-                               "--proto-redir",
-                               "=https",
-                               "--connect-timeout",
-                               "8",
-                               "--max-time",
-                               "25",
-                               "--max-filesize",
-                               "8388608",
-                               "--user-agent",
-                               "v64recomp-cheats/1",
-                               url.c_str(),
-                               nullptr};
-    pid_t child = -1;
-    int error = posix_spawnp(&child, "curl", &actions, nullptr, const_cast<char **>(arguments), environ);
-    posix_spawn_file_actions_destroy(&actions);
-    bool okay = error == 0;
-    int status = 0;
-    if (okay) {
-        auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
-        for (;;) {
-            pid_t done = waitpid(child, &status, WNOHANG);
-            if (done == child) {
-                okay = WIFEXITED(status) && WEXITSTATUS(status) == 0;
-                break;
-            }
-            if (done < 0 && errno != EINTR) {
-                okay = false;
-                break;
-            }
-            struct stat info{};
-            if (cancel || std::chrono::steady_clock::now() >= deadline || fstat(fd, &info) ||
-                info.st_size > static_cast<off_t>(MaxBytes)) {
-                kill(child, SIGKILL);
-                while (waitpid(child, &status, 0) < 0 && errno == EINTR) {
-                }
-                okay = false;
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-    }
-    close(fd);
-    std::string contents = okay ? read(temporary) : "";
-    // An HTML error page with HTTP 200 must not replace a useful cached file.
-    okay = okay && !contents.empty() && contents.find('\0') == std::string::npos &&
-           (contents.find("crc ") != std::string::npos ||
-            (contents.front() == '[' && contents.find("Name=") != std::string::npos));
-    if (okay) {
-        std::error_code ec;
-        std::filesystem::rename(temporary, destination, ec);
-        if (ec) {
-            std::filesystem::remove(temporary);
-            throw std::runtime_error("Cannot save cheat download cache");
-        }
-        return contents;
-    }
-    std::filesystem::remove(temporary);
-    if (error == ENOENT)
-        throw std::runtime_error("Install curl to download cheats");
+    static std::once_flag initialized;
+    std::call_once(initialized, [] {
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+            throw std::runtime_error("Cannot initialize HTTPS downloads");
+    });
+    std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> request(curl_easy_init(), curl_easy_cleanup);
+    if (!request)
+        throw std::runtime_error("Cannot create HTTPS download");
+    Download state{{}, cancel};
+    curl_easy_setopt(request.get(), CURLOPT_URL, url.c_str());
+    curl_easy_setopt(request.get(), CURLOPT_PROTOCOLS_STR, "https");
+    curl_easy_setopt(request.get(), CURLOPT_REDIR_PROTOCOLS_STR, "https");
+    curl_easy_setopt(request.get(), CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(request.get(), CURLOPT_FAILONERROR, 1L);
+    curl_easy_setopt(request.get(), CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(request.get(), CURLOPT_CONNECTTIMEOUT, 8L);
+    curl_easy_setopt(request.get(), CURLOPT_TIMEOUT, 25L);
+    curl_easy_setopt(request.get(), CURLOPT_MAXFILESIZE_LARGE, static_cast<curl_off_t>(MaxBytes));
+    curl_easy_setopt(request.get(), CURLOPT_USERAGENT, "v64recomp-cheats/1");
+#ifdef _WIN32
+    curl_easy_setopt(request.get(), CURLOPT_SSL_OPTIONS, static_cast<long>(CURLSSLOPT_NATIVE_CA));
+#endif
+    curl_easy_setopt(request.get(), CURLOPT_WRITEFUNCTION, receive);
+    curl_easy_setopt(request.get(), CURLOPT_WRITEDATA, &state);
+    curl_easy_setopt(request.get(), CURLOPT_XFERINFOFUNCTION, progress);
+    curl_easy_setopt(request.get(), CURLOPT_XFERINFODATA, &state);
+    curl_easy_setopt(request.get(), CURLOPT_NOPROGRESS, 0L);
+    CURLcode error = curl_easy_perform(request.get());
     if (cancel)
         throw std::runtime_error("Download cancelled");
-    if (error)
-        throw std::runtime_error("Cannot start curl (error " + std::to_string(error) + ")");
-    throw std::runtime_error("HTTPS download failed (check connection; curl exit " +
-                             std::to_string(WIFEXITED(status) ? WEXITSTATUS(status) : error) + ")");
+    if (error != CURLE_OK)
+        throw std::runtime_error(std::string("HTTPS download failed: ") + curl_easy_strerror(error));
+    const std::string& contents = state.bytes;
+    // An HTML error page with HTTP 200 must not replace a useful cached file.
+    if (contents.empty() || contents.find('\0') != std::string::npos ||
+        (contents.find("crc ") == std::string::npos &&
+         (contents.front() != '[' || contents.find("Name=") == std::string::npos)))
+        throw std::runtime_error("Invalid cheat download");
+    // Reserve a private directory, including across simultaneous game sessions.
+    struct Scratch {
+        std::filesystem::path directory, file;
+        ~Scratch() {
+            std::error_code ignored;
+            std::filesystem::remove(file, ignored);
+            std::filesystem::remove(directory, ignored);
+        }
+    } scratch;
+    static std::atomic<unsigned> serial{0};
+    for (unsigned attempt = 0; ; attempt++) {
+        auto candidate = destination;
+        candidate += ".download." +
+            std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + "." +
+            std::to_string(serial++);
+        std::error_code ec;
+        if (std::filesystem::create_directory(candidate, ec)) {
+            scratch.directory = std::move(candidate);
+            break;
+        }
+        if (ec || attempt == 100) {
+            throw std::runtime_error("Cannot create cheat download cache");
+        }
+    }
+    scratch.file = scratch.directory / "payload";
+    const auto& temporary = scratch.file;
+    {
+        std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
+        output.write(contents.data(), static_cast<std::streamsize>(contents.size()));
+        output.close();
+        if (!output) {
+            std::filesystem::remove(temporary);
+            throw std::runtime_error("Cannot write cheat download cache");
+        }
+    }
+#ifdef _WIN32
+    bool replaced = MoveFileExW(temporary.c_str(), destination.c_str(), MOVEFILE_REPLACE_EXISTING) != FALSE;
+#else
+    std::error_code ec;
+    std::filesystem::rename(temporary, destination, ec);
+    bool replaced = !ec;
+#endif
+    if (!replaced) {
+        std::filesystem::remove(temporary);
+        throw std::runtime_error("Cannot save cheat download cache");
+    }
+    return contents;
 }
 void add_option(Cheat& c, const std::string& value, const std::string& name) {
     unsigned n;
@@ -271,6 +294,12 @@ std::string rom_key(const Runtime *rt) {
     std::snprintf(key, sizeof(key), "%02X%02X%02X%02X-%02X%02X%02X%02X-C:%02X", h[16], h[17], h[18], h[19], h[20],
                   h[21], h[22], h[23], h[62]);
     return key;
+}
+std::filesystem::path cache_directory(const std::filesystem::path& data_directory, const std::string& key) {
+    // Database section IDs contain a colon, which Windows forbids in directory names.
+    std::string folder = key;
+    std::replace(folder.begin(), folder.end(), ':', '-');
+    return data_directory / "cheats" / folder;
 }
 void Cheat::compile(const Runtime *rt) {
     program.clear();

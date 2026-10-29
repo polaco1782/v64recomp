@@ -1,4 +1,8 @@
 .venv/
+.vs/
+vcpkg_installed/
+CMakeUserPresets.json
+*.vcxproj.user
 build/*
 local/*
 __pycache__

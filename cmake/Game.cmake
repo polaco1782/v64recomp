@@ -5,7 +5,9 @@ set(RECOMP_OPT_LEVEL "2" CACHE STRING "Optimization level for release game code"
 if(NOT RECOMP_OPT_LEVEL MATCHES "^(2|3)$")
     message(FATAL_ERROR "RECOMP_OPT_LEVEL must be 2 or 3")
 endif()
-if(EXISTS "${CMAKE_SOURCE_DIR}/.venv/bin/python")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.venv/Scripts/python.exe")
+    set(Python3_EXECUTABLE "${CMAKE_SOURCE_DIR}/.venv/Scripts/python.exe" CACHE FILEPATH "Python with rabbitizer")
+elseif(EXISTS "${CMAKE_SOURCE_DIR}/.venv/bin/python")
     set(Python3_EXECUTABLE "${CMAKE_SOURCE_DIR}/.venv/bin/python" CACHE FILEPATH "Python with rabbitizer")
 endif()
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
@@ -68,21 +70,62 @@ endif()
 set(RECOMP_APP "${RECOMP_CONFIG_DIR}/app.c")
 add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/${RECOMP_APP}" ${RECOMP_CPU_SOURCES}
     "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES} ${RECOMP_CONFIG_SOURCES})
+file(GLOB RECOMP_GAME_BROWSE CONFIGURE_DEPENDS "${RECOMP_GAME_DIR}/*.h"
+    "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.py"
+    "${RECOMP_GAME_DIR}/${RECOMP_CONFIG_DIR}/*.h")
+target_sources(${RECOMP_GAME} PRIVATE ${RECOMP_GAME_BROWSE} ${RECOMP_GENERATED_HEADERS}
+    "${RECOMP_GENERATED}/game_defaults.h" "${CMAKE_SOURCE_DIR}/include/game.h")
 set_target_properties(${RECOMP_GAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 if(RECOMP_EMBED_ROM)
     target_sources(${RECOMP_GAME} PRIVATE "${RECOMP_PACKAGE_DIR}/embedded_rom.c")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_EMBED_ROM)
-    set_source_files_properties("${RECOMP_PACKAGE_DIR}/embedded_rom.c" PROPERTIES COMPILE_OPTIONS "-g0")
+    if(NOT MSVC)
+        set_source_files_properties("${RECOMP_PACKAGE_DIR}/embedded_rom.c" PROPERTIES COMPILE_OPTIONS "-g0")
+    endif()
 endif()
 target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}"
     "${RECOMP_GAME_DIR}" "${RECOMP_GAME_DIR}/${RECOMP_CONFIG_DIR}")
 target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_RT64 RECOMP_WITH_AUDIO)
-target_compile_options(${RECOMP_GAME} PRIVATE
-    "$<$<CONFIG:Debug>:-O0;-g3>" "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL};-g1>"
-    -fno-omit-frame-pointer -Wall -Wextra -Werror -Wno-unused-label
-    -fno-fast-math -frounding-math -ffp-contract=off)
-target_link_options(${RECOMP_GAME} PRIVATE -rdynamic)
+if(MSVC)
+    # Translated MIPS intentionally narrows register values and retains labels
+    # and unreachable delay-slot tails. Keep warnings enabled for handwritten code.
+    set_source_files_properties(${RECOMP_CPU_SOURCES} PROPERTIES
+        COMPILE_OPTIONS "/wd4244;/wd4245;/wd4310;/wd4702")
+    target_compile_options(${RECOMP_GAME} PRIVATE /W4 /wd4102 /fp:strict /bigobj
+        "$<$<NOT:$<CONFIG:Debug>>:/O2>")
+    target_link_options(${RECOMP_GAME} PRIVATE /DEBUG /STACK:8388608
+        "$<$<NOT:$<CONFIG:Debug>>:/OPT:REF;/OPT:ICF>")
+else()
+    target_compile_options(${RECOMP_GAME} PRIVATE
+        "$<$<CONFIG:Debug>:-O0;-g3>" "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL};-g1>"
+        -fno-omit-frame-pointer -Wall -Wextra -Werror -Wno-unused-label
+        -fno-fast-math -frounding-math -ffp-contract=off)
+    target_link_options(${RECOMP_GAME} PRIVATE -rdynamic)
+endif()
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_renderer recomp_audio)
+if(WIN32)
+    add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_SOURCE_DIR}/LICENSE" "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
+            "$<TARGET_FILE_DIR:${RECOMP_GAME}>"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/licenses"
+            "$<TARGET_FILE_DIR:${RECOMP_GAME}>/licenses" VERBATIM)
+    foreach(dependency openssl sdl2 curl pthreads zlib)
+        set(notice "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/${dependency}/copyright")
+        if(EXISTS "${notice}")
+            add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${notice}"
+                    "$<TARGET_FILE_DIR:${RECOMP_GAME}>/licenses/${dependency}.txt" VERBATIM)
+        endif()
+    endforeach()
+    # Shader compiler DLLs are delay-loaded by RT64. vcpkg deploys its own DLLs.
+    foreach(dll dxcompiler dxil)
+        add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${RECOMP_RT64_SOURCE}/src/contrib/dxc/bin/x64/${dll}.dll"
+                "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
+    endforeach()
+endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_DEBUG)
@@ -92,6 +135,7 @@ if(RECOMP_GAME STREQUAL "goldeneye-us")
     target_include_directories(${RECOMP_GAME} SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
     target_compile_definitions(${RECOMP_GAME} PRIVATE HLSL_CPU FFX_GCC IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
 endif()
+recomp_source_groups(${RECOMP_GAME})
 add_custom_target(run COMMAND $<TARGET_FILE:${RECOMP_GAME}> ${RECOMP_RUN_ARGS}
     DEPENDS ${RECOMP_GAME} WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" USES_TERMINAL)
 add_custom_target(pack

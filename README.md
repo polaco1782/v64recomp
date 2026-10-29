@@ -1,6 +1,6 @@
 # v64recomp
 
-Native N64 recompilation for Linux. ROM instructions are translated to C and
+Native N64 recompilation for Windows and Linux. ROM instructions are translated to C and
 compiled for the host; shared native services supply scheduling, input, saves,
 audio, and RT64 Vulkan graphics. See [how it works](docs/recompilation.md).
 
@@ -19,8 +19,12 @@ The default preserves each game's original aspect ratio.
 
 ## Build and play
 
-Requirements: Python 3.11+, C/C++ compiler, CMake 3.25+, Ninja, OpenSSL 3, SDL2,
-X11/Xwayland, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
+Requirements: Python 3.11+, C/C++ compiler, CMake 3.25+, OpenSSL 3, SDL2,
+libcurl 7.85+, Vulkan, and the populated RT64 checkout in `third_party/rt64/`.
+Linux additionally uses Ninja and X11/Xwayland. Windows uses MSVC and vcpkg;
+see [Windows setup and Visual Studio projects](docs/windows.md). After Windows
+setup, open the root `v64recomp.sln`: each game has its own source project,
+and `Recomp` contains the shared code. Both configurations retain dependency linking.
 Python generates CPU sources during the build. Built games launch directly.
 
 For Steam Deck, use the [container build and portable package](docs/steamdeck.md)
@@ -52,7 +56,7 @@ git submodule update --init --recursive
 
 CMake builds these sources locally; it does not clone or initialize submodules.
 
-Run these commands from the checkout root to install the build tools:
+On Linux, run these commands from the checkout root to install the Python build dependencies:
 
 ```sh
 python3 -m venv .venv
@@ -234,7 +238,7 @@ selectable Steam Input template and installation instructions.
 Arrow keys move the stick; A/X/Z are N64 A/B/Z; S is Start; C/V are L/R;
 I/J/K/L are C buttons. F12 opens the shared GameShark cheat menu in Debug and
 Release. It downloads ROM-specific codes from Mupen64Plus and Project64 and
-caches them for offline use; downloading requires `curl` on `PATH`. See
+caches them for offline use; downloading uses libcurl. See
 [cheat support and implementation](docs/cheats.md).
 Escape or window close exits. F5 reloads texture packs
 and toggles original/replacement textures. Packs default to

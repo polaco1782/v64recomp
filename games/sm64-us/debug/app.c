@@ -308,7 +308,7 @@ int main(int argc, char **argv) {
     CHECK(!route_mode() || goal);
     CHECK(!cheat_menu || (!goal && !strcmp(mode, "live")));
     capture_output = goal || (getenv("RECOMP_CAPTURE") && !strcmp(getenv("RECOMP_CAPTURE"), "1"));
-    trace = capture_output ? artifact("task_trace.jsonl", "w") : fopen("/dev/null", "w");
+    trace = capture_output ? artifact("task_trace.jsonl", "w") : fopen(RECOMP_NULL_DEVICE, "w");
     CHECK(trace);
     Runtime rt;
     CHECK(recomp_runtime_init(&rt, GAME_RAM_SIZE, recomp_functions, recomp_function_count, NULL, recomp_section_count));

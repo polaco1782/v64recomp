@@ -2,14 +2,12 @@
 """Bundle dependencies from the build userspace and enforce its glibc ceiling."""
 
 import argparse
-import hashlib
 import os
 from pathlib import Path
 import re
 import shutil
 import subprocess
 import tarfile
-import tomllib
 
 
 # Core ABI libraries also serve the host's dynamically loaded graphics drivers.
@@ -35,18 +33,13 @@ def glibc_requirement(path):
 
 
 def package(game, build):
+    cache = (build / "CMakeCache.txt").read_text()
+    if not re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:OFF|FALSE|0|NO|N)$", cache, re.M | re.I):
+        raise SystemExit("Distributable packages require RECOMP_EMBED_ROM=OFF; ROMs must be supplied separately.")
     defaults = (build / "generated" / game / "game_defaults.h").read_text()
     paths = dict(re.findall(r'^#define RECOMP_DEFAULT_(ROM|SAVE) "([^"]+)"', defaults, re.M))
     rom = Path(paths["ROM"]).relative_to("/src/local")
     save = Path(paths["SAVE"]).relative_to("/src/local")
-    rom_source = ROOT / "local" / rom
-    identity = tomllib.loads((ROOT / "games" / game / "profile.toml").read_text())["game"]
-    if rom_source.stat().st_size != identity["rom_size"]:
-        raise SystemExit(f"ROM size mismatch: {rom_source}")
-    with rom_source.open("rb") as source:
-        digest = hashlib.file_digest(source, "sha1").hexdigest()
-    if digest != identity["rom_sha1"]:
-        raise SystemExit(f"ROM SHA-1 mismatch: {rom_source}")
     destination = build / "package"
     # Preserve an existing package, including any user-added ROMs or saves.
     if destination.exists():
@@ -85,9 +78,6 @@ def package(game, build):
     (destination / "DEPENDENCIES.txt").write_text("".join(sorted(manifest)))
     (destination / "GLIBC-REQUIREMENTS.txt").write_text("".join(report))
     (destination / "local").mkdir()
-    bundled_rom = destination / "local" / rom
-    bundled_rom.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(rom_source, bundled_rom)
     launcher = destination / "launch.sh"
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
@@ -113,7 +103,7 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
         target.mkdir(parents=True, exist_ok=True)
         shutil.copy2(notice, target / "copyright")
     (destination / "README.txt").write_text(
-        f"ROM included at local/{rom}. Run ./launch.sh.\n"
+        f"No ROM is included. Supply your own verified ROM at local/{rom}, then run ./launch.sh.\n"
         "Keep the entire directory together. local/ holds private saves and caches.\n"
         "Requires x86_64 Linux with glibc 2.36+, GCC 12+ runtime (GLIBCXX_3.4.30),\n"
         "X11/Xwayland and a Vulkan driver.\n"

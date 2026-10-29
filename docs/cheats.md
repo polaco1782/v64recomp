@@ -74,20 +74,23 @@ inspector. The network worker never accesses Runtime or ImGui.
 
 ## Downloading and cache
 
-Files live under `<data>/cheats/<CRC1>-<CRC2>-C:<country>/`, where `<data>` is
+Files live under `<data>/cheats/<CRC1>-<CRC2>-C-<country>/`, where `<data>` is
 the renderer data directory selected by `--data` (normally
 `local/rt64/<game>`). `Mupen64Plus.txt` and `Project64.txt` are separate raw
 source caches. Close and reopen the menu to keep using the current list;
 **Refresh downloads** explicitly updates it. Removing a cache file causes the
-next launch's first menu opening to download that source again.
+next launch's first menu opening to download that source again. The folder uses
+`C-<country>` so it is valid on Windows; database section matching and the ROM ID
+shown in the menu retain `C:<country>`. Older caches in folders with a colon are
+downloaded again under the new name.
 
-The downloader executes `curl` directly with argument arrays, HTTPS-only
-requests and redirects, TLS verification, no curlrc, connection/transfer
-timeouts, an 8 MiB response limit and cancellable child-process ownership.
-Successful responses replace cache files by atomic rename. There is no Python
-runtime dependency. If curl is absent, existing cached lists still work and
-the menu reports that curl is needed for downloads. The same host requirement
-applies to portable/Steam Deck packages.
+The downloader uses libcurl on Windows and Linux, with HTTPS-only requests and
+redirects, TLS verification, connection/transfer timeouts, an 8 MiB response
+limit and cancellation. Windows uses its native certificate store. Successful
+responses replace cache files by atomic rename. There is no Python or curl
+command-line runtime dependency. vcpkg installs libcurl on Windows; Linux builds
+use a system development package or vcpkg, and portable packages include the
+linked library and its dependencies.
 
 Build/link checks cover the shared implementation in both configurations.
 Interactive menu, network-error handling and in-game cheat acceptance are left

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D27A1A0C-2234-523B-AF78-62F891ACA18D}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>hexen-us</ProjectName>
+    <RecompGame>hexen-us</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\Recomp.props" />
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\hexen-us\audio.h" />
+    <None Include="$(RecompRoot)games\hexen-us\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\hexen-us\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\hexen-us\graphics.cpp" />
+    <ClInclude Include="$(RecompRoot)games\hexen-us\graphics.h" />
+    <ClCompile Include="$(RecompRoot)games\hexen-us\hexen.c" />
+    <ClInclude Include="$(RecompRoot)games\hexen-us\hexen.h" />
+    <None Include="$(RecompRoot)games\hexen-us\lzh.py" />
+    <None Include="$(RecompRoot)games\hexen-us\profile.toml" />
+    <ClCompile Include="$(RecompRoot)games\hexen-us\release\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\hexen-us\startup-entries.json" />
+    <ClCompile Include="$(RecompBuildDir)\generated\hexen-us\cpu-*.c" />
+    <ClCompile Include="$(RecompBuildDir)\generated\hexen-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\hexen-us\functions.c')" />
+    <ClInclude Include="$(RecompBuildDir)\generated\hexen-us\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recomp.vcxproj">
+      <Project>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

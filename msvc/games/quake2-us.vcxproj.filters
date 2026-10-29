@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\quake2-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\quake2-us\debug\analyze_callbacks.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\quake2-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\quake2-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\quake2-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\quake2-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\quake2-us\run.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\quake2-us\run.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\quake2-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\quake2-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\quake2-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\quake2-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{AC3725AB-2E01-5CE7-8FA0-CBD3291BB8E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{280396A8-D423-5552-B29B-13F8AD862CBE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{A4FC79B7-85D3-5302-9048-09B154AE5D77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{E726D08A-4007-5E07-B611-BC72105E40F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{4409055F-5FB3-5A67-9865-669E8C443B1F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{E3B31A4D-9E6A-55F9-9A7B-C52BB6B31601}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

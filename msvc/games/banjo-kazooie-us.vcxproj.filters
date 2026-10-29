@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\banjo-kazooie-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\banjo-kazooie-us\debug\import_reference.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\banjo-kazooie-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\banjo-kazooie-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\run.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\run.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\banjo-kazooie-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\banjo-kazooie-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\banjo-kazooie-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\banjo-kazooie-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{A920AEBA-1EC4-5478-992C-DA656B9499E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{1A844FB7-DB53-56A9-AA3A-E8B51C4FA14E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{21C1CE01-E920-5A46-B16A-B41C3CC8A7C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D6073C67-5FD4-5614-A801-2B072D01A157}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{1608DBFB-F5D6-52FC-A0B8-69C2FCF9983B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{CD45AFE7-579E-5913-AA2D-CC2E5868A6F7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

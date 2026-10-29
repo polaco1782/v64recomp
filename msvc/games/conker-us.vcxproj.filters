@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\conker-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\conker-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\conker-us\conker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\conker-us\conker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\conker-us\debug\analyze_switches.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\conker-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\conker-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\conker-us\graphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\conker-us\graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\conker-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\conker-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\conker-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\conker-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\conker-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\conker-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{579A6EA9-E22D-5C5A-A2B6-8EFD9731FB4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{31FD839A-37F3-54DF-805E-86C5B88AFB55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{20D0CC5E-2BC7-56A7-98ED-8E2D54DEEC1C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2DD5E05B-1325-57A8-978F-BA2176211D6B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{0D923B4D-ED91-547C-BC8E-3DC474DEB0EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{9E2F63CB-3356-54A1-A8BC-F787CD85C86E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

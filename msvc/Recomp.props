@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <RecompRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..'))</RecompRoot>
+    <RecompProjectKey Condition="'$(RecompGame)' == 'none'">recomp</RecompProjectKey>
+    <RecompProjectKey Condition="'$(RecompGame)' != 'none'">$(RecompGame)</RecompProjectKey>
+    <RecompBuildDir>$(RecompRoot)build\msvc\$(RecompProjectKey)\$([System.String]::Copy('$(Configuration)').ToLowerInvariant())</RecompBuildDir>
+    <NMakeBuildCommandLine>powershell.exe -NoProfile -File "$(RecompRoot)tools\build_msvc_project.ps1" -Game "$(RecompGame)" -Configuration "$(Configuration)" -Action Build</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>powershell.exe -NoProfile -File "$(RecompRoot)tools\build_msvc_project.ps1" -Game "$(RecompGame)" -Configuration "$(Configuration)" -Action Rebuild</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>powershell.exe -NoProfile -File "$(RecompRoot)tools\build_msvc_project.ps1" -Game "$(RecompGame)" -Configuration "$(Configuration)" -Action Clean</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(RecompGame)' == 'none'">$(RecompBuildDir)\$(Configuration)\recomp_runtime.lib</NMakeOutput>
+    <NMakeOutput Condition="'$(RecompGame)' != 'none'">$(RecompBuildDir)\bin\$(Configuration)\$(RecompGame).exe</NMakeOutput>
+    <OutDir>$(RecompBuildDir)\bin\$(Configuration)\</OutDir>
+    <IntDir>$(RecompBuildDir)\ide\</IntDir>
+    <LocalDebuggerCommand>$(NMakeOutput)</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(RecompRoot)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <NMakeIncludeSearchPath>$(RecompRoot)include;$(RecompRoot)backends;$(RecompRoot)games\$(RecompGame);$(RecompBuildDir)\generated\$(RecompGame);$(RecompRoot)third_party\rsp-hle;$(RecompRoot)build\vcpkg_installed\x64-windows\include;$(RecompRoot)build\vcpkg_installed\x64-windows\include\SDL2;$(RecompRoot)third_party\rt64\src;$(RecompRoot)third_party\rt64\src\contrib;$(RecompRoot)third_party\rt64\src\contrib\plume;$(RecompRoot)third_party\rt64\src\contrib\imgui;$(RecompRoot)third_party\rt64\src\contrib\hlslpp\include;$(RecompRoot)third_party\rt64\src\contrib\mupen64plus-core\src\api;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakePreprocessorDefinitions>_WIN32;_WIN64;NOMINMAX;WIN32_LEAN_AND_MEAN;SDL_MAIN_HANDLED;RECOMP_WITH_RT64;RECOMP_WITH_AUDIO;HLSL_CPU;FFX_GCC;IMGUI_IMPL_VULKAN_NO_PROTOTYPES;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <NMakePreprocessorDefinitions>RECOMP_DEBUG;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <NMakePreprocessorDefinitions>NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

@@ -28,6 +28,7 @@ struct Catalog {
     std::string status;
 };
 std::string rom_key(const Runtime *runtime);
+std::filesystem::path cache_directory(const std::filesystem::path& data_directory, const std::string& key);
 /* Background I/O only: never reads Runtime or touches ImGui. */
 Catalog load_catalog(const std::string& key, const std::filesystem::path& directory, bool refresh,
                      const std::atomic<bool>& cancel);

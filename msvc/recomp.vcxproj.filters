@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClCompile Include="$(RecompRoot)backends\audio.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\cheat_database.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\cheat_menu.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\cheat_menu.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\input.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\jpeg.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\rt64.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\texture_decode.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\textures.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\textures.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)cmake\BuildRT64.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\Game.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\PackUPX.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\rt64\LookAtMatching.cmake">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\rt64\PrimitiveDepth.cmake">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)CMakePresets.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)include\cheats.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\embedded_rom.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\game.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\host.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\input.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\profiler.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\recomp.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\recomp_audio.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\recomp_jpeg.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\renderer.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\runtime.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\runtime_debug.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)msvc\Recomp.props">
+      <Filter>Configuration\msvc</Filter>
+    </None>
+    <None Include="$(RecompRoot)requirements.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)runtime\bootstrap.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\cheats.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\debug.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\debug_game.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\dispatch.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\fpu.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\game.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\host.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\io.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\memory.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\os.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\platform.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\profiler.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\scheduler.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\tasks.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\time.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\video.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)tools\build_msvc_project.ps1">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\build_steamdeck.sh">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\check_branch_link.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\check_function_candidates.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\check_multiply.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\check_overflow.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\check_overlays.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\code_inventory.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\common.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\compare_native_hooks.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\controller_replay.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\desktop_replay.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\diagnose_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\disassemble_function.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\discover.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\dump_cpu_code.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\emit.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\export_analysis_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\format.sh">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\generate_game.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\import_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_address.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_callbacks.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_crash.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_function_candidates.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_rsp_task.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_sdk_symbols.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\inspect_switch_tables.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\merge_symbol_database.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\metadata_candidates.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\msvc_solution.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\native_hooks.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\package_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\profile_execution.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\profile_frames.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\setup_windows.ps1">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\steamdeck\build.sh">
+      <Filter>Source Files\tools\steamdeck</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\steamdeck\bwrap.sh">
+      <Filter>Source Files\tools\steamdeck</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\steamdeck\install-controls.sh">
+      <Filter>Source Files\tools\steamdeck</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\steamdeck\package.py">
+      <Filter>Source Files\tools\steamdeck</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\steamdeck\setup.sh">
+      <Filter>Source Files\tools\steamdeck</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\symbol_database.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\symbols.json">
+      <Filter>Configuration\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\translate.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)vcpkg.json">
+      <Filter>Configuration</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{45190CC6-01EF-53E3-84F5-8B0ACF94CC17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\cmake">
+      <UniqueIdentifier>{E5AD29D0-B01C-5827-9290-D7B25CEF7790}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\cmake\rt64">
+      <UniqueIdentifier>{1CBD586A-9036-5A81-A764-F240AF05E3D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\msvc">
+      <UniqueIdentifier>{CB95410B-A50C-54D9-BF39-639D72BB7F5A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\tools">
+      <UniqueIdentifier>{2D15F58C-19C2-5E53-875C-8DC3E292E009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{E9A7F251-9AB3-53C7-8CDD-7946290D9E2A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backends">
+      <UniqueIdentifier>{D2D23502-9D21-539D-BBA4-21F5DB89B7F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include">
+      <UniqueIdentifier>{360CC0C4-8AB5-5F6C-88CE-F143FE46165D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{BDCE5D5A-1719-5579-B014-087B01302240}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backends">
+      <UniqueIdentifier>{C4C0C11F-5874-5F24-A33E-62A94662D39A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\runtime">
+      <UniqueIdentifier>{A3D86264-2A17-570D-952E-83E60C166BA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools">
+      <UniqueIdentifier>{654D8EE0-DBFF-5A9D-827B-C7EB348AD9D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\steamdeck">
+      <UniqueIdentifier>{332DA6D4-0C2B-5159-989C-A3AFAEFA1BA2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

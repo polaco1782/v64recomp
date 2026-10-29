@@ -1,8 +1,12 @@
 #include "runtime.h"
 #include "runtime_debug.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <execinfo.h>
 #include <unwind.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +29,7 @@ static _Thread_local uintptr_t trace_ceiling;
 void recomp_set_trace_ceiling(uintptr_t ceiling) {
     trace_ceiling = ceiling;
 }
+#ifndef _WIN32
 static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *opaque) {
     RecompFailureInfo *info = opaque;
     /* An optional stack boundary can limit diagnostic unwinding. */
@@ -36,10 +41,27 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *op
     info->native_frames[info->native_frame_count++] = (void *)address;
     return _URC_NO_REASON;
 }
+#endif
+static void capture_trace(RecompFailureInfo *info) {
+#ifdef _WIN32
+    info->native_frame_count = CaptureStackBackTrace(1, 64, info->native_frames, NULL);
+#else
+    (void)_Unwind_Backtrace(trace_frame, info);
+#endif
+    fputs("Native call stack:\n", stderr);
+#ifdef _WIN32
+    for (size_t i = 0; i < info->native_frame_count; i++)
+        fprintf(stderr, "  %p\n", info->native_frames[i]);
+#else
+    backtrace_symbols_fd(info->native_frames, (int)info->native_frame_count, 2);
+#endif
+}
 
 /* Failure paths are cold and never return. Keeping them out of line keeps
    the store fast paths small. */
+#if defined(__GNUC__) || defined(__clang__)
 __attribute__((noreturn, cold)) void recomp_fail(const char *msg, uint32_t address);
+#endif
 
 void recomp_set_failure_handler(RecompFailureHandler handler, void *userdata) {
     failure_handler = handler;
@@ -80,9 +102,7 @@ void recomp_warn(const char *message, uint32_t address) {
     warning_sites[warning_site_count++] = (RecompWarningSite){.address = address, .message_hash = hash};
     fprintf(stderr, "recomp warning: %s (0x%08x)\n", message, address);
     RecompFailureInfo info = {.message = message, .address = address, .warning = true};
-    (void)_Unwind_Backtrace(trace_frame, &info);
-    fputs("Native call stack:\n", stderr);
-    backtrace_symbols_fd(info.native_frames, (int)info.native_frame_count, 2);
+    capture_trace(&info);
     reporting_failure = true;
     if (failure_handler)
         failure_handler(&info, failure_userdata);
@@ -94,9 +114,7 @@ _Noreturn void recomp_fail(const char *message, uint32_t address) {
         reporting_failure = true;
         RecompFailureInfo info = {
             .message = message, .address = address, .requested_bytes = failed_bytes, .ram_range = failed_ram_range};
-        (void)_Unwind_Backtrace(trace_frame, &info);
-        fputs("Native call stack:\n", stderr);
-        backtrace_symbols_fd(info.native_frames, (int)info.native_frame_count, 2);
+        capture_trace(&info);
         if (failure_handler)
             failure_handler(&info, failure_userdata);
     }

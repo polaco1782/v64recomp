@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>Recomp</ProjectName>
+    <RecompGame>none</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="Recomp.props" />
+  <ItemGroup>
+    <ClCompile Include="$(RecompRoot)backends\audio.c" />
+    <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\cheat_database.h" />
+    <ClCompile Include="$(RecompRoot)backends\cheat_menu.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\cheat_menu.h" />
+    <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\debug_overlay.h" />
+    <ClCompile Include="$(RecompRoot)backends\input.c" />
+    <ClCompile Include="$(RecompRoot)backends\jpeg.c" />
+    <ClCompile Include="$(RecompRoot)backends\rt64.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\texture_decode.h" />
+    <ClCompile Include="$(RecompRoot)backends\textures.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\textures.h" />
+    <None Include="$(RecompRoot)cmake\BuildRT64.cmake" />
+    <None Include="$(RecompRoot)cmake\Game.cmake" />
+    <None Include="$(RecompRoot)cmake\PackUPX.cmake" />
+    <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt" />
+    <None Include="$(RecompRoot)cmake\rt64\LookAtMatching.cmake" />
+    <None Include="$(RecompRoot)cmake\rt64\PrimitiveDepth.cmake" />
+    <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake" />
+    <None Include="$(RecompRoot)cmake\SharedRT64.cmake" />
+    <None Include="$(RecompRoot)cmake\SourceGroups.cmake" />
+    <None Include="$(RecompRoot)CMakeLists.txt" />
+    <None Include="$(RecompRoot)CMakePresets.json" />
+    <ClInclude Include="$(RecompRoot)include\cheats.h" />
+    <ClInclude Include="$(RecompRoot)include\embedded_rom.h" />
+    <ClInclude Include="$(RecompRoot)include\game.h" />
+    <ClInclude Include="$(RecompRoot)include\host.h" />
+    <ClInclude Include="$(RecompRoot)include\input.h" />
+    <ClInclude Include="$(RecompRoot)include\profiler.h" />
+    <ClInclude Include="$(RecompRoot)include\recomp.h" />
+    <ClInclude Include="$(RecompRoot)include\recomp_audio.h" />
+    <ClInclude Include="$(RecompRoot)include\recomp_jpeg.h" />
+    <ClInclude Include="$(RecompRoot)include\renderer.h" />
+    <ClInclude Include="$(RecompRoot)include\runtime.h" />
+    <ClInclude Include="$(RecompRoot)include\runtime_debug.h" />
+    <None Include="$(RecompRoot)msvc\Recomp.props" />
+    <None Include="$(RecompRoot)requirements.txt" />
+    <ClCompile Include="$(RecompRoot)runtime\bootstrap.c" />
+    <ClCompile Include="$(RecompRoot)runtime\cheats.c" />
+    <ClCompile Include="$(RecompRoot)runtime\debug.c" />
+    <ClCompile Include="$(RecompRoot)runtime\debug_game.c" />
+    <ClCompile Include="$(RecompRoot)runtime\dispatch.c" />
+    <ClCompile Include="$(RecompRoot)runtime\fpu.c" />
+    <ClCompile Include="$(RecompRoot)runtime\game.c" />
+    <ClCompile Include="$(RecompRoot)runtime\host.c" />
+    <ClCompile Include="$(RecompRoot)runtime\io.c" />
+    <ClCompile Include="$(RecompRoot)runtime\memory.c" />
+    <ClCompile Include="$(RecompRoot)runtime\os.c" />
+    <ClCompile Include="$(RecompRoot)runtime\platform.c" />
+    <ClCompile Include="$(RecompRoot)runtime\profiler.c" />
+    <ClCompile Include="$(RecompRoot)runtime\scheduler.c" />
+    <ClCompile Include="$(RecompRoot)runtime\tasks.c" />
+    <ClCompile Include="$(RecompRoot)runtime\time.c" />
+    <ClCompile Include="$(RecompRoot)runtime\video.c" />
+    <None Include="$(RecompRoot)tools\build_msvc_project.ps1" />
+    <None Include="$(RecompRoot)tools\build_steamdeck.sh" />
+    <None Include="$(RecompRoot)tools\check_branch_link.py" />
+    <None Include="$(RecompRoot)tools\check_function_candidates.py" />
+    <None Include="$(RecompRoot)tools\check_multiply.py" />
+    <None Include="$(RecompRoot)tools\check_overflow.py" />
+    <None Include="$(RecompRoot)tools\check_overlays.py" />
+    <None Include="$(RecompRoot)tools\code_inventory.py" />
+    <None Include="$(RecompRoot)tools\common.py" />
+    <None Include="$(RecompRoot)tools\compare_native_hooks.py" />
+    <None Include="$(RecompRoot)tools\controller_replay.py" />
+    <None Include="$(RecompRoot)tools\desktop_replay.py" />
+    <None Include="$(RecompRoot)tools\diagnose_rom.py" />
+    <None Include="$(RecompRoot)tools\disassemble_function.py" />
+    <None Include="$(RecompRoot)tools\discover.py" />
+    <None Include="$(RecompRoot)tools\dump_cpu_code.py" />
+    <None Include="$(RecompRoot)tools\emit.py" />
+    <None Include="$(RecompRoot)tools\export_analysis_rom.py" />
+    <None Include="$(RecompRoot)tools\format.sh" />
+    <None Include="$(RecompRoot)tools\generate_game.py" />
+    <None Include="$(RecompRoot)tools\import_rom.py" />
+    <None Include="$(RecompRoot)tools\inspect_address.py" />
+    <None Include="$(RecompRoot)tools\inspect_callbacks.py" />
+    <None Include="$(RecompRoot)tools\inspect_crash.py" />
+    <None Include="$(RecompRoot)tools\inspect_function_candidates.py" />
+    <None Include="$(RecompRoot)tools\inspect_rom.py" />
+    <None Include="$(RecompRoot)tools\inspect_rsp_task.py" />
+    <None Include="$(RecompRoot)tools\inspect_sdk_symbols.py" />
+    <None Include="$(RecompRoot)tools\inspect_switch_tables.py" />
+    <None Include="$(RecompRoot)tools\merge_symbol_database.py" />
+    <None Include="$(RecompRoot)tools\metadata_candidates.py" />
+    <None Include="$(RecompRoot)tools\msvc_solution.py" />
+    <None Include="$(RecompRoot)tools\native_hooks.py" />
+    <None Include="$(RecompRoot)tools\package_rom.py" />
+    <None Include="$(RecompRoot)tools\profile_execution.py" />
+    <None Include="$(RecompRoot)tools\profile_frames.py" />
+    <None Include="$(RecompRoot)tools\setup_windows.ps1" />
+    <None Include="$(RecompRoot)tools\steamdeck\build.sh" />
+    <None Include="$(RecompRoot)tools\steamdeck\bwrap.sh" />
+    <None Include="$(RecompRoot)tools\steamdeck\install-controls.sh" />
+    <None Include="$(RecompRoot)tools\steamdeck\package.py" />
+    <None Include="$(RecompRoot)tools\steamdeck\setup.sh" />
+    <None Include="$(RecompRoot)tools\symbol_database.py" />
+    <None Include="$(RecompRoot)tools\symbols.json" />
+    <None Include="$(RecompRoot)tools\translate.py" />
+    <None Include="$(RecompRoot)vcpkg.json" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

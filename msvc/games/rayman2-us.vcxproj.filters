@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\rayman2-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\rayman2-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\rayman2-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\rayman2-us\debug\gameplay-input.json">
+      <Filter>Configuration\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\rayman2-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\rayman2-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\rayman2-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\rayman2-us\run.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\rayman2-us\run.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\rayman2-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\rayman2-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\rayman2-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\rayman2-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{0DC2B613-99F5-556B-8DFA-7411F1C6AC32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\debug">
+      <UniqueIdentifier>{345C35C2-5B3A-5035-A6BD-2050A3BE3CC0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{82C1BCCC-854F-5775-8741-B84377AFDB4B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5A38C992-C159-5D4C-861F-13C1D6FFDBBA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{EA9BFCF9-ECF3-513B-9ACF-691EC1066171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{F2FDD7FF-BE10-5E94-8397-C07B8895DDA4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{434FCBC3-B74D-53F9-88E0-5F785411E052}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

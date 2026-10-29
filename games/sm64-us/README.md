@@ -30,3 +30,16 @@ build directory, and private ROM/save data stays in `local/`.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).
+
+The generated physics regression can run without launching the game. From a
+Developer PowerShell after generating/building SM64:
+
+```powershell
+.\.venv\Scripts\python.exe games/sm64-us/debug/check_physics.py --build build/msvc/sm64-us/release --cc cl
+```
+
+It checks arithmetic shifts and the generated `SET_OBJ_PHYSICS` routine with
+intrinsics enabled and disabled, at both compiler optimization levels. This
+covers an MSVC optimized sign-extension failure that turned Goomba drag from
+`10` into `-645.36`, causing runaway speed and an animation conversion trap in
+Bowser in the Fire Sea. On Linux, select an existing SM64 build and `--cc clang`.

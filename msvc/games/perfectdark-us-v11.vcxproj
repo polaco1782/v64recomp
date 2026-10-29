@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{945A85CF-3361-5B33-AAE5-54EBAD161115}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>perfectdark-us-v11</ProjectName>
+    <RecompGame>perfectdark-us-v11</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\Recomp.props" />
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\audio.h" />
+    <None Include="$(RecompRoot)games\perfectdark-us-v11\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\debug\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\perfectdark-us-v11\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\perfectdark.c" />
+    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\perfectdark.h" />
+    <None Include="$(RecompRoot)games\perfectdark-us-v11\profile.toml" />
+    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\release\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\perfectdark-us-v11\startup-entries.json" />
+    <ClCompile Include="$(RecompBuildDir)\generated\perfectdark-us-v11\cpu-*.c" />
+    <ClCompile Include="$(RecompBuildDir)\generated\perfectdark-us-v11\functions.c" Condition="Exists('$(RecompBuildDir)\generated\perfectdark-us-v11\functions.c')" />
+    <ClInclude Include="$(RecompBuildDir)\generated\perfectdark-us-v11\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recomp.vcxproj">
+      <Project>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

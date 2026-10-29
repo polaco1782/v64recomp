@@ -10,9 +10,11 @@
 #ifdef RECOMP_DEBUG
 #include "debug_overlay.h"
 #endif
+#ifndef _WIN32
 #define Status int
 #include <X11/Xutil.h>
 #undef Status
+#endif
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -22,7 +24,6 @@
 #include <memory>
 #include <thread>
 #include <stdexcept>
-#include <unistd.h>
 
 struct RecompRenderer {
     Runtime *rt;
@@ -205,11 +206,14 @@ static void process_present(RecompRenderer *s) {
 RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path, const char *window_title) {
     if (active_renderer || !rt->rom || rt->rdram_size > 8 * 1024 * 1024 || !data_path)
         return nullptr;
+#ifndef _WIN32
     if (!XInitThreads())
         return nullptr;
     SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+#endif
+    SDL_SetMainReady();
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
-        std::fprintf(stderr, "RT64 requires an X11 desktop: %s\n", SDL_GetError());
+        std::fprintf(stderr, "RT64 video initialization failed: %s\n", SDL_GetError());
         return nullptr;
     }
     auto s = std::make_unique<RecompRenderer>(rt);
@@ -217,8 +221,13 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
                                  SDL_WINDOWPOS_CENTERED, 1280, 960, SDL_WINDOW_RESIZABLE);
     SDL_SysWMinfo wm{};
     SDL_VERSION(&wm.version);
-    if (!s->window || !SDL_GetWindowWMInfo(s->window, &wm) || wm.subsystem != SDL_SYSWM_X11) {
-        std::fprintf(stderr, "RT64 X11 window unavailable: %s\n", SDL_GetError());
+#ifdef _WIN32
+    const auto subsystem = SDL_SYSWM_WINDOWS;
+#else
+    const auto subsystem = SDL_SYSWM_X11;
+#endif
+    if (!s->window || !SDL_GetWindowWMInfo(s->window, &wm) || wm.subsystem != subsystem) {
+        std::fprintf(stderr, "RT64 native window unavailable: %s\n", SDL_GetError());
         if (s->window)
             SDL_DestroyWindow(s->window);
         SDL_Quit();
@@ -227,8 +236,12 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
     for (unsigned n = 0; n < 64; n++)
         s->header[n ^ 3] = rt->rom[n];
     RT64::Application::Core core{};
+#ifdef _WIN32
+    core.window = wm.info.win.window;
+#else
     core.window.display = wm.info.x11.display;
     core.window.window = wm.info.x11.window;
+#endif
     core.HEADER = s->header.data();
     core.RDRAM = rt->rdram;
     core.DMEM = s->dmem.data();
@@ -283,7 +296,12 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         s->app->userConfig.refreshRateTarget = 60;
         s->app->enhancementConfig.presentation.mode = RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;
         s->app->enhancementConfig.textureLOD.scale = true;
-        if (s->app->setup(0) != RT64::Application::SetupResult::Success) {
+#ifdef _WIN32
+        const uint32_t window_thread = GetCurrentThreadId();
+#else
+        const uint32_t window_thread = 0;
+#endif
+        if (s->app->setup(window_thread) != RT64::Application::SetupResult::Success) {
             std::fprintf(stderr, "RT64 setup failed: %s\n", RT64::GlobalLastError.c_str());
             s->app.reset();
             RT64::SetRenderHooks(nullptr, nullptr, nullptr);
@@ -547,6 +565,56 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
 bool recomp_renderer_capture(RecompRenderer *s, const char *path) {
     s->check_owner();
     s->wait_workers();
+#ifdef _WIN32
+    SDL_SysWMinfo info{};
+    SDL_VERSION(&info.version);
+    if (!SDL_GetWindowWMInfo(s->window, &info) || info.subsystem != SDL_SYSWM_WINDOWS)
+        return false;
+    HWND window = info.info.win.window;
+    RECT rect{};
+    if (!GetClientRect(window, &rect) || rect.right <= 0 || rect.bottom <= 0)
+        return false;
+    BITMAPINFO format{};
+    format.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    format.bmiHeader.biWidth = rect.right;
+    format.bmiHeader.biHeight = -rect.bottom;
+    format.bmiHeader.biPlanes = 1;
+    format.bmiHeader.biBitCount = 32;
+    format.bmiHeader.biCompression = BI_RGB;
+    HDC source = GetDC(window);
+    if (!source)
+        return false;
+    HDC copy = CreateCompatibleDC(source);
+    void *bits = nullptr;
+    HBITMAP bitmap = CreateDIBSection(source, &format, DIB_RGB_COLORS, &bits, NULL, 0);
+    bool okay = false;
+    if (copy && bitmap && bits) {
+        HGDIOBJ previous = SelectObject(copy, bitmap);
+        // PW_RENDERFULLCONTENT asks DWM to include the Vulkan swap chain.
+        // A window DC BitBlt alone can return a black hardware surface.
+        if (PrintWindow(window, copy, PW_CLIENTONLY | 0x00000002)) {
+            FILE *file = std::fopen(path, "wb");
+            if (file) {
+                std::fprintf(file, "P6\n%ld %ld\n255\n", rect.right, rect.bottom);
+                const auto *pixels = static_cast<const uint8_t *>(bits);
+                for (size_t i = 0; i < size_t(rect.right) * size_t(rect.bottom); i++) {
+                    std::fputc(pixels[i * 4 + 2], file);
+                    std::fputc(pixels[i * 4 + 1], file);
+                    std::fputc(pixels[i * 4], file);
+                }
+                okay = !std::ferror(file);
+                okay = std::fclose(file) == 0 && okay;
+            }
+        }
+        SelectObject(copy, previous);
+    }
+    if (bitmap)
+        DeleteObject(bitmap);
+    if (copy)
+        DeleteDC(copy);
+    ReleaseDC(window, source);
+    return okay;
+#else
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
     if (!SDL_GetWindowWMInfo(s->app->appWindow->sdlWindow, &info) || info.subsystem != SDL_SYSWM_X11)
@@ -585,6 +653,7 @@ bool recomp_renderer_capture(RecompRenderer *s, const char *path) {
         okay = false;
     XDestroyImage(shot);
     return okay;
+#endif
 }
 #endif
 RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {

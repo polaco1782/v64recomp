@@ -4,6 +4,7 @@
 #include "common/rt64_tmem_hasher.h"
 #include "common/rt64_filesystem_directory.h"
 #include "stb/stb_image.h"
+#define STBIW_WINDOWS_UTF8
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 #include <cstdlib>
@@ -49,7 +50,7 @@ void RecompTextureFiles::configure(RT64::TextureCache& cache, const std::string&
     if (const char *path = std::getenv("RECOMP_TEXTURE_DUMP"); path && *path) {
         dumpDirectory = path;
         std::filesystem::create_directories(dumpDirectory);
-        std::fprintf(stderr, "Texture PNG dump: %s\n", dumpDirectory.c_str());
+        std::fprintf(stderr, "Texture PNG dump: %s\n", dumpDirectory.u8string().c_str());
     }
 #endif
     if (const char *path = std::getenv("RECOMP_TEXTURE_REPLACEMENTS"); path && *path)
@@ -99,7 +100,7 @@ void RecompTextureFiles::reload(RT64::TextureCache& cache) {
                 replacementFiles += paths.size();
         }
         std::fprintf(stderr, "Texture pack: %llu mappings in %s (F5 reloads and toggles originals/replacements)\n",
-                     static_cast<unsigned long long>(replacementFiles), loadPath.c_str());
+                     static_cast<unsigned long long>(replacementFiles), loadPath.u8string().c_str());
         return;
     }
     if (!std::filesystem::is_directory(replacementDirectory))
@@ -113,9 +114,17 @@ void RecompTextureFiles::reload(RT64::TextureCache& cache) {
         std::string filename = entry.path().filename().string();
         if (!entry.is_regular_file() || !std::regex_match(filename, match, name))
             continue;
-        int w, h, channels;
-        if (!stbi_info(entry.path().c_str(), &w, &h, &channels) || w <= 0 || h <= 0 || w > 8192 || h > 8192) {
-            std::fprintf(stderr, "Ignoring invalid replacement PNG: %s\n", entry.path().c_str());
+        int w = 0, h = 0, channels = 0;
+#ifdef _WIN32
+        FILE *png = _wfopen(entry.path().c_str(), L"rb");
+#else
+        FILE *png = std::fopen(entry.path().c_str(), "rb");
+#endif
+        bool valid = png && stbi_info_from_file(png, &w, &h, &channels);
+        if (png)
+            std::fclose(png);
+        if (!valid || w <= 0 || h <= 0 || w > 8192 || h > 8192) {
+            std::fprintf(stderr, "Ignoring invalid replacement PNG: %s\n", entry.path().u8string().c_str());
             continue;
         }
         RT64::ReplacementTexture texture;
@@ -144,7 +153,7 @@ void RecompTextureFiles::reload(RT64::TextureCache& cache) {
     }
     cache.reloadReplacements(true);
     std::fprintf(stderr, "Texture replacements: %llu PNGs in %s (F5 reloads and toggles originals/replacements)\n",
-                 static_cast<unsigned long long>(replacementFiles), replacementDirectory.c_str());
+                 static_cast<unsigned long long>(replacementFiles), replacementDirectory.u8string().c_str());
 }
 
 void RecompTextureFiles::refreshAndToggle(RT64::TextureCache& cache) {
@@ -217,7 +226,7 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
             continue;
         }
         auto temporary = dumpDirectory / (base + ".png.tmp");
-        if (!stbi_write_png(temporary.c_str(), texture.width, texture.height, 4, pixels.data(), texture.width * 4))
+        if (!stbi_write_png(temporary.u8string().c_str(), texture.width, texture.height, 4, pixels.data(), texture.width * 4))
             throw std::runtime_error("could not write texture PNG");
         // Publish the complete PNG before its metadata so a complete pair
         // always contains a fully written image.

@@ -8,10 +8,10 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
-#if !defined(__linux__) || !defined(__x86_64__) || !defined(__SSE2__)
-#error "This floating-point backend currently requires Linux x86-64 SSE2"
+#if !(defined(__x86_64__) && defined(__SSE2__)) && !defined(_M_X64)
+#error "This floating-point backend requires x86-64 SSE2"
 #endif
-#if defined(__SSE2__)
+#if defined(__SSE2__) || defined(_M_X64)
 #include <emmintrin.h>
 #endif
 #if defined(__clang__)
@@ -54,7 +54,7 @@ static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
     env.saved_errno = errno;
     if (feholdexcept(&env.saved) || fesetround(rounding[rm]))
         recomp_fail("host floating-point environment unavailable", ctx->pc);
-#if defined(__SSE2__)
+#if defined(__SSE2__) || defined(_M_X64)
     /* Host DAZ/FTZ would corrupt guest subnormals and underflow detection.
      * fesetenv below restores the complete saved MXCSR on our Linux host. */
     _mm_setcsr(_mm_getcsr() & ~UINT32_C(0x8040));

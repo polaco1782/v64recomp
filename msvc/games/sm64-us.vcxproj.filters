@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\sm64-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\sm64-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\code-inventory.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\sm64-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\sm64-us\debug\check_physics.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_audio.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_f3d.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_interior.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_rom_assets.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\game_config.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\sm64-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\sm64-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\sm64-us\validation_input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompBuildDir)\generated\sm64-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\sm64-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\sm64-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{7794EEAE-9081-5D8E-981B-D808DC156CBF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{B6FF38C7-A4E6-5778-A14C-988D37CFB7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{A52BD3A3-962A-5972-8E8B-9609FDFC8D4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{17265D91-392A-5C8D-8C3C-51FAF2EB9394}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{3D76868A-88BD-5508-8910-691ED12AEE62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{1EF643E3-3C74-52A6-AF39-284770FE3A43}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

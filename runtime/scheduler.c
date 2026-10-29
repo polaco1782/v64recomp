@@ -1,5 +1,8 @@
 #define _GNU_SOURCE 1
 #include <pthread.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include "runtime.h"
 #include "runtime_debug.h"
@@ -453,7 +456,14 @@ static void *enter(void *opaque) {
             break;
         }
     }
+#ifdef _WIN32
+    wchar_t wide_name[16] = {0};
+    for (size_t i = 0; i < strlen(name); i++)
+        wide_name[i] = (unsigned char)name[i];
+    SetThreadDescription(GetCurrentThread(), wide_name);
+#else
     pthread_setname_np(pthread_self(), name);
+#endif
     pthread_mutex_lock(&s->mutex);
     RECOMP_LOG("thread", "entered pthread id=%" PRId32 " entry=0x%08" PRIx32, t->id, t->context.pc);
     while (!t->running && !t->exiting)

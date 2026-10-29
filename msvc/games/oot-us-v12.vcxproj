@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BCD26155-ECF7-5356-818F-2FA5E2AC6850}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>oot-us-v12</ProjectName>
+    <RecompGame>oot-us-v12</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\Recomp.props" />
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h" />
+    <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt" />
+    <None Include="$(RecompRoot)games\oot-us-v12\debug\analyze_callbacks.py" />
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\oot-us-v12\generate.py" />
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\hooks.h" />
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\jpeg.h" />
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\overlays.h" />
+    <None Include="$(RecompRoot)games\oot-us-v12\prepare.py" />
+    <None Include="$(RecompRoot)games\oot-us-v12\profile.toml" />
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\release\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\oot-us-v12\startup-entries.json" />
+    <ClCompile Include="$(RecompBuildDir)\generated\oot-us-v12\cpu-*.c" />
+    <ClCompile Include="$(RecompBuildDir)\generated\oot-us-v12\functions.c" Condition="Exists('$(RecompBuildDir)\generated\oot-us-v12\functions.c')" />
+    <ClInclude Include="$(RecompBuildDir)\generated\oot-us-v12\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recomp.vcxproj">
+      <Project>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

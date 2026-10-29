@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\quake-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\quake-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\quake-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\quake-us\debug\gameplay-input.json">
+      <Filter>Configuration\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\quake-us\debug\new-game-input.json">
+      <Filter>Configuration\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\quake-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\quake-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\quake-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\quake-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\quake-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\quake-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\quake-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{B0D840D5-7BAC-5B8B-ACF8-F97971A75C1D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\debug">
+      <UniqueIdentifier>{F7A7A779-99FC-5E0C-9E4F-584EE521EB3D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{907A6DF6-5FD2-5465-A915-72EBF86ACF24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{98B9FA89-2FBD-54D0-A11B-6E08190CDCD8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{C5E44CB3-5C0C-5B19-B9F3-86945888F320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{B0CAAB74-21D3-5E17-BCF9-36C3D76B1F96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{FC2C4536-145E-5C7C-BA97-103DC02BE8BE}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

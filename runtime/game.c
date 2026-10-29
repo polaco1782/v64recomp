@@ -5,7 +5,13 @@
 #include "embedded_rom.h"
 #endif
 #include "profiler.h"
+#ifdef _WIN32
+#include <windows.h>
+#include <dbghelp.h>
+#else
 #include <dlfcn.h>
+#include <unistd.h>
+#endif
 #include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -13,7 +19,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <unistd.h>
 
 static const char *crash_dir;
 static uint8_t rom_sha1[20];
@@ -22,11 +27,17 @@ static void directory(const char *path) {
     recomp_game_require(strlen(path) < sizeof(buffer), "game directory path too long", 0);
     strcpy(buffer, path);
     for (char *p = buffer + 1;; p++) {
-        if (*p != '/' && *p)
+        if (*p != '/' && *p != '\\' && *p)
             continue;
         char saved = *p;
         *p = 0;
+#ifdef _WIN32
+        /* Skip a drive root, e.g. C:, which already exists. */
+        if (!(p == buffer + 2 && buffer[1] == ':'))
+            recomp_game_require(!_mkdir(buffer) || errno == EEXIST, "cannot create game directory", 0);
+#else
         recomp_game_require(!mkdir(buffer, 0755) || errno == EEXIST, "cannot create game directory", 0);
+#endif
         *p = saved;
         if (!saved)
             break;
@@ -119,6 +130,9 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         return -1;
     }
     strcpy(parent, o->save);
+    for (char *p = parent; *p; p++)
+        if (*p == '\\')
+            *p = '/';
     char *slash = strrchr(parent, '/');
     if (slash && slash != parent) {
         *slash = 0;
@@ -211,8 +225,15 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         fprintf(stderr, "cannot write crash report: %s\n", path);
         return;
     }
+#ifdef _WIN32
+    DWORD n = GetModuleFileNameA(NULL, executable, sizeof(executable) - 1);
+    executable[n < sizeof(executable) ? n : 0] = 0;
+    HANDLE process = GetCurrentProcess();
+    bool symbols = SymInitialize(process, NULL, TRUE) != FALSE;
+#else
     ssize_t n = readlink("/proc/self/exe", executable, sizeof(executable) - 1);
     executable[n >= 0 ? n : 0] = 0;
+#endif
     fputs("{\"format_version\":1,\"executable\":", f);
     quoted(f, executable);
     fputs(",\"game\":{\"name\":", f);
@@ -258,6 +279,25 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
 #endif
     fputs("],\"native_stack\":[", f);
     for (size_t i = 0; i < info->native_frame_count; i++) {
+#ifdef _WIN32
+        DWORD64 address = (DWORD64)(uintptr_t)info->native_frames[i];
+        char module[MAX_PATH] = {0};
+        HMODULE handle = NULL;
+        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           (LPCSTR)(uintptr_t)address, &handle);
+        uintptr_t base = (uintptr_t)handle;
+        if (handle)
+            GetModuleFileNameA(handle, module, sizeof(module));
+        union { SYMBOL_INFO info; char bytes[sizeof(SYMBOL_INFO) + MAX_SYM_NAME]; } symbol = {0};
+        symbol.info.SizeOfStruct = sizeof(SYMBOL_INFO);
+        symbol.info.MaxNameLen = MAX_SYM_NAME;
+        bool named = symbols && SymFromAddr(process, address, NULL, &symbol.info);
+        fprintf(f, "%s{\"address\":\"0x%" PRIxPTR "\",\"module_base\":\"0x%" PRIxPTR "\",\"module\":", i ? "," : "",
+                (uintptr_t)address, (uintptr_t)base);
+        quoted(f, module);
+        fputs(",\"symbol\":", f);
+        quoted(f, named ? symbol.info.Name : NULL);
+#else
         Dl_info d = {0};
         (void)dladdr(info->native_frames[i], &d);
         fprintf(f, "%s{\"address\":\"0x%" PRIxPTR "\",\"module_base\":\"0x%" PRIxPTR "\",\"module\":", i ? "," : "",
@@ -265,8 +305,13 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         quoted(f, d.dli_fname);
         fputs(",\"symbol\":", f);
         quoted(f, d.dli_sname);
+#endif
         fputc('}', f);
     }
+#ifdef _WIN32
+    if (symbols)
+        SymCleanup(process);
+#endif
     fputs("],\"task_words\":[", f);
     RecompTask task;
     if (recomp_task_snapshot(rt, &task))

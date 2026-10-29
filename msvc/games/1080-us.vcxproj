@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{07D51C51-33CF-5170-A428-F67E5BC84C7D}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>1080-us</ProjectName>
+    <RecompGame>1080-us</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\Recomp.props" />
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\1080-us\audio.h" />
+    <None Include="$(RecompRoot)games\1080-us\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\1080-us\debug\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\1080-us\debug\inspect_uso.py" />
+    <None Include="$(RecompRoot)games\1080-us\generate.py" />
+    <None Include="$(RecompRoot)games\1080-us\gui-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\n64proc-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\profile.toml" />
+    <ClCompile Include="$(RecompRoot)games\1080-us\release\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\1080-us\run.c" />
+    <ClInclude Include="$(RecompRoot)games\1080-us\run.h" />
+    <None Include="$(RecompRoot)games\1080-us\startup-entries.json" />
+    <None Include="$(RecompRoot)games\1080-us\uso-symbols.json" />
+    <ClCompile Include="$(RecompBuildDir)\generated\1080-us\cpu-*.c" />
+    <ClCompile Include="$(RecompBuildDir)\generated\1080-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\1080-us\functions.c')" />
+    <ClInclude Include="$(RecompBuildDir)\generated\1080-us\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recomp.vcxproj">
+      <Project>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

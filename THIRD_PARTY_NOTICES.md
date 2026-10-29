@@ -78,6 +78,11 @@ independently from the supplied ROMs.
 
 ## Other dependencies
 
+Windows dependencies are pinned in `vcpkg.json`: OpenSSL (Apache-2.0), SDL2
+(zlib), libcurl (curl license), and PThreads4W (Apache-2.0). libcurl is also
+used on Linux. Installed vcpkg packages preserve their complete notices in
+`build/vcpkg_installed/x64-windows/share/<package>/copyright`.
+
 RT64's bundled dependencies retain their licenses under `third_party/rt64/`,
 including the notices in its submodules and `src/contrib/`. External libraries
 and build tools retain their respective licenses. This project license does

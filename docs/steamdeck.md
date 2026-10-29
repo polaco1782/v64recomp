@@ -85,9 +85,9 @@ or GLIBCXX 3.4.30.
 checks library resolution and runs the launcher's `--help` inside Debian.
 This verifies loader/startup compatibility, without exercising Vulkan or gameplay.
 
-The package includes the selected game's imported ROM under `local/`, after
-checking its size and SHA-1 against the game profile. It excludes existing saves,
-texture packs and generated CPU sources.
+The package excludes ROMs, existing saves, texture packs and generated CPU
+sources. Supply your own matching ROM separately. Packaging rejects builds with
+ROM embedding enabled.
 Keep the build tree for crash investigation. To package again, move the previous
 `package/` directory aside first: the tool refuses to overwrite a directory that
 may contain your saves.
@@ -115,7 +115,7 @@ and `stacks.folded` for caller paths. Each capture needs a new directory name.
 No Python, `perf` installation, or sudo is required. See [CPU profiling](profiling.md)
 for sampling limits and report formats.
 
-The selected ROM is already included in the extracted package:
+Copy your own imported, normalized ROM to the extracted package before launch:
 
 ```text
 ~/Games/v64recomp/oot-us-v12-steamdeck/local/oot.us.v12.z64
@@ -223,8 +223,8 @@ packager now leaves these window-system libraries to the target OS.
 
 Extract updated packages into a **fresh directory**. Extracting over an older
 package leaves the incompatible libraries in `lib/`, because the updated
-archive no longer contains those files. The ROM is included; copy any existing
-saves from the old package's `local/` into the new package's `local/`.
+archive no longer contains those files. Copy your own ROM and any existing saves
+from the old package's `local/` into the new package's `local/`.
 
 ## Why this baseline
 

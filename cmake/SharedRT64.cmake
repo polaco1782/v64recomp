@@ -26,7 +26,9 @@ set(rt64_settings RECOMP_RT64_SOURCE CMAKE_C_COMPILER CMAKE_CXX_COMPILER
     CMAKE_FIND_ROOT_PATH_MODE_INCLUDE CMAKE_FIND_ROOT_PATH_MODE_PACKAGE
     CMAKE_PREFIX_PATH CMAKE_LIBRARY_PATH CMAKE_INCLUDE_PATH
     CMAKE_OSX_ARCHITECTURES CMAKE_OSX_SYSROOT CMAKE_OSX_DEPLOYMENT_TARGET
-    CMAKE_MSVC_RUNTIME_LIBRARY)
+    CMAKE_MSVC_RUNTIME_LIBRARY CMAKE_CONFIGURATION_TYPES CMAKE_GENERATOR_INSTANCE
+    VCPKG_TARGET_TRIPLET VCPKG_HOST_TRIPLET VCPKG_INSTALLED_DIR VCPKG_MANIFEST_DIR
+    VCPKG_MANIFEST_INSTALL VCPKG_MANIFEST_FEATURES)
 if(CMAKE_CROSSCOMPILING)
     list(APPEND rt64_settings CMAKE_SYSTEM_NAME CMAKE_SYSTEM_PROCESSOR CMAKE_SYSTEM_VERSION)
 endif()
@@ -51,6 +53,9 @@ set(rt64_command "${CMAKE_COMMAND}"
     "-DRECOMP_RT64_BUILD_DIR=${RECOMP_RT64_BUILD_DIR}"
     "-DRECOMP_RT64_INITIAL_CACHE=${rt64_cache_file}"
     "-DRECOMP_RT64_GENERATOR=${CMAKE_GENERATOR}"
+    "-DRECOMP_RT64_PLATFORM=${CMAKE_GENERATOR_PLATFORM}"
+    "-DRECOMP_RT64_TOOLSET=${CMAKE_GENERATOR_TOOLSET}"
+    "-DRECOMP_RT64_BUILD_TYPE=${RECOMP_RT64_BUILD_TYPE}"
     "-DRECOMP_RT64_JOBS=${RECOMP_RT64_JOBS}")
 message(STATUS "Shared RT64 (${RECOMP_RT64_BUILD_TYPE}): ${RECOMP_RT64_BUILD_DIR}")
 execute_process(COMMAND ${rt64_command} -DRECOMP_RT64_CONFIGURE_ONLY=ON
@@ -65,8 +70,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_LIST_DIR}/rt64/PrimitiveDepth.cmake"
     "${CMAKE_CURRENT_LIST_DIR}/rt64/LookAtMatching.cmake")
 
-# Local symlinks are build byproducts so Ninja can order missing libraries.
-# Cleaning one game removes only these links, preserving the shared artifacts.
+# Local symlinks (copies on Windows) let generators order missing libraries.
+# Cleaning a game preserves the shared artifacts.
 set(rt64_link_dir "${CMAKE_BINARY_DIR}/rt64-links")
 set(rt64_link_commands)
 set(rt64_links)
@@ -78,14 +83,23 @@ foreach(library rt64 re-spirv nfd libzstd_static plume)
     set_target_properties("${target}" PROPERTIES "IMPORTED_LOCATION_${rt64_config}" "${link}"
         MAP_IMPORTED_CONFIG_DEBUG "${rt64_config}" MAP_IMPORTED_CONFIG_RELEASE "${rt64_config}")
     list(APPEND rt64_links "${link}")
-    list(APPEND rt64_link_commands COMMAND "${CMAKE_COMMAND}" -E create_symlink "${archive}" "${link}")
+    if(WIN32)
+        list(APPEND rt64_link_commands COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${archive}" "${link}")
+    else()
+        list(APPEND rt64_link_commands COMMAND "${CMAKE_COMMAND}" -E create_symlink "${archive}" "${link}")
+    endif()
 endforeach()
+# The sources are visible for navigation; only the shared build compiles RT64.
+file(GLOB_RECURSE rt64_browse CONFIGURE_DEPENDS "${RECOMP_RT64_SOURCE}/src/*.cpp"
+    "${RECOMP_RT64_SOURCE}/src/*.h")
+list(FILTER rt64_browse EXCLUDE REGEX "/contrib/")
+set_source_files_properties(${rt64_browse} PROPERTIES HEADER_FILE_ONLY TRUE)
 add_custom_target(recomp_rt64
     COMMAND ${rt64_command} -P "${CMAKE_CURRENT_LIST_DIR}/BuildRT64.cmake"
     COMMAND "${CMAKE_COMMAND}" -E make_directory "${rt64_link_dir}"
     ${rt64_link_commands}
     BYPRODUCTS ${rt64_links}
-    COMMENT "Checking shared RT64 libraries" USES_TERMINAL VERBATIM)
+    COMMENT "Checking shared RT64 libraries" USES_TERMINAL VERBATIM SOURCES ${rt64_browse})
 foreach(library rt64 re-spirv nfd libzstd_static plume)
     add_dependencies("RecompRT64::${library}" recomp_rt64)
 endforeach()

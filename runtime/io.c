@@ -7,7 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#include <share.h>
+#else
 #include <unistd.h>
+#endif
 
 enum {
     PAK_SIZE = 32768,
@@ -563,6 +569,40 @@ static bool persist_image(const char *path, const uint8_t *bytes, size_t size) {
     if (!temp)
         return false;
     snprintf(temp, length, "%s.tmp.XXXXXX", path);
+#ifdef _WIN32
+    int fd = -1;
+    /* Exclusive creation prevents concurrent saves from sharing a temporary. */
+    static _Thread_local unsigned sequence;
+    for (unsigned attempt = 0; attempt < 100; attempt++) {
+        snprintf(temp, length, "%s.%08x.tmp", path, (unsigned)GetCurrentThreadId() ^ ++sequence);
+        if (!_sopen_s(&fd, temp, _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _SH_DENYRW, _S_IREAD | _S_IWRITE))
+            break;
+        if (errno != EEXIST)
+            break;
+    }
+    bool okay = fd >= 0;
+    if (okay) {
+        size_t written = 0;
+        while (written < size) {
+            int count = _write(fd, bytes + written, (unsigned)(size - written));
+            if (count < 0 && errno == EINTR)
+                continue;
+            if (count <= 0) {
+                okay = false;
+                break;
+            }
+            written += (size_t)count;
+        }
+        if (okay && _commit(fd))
+            okay = false;
+        if (_close(fd))
+            okay = false;
+        if (okay && !MoveFileExA(temp, path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            okay = false;
+    }
+    if (!okay && fd >= 0)
+        _unlink(temp);
+#else
     int fd = mkstemp(temp);
     bool okay = fd >= 0;
     if (okay) {
@@ -586,6 +626,7 @@ static bool persist_image(const char *path, const uint8_t *bytes, size_t size) {
     }
     if (!okay && fd >= 0)
         unlink(temp);
+#endif
     RECOMP_LOG("save", "save persist path=%s bytes=%zu result=%s", path, size, okay ? "ok" : "failed");
     free(temp);
     return okay;

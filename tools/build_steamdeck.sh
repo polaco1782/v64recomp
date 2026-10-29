@@ -10,7 +10,7 @@ Defaults: oot-us-v12, 4 jobs. Supports Podman, Docker and Bubblewrap.
 Outputs: build/steamdeck/GAME/package and GAME-steamdeck.tar.gz
 Set CONTAINER_ENGINE=podman, docker or bwrap to select the engine.
 Automatic selection tries Podman, Docker, then Bubblewrap.
-The package includes the selected ROM and excludes existing saves; see docs/steamdeck.md.
+The package excludes ROMs and existing saves; see docs/steamdeck.md.
 EOF
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi

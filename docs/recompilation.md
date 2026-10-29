@@ -61,6 +61,42 @@ outcomes, delay-slot reads of the link, and a predicate reading the old `r31`:
 `.venv/bin/python tools/check_branch_link.py --build build/re2-us-v1-debug`.
 Use any existing CMake runtime build; the check runs at `-O0` and `-O2` without a ROM.
 
+Word arithmetic right shifts use SSE2 when `USE_INTRISICS=1`; the fallback uses
+unsigned subtraction to extend the sign. Both paths truncate to 32 bits before
+shifting and mask variable counts to five bits. The SM64
+`games/sm64-us/debug/check_physics.py` regression exercises these shifts and
+packed signed physics parameters at optimized and unoptimized settings. It
+guards against an MSVC optimization failure in the former conditional sign-fill
+implementation, which could retain a packed word's sign after `SLL 16; SRA 16`.
+
+With `USE_INTRISICS=1`, MSVC x64 uses `__emul`/`__emulu` for word
+multiplication and `_mul128`/`_umul128` for doubleword multiplication. Compilers
+with `__int128` use native 128-bit products for doublewords. Word operations
+still ignore the upper input halves and sign-extend each 32-bit HI/LO result;
+doubleword operations retain all 128 product bits. `USE_INTRISICS=0` keeps the
+portable implementations, including the four-limb doubleword product.
+
+Run `python tools/check_multiply.py --cc cl` from a Developer PowerShell, or
+`python3 tools/check_multiply.py --cc clang` on Linux, to check both modes at
+unoptimized and optimized settings. The ROM-free fixtures compare all four
+multiply operations against Python integer products across signed boundaries,
+limb carries, ignored upper word halves, and deterministic random operands.
+They also verify that only HI and LO change.
+
+Signed `ADD`/`ADDI`, `DADD`, and `SUB` use compiler overflow builtins with
+GCC/Clang when `USE_INTRISICS=1`. MSVC x64 uses `_add_overflow_i32`,
+`_add_overflow_i64`, and `_sub_overflow_i32` from
+[Visual Studio 2022 17.7](https://learn.microsoft.com/visualstudio/releases/2022/release-notes-v17.7)
+onwards; older MSVC versions and `USE_INTRISICS=0` retain the unsigned
+arithmetic/sign-bit fallback. Overflow still stops through `recomp_fail`
+before the destination register is written. These intrinsics test signed
+overflow, including cases where the unsigned carry/borrow flag differs.
+
+Run `python tools/check_overflow.py --cc cl` from a Developer PowerShell, or
+`python3 tools/check_overflow.py --cc clang` on Linux. Both modes and optimization
+levels are checked against Python integer results and signed limits, including
+the exact failure message/address and preservation of the destination on a trap.
+
 Indirect transfers need additional information. A direct `jal` instruction
 encodes its destination, while `jalr` takes a destination from a register.
 Computed local jumps can select a target from a switch table. Profiles can supply

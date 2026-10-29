@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\nightmare-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\nightmare-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\nightmare-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\nightmare-us\debug\gameplay-input.json">
+      <Filter>Configuration\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\nightmare-us\debug\new-game-input.json">
+      <Filter>Configuration\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\nightmare-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\nightmare-us\hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\nightmare-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\nightmare-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\nightmare-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\nightmare-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\nightmare-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\nightmare-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{5835F2D9-8077-5A20-9ABF-D2642464CAA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\debug">
+      <UniqueIdentifier>{1F61ACB6-E6A5-51C5-8D62-6376034087C5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{9A2CAD81-E536-59C9-BBCD-6DAB2B43C2DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{D72C1264-1AEA-56D0-8810-302674CE02AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9C3A1DA7-914C-5490-A234-8B34ADA4F0AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{1647B6F1-DB4B-599B-895D-8693B633D725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{432BA0F0-EF50-5460-A679-F08CE4602312}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

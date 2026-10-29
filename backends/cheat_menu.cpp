@@ -23,7 +23,7 @@ void check_vulkan(VkResult result) {
 }
 RecompCheatMenu::RecompCheatMenu(RT64::Application& application, Runtime *rt, const char *data_path)
     : app(application), runtime(rt), key(RecompCheats::rom_key(rt)),
-      cache(std::filesystem::path(data_path) / "cheats" / key) {
+      cache(RecompCheats::cache_directory(data_path, key)) {
     const std::lock_guard lock(app.presentQueue->inspectorMutex);
     ContextScope restore(nullptr);
     context = ImGui::CreateContext();

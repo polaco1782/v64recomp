@@ -2,6 +2,30 @@
   "version": 6,
   "configurePresets": [
     {
+      "name": "windows-msvc-release",
+      "displayName": "Windows x64 MSVC Release",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/windows-msvc-release",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "cacheVariables": {
+        "RECOMP_GAME": "none",
+        "RECOMP_BUILD_RT64": "ON",
+        "RECOMP_BUILD_AUDIO": "ON",
+        "RECOMP_EMBED_ROM": "OFF",
+        "CMAKE_BUILD_TYPE": "Release",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/build/vcpkg_installed"
+      }
+    },
+    {
+      "name": "windows-msvc-debug",
+      "inherits": "windows-msvc-release",
+      "displayName": "Windows x64 MSVC Debug",
+      "binaryDir": "${sourceDir}/build/windows-msvc-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
       "name": "sm64-us-release",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/sm64-us-release",
@@ -338,6 +362,8 @@
     }
   ],
   "buildPresets": [
+    { "name": "windows-msvc-release", "configurePreset": "windows-msvc-release", "configuration": "Release", "jobs": 4 },
+    { "name": "windows-msvc-debug", "configurePreset": "windows-msvc-debug", "configuration": "Debug", "jobs": 4 },
     {
       "name": "sm64-us-release",
       "configurePreset": "sm64-us-release",
