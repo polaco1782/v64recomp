@@ -1,6 +1,7 @@
 #ifndef RECOMP_RENDERER_H
 #define RECOMP_RENDERER_H
 #include "runtime.h"
+#include "mouse_input.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,6 +34,10 @@ void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
 bool recomp_renderer_present(RecompRenderer *);
 bool recomp_renderer_input(RecompRenderer *, RecompPad *);
+/* Opt-in PC controls. Gameplay false releases capture and clears motion.
+ * Escape toggles capture; F4 recaptures; F10 quits. Other games are unchanged. */
+void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);
+RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *);
 bool recomp_renderer_capture(RecompRenderer *, const char *ppm_path);
 RecompRendererStats recomp_renderer_stats(RecompRenderer *);
 #ifdef __cplusplus

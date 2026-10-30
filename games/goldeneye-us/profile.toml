@@ -5,6 +5,14 @@
 # All addresses/fingerprints are checked against that ROM; no ELF/map is required.
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
+function_wrappers = [
+  {section = ".lib", vram = 0x70002424, size = 0x1b4, sha256 = "537587229e186714f1cfa141395889bad59b066ed36367c0087abf26ee27590d", handler = "goldeneye_audio_dma_hook"},
+  {section = ".lib", vram = 0x7000bd0c, size = 0x7c, sha256 = "c0e8344bbcadd3894686f4403c1162896985863ba6cb6256d543f7e045a1bc47", handler = "goldeneye_input_samples_hook"},
+  {section = ".lib", vram = 0x7000bd88, size = 0x364, sha256 = "f7086f28a24e3debf14e607d430487eb8e36635b5b406d84a1a890070c744921", handler = "goldeneye_input_poll_hook"},
+  {section = ".game", vram = 0x7f081790, size = 0x1e4, sha256 = "1bfa11ecd5fd7e9b8b26fdf8a7b7efe7cdccbfc4ad908bff851ca7ff6f2574a8", handler = "goldeneye_input_angles_hook"},
+  {section = ".game", vram = 0x7f081974, size = 0x2654, sha256 = "7430db6f9b1da0a4d25f7583a9bc4a8007848149d4003b21e23ae78d63c66222", handler = "goldeneye_input_process_hook"},
+  {section = ".game", vram = 0x7f084648, size = 0x2348, sha256 = "432577fae515642bf6e7d62916b73e9a0e08ae0554a04d27e3af5b66d8ff3509", handler = "goldeneye_input_move_hook"},
+]
 hooks = [
   {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "hook_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
   {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "hook_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0xe00008]},
@@ -283,18 +291,64 @@ difficulty_words = [0x3c028005, 0x3e00008, 0x8c428384]
 dam_stage = 0x21
 title_stage = 0x5a
 
-# Optional session-only override of the frontend unlock query. The switch
-# table identifies exactly the 23 normal Cheat Options; debug/button codes
-# keep their original behavior and no save-completion bits are changed.
-[cheats]
-entry = 0x7f009848
-entry_words = [0x248effff, 0x27bdffe8, 0x2dc1004a, 0x102000b8, 0xafbf0014, 0xe7080, 0x3c018005, 0x2e0821, 0x8c2e18a0, 0x1c00008, 0x0]
-table_address = 0x800518a0
-table_count = 0x4a
-table_sha256 = "064e37379802b1f1dc7fd423e4921ada5164b3c61b48cd2a03819c65b3728f32"
-unavailable_target = 0x7f009874
-unavailable_words = [0x100000b2, 0x1025]
-allowed_ids = [0x2, 0x3, 0xa, 0xb, 0xc, 0xe, 0xf, 0x11, 0x12, 0x13, 0x14, 0x15, 0x17, 0x18, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22]
-levels_address = 0x80036fb4
-levels_reader = 0x7f09100c
-levels_words = [0x3c028003, 0x3e00008, 0x8c426fb4]
+# Reviewed input integration candidates, NOT active replacement hooks.
+# Full spans include padding; individual evidence sites must also be owned by
+# their discovered function. See README.md for the adapter and validation notes.
+[input_analysis]
+reference = "https://github.com/n64decomp/007"
+reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
+functions = [
+  {name = "getPlayerCount", section = ".game", vram = 0x7f09a464, size = 0x58, sha256 = "2d45ab256c1f08e0f2899accd7aca7bceef8a658812c7f80b292d4cde90bfa90"},
+  {name = "getControlStyle", section = ".game", vram = 0x7f0a4dc0, size = 0x10, sha256 = "5d7c6ab0dafc90ff3b968b1dca99f36f2cb146f6d8a4a1b6ae18f7cdc64e6166"},
+  {name = "getControlsLocked", section = ".game", vram = 0x7f0bfc04, size = 0xc, sha256 = "e4752f5ccf5bd97a87df8a6e3fccc544c32604340c13b0e2300e709b0c68e429"},
+  {name = "joyConsumeSamples", section = ".lib", vram = 0x7000bbc8, size = 0x144, sha256 = "51344e5a4cf5ec5c7263fa683c47f73fffd614490e5ef9d3037c8ccdee30c324"},
+  {name = "joyConsumeSamplesWrapper", section = ".lib", vram = 0x7000bd0c, size = 0x7c, sha256 = "c0e8344bbcadd3894686f4403c1162896985863ba6cb6256d543f7e045a1bc47"},
+  {name = "joyPoll", section = ".lib", vram = 0x7000bd88, size = 0x364, sha256 = "f7086f28a24e3debf14e607d430487eb8e36635b5b406d84a1a890070c744921"},
+  {name = "joyGetStickX", section = ".lib", vram = 0x7000c0ec, size = 0x88, sha256 = "265b273a41288b1a8e572c51355eb9c288ce878f1f1120591250855c163ef6ea"},
+  {name = "joyGetStickY", section = ".lib", vram = 0x7000c1fc, size = 0x88, sha256 = "bf728b6203c4674b1758344a8bbf1ceb882273f4aa612725c1ee7aa8d0d6d4b2"},
+  {name = "bondviewApplyVertaTheta", section = ".game", vram = 0x7f081790, size = 0x1e4, sha256 = "1bfa11ecd5fd7e9b8b26fdf8a7b7efe7cdccbfc4ad908bff851ca7ff6f2574a8"},
+  {name = "bondviewProcessInput", section = ".game", vram = 0x7f081974, size = 0x2654, sha256 = "7430db6f9b1da0a4d25f7583a9bc4a8007848149d4003b21e23ae78d63c66222"},
+  {name = "MoveBond", section = ".game", vram = 0x7f084648, size = 0x2348, sha256 = "432577fae515642bf6e7d62916b73e9a0e08ae0554a04d27e3af5b66d8ff3509"},
+  {name = "bondviewFrozenMoveBond", section = ".game", vram = 0x7f086990, size = 0x268, sha256 = "7e42ef6f23e7a525c458a873de99fa661844af4016b87fbd95fbacfb34927c63"},
+  {name = "bondviewMovePlayerUpdateViewport", section = ".game", vram = 0x7f086f9c, size = 0x648, sha256 = "b95a3003dfed3ea8d5bf128b14bd5e9043e89559d08111b3e78e48adec96545c"},
+]
+calls = [
+  {owner = "joyConsumeSamplesWrapper", pc = 0x7000bd4c, target = 0x7000bbc8, expected_words = [0x0c002ef2, 0x24844f30]},
+  {owner = "joyPoll", pc = 0x7000be18, target = 0x70014d70, expected_words = [0x0c00535c, 0x24845350]},
+  {owner = "joyPoll", pc = 0x7000bed4, target = 0x70014e34, expected_words = [0x0c00538d, 0xafa30040]},
+  {owner = "bondviewProcessInput", pc = 0x7f081bdc, target = 0x7000c0ec, expected_words = [0x0c00303b, 0x000c2603]},
+  {owner = "bondviewProcessInput", pc = 0x7f081c00, target = 0x7000c1fc, expected_words = [0x0c00307f, 0x000f2603]},
+  {owner = "MoveBond", pc = 0x7f084780, target = 0x7f081974, expected_words = [0x0fc2065d, 0x97a703c6]},
+  {owner = "MoveBond", pc = 0x7f08525c, target = 0x7f081790, expected_words = [0x0fc205e4, 0x00000000]},
+  {owner = "bondviewFrozenMoveBond", pc = 0x7f086a50, target = 0x7f081974, expected_words = [0x0fc2065d, 0x00003825]},
+  {owner = "bondviewFrozenMoveBond", pc = 0x7f086a58, target = 0x7f081790, expected_words = [0x0fc205e4, 0x00000000]},
+  {owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f0873a4, target = 0x7f084648, expected_words = [0x0fc21192, 0x950703b4]},
+]
+player_fields = [
+  {name = "side_speed", offset = 0x16c, owner = "bondviewProcessInput", pc = 0x7f082ba8, expected_word = 0xe714016c},
+  {name = "forward_speed", offset = 0x174, owner = "bondviewProcessInput", pc = 0x7f082bb0, expected_word = 0xe5d40174},
+  {name = "control_style", offset = 0x2a58, owner = "getControlStyle", pc = 0x7f0a4dcc, expected_word = 0x8dc22a58},
+  {name = "yaw", offset = 0x148, owner = "bondviewApplyVertaTheta", pc = 0x7f08187c, expected_word = 0xc4480148},
+  {name = "pitch", offset = 0x158, owner = "bondviewApplyVertaTheta", pc = 0x7f0817b0, expected_word = 0xc4400158},
+  {name = "yaw_speed", offset = 0x14c, owner = "MoveBond", pc = 0x7f0851d8, expected_word = 0xc508014c},
+  {name = "pitch_speed", offset = 0x160, owner = "bondviewProcessInput", pc = 0x7f083ad0, expected_word = 0xc50a0160},
+  {name = "dead", offset = 0xd8, owner = "bondviewProcessInput", pc = 0x7f081a9c, expected_word = 0x8d1900d8},
+  {name = "aim_mode", offset = 0x124, owner = "bondviewProcessInput", pc = 0x7f081cf0, expected_word = 0x8d4b0124},
+  {name = "watch_state", offset = 0x1c8, owner = "bondviewProcessInput", pc = 0x7f081ab4, expected_word = 0x8d0201c8},
+]
+
+[input_analysis.current_player]
+address = 0x8007a0b0
+owner = "bondviewApplyVertaTheta"
+pc = 0x7f081798
+expected_words = [0x3c108008, 0x2610a0b0, 0x8e020000]
+
+[input_adapter]
+process_return = 0x7f084788
+globals = [
+  {name = "players", address = 0x80079ee0, owner = "getPlayerCount", pc = 0x7f09a464, expected_words = [0x3c0e8008, 0x8dce9ee0]},
+  {name = "controls_locked", address = 0x80048370, owner = "getControlsLocked", pc = 0x7f0bfc04, expected_words = [0x3c028005, 0x03e00008, 0x8c428370]},
+  {name = "tank", address = 0x80036448, owner = "bondviewProcessInput", pc = 0x7f081cd8, expected_words = [0x3c198003, 0x8f396448]},
+  {name = "camera", address = 0x80036494, owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f087338, expected_words = [0x3c028003, 0x8c426494]},
+  {name = "timer_active", address = 0x800364b0, owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f087350, expected_words = [0x3c0e8003, 0x8dce64b0]},
+]

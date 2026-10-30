@@ -9,6 +9,7 @@
 #include "audio.h"
 #include "renderer.h"
 #include "graphics.h"
+#include "goldeneye_input.h"
 #include <time.h>
 #include <errno.h>
 static RecompRenderer *renderer;
@@ -20,10 +21,6 @@ static uint64_t mission_audio_underruns, max_drain_ns;
 static unsigned next_input_frame, previous_input_frame;
 static RecompPad replay_pad = {.connected = true};
 static bool has_next_input;
-static bool cheat_menu;
-static uint64_t cheat_unlock_checks;
-static RecompFunction original_cheat_check;
-static RecompFunctionEntry cheat_override;
 #include "pager.h"
 #include "generated.h"
 #include "goldeneye_boot_config.h"
@@ -67,29 +64,6 @@ static void drain(Runtime *rt) {
     busy_frames++;
 }
 
-static void unlocked_cheat_check(Runtime *rt, MipsContext *ctx) {
-    uint32_t id = (uint32_t)ctx->gpr[4];
-    if (id < 64 && ((GE_CHEAT_UNLOCK_MASK >> id) & 1)) {
-        mips_set(ctx, 2, 1);
-        cheat_unlock_checks++;
-    } else
-        original_cheat_check(rt, ctx);
-}
-static void install_cheat_menu(Runtime *rt) {
-    for (size_t i = 0; i < rt->function_count; i++) {
-        const RecompFunctionEntry *entry = rt->function_index[i];
-        if (entry->address != GE_CHEAT_ENTRY)
-            continue;
-        original_cheat_check = entry->function;
-        cheat_override = *entry;
-        cheat_override.function = unlocked_cheat_check;
-        rt->function_index[i] = &cheat_override;
-        puts("All Solo missions and 23 Cheat Options unlocked for this session. Choose a file, then Solo to select a "
-             "mission.");
-        return;
-    }
-    recomp_fail("GoldenEye cheat query not registered", GE_CHEAT_ENTRY);
-}
 static void read_next_input(void) {
     unsigned buttons;
     int x, y;
@@ -134,8 +108,6 @@ static void initialize_services(Runtime *rt) {
     const char *save = getenv("RECOMP_GOLDENEYE_SAVE");
     RecompIOConfig io = {.connected_mask = 1, .eeprom_size = 512, .eeprom_path = save && *save ? save : NULL};
     require(recomp_io_init(rt, &io), "GoldenEye native IO init failed", 0);
-    if (cheat_menu)
-        recomp_store(rt, GE_CHEAT_LEVELS_ADDRESS, 1, 4);
     RecompAudioConfig ac = {.output_enabled = true,
                             .microcode = RECOMP_AUDIO_ABI1_LINEAR,
                             .prebuffer_ms = 160,
@@ -173,11 +145,10 @@ static bool submit(Runtime *rt, void *unused, const RecompTask *task) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 5 && (argc != 6 || strcmp(argv[5], "--cheat-menu"))) {
-        fprintf(stderr, "usage: %s ROM DATA_CAPTURE STARTUP_REPORT FRAMES [--cheat-menu]\n", argv[0]);
+    if (argc != 5) {
+        fprintf(stderr, "usage: %s ROM DATA_CAPTURE STARTUP_REPORT FRAMES\n", argv[0]);
         return 2;
     }
-    cheat_menu = argc == 6;
     char *end;
     unsigned long frames = strtoul(argv[4], &end, 10);
     if (*end || frames > 36000)
@@ -188,8 +159,6 @@ int main(int argc, char **argv) {
     require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
                                 recomp_section_count),
             "GoldenEye runtime init failed", 0);
-    if (cheat_menu)
-        install_cheat_menu(&rt);
     RecompGameOptions options = {.rom = argv[1]};
     uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
     char renderer_data[2048];
@@ -212,6 +181,7 @@ int main(int argc, char **argv) {
     goldeneye_pager_install(&rt, &pager, &ge_pager_config);
     rt.prepare_call = prepare_call;
     rt.section_loaded[BOOT_GAME_SECTION] = true;
+    goldeneye_input_init(&rt);
     ge_initialize_services = initialize_services;
     /* Original boot can run directly on the host stack. osStartThread publishes
      * mainproc for the native scheduler, without a fabricated guest boot thread. */
@@ -246,10 +216,12 @@ int main(int argc, char **argv) {
             }
         }
         RecompPad pad;
+        recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(), goldeneye_input_playable(&rt));
         if (!recomp_renderer_input(renderer, &pad)) {
             window_closed = true;
             break;
         }
+        goldeneye_input_submit(recomp_renderer_mouse_frame(renderer));
         if (input_script) {
             if (has_next_input && next_input_frame == step + 1) {
                 scripted_pad = replay_pad;
@@ -319,8 +291,7 @@ int main(int argc, char **argv) {
     fprintf(
         f,
         ",\"rendered\":true,\"window_closed\":%s,\"graphics_tasks\":%u,\"presentations\":%u,\"sp_callbacks\":%" PRIu64
-        ",\"dp_callbacks\":%" PRIu64 ",\"cheat_menu\":%s,\"unlocked_cheat_count\":%u,\"cheat_unlock_checks\":%" PRIu64
-        ",\"missions_unlocked\":%s"
+        ",\"dp_callbacks\":%" PRIu64
         ",\"controller_reads\":%" PRIu64 ",\"eeprom_reads\":%" PRIu64 ",\"eeprom_writes\":%" PRIu64
         ",\"save_failures\":%" PRIu64 ",\"audio_tasks\":%" PRIu64 ",\"pcm_frames\":%" PRIu64
         ",\"nonzero_samples\":%" PRIu64 ",\"playback_frames\":%" PRIu64 ",\"audio_underruns\":%" PRIu64
@@ -329,14 +300,14 @@ int main(int argc, char **argv) {
         ",\"mission_frames\":%u,\"first_mission_vi\":%u,\"mission_difficulty\":%u,\"current_stage\":%u,\"rdp_"
         "triangles\":%" PRIu64 ",\"renderer_submit_ns\":%" PRIu64 ",\"renderer_present_ns\":%" PRIu64,
         window_closed ? "true" : "false", rendered_tasks, presentations, rs.sp_callbacks, rs.dp_callbacks,
-        cheat_menu ? "true" : "false", cheat_menu ? GE_CHEAT_COUNT : 0, cheat_unlock_checks,
-        recomp_load(&rt, GE_CHEAT_LEVELS_ADDRESS, 4) ? "true" : "false", io.reads_completed, io.eeprom_reads,
+        io.reads_completed, io.eeprom_reads,
         io.eeprom_writes, io.persistence_failures, as.tasks, as.frames, as.nonzero_samples, as.playback_frames,
         as.queue_underruns, as.queue_resets, mission_audio_underruns, as.frequency, as.prebuffer_frames,
         as.min_queued_bytes, max_drain_ns, mission_frames, first_mission_vi, mission_difficulty,
         (unsigned)recomp_load(&rt, GE_INSPECT_STAGE_ADDRESS, 4), rs.rdp_triangles, rs.submit_ns, rs.present_ns);
     fputs("}\n", f);
     require(fclose(f) == 0, "cannot close GoldenEye startup report", 0);
+    goldeneye_input_destroy();
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
     recomp_runtime_destroy(&rt);

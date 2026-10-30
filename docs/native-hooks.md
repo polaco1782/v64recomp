@@ -1,5 +1,39 @@
 # Shared native OS and library hooks
 
+## Original-preserving function wrappers
+
+For optional game adapters that must retain translated code, declare a top-level
+`function_wrappers` array in the game's complete `profile.toml`:
+
+```toml
+function_wrappers = [
+  {section = ".game", vram = 0x80001000, size = 0x40, sha256 = "FULL_BODY_SHA256", handler = "game_input_hook"},
+]
+```
+
+The section, entry, size and full body fingerprint must match discovered code.
+A wrapper cannot overlap a native replacement or an unsupported boundary.
+The generator retains the original `recomp_s...` body and emits a separate thunk
+for both direct calls and registry dispatch. The handler has signature
+`void handler(Runtime *, MipsContext *, RecompFunction original)`. Call the supplied
+`original` pointer to execute the body without re-entering the same wrapper;
+looking up its guest entry again would invoke the wrapper recursively. Calls made
+by the original body still follow normal dispatch and wrapper rules.
+
+Wrapped functions retain `ready` coverage; `coverage.json` lists wrappers separately.
+This is distinct from replacing an entire function. See GoldenEye's `input.c`
+for a scoped adapter.
+
+`include/mouse_input.h` provides a game-independent motion buffer. Host input
+submissions accumulate deltas while replacing held movement state. One selected
+guest update consumes the deltas; later updates retain held movement only.
+Inactive submissions and explicit clearing flush both. Host access occurs while
+guest execution is parked; this is not a concurrent producer/consumer queue.
+`recomp_renderer_mouse_mode` opts into the SDL mouse/keyboard mapping and capture
+policy; each game supplies its own verified gameplay gate and angle adapter.
+
+## Native replacements
+
 `tools/symbols.json` is the shared symbol database for every game, organized
 alphabetically by symbol. Each entry groups verified `native_signatures`,
 imported `sdk_signatures`, and library `callers` / `callees` indexes.

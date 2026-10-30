@@ -36,8 +36,10 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
-            puts("Debug: --trace-calls --input FILE --wav FILE --audio-trace FILE --capture-every N --cheat-menu "
+            puts("Debug: --trace-calls --input FILE --wav FILE --audio-trace FILE --capture-every N "
                  "--mode MODE");
+            if (!strcmp(RECOMP_GAME_ID, "sm64-us"))
+                puts("SM64: --cheat-menu enables the original level select.");
             puts("Input files contain frame, buttons, stick_x, stick_y columns. SM64 uses --mode "
                  "live/idle/move/jump/interior.");
         }
@@ -76,8 +78,8 @@ int main(int argc, char **argv) {
     RECOMP_LOG("game", "ROM=%s data=%s save=%s frames=%u mute=%s output=%s", o.rom, o.data, o.save, o.frames,
                o.mute ? "yes" : "no", RECOMP_DEBUG_OUTPUT);
     bool sm64 = !strcmp(RECOMP_GAME_ID, "sm64-us"), goldeneye = !strcmp(RECOMP_GAME_ID, "goldeneye-us");
-    if (cheats && !sm64 && !goldeneye) {
-        fputs("--cheat-menu is available for SM64 and GoldenEye\n", stderr);
+    if (cheats && !sm64) {
+        fputs("--cheat-menu is available for SM64; use F12 for GameShark cheats\n", stderr);
         return 2;
     }
     if (mode && !sm64) {

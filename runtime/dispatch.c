@@ -11,6 +11,6 @@ void recomp_call_generated(Runtime *rt, MipsContext *ctx, const RecompFunctionEn
         return;
     }
 #endif
-    /* Debug can replace registry entries, for example GoldenEye's cheat menu. */
+    /* Debug dispatch resolves the current registry entry. */
     recomp_lookup(rt, entry->address)(rt, ctx);
 }

@@ -3,6 +3,7 @@ from pathlib import Path
 import hashlib, json, zlib
 import re
 from common import RecompError
+from input_analysis import verify_input_analysis
 
 
 def startup_data(rom: bytes, boot: dict) -> bytes:
@@ -78,13 +79,18 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'#define BOOT_GAME_SECTION {game_section["id"]}')
     for name,value in profile.get('inspection',{}).items():
         if type(value) is int:lines.append(f'#define GE_INSPECT_{name.upper()} UINT32_C(0x{value:x})')
-    if 'cheats' in profile:
-        cheats=profile['cheats'];mask=sum(1<<i for i in cheats['allowed_ids'])
-        lines.extend([f'#define GE_CHEAT_ENTRY UINT32_C(0x{cheats["entry"]:x})',
-                      f'#define GE_CHEAT_UNLOCK_MASK UINT64_C(0x{mask:x})',
-                      f'#define GE_CHEAT_COUNT {len(cheats["allowed_ids"])}',
-                      f'#define GE_CHEAT_LEVELS_ADDRESS UINT32_C(0x{cheats["levels_address"]:x})'])
     (output / 'goldeneye_boot_config.h').write_text('\n'.join(lines))
+    analysis = profile['input_analysis']
+    constants = {'CURRENT_PLAYER': analysis['current_player']['address'],
+                 'PROCESS_RETURN': profile['input_adapter']['process_return']}
+    constants.update({f['name'].upper(): f['offset'] for f in analysis['player_fields']})
+    constants.update({g['name'].upper(): g['address'] for g in profile['input_adapter']['globals']})
+    angle = next(f for f in analysis['functions'] if f['name'] == 'bondviewApplyVertaTheta')
+    entry = next(f for f in metadata['functions'] if f['vram'] == angle['vram'])
+    lines = ['/* Verified GoldenEye input addresses; generated from profile.toml. */']
+    lines.extend(f'#define GE_INPUT_{name} UINT32_C(0x{value:x})' for name, value in constants.items())
+    lines.append(f'#define GE_INPUT_ORIGINAL_ANGLES recomp_s{entry["section"]}_{entry["vram"]:08x}')
+    (output / 'goldeneye_input_config.h').write_text('\n'.join(lines) + '\n')
 
 
 def checked_dispatches(rom: bytes, profile: dict) -> None:
@@ -156,38 +162,17 @@ def validate_inspection(rom: bytes, profile: dict) -> None:
             raise RecompError(f'GoldenEye {name} inspection getter/address mismatch')
 
 
-def validate_cheats(rom: bytes, profile: dict) -> None:
-    cheats=profile['cheats']
-    for address,words in [(cheats['entry'],cheats['entry_words']),
-                          (cheats['unavailable_target'],cheats['unavailable_words']),
-                          (cheats['levels_reader'],cheats['levels_words'])]:
-        size=len(words)*4
-        region=next((s for s in profile['discovery']['regions'] if s['vram']<=address<=s['vram']+s['size']-size),None)
-        if region is None or address%4:raise RecompError('GoldenEye cheat query outside mapped code')
-        offset=region['rom_offset']+address-region['vram']
-        if rom[offset:offset+size]!=b''.join(w.to_bytes(4,'big') for w in words):
-            raise RecompError('GoldenEye cheat query fingerprint mismatch')
-    words=cheats['levels_words']
-    if (len(words)!=3 or words[:2]!=[0x3c028003,0x03e00008] or words[2]>>16!=0x8c42
-            or 0x80030000+((words[2]&65535)-65536 if words[2]&0x8000 else words[2]&65535)!=cheats['levels_address']):
-        raise RecompError('GoldenEye mission unlock getter/address mismatch')
-    data=startup_data(rom,profile['bootstrap']);offset=cheats['table_address']-profile['bootstrap']['data_address']
-    size=cheats['table_count']*4
-    if offset<0 or size<=0 or offset+size>len(data):raise RecompError('GoldenEye cheat table outside initialized data')
-    table=data[offset:offset+size]
-    ids=[i+1 for i in range(cheats['table_count'])
-         if int.from_bytes(table[i*4:i*4+4],'big')!=cheats['unavailable_target']]
-    if (hashlib.sha256(table).hexdigest()!=cheats['table_sha256'] or ids!=cheats['allowed_ids']
-            or len(ids)!=23 or not all(0<i<64 for i in ids)):
-        raise RecompError('GoldenEye cheat table/options fingerprint mismatch')
-
-
 def prepare(rom, profile, output):
+    verify_input_analysis(rom, profile)
     validate_idle_loop(rom,profile)
     validate_inspection(rom,profile)
-    validate_cheats(rom,profile)
     checked_dispatches(rom,profile)
     return rom, profile
+
+
+def write_report(rom, profile, metadata, coverage, output):
+    from common import write_json
+    write_json(output / 'input-hooks.json', verify_input_analysis(rom, profile, metadata, coverage))
 
 
 def configure_translation(rom, metadata, profile, output):

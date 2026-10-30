@@ -93,7 +93,7 @@ opt-in with `--trace-calls` (or `RECOMP_TRACE_CALLS=1`); it can be very verbose.
 | `--wav FILE` | All except SM64, whose debug capture writes `audio.wav` automatically. |
 | `--audio-trace FILE` | OOT; host audio queue timing as CSV. |
 | `--mode live/idle/move/jump/interior` | SM64; scripted modes preserve its gameplay diagnostic harness. Bounded checks use 60..600 playable frames. |
-| `--cheat-menu` | SM64 and GoldenEye; session-only original level select/unlocks. |
+| `--cheat-menu` | SM64 only; session-only original level select. Use F12 for the shared GameShark menu. |
 | `--frames N` | Presentation limit except SM64's scripted modes, which count playable frames. 0 runs until close. |
 
 The replay JSON files under each game's `debug/` are ROM-bound reference inputs.

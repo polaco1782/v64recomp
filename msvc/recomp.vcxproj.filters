@@ -88,6 +88,9 @@
     <ClInclude Include="$(RecompRoot)include\input.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\mouse_input.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\profiler.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>

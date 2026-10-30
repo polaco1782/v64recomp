@@ -55,6 +55,8 @@ struct RecompRenderer {
     bool ready = false;
     SDL_Window *window = nullptr;
     std::unique_ptr<RecompInput, decltype(&recomp_input_destroy)> input{nullptr, recomp_input_destroy};
+    bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
+    RecompMouseFrame mouse_frame{};
     explicit RecompRenderer(Runtime *runtime) : rt(runtime) {}
     void check_owner() {
         if (owner != std::this_thread::get_id())
@@ -118,6 +120,13 @@ static void display_draw(plume::RenderCommandList *list, plume::RenderFramebuffe
 }
 static int menu_event_filter(void *opaque, SDL_Event *event) {
     auto *s = static_cast<RecompRenderer *>(opaque);
+    // Owner shortcuts must reach the app before RT64 consumes them (notably
+    // F4, which otherwise opens the replacements inspector instead of recapturing).
+    if (s->mouse_enabled && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) &&
+        (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE ||
+         event->key.keysym.scancode == SDL_SCANCODE_F4 ||
+         event->key.keysym.scancode == SDL_SCANCODE_F10))
+        return 1;
     // F12 must reach the shared menu even when RT64's inspector captures keys.
     // While open, route UI events to the owner instead of the inspector.
     if ((event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) && event->key.keysym.scancode == SDL_SCANCODE_F12)
@@ -388,6 +397,7 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     if (!s)
         return;
     s->check_owner();
+    if (s->mouse_captured) SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_SetEventFilter(nullptr, nullptr);
     s->wait_texture_reload();
     s->cheat_menu.reset();
@@ -475,12 +485,43 @@ bool recomp_renderer_present(RecompRenderer *s) {
     process_present(s);
     return true;
 }
+void recomp_renderer_mouse_mode(RecompRenderer *s, bool enabled, bool gameplay) {
+    s->check_owner();
+    s->mouse_enabled = enabled;
+    s->mouse_gameplay = gameplay;
+}
+RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
+    s->check_owner();
+    RecompMouseFrame frame = s->mouse_frame;
+    s->mouse_frame.dx = s->mouse_frame.dy = 0;
+    s->mouse_frame.wheel = 0;
+    return frame;
+}
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     s->check_owner();
+    s->mouse_frame = {};
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT)
             return false;
+        if (s->mouse_enabled && event.type == SDL_KEYDOWN && !event.key.repeat) {
+            if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) s->mouse_released = s->mouse_captured;
+            if (event.key.keysym.scancode == SDL_SCANCODE_F4) s->mouse_released = false;
+            if (event.key.keysym.scancode == SDL_SCANCODE_F10) return false;
+        }
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+            s->mouse_frame = {};
+            s->mouse_released = true;
+        }
+        if (event.type == SDL_MOUSEMOTION && s->mouse_captured) {
+            s->mouse_frame.dx += event.motion.xrel;
+            s->mouse_frame.dy += event.motion.yrel;
+        }
+        if (event.type == SDL_MOUSEWHEEL && s->mouse_captured) {
+            int64_t detents = event.wheel.y;
+            if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) detents = -detents;
+            s->mouse_frame.wheel = recomp_mouse_wheel_sum(s->mouse_frame.wheel, detents);
+        }
         s->cheat_menu->event(event);
         if (s->cheat_menu->open()) {
             const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
@@ -524,6 +565,24 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
 #endif
     }
     s->cheat_menu->update();
+    bool capture = s->mouse_enabled && s->mouse_gameplay && !s->mouse_released &&
+                   !s->cheat_menu->captures_input() && (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS);
+#ifdef RECOMP_DEBUG
+    {
+        const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+        if (s->app->presentQueue->inspector &&
+            (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard)) capture = false;
+    }
+#endif
+    if (capture != s->mouse_captured) {
+        if (SDL_SetRelativeMouseMode(capture ? SDL_TRUE : SDL_FALSE) != 0) capture = false;
+        SDL_GetRelativeMouseState(nullptr, nullptr);
+        s->mouse_frame = {};
+        trace_frame(s, "mouse_capture", capture);
+    }
+    s->mouse_captured = capture;
+    s->mouse_frame.active = capture;
+    if (!capture) s->mouse_frame = {};
     *pad = {};
     pad->connected = true;
     if (s->cheat_menu->captures_input())
@@ -539,8 +598,28 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     }
 #endif
     const Uint8 *keys = SDL_GetKeyboardState(nullptr);
-    if (keys[SDL_SCANCODE_ESCAPE])
+    if (!s->mouse_enabled && keys[SDL_SCANCODE_ESCAPE])
         return false;
+    if (s->mouse_enabled) {
+        // Menus retain directional navigation; WASD in gameplay travels through
+        // the game's adapter rather than becoming a second analog stick.
+        if (keys[SDL_SCANCODE_RETURN]) pad->buttons |= 0x8000;
+        if (keys[SDL_SCANCODE_TAB]) pad->buttons |= 0x1000;
+        if (keys[SDL_SCANCODE_E]) pad->buttons |= 0x4000;
+        if (keys[SDL_SCANCODE_Q]) pad->buttons |= 0x8000;
+        if (keys[SDL_SCANCODE_R]) pad->buttons |= 0x4000;
+        if (capture) {
+            Uint32 buttons = SDL_GetMouseState(nullptr, nullptr);
+            if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) pad->buttons |= 0x2000;
+            if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) pad->buttons |= 0x0010;
+            s->mouse_frame.move_x = keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A];
+            s->mouse_frame.move_y = keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S];
+        }
+        pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;
+        pad->stick_y = (keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * 80;
+        recomp_input_poll(s->input.get(), pad);
+        return true;
+    }
     const struct {
         SDL_Scancode key;
         uint16_t button;

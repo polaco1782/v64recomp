@@ -5,6 +5,7 @@
 #include "audio.h"
 #include "graphics.h"
 #include "pager.h"
+#include "goldeneye_input.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
     goldeneye_pager_install(&rt, &pager, &ge_pager_config);
     rt.prepare_call = goldeneye_pager_prepare_call;
     rt.section_loaded[BOOT_GAME_SECTION] = true;
+    goldeneye_input_init(&rt);
     ge_initialize_services = initialize_services;
     MipsContext boot = {.fcr31 = 0x01000800};
     boot.gpr[31] = mips_s32(0xf0000000);
@@ -106,8 +108,10 @@ int main(int argc, char **argv) {
             }
         }
         RecompPad pad;
+        recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(), goldeneye_input_playable(&rt));
         if (!recomp_renderer_input(renderer, &pad))
             break;
+        goldeneye_input_submit(recomp_renderer_mouse_frame(renderer));
         require(recomp_input_set(&rt, 0, &pad), "GoldenEye controller update failed", 0);
         require(recomp_renderer_present(renderer), "GoldenEye presentation failed", 0);
         next_present += 16666667;
@@ -118,6 +122,7 @@ int main(int argc, char **argv) {
         else
             recomp_game_sleep(next_present);
     }
+    goldeneye_input_destroy();
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
     recomp_runtime_destroy(&rt);

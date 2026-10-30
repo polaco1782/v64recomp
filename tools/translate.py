@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from collections import Counter
 import json
 import os
@@ -83,6 +84,23 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
                 selected.append(matches[0])
                 seen.add(key)
     selected_keys = {(f['section'], f['vram']) for f in selected}
+    # Wrappers retain the original translated body. Both fixed and dynamic calls
+    # route through a generated thunk; the handler receives the unwrapped body.
+    wrappers = {}
+    section_names = {s['id']: s['name'] for s in metadata['sections']}
+    for wrapper in profile.get('function_wrappers', []):
+        matches = [f for f in functions if f['vram'] == wrapper['vram']
+                   and section_names[f['section']] == wrapper['section']]
+        if len(matches) != 1:
+            raise RecompError('function wrapper entry missing or ambiguous')
+        f = matches[0]; key = (f['section'], f['vram'])
+        raw = rom[f['rom_offset']:f['rom_offset'] + f['size']]
+        if (key in hooks or key in boundaries or key in wrappers
+                or f['size'] != wrapper['size']
+                or hashlib.sha256(raw).hexdigest() != wrapper['sha256']
+                or not re.fullmatch(r'[a-zA-Z_]\w*', wrapper.get('handler', ''))):
+            raise RecompError(f"invalid or mismatched function wrapper: {f['name']}")
+        wrappers[key] = wrapper['handler']
     log_emission('Selected %d functions; decoding and checking %d functions', len(selected), len(functions))
     results, decoded, counts = [], {}, Counter()
     for index, f in enumerate(functions, 1):
@@ -151,6 +169,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
               'metadata_issues': metadata.get('issues', []), 'functions': results,
               'code_inventory':metadata.get('code_inventory'),
               'checkpoints': checkpoints, 'generated': False}
+    report['function_wrappers'] = profile.get('function_wrappers', [])
     report['registered_direct_calls'] = [dict(section=f['section'], **site)
                                         for f in functions for site in f.get('registered_direct_calls', [])]
     write_json(output / 'coverage.json', report)
@@ -167,7 +186,8 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
     source = ['/* Generated from validated MIPS bytes; do not edit. */', '#include "generated.h"', '']
     log_emission('Memory lowering uses recomp_load/store helpers (RDRAM and supported native registers). '
                  'OS/HW services use the verified native hooks.')
-    direct_targets = direct_call_targets(registry, hooks, selected)
+    bindings = {**hooks, **{key: f'recomp_wrap_s{key[0]}_{key[1]:08x}' for key in wrappers}}
+    direct_targets = direct_call_targets(registry, bindings, selected)
     for f in selected:
         key = (f['section'], f['vram'])
         symbol = hooks.get(key, cname(f))
@@ -182,10 +202,16 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         elif key in hooks:
             log_emission('Bind native hook %s s%s 0x%08x -> %s', f['name'], f['section'], f['vram'], symbol)
         else:
-            source.append(emit_function(f, decoded[key], registry, yield_sites.get(key), hooks, direct_targets))
+            source.append(emit_function(f, decoded[key], registry, yield_sites.get(key), bindings, direct_targets))
+            if key in wrappers:
+                thunk = bindings[key]
+                header.extend([f'void {thunk}(Runtime *, MipsContext *);',
+                               f'void {wrappers[key]}(Runtime *, MipsContext *, RecompFunction);'])
+                source.append(f'void {thunk}(Runtime *runtime, MipsContext *ctx) {{\n'
+                              f'    {wrappers[key]}(runtime, ctx, {cname(f)});\n}}')
     source.append('const RecompFunctionEntry recomp_functions[] = {')
     for f in selected:
-        symbol = hooks.get((f['section'], f['vram']), cname(f))
+        symbol = bindings.get((f['section'], f['vram']), cname(f))
         safe_name = re.sub(r'[^a-zA-Z0-9_.$]', '_', f['name'])
         source.append(f'    {{UINT32_C(0x{f["vram"]:08x}), {f["size"]}, {f["section"]}, {symbol}, "{safe_name}"}},')
     source.extend(['};', 'const size_t recomp_function_count = sizeof(recomp_functions) / sizeof(recomp_functions[0]);',
