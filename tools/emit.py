@@ -176,6 +176,13 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
     errors = []
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
+    registered_calls = {site['pc']: site for site in function.get('registered_direct_calls', [])}
+    for site in function.get('registered_direct_calls', []):
+        instruction = next((i for i in instructions if i.pc == site['pc']), None)
+        if (instruction is None or instruction.opcode != 'jal' or instruction.word != site.get('expected_word')
+                or target(instruction) != site.get('target')):
+            errors.append(dict(pc=site['pc'], word=site.get('expected_word', 0), assembly='',
+                               reason='invalid checked registered direct call'))
     for transfer in function.get('fallthrough_transfers', []):
         i = next((i for i in instructions if i.pc == transfer['pc']), None)
         if (i is None or i.delay or i.word != transfer['expected_word'] or transfer['target'] != i.pc + 4
@@ -232,7 +239,8 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
             elif i.opcode not in ('jr', 'jalr') and constant_condition(i) is not False:
                 destination = target(i)
                 local = destination in addresses and i.opcode != 'jal' and i.opcode not in LINK_BRANCHES
-                if not local and resolve_function(registry, function['section'], destination) is None:
+                if (not local and resolve_function(registry, function['section'], destination) is None
+                        and not (i.opcode == 'jal' and i.pc in registered_calls)):
                     reason = f"unresolved target: {destination:#010x}"
                 if local and destination % 4:
                     reason = "unaligned branch target"

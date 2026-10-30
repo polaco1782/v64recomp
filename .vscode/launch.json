@@ -2,7 +2,418 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug: Super Mario 64 US",
+      "name": "Debug: Super Mario 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/sm64-us/debug/bin/Debug/sm64-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Super Mario 64 US"
+    },
+    {
+      "name": "Release: Super Mario 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/sm64-us/release/bin/Release/sm64-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Super Mario 64 US"
+    },
+    {
+      "name": "Debug: GoldenEye 007 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/goldeneye-us/debug/bin/Debug/goldeneye-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: GoldenEye 007 US"
+    },
+    {
+      "name": "Release: GoldenEye 007 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/goldeneye-us/release/bin/Release/goldeneye-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: GoldenEye 007 US"
+    },
+    {
+      "name": "Debug: Shadow Man US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/shadowman-us/debug/bin/Debug/shadowman-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Shadow Man US"
+    },
+    {
+      "name": "Release: Shadow Man US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/shadowman-us/release/bin/Release/shadowman-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Shadow Man US"
+    },
+    {
+      "name": "Debug: Quake 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/quake-us/debug/bin/Debug/quake-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Quake 64 US"
+    },
+    {
+      "name": "Release: Quake 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/quake-us/release/bin/Release/quake-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Quake 64 US"
+    },
+    {
+      "name": "Debug: Duke Nukem 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/duke-us/debug/bin/Debug/duke-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Duke Nukem 64 US"
+    },
+    {
+      "name": "Release: Duke Nukem 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/duke-us/release/bin/Release/duke-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Duke Nukem 64 US"
+    },
+    {
+      "name": "Debug: Nightmare Creatures US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/nightmare-us/debug/bin/Debug/nightmare-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Nightmare Creatures US"
+    },
+    {
+      "name": "Release: Nightmare Creatures US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/nightmare-us/release/bin/Release/nightmare-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Nightmare Creatures US"
+    },
+    {
+      "name": "Debug: Ocarina of Time US V1.2 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/oot-us-v12/debug/bin/Debug/oot-us-v12.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Ocarina of Time US V1.2"
+    },
+    {
+      "name": "Release: Ocarina of Time US V1.2 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/oot-us-v12/release/bin/Release/oot-us-v12.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Ocarina of Time US V1.2"
+    },
+    {
+      "name": "Debug: Perfect Dark US V1.1 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/perfectdark-us-v11/debug/bin/Debug/perfectdark-us-v11.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Perfect Dark US V1.1"
+    },
+    {
+      "name": "Release: Perfect Dark US V1.1 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/perfectdark-us-v11/release/bin/Release/perfectdark-us-v11.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Perfect Dark US V1.1"
+    },
+    {
+      "name": "Debug: Conker US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/conker-us/debug/bin/Debug/conker-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Conker US"
+    },
+    {
+      "name": "Release: Conker US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/conker-us/release/bin/Release/conker-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Conker US"
+    },
+    {
+      "name": "Debug: Duke Nukem Zero Hour US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/duke-zero-hour-us/debug/bin/Debug/duke-zero-hour-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Duke Nukem Zero Hour US"
+    },
+    {
+      "name": "Release: Duke Nukem Zero Hour US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/duke-zero-hour-us/release/bin/Release/duke-zero-hour-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Duke Nukem Zero Hour US"
+    },
+    {
+      "name": "Debug: Hexen US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/hexen-us/debug/bin/Debug/hexen-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Hexen US"
+    },
+    {
+      "name": "Release: Hexen US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/hexen-us/release/bin/Release/hexen-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Hexen US"
+    },
+    {
+      "name": "Debug: Rayman 2 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/rayman2-us/debug/bin/Debug/rayman2-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Rayman 2 US"
+    },
+    {
+      "name": "Release: Rayman 2 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/rayman2-us/release/bin/Release/rayman2-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Rayman 2 US"
+    },
+    {
+      "name": "Debug: Quake II US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/quake2-us/debug/bin/Debug/quake2-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Quake II US"
+    },
+    {
+      "name": "Release: Quake II US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/quake2-us/release/bin/Release/quake2-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Quake II US"
+    },
+    {
+      "name": "Debug: Resident Evil 2 US revision 1 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/re2-us-v1/debug/bin/Debug/re2-us-v1.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Resident Evil 2 US revision 1"
+    },
+    {
+      "name": "Release: Resident Evil 2 US revision 1 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/re2-us-v1/release/bin/Release/re2-us-v1.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Resident Evil 2 US revision 1"
+    },
+    {
+      "name": "Debug: Turok US v1.2 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/turok-us-v12/debug/bin/Debug/turok-us-v12.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Turok US v1.2"
+    },
+    {
+      "name": "Release: Turok US v1.2 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/turok-us-v12/release/bin/Release/turok-us-v12.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Turok US v1.2"
+    },
+    {
+      "name": "Debug: 1080 Snowboarding JU (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/1080-us/debug/bin/Debug/1080-us.exe",
+      "args": [
+        "--frames",
+        "1"
+      ],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: 1080 Snowboarding JU"
+    },
+    {
+      "name": "Release: 1080 Snowboarding JU (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/1080-us/release/bin/Release/1080-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: 1080 Snowboarding JU"
+    },
+    {
+      "name": "Debug: 007: The World Is Not Enough US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/twine-us/debug/bin/Debug/twine-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: 007: The World Is Not Enough US"
+    },
+    {
+      "name": "Release: 007: The World Is Not Enough US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/twine-us/release/bin/Release/twine-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: 007: The World Is Not Enough US"
+    },
+    {
+      "name": "Debug: Super Mario 64 US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/sm64-us-debug/bin/sm64-us",
@@ -23,7 +434,7 @@
       "preLaunchTask": "Build Debug: Super Mario 64 US"
     },
     {
-      "name": "Debug: GoldenEye 007 US",
+      "name": "Debug: GoldenEye 007 US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/goldeneye-us-debug/bin/goldeneye-us",
@@ -44,7 +455,7 @@
       "preLaunchTask": "Build Debug: GoldenEye 007 US"
     },
     {
-      "name": "Debug: Shadow Man US",
+      "name": "Debug: Shadow Man US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/shadowman-us-debug/bin/shadowman-us",
@@ -65,7 +476,7 @@
       "preLaunchTask": "Build Debug: Shadow Man US"
     },
     {
-      "name": "Debug: Quake 64 US",
+      "name": "Debug: Quake 64 US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/quake-us-debug/bin/quake-us",
@@ -86,7 +497,7 @@
       "preLaunchTask": "Build Debug: Quake 64 US"
     },
     {
-      "name": "Debug: Duke Nukem 64 US",
+      "name": "Debug: Duke Nukem 64 US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/duke-us-debug/bin/duke-us",
@@ -107,7 +518,7 @@
       "preLaunchTask": "Build Debug: Duke Nukem 64 US"
     },
     {
-      "name": "Debug: Nightmare Creatures US",
+      "name": "Debug: Nightmare Creatures US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/nightmare-us-debug/bin/nightmare-us",
@@ -128,7 +539,7 @@
       "preLaunchTask": "Build Debug: Nightmare Creatures US"
     },
     {
-      "name": "Debug: Ocarina of Time US V1.2",
+      "name": "Debug: Ocarina of Time US V1.2 (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/oot-us-v12-debug/bin/oot-us-v12",
@@ -149,7 +560,7 @@
       "preLaunchTask": "Build Debug: Ocarina of Time US V1.2"
     },
     {
-      "name": "Debug: Perfect Dark US V1.1",
+      "name": "Debug: Perfect Dark US V1.1 (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/perfectdark-us-v11-debug/bin/perfectdark-us-v11",
@@ -170,7 +581,7 @@
       "preLaunchTask": "Build Debug: Perfect Dark US V1.1"
     },
     {
-      "name": "Debug: Conker US",
+      "name": "Debug: Conker US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/conker-us-debug/bin/conker-us",
@@ -191,7 +602,7 @@
       "preLaunchTask": "Build Debug: Conker US"
     },
     {
-      "name": "Debug: Duke Nukem Zero Hour US",
+      "name": "Debug: Duke Nukem Zero Hour US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/duke-zero-hour-us-debug/bin/duke-zero-hour-us",
@@ -212,7 +623,7 @@
       "preLaunchTask": "Build Debug: Duke Nukem Zero Hour US"
     },
     {
-      "name": "Debug: Hexen US",
+      "name": "Debug: Hexen US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/hexen-us-debug/bin/hexen-us",
@@ -233,7 +644,7 @@
       "preLaunchTask": "Build Debug: Hexen US"
     },
     {
-      "name": "Debug: Rayman 2 US",
+      "name": "Debug: Rayman 2 US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/rayman2-us-debug/bin/rayman2-us",
@@ -254,7 +665,7 @@
       "preLaunchTask": "Build Debug: Rayman 2 US"
     },
     {
-      "name": "Debug: Quake II US",
+      "name": "Debug: Quake II US (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/quake2-us-debug/bin/quake2-us",
@@ -275,7 +686,7 @@
       "preLaunchTask": "Build Debug: Quake II US"
     },
     {
-      "name": "Debug: Resident Evil 2 US revision 1",
+      "name": "Debug: Resident Evil 2 US revision 1 (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/re2-us-v1-debug/bin/re2-us-v1",
@@ -296,7 +707,7 @@
       "preLaunchTask": "Build Debug: Resident Evil 2 US revision 1"
     },
     {
-      "name": "Debug: Turok US v1.2",
+      "name": "Debug: Turok US v1.2 (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/turok-us-v12-debug/bin/turok-us-v12",
@@ -317,19 +728,70 @@
       "preLaunchTask": "Build Debug: Turok US v1.2"
     },
     {
-      "name": "Debug: 1080 Snowboarding JU",
+      "name": "Debug: 1080 Snowboarding JU (Linux)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/1080-us-debug/bin/1080-us",
-      "args": ["--frames", "1"],
+      "args": [
+        "--frames",
+        "1"
+      ],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "environment": [],
       "externalConsole": false,
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
-      "setupCommands": [{"description": "Enable GDB pretty printing", "text": "-enable-pretty-printing", "ignoreFailures": true}],
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
       "preLaunchTask": "Build Debug: 1080 Snowboarding JU"
+    },
+    {
+      "name": "Debug: 007: The World Is Not Enough US (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/twine-us-debug/bin/twine-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: 007: The World Is Not Enough US"
+    },
+    {
+      "name": "Release: 007: The World Is Not Enough US (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/twine-us-release/bin/twine-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Release: 007: The World Is Not Enough US",
+      "miDebuggerPath": "/usr/bin/gdb"
     }
   ]
 }

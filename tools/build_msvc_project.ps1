@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$Game,
     [ValidateSet('Release', 'Debug')][string]$Configuration = 'Release',
-    [ValidateSet('Build', 'Rebuild', 'Clean')][string]$Action = 'Build'
+    [ValidateSet('Configure', 'Build', 'Rebuild', 'Clean')][string]$Action = 'Build'
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
@@ -48,6 +48,7 @@ Invoke-Checked $cmake @('-S', $repo, '-B', $buildDirectory, '-G', $generator, '-
     "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake",
     '-DVCPKG_TARGET_TRIPLET=x64-windows', "-DVCPKG_INSTALLED_DIR=$repo/build/vcpkg_installed",
     '-DVCPKG_MANIFEST_INSTALL=OFF')
+if ($Action -eq 'Configure') { exit 0 }
 $targets = if ($Game -eq 'none') {
     @('recomp_runtime', 'recomp_jpeg', 'recomp_audio', 'recomp_renderer')
 } else { @($Game) }

@@ -1,0 +1,262 @@
+[game]
+name = "007: The World Is Not Enough (USA)"
+rom = "../../local/twine.us.z64"
+rom_sha1 = "d347159808f0374a93cf44cfb6135d8f56279f7b"
+rom_size = 0x2000000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[discovery]
+regions = [
+  {name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0xd6c50},
+]
+allow_registered_indirect_calls = true
+# Module-slot calls dispatch through the registry and retain the common
+# unloaded/missing-target failure at the actual call; no module is assumed loaded.
+registered_direct_calls = [
+  {pc = 0x8000e20c, expected_word = 0x0c04607b, target = 0x801181ec},
+  {pc = 0x80010108, expected_word = 0x0c04610b, target = 0x8011842c},
+  {pc = 0x8001715c, expected_word = 0x0c046026, target = 0x80118098},
+  {pc = 0x8001716c, expected_word = 0x0c04606c, target = 0x801181b0},
+  {pc = 0x8001717c, expected_word = 0x0c045dd0, target = 0x80117740},
+  {pc = 0x8001718c, expected_word = 0x0c045dec, target = 0x801177b0},
+  {pc = 0x8001719c, expected_word = 0x0c045deb, target = 0x801177ac},
+  {pc = 0x800171ac, expected_word = 0x0c046044, target = 0x80118110},
+  {pc = 0x800171bc, expected_word = 0x0c045dd0, target = 0x80117740},
+  {pc = 0x800171cc, expected_word = 0x0c045ed6, target = 0x80117b58},
+  {pc = 0x800171dc, expected_word = 0x0c045e86, target = 0x80117a18},
+  {pc = 0x800171ec, expected_word = 0x0c04608a, target = 0x80118228},
+  {pc = 0x800171fc, expected_word = 0x0c045df5, target = 0x801177d4},
+  {pc = 0x8001720c, expected_word = 0x0c045dd0, target = 0x80117740},
+  {pc = 0x8001721c, expected_word = 0x0c045dd0, target = 0x80117740},
+  {pc = 0x80017430, expected_word = 0x0c04798d, target = 0x8011e634},
+  {pc = 0x80042f90, expected_word = 0x0c0463a5, target = 0x80118e94},
+  {pc = 0x80043010, expected_word = 0x0c046753, target = 0x80119d4c},
+  {pc = 0x80043028, expected_word = 0x0c046764, target = 0x80119d90},
+  {pc = 0x80043048, expected_word = 0x0c045e34, target = 0x801178d0},
+  {pc = 0x8004357c, expected_word = 0x0c046094, target = 0x80118250},
+  {pc = 0x80043598, expected_word = 0x0c0460ae, target = 0x801182b8},
+  {pc = 0x800439a4, expected_word = 0x0c04670b, target = 0x80119c2c},
+  {pc = 0x800439c4, expected_word = 0x0c046826, target = 0x8011a098},
+  {pc = 0x800439e4, expected_word = 0x0c046f47, target = 0x8011bd1c},
+  {pc = 0x80043a04, expected_word = 0x0c04705b, target = 0x8011c16c},
+  {pc = 0x80043b50, expected_word = 0x0c045e66, target = 0x80117998},
+  {pc = 0x80043b6c, expected_word = 0x0c046096, target = 0x80118258},
+  {pc = 0x80043b8c, expected_word = 0x0c045eef, target = 0x80117bbc},
+  {pc = 0x80044ce4, expected_word = 0x0c046740, target = 0x80119d00},
+  {pc = 0x80044d00, expected_word = 0x0c047a00, target = 0x8011e800},
+  {pc = 0x800450d8, expected_word = 0x0c0478eb, target = 0x8011e3ac},
+  {pc = 0x80063af8, expected_word = 0x0c046cf6, target = 0x8011b3d8},
+  {pc = 0x80063b04, expected_word = 0x0c046aa7, target = 0x8011aa9c},
+  {pc = 0x80063c18, expected_word = 0x0c046cda, target = 0x8011b368},
+  {pc = 0x80064b38, expected_word = 0x0c046c9e, target = 0x8011b278},
+  {pc = 0x80065590, expected_word = 0x0c046b2b, target = 0x8011acac},
+  {pc = 0x8006a178, expected_word = 0x0c04676d, target = 0x80119db4},
+  {pc = 0x8006b9dc, expected_word = 0x0c04688d, target = 0x8011a234},
+  {pc = 0x8006d360, expected_word = 0x0c046cf6, target = 0x8011b3d8},
+  {pc = 0x8006d478, expected_word = 0x0c046cf6, target = 0x8011b3d8},
+  {pc = 0x800722f0, expected_word = 0x0c046b2b, target = 0x8011acac},
+  {pc = 0x80072364, expected_word = 0x0c047456, target = 0x8011d158},
+  {pc = 0x800761f8, expected_word = 0x0c045efd, target = 0x80117bf4},
+]
+entry_inventory = "startup-entries.json"
+transfers = [{pc = 0x80000434, expected_word = 0x01400008, kind = "tail", targets = [0x80000460]}]
+roots = [
+  {name = "mainproc", vram = 0x800009a4},
+  {name = "gameproc", vram = 0x800004bc},
+  {name = "initproc", vram = 0x80000570},
+]
+jump_tables = [
+  # s0 < 17; index register is unchanged across the guard.
+  {pc = 0x80032a70, expected_word = 0x400008, table_vram = 0x800d2e20, count = 17, sha256 = "ba5e83b81abb137f1e4f259c01047a78684c6b61f405b083c84e05bf8c228eb3"},
+  # (s1 - 1) < 5.
+  {pc = 0x8000329c, expected_word = 0x400008, table_vram = 0x800d1ea8, count = 5, sha256 = "dc733a2f13eacb978b87b5a2caa755c5a1d7379c769bf7ba47160d6049f10890"},
+  # opcode & 63 < 37; s5 holds the table base.
+  {pc = 0x8000ce08, expected_word = 0x400008, table_vram = 0x800d2190, count = 37, sha256 = "3e176aebba19ddcbeef135580034b7a310d1cf89555da834937f1fb7242c0ef4"},
+  # (command - 1) < 32.
+  {pc = 0x80018164, expected_word = 0x400008, table_vram = 0x800d2690, count = 32, sha256 = "1330f915ad507261dcad988ca5a68df113a356f91c4e977beafe1aa0098d03c2"},
+  # (command - 1) < 32; s7 holds the table base.
+  {pc = 0x800183ec, expected_word = 0x400008, table_vram = 0x800d2710, count = 32, sha256 = "cfcccc4a65fd2600f52599869ff2c1ca4c7584b31c789cb1ec474b139098a7a4"},
+  # (type - 3) < 14; s4 holds the table base.
+  {pc = 0x80036a30, expected_word = 0x400008, table_vram = 0x800d2eb8, count = 14, sha256 = "d30dc9e3d06b35c36d31ddafd3589a790fc9435c405b1d97609930b0366e71c0"},
+  # command < 12; t5 holds the table base.
+  {pc = 0x8003fe2c, expected_word = 0x400008, table_vram = 0x800d2fe0, count = 12, sha256 = "f6730af2cd1f9499c419923764cb558d9ca3ece093ead01d336aad8c4e92b11d"},
+  # loop guard in branch delay slot at 0x800404a4.
+  {pc = 0x8003ffb8, expected_word = 0x400008, table_vram = 0x800d3010, count = 12, sha256 = "c1941e640e53506b9206d47b426fe021fe0009bd390a18d192f65f0f1fbe6eab"},
+  # s2 starts at zero; s3 advances four bytes per iteration; s2 < 15.
+  {pc = 0x8006f7b0, expected_word = 0x400008, table_vram = 0x800d46a8, count = 15, sha256 = "58f6cb185219fec96ed3d152d77e0e057c5ff48eac7c5f438e2163b058bc478d"},
+  # s1 starts at zero and advances four bytes; s1 < 24.
+  {pc = 0x80070068, expected_word = 0x400008, table_vram = 0x800d46f8, count = 6, sha256 = "59b8ac0d1a37391bfa72b06e3b343f900462f85dc0b3119b680a9b7019984565"},
+  # a0 < 8 in branch delay slot at 0x80077598.
+  {pc = 0x800775cc, expected_word = 0x400008, table_vram = 0x800d4c08, count = 8, sha256 = "6af1a18b09882d3b30dc42e154984a446f1b53f666653f8f6bfc73700db95356"},
+  # ((a0 & 7) - 1) < 7.
+  {pc = 0x80082514, expected_word = 0x400008, table_vram = 0x800d5f20, count = 7, sha256 = "8324ad0c1e2e213f4350aed19f2778cb61e64fafaf737bbc8f39d723b8081d6e"},
+  # Unsigned guard at 0x80033788; reviewed local switch targets.
+  {pc = 0x800337a0, expected_word = 0x400008, table_vram = 0x800d2e68, count = 0xc, sha256 = "b399704eeba929f24cdd4fd28ebfa13405cbc14145607451e6a6bdc5c9754dcf"},
+  # Unsigned guard at 0x8006eb44; reviewed local switch targets.
+  {pc = 0x8006eb5c, expected_word = 0x400008, table_vram = 0x800d4668, count = 0xb, sha256 = "e7f745150000ca5a6ce4a42f112d74e658a78294e9fc88b35316804a195687fe"},
+  # Unsigned guard at 0x8007c970; reviewed local switch targets.
+  {pc = 0x8007c98c, expected_word = 0x400008, table_vram = 0x800d5128, count = 0x7, sha256 = "200e2c2a3861e8bad034e547b49e7a76d7d19fceaba4fdf1a53f809537224529"},
+  # Unsigned guard at 0x80084578; reviewed local switch targets.
+  {pc = 0x80084590, expected_word = 0x400008, table_vram = 0x800d5f80, count = 0x57, sha256 = "6d06b2274d1c75edfc5e40bf6b7d5b9f6e3fe44bc3906b0ac88824c8722b6f91"},
+  # Unsigned guard at 0x8000f33c; reviewed local switch targets.
+  {pc = 0x8000f354, expected_word = 0x400008, table_vram = 0x800d22d0, count = 0x76, sha256 = "07339df9070145cae058c4472be202e23c33a5dfaea3d113a96d5475b3418b52"},
+  # Unsigned guard at 0x80010b6c; reviewed local switch targets.
+  {pc = 0x80010b84, expected_word = 0x400008, table_vram = 0x800d24b0, count = 0xc, sha256 = "013389dc5a071152e6d7cb706aab80c97f913e87300b6ddc2ee964d8c263d3be"},
+  # Unsigned guard at 0x80015d48; reviewed local switch targets.
+  {pc = 0x80015d60, expected_word = 0x400008, table_vram = 0x800d2538, count = 0x20, sha256 = "64566894acf2a0ff703e708eb18f93f1d185cb0562ce0be3aa8cf518917710cc"},
+  # Unsigned guard at 0x80028d1c; reviewed local switch targets.
+  {pc = 0x80028d34, expected_word = 0x400008, table_vram = 0x800d2c78, count = 0x10, sha256 = "08f4035c54efec8b2972febf9172e419d236d09c958ccd724c3f48ff0834a8c0"},
+  # Unsigned guard at 0x80040540; reviewed local switch targets.
+  {pc = 0x80040558, expected_word = 0x400008, table_vram = 0x800d3040, count = 0xb8, sha256 = "b8707b344beb82986b5daeccb683a445e1c133aa6aaa6e17ad6827c41cb4e0f3"},
+  # Unsigned guard at 0x80041308; reviewed local switch targets.
+  {pc = 0x80041320, expected_word = 0x400008, table_vram = 0x800d35f8, count = 0x2f, sha256 = "d44a2ab6653f60fd0e581e556b4706fc65bbebb6ee76c428c2c91184321bd0f3"},
+  # Unsigned guard at 0x8004315c; reviewed local switch targets.
+  {pc = 0x80043174, expected_word = 0x400008, table_vram = 0x800d3c80, count = 0x33, sha256 = "346191620fb9e4a72637405a9b969f24f3d253554b560e2603aacd784e9d4b37"},
+  # Unsigned guard at 0x80055bd0; reviewed local switch targets.
+  {pc = 0x80055be8, expected_word = 0x400008, table_vram = 0x800d3ed0, count = 0x21, sha256 = "32da8fb26ba53ca70797a835cafe962c96be49f62d4f0b9788ac114b26113554"},
+  # Unsigned guard at 0x80059494; reviewed local switch targets.
+  {pc = 0x800594ac, expected_word = 0x400008, table_vram = 0x800d4010, count = 0xe, sha256 = "67608504c1ce402a51f9e9f1061cc06bed362325b10eea2193e1852b5c10e573"},
+  # Unsigned guard at 0x8005f9c0; reviewed local switch targets.
+  {pc = 0x8005f9dc, expected_word = 0x400008, table_vram = 0x800d41b0, count = 0x9, sha256 = "405943e98f96cbc01eab61be26005b7791a2fd37d3b5489b1161a73cf44ac615"},
+  # Unsigned guard at 0x800672c0; reviewed local switch targets.
+  {pc = 0x800672d8, expected_word = 0x400008, table_vram = 0x800d43b0, count = 0x27, sha256 = "295c1b225bfed64781e30e7d0ab6a5c01d94b0b91a4ded40d52d0e9534345f63"},
+  # Unsigned guard at 0x80068b1c; reviewed local switch targets.
+  {pc = 0x80068b38, expected_word = 0x400008, table_vram = 0x800d44a8, count = 0x11, sha256 = "3a6a0267c5c91825e3905729f1564a6e7735eac25a699549e23cf8112f4d23c7"},
+  # Unsigned guard at 0x80073c34; reviewed local switch targets.
+  {pc = 0x80073c4c, expected_word = 0x400008, table_vram = 0x800d4840, count = 0x7, sha256 = "9d4e3905aa0a4ef3c7de8307bacd14af73f743e7264bd5c1b0b7f09a70ccf606"},
+  # Unsigned guard at 0x80077390; reviewed local switch targets.
+  {pc = 0x800773a8, expected_word = 0x400008, table_vram = 0x800d4bc8, count = 0x8, sha256 = "98153e96e559d1cb2d8924def87fdbe632a3019bab431c892623c62b855b5c91"},
+  # Unsigned guard at 0x80077490; reviewed local switch targets.
+  {pc = 0x800774a8, expected_word = 0x400008, table_vram = 0x800d4be8, count = 0x8, sha256 = "ab9cf024094cfc42b0aabf322a7bfaf3641c98ee43748f998b962c6ba523c319"},
+  # Unsigned guard at 0x80079ed4; reviewed local switch targets.
+  {pc = 0x80079eec, expected_word = 0x400008, table_vram = 0x800d4e88, count = 0x33, sha256 = "be662d7f2486c8d88c3ec142a269366132f5e79cf668f7b76dc2935886a7e643"},
+  # Unsigned guard at 0x8007a594; reviewed local switch targets.
+  {pc = 0x8007a5b0, expected_word = 0x400008, table_vram = 0x800d4f58, count = 0x2b, sha256 = "a2036c386534760bd567a137d5c43a5a0284c09d4eefc37e26cd90e19691f0d1"},
+  # Unsigned guard at 0x80003374; reviewed local switch targets.
+  {pc = 0x8000338c, expected_word = 0x400008, table_vram = 0x800d1ec0, count = 0x1e, sha256 = "f1e8ed06c6586053cb8412154021203ce22c5199e91a8286cd3523b78942e9b5"},
+  # Unsigned guard at 0x800041cc; reviewed local switch targets.
+  {pc = 0x800041e4, expected_word = 0x400008, table_vram = 0x800d1f38, count = 0x7, sha256 = "47c17ebcb03e62e8b4e86f9ce862de9e1cc73c035decedf1e11a75565a8f58da"},
+  # Unsigned guard at 0x80004610; reviewed local switch targets.
+  {pc = 0x80004628, expected_word = 0x400008, table_vram = 0x800d1f70, count = 0x8, sha256 = "e6ba0378b8d6e55730b1e1f1c0d5011db15241dc2db1434e2eb4a144105bd6fb"},
+  # Unsigned guard at 0x80006644; reviewed local switch targets.
+  {pc = 0x8000665c, expected_word = 0x400008, table_vram = 0x800d2010, count = 0xd, sha256 = "65fc915f27f768db4cea5ac73831926575c296428d53423295a2d88ea178575f"},
+  # Unsigned guard at 0x80008770; reviewed local switch targets.
+  {pc = 0x8000878c, expected_word = 0x400008, table_vram = 0x800d2098, count = 0x10, sha256 = "68e7f2048679624d4b4fb42e3db85aec401eb75d928342a0d028b219f046ed20"},
+  # Unsigned guard at 0x80008874; reviewed local switch targets.
+  {pc = 0x8000888c, expected_word = 0x400008, table_vram = 0x800d20d8, count = 0x10, sha256 = "0faaf0412e1dbf13a1f35bdbe3eb78638992c9ef8c8e5bf54c36177b0cc3223d"},
+  # Unsigned guard at 0x80009ba4; reviewed local switch targets.
+  {pc = 0x80009bbc, expected_word = 0x400008, table_vram = 0x800d2118, count = 0x10, sha256 = "6657b882edb84ccc34137464f6cc9a98d609a969c0476c64f8cc757c041145cd"},
+  # Unsigned guard at 0x8000dc7c; reviewed local switch targets.
+  {pc = 0x8000dc98, expected_word = 0x400008, table_vram = 0x800d2228, count = 0x25, sha256 = "53ece5127a1a9ab94c8cbc44529e23506aa50af9671f21ae7db737b61f0fe51b"},
+  # Unsigned guard at 0x8001713c; reviewed local switch targets.
+  {pc = 0x80017154, expected_word = 0x400008, table_vram = 0x800d25b8, count = 0x28, sha256 = "79df7d77ad5d9ac93465262e3a2b702797e79fd360889a46cd249c2a42887ba3"},
+  # Unsigned guard at 0x80018510; reviewed local switch targets.
+  {pc = 0x80018528, expected_word = 0x400008, table_vram = 0x800d2790, count = 0x5, sha256 = "522c8370c48470c959456d8ed941f695fd13b67cb64222b9e14af7edd34e463d"},
+  # Unsigned guard at 0x8001c9ec; reviewed local switch targets.
+  {pc = 0x8001ca04, expected_word = 0x400008, table_vram = 0x800d29d0, count = 0x29, sha256 = "c428a8feba957eb56198f3bac63466163ddb0685cd218c9821d6e4599b8e8797"},
+  # Unsigned guard at 0x800260a0; reviewed local switch targets.
+  {pc = 0x800260b8, expected_word = 0x400008, table_vram = 0x800d2af8, count = 0x1c, sha256 = "0a5ed7f79e3571b93a5c52572e61ba0f1908467bd1600c7f727a60b5efc38384"},
+  # Unsigned guard at 0x800261a4; reviewed local switch targets.
+  {pc = 0x800261bc, expected_word = 0x400008, table_vram = 0x800d2b68, count = 0x2a, sha256 = "d134dc1005752b349a1523a6479690ffb50f4fd68f64dfa8f578701e50b945f7"},
+  # Unsigned guard at 0x800272b4; reviewed local switch targets.
+  {pc = 0x800272cc, expected_word = 0x400008, table_vram = 0x800d2c10, count = 0x19, sha256 = "912103ed3cd6497b0e59c49632711c3b45c24513f9d42f0a466f143faf5ef912"},
+  # Unsigned guard at 0x8002bc80; reviewed local switch targets.
+  {pc = 0x8002bca0, expected_word = 0x400008, table_vram = 0x800d2d08, count = 0xb, sha256 = "658fa91cd3b589a65d60c4163262578823ab20e383628afa4f563412ee56c94b"},
+  # Unsigned guard at 0x8002f888; reviewed local switch targets.
+  {pc = 0x8002f8a0, expected_word = 0x400008, table_vram = 0x800d2d70, count = 0xc, sha256 = "458ebde01aa1b19d66027818a3d55313e422a0b316546ff2f0b3c2b581e871e7"},
+  # Unsigned guard at 0x800304f4; reviewed local switch targets.
+  {pc = 0x8003050c, expected_word = 0x400008, table_vram = 0x800d2da0, count = 0x5, sha256 = "780d7e99474de0d55e244c0bd18a0bd0f4cadc811dc36b7c3547f78295935dbe"},
+  # Unsigned guard at 0x80030de8; reviewed local switch targets.
+  {pc = 0x80030e04, expected_word = 0x400008, table_vram = 0x800d2db8, count = 0x6, sha256 = "49bd418bdabec59540bc45ed3aef27f0015802182dd5a1c26d7ec76205a718d4"},
+  # Unsigned guard at 0x8003bc98; reviewed local switch targets.
+  {pc = 0x8003bcb0, expected_word = 0x400008, table_vram = 0x800d2f30, count = 0x20, sha256 = "9c4e46cfc6e1dbb44c4a4cbec379f91295d81bc2463ac5365cf3727737d4be8b"},
+  # Unsigned guard at 0x800412d0; reviewed local switch targets.
+  {pc = 0x800412e8, expected_word = 0x400008, table_vram = 0x800d3320, count = 0xb5, sha256 = "0000836e3716929ccd68eb7349cd07f9dffe4aa97153d4ad4ae392953af0d87a"},
+  # Unsigned guard at 0x80041ac0; reviewed local switch targets.
+  {pc = 0x80041adc, expected_word = 0x400008, table_vram = 0x800d36b8, count = 0xa1, sha256 = "ba9051db5d98968cddbfe371162cbdcce78777885c0688b5f09d52b753ff20d7"},
+  # Unsigned guard at 0x80042e9c; reviewed local switch targets.
+  {pc = 0x80042eb4, expected_word = 0x400008, table_vram = 0x800d3950, count = 0xcb, sha256 = "efb5b5eb6418370283f041371f900cae1fd559b48a772a1bf99f27dd9073fa8f"},
+  # Unsigned guard at 0x80044e18; reviewed local switch targets.
+  {pc = 0x80044e30, expected_word = 0x400008, table_vram = 0x800d3d50, count = 0x2a, sha256 = "165cbfed2ddce3cdea6ec33154daaa8c2389d369134a0ad0e14fa40f35e20dc4"},
+  # Unsigned guard at 0x80065104; reviewed local switch targets.
+  {pc = 0x8006511c, expected_word = 0x400008, table_vram = 0x800d42f0, count = 0x26, sha256 = "c0bd2ee63486f240f91fb4b4ecb8d0a3451ebd6a0fd27d0634a5e7142706ec4a"},
+  # Unsigned guard at 0x80067480; reviewed local switch targets.
+  {pc = 0x8006749c, expected_word = 0x400008, table_vram = 0x800d4450, count = 0xc, sha256 = "869325fa8bb054cd9080bdc76347b63f515a24b42af40492c8a49dc53eea6933"},
+  # Unsigned guard at 0x8006a1a4; reviewed local switch targets.
+  {pc = 0x8006a1bc, expected_word = 0x400008, table_vram = 0x800d4518, count = 0x29, sha256 = "c9ade6dbab50ba7be1d1981fe728d250b0d38b359e2bcb0e7d37520a697a7d64"},
+  # Unsigned guard at 0x8006a290; reviewed local switch targets.
+  {pc = 0x8006a2a8, expected_word = 0x400008, table_vram = 0x800d45c0, count = 0x8, sha256 = "f1d164c0610b1c1f11199567876d6fad7f09eb116ce06f88f9f8712289a39039"},
+  # Unsigned guard at 0x8006cc48; reviewed local switch targets.
+  {pc = 0x8006cc60, expected_word = 0x400008, table_vram = 0x800d45f0, count = 0xb, sha256 = "25a3f2d8866388533e64f109c33f1d5731040f193725ec11c66b29022a071c9a"},
+  # Unsigned guard at 0x8006d4ec; reviewed local switch targets.
+  {pc = 0x8006d504, expected_word = 0x400008, table_vram = 0x800d4638, count = 0x5, sha256 = "4d12ed7393902f31a324c0aff1aaeddf54579e19f97694db96953b336e063e57"},
+  # Unsigned guard at 0x80070964; reviewed local switch targets.
+  {pc = 0x80070980, expected_word = 0x400008, table_vram = 0x800d4710, count = 0xc, sha256 = "f4dc727ff2574fd1292f7809ae075bf20d3af3026094c9caf72df5a7eb9b4aa6"},
+  # Unsigned guard at 0x80070b60; reviewed local switch targets.
+  {pc = 0x80070b7c, expected_word = 0x400008, table_vram = 0x800d4740, count = 0xc, sha256 = "b713628d11bd8651930fdb1f5304adcd2818f0bc3fc41ccf5de03a37229252bd"},
+  # Unsigned guard at 0x80070cd4; reviewed local switch targets.
+  {pc = 0x80070cec, expected_word = 0x400008, table_vram = 0x800d4770, count = 0xc, sha256 = "0742187cdd0b1c150ae0afc44b2bb77550cac3d8ba092baacddab6c7bc9d90d4"},
+  # Unsigned guard at 0x80071998; reviewed local switch targets.
+  {pc = 0x800719b0, expected_word = 0x400008, table_vram = 0x800d47b0, count = 0xc, sha256 = "eb60194ceff09d4262d4e57784e19a3449267a874028791f2d2dfbed600fe240"},
+  # Unsigned guard at 0x80071b60; reviewed local switch targets.
+  {pc = 0x80071b78, expected_word = 0x400008, table_vram = 0x800d47e0, count = 0x5, sha256 = "5499d96de23829ff260002dae6b3f45bf6b8c78248dd442ffbc506036960acdc"},
+  # Unsigned guard at 0x80076240; reviewed local switch targets.
+  {pc = 0x80076258, expected_word = 0x400008, table_vram = 0x800d48e8, count = 0x29, sha256 = "a597594b3d4b8b565773dcffc4c2c38b342643353d8bbe23322cbb3e7a70f15c"},
+  # Unsigned guard at 0x8007724c; reviewed local switch targets.
+  {pc = 0x80077264, expected_word = 0x400008, table_vram = 0x800d4ad0, count = 0x25, sha256 = "d074d669147d4768a7205201a3f27fb46836e64a3fa661a023e255b2ccc92839"},
+  # Unsigned guard at 0x80077338; reviewed local switch targets.
+  {pc = 0x80077350, expected_word = 0x400008, table_vram = 0x800d4b68, count = 0xd, sha256 = "8a71c9f1a24bdbd861bcc688e3aed0a036ac03b3ee6c62c66cc3467e91e9d8d9"},
+  # Unsigned guard at 0x80077360; reviewed local switch targets.
+  {pc = 0x80077378, expected_word = 0x400008, table_vram = 0x800d4ba0, count = 0xa, sha256 = "94188dfaa7240a504762f52388b573be8e72f5a21b372605e3882ac70ed25447"},
+  # Unsigned guard at 0x80081be8; reviewed local switch targets.
+  {pc = 0x80081c0c, expected_word = 0x400008, table_vram = 0x800d5f00, count = 0x8, sha256 = "4ed23cf1f364e80219c267465d987b980371d8ab51f2231a36d0297b4898ef62"},
+  # Unsigned guard at 0x800826a0; reviewed local switch targets.
+  {pc = 0x800826b8, expected_word = 0x400008, table_vram = 0x800d5f40, count = 0x7, sha256 = "1cf1b7c723e3bd05e9ff9b445f555947dd3a34f3bfdd1ae35a18957c23ce154b"},
+  # Unsigned guard at 0x8008491c; reviewed local switch targets.
+  {pc = 0x80084938, expected_word = 0x400008, table_vram = 0x800d6168, count = 0x79, sha256 = "c5e1a4ef7f1c915d5bf8651b91a1dce95d0eea6657a699de4ea8566268185105"},
+  # Unsigned guard at 0x800a1674; reviewed local switch targets.
+  {pc = 0x800a16a8, expected_word = 0x400008, table_vram = 0x800d6bc8, count = 0x54, sha256 = "2dbd604bd1d710958913b2aea2fbe5756e6de1c410f66fd7a8dcd1f8c7c7577e"},
+  {pc = 0x800068e4, expected_word = 0x00400008, table_vram = 0x800d2048, count = 20, sha256 = "358168d39abd95c2c27ff3b035bd946f4aef82440bf2263d9bb8dfde4bcb719b"},
+  {pc = 0x8008ebf0, expected_word = 0x00400008, table_vram = 0x800d6810, count = 6, sha256 = "efca662ad30a39643a49b0c059efd9630574a8f413a3593b95386baf62a0010e"},
+  # Unsigned (mode - 1) < 14 at 0x80011ca4; all slots are local cases.
+  {pc = 0x80011cbc, expected_word = 0x00400008, table_vram = 0x800d24e8, count = 14, sha256 = "4b62be315206d2423336937718a4bbf5dabdb1d9e82e27af3702ec89dbd461f1"},
+]
+
+[[checkpoints]]
+pc = 0x80000a0c
+expected_word = 0x08000283
+kind = "yield"
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0xd6c50
+bss_start = 0x800d7050
+bss_end = 0x80117740
+system_entry = 0x80000460
+main_entry = 0x800009a4
+main_object = 0x800d7050
+main_stack = 0x800e8200
+main_id = 1
+main_priority = 8
+counter_hz = 46875000
+boot_object = 0x807ff000
+boot_stack = 0x807fd000
+thread_tail = 0x800cfe70
+run_queue = 0x800cfe78
+active_queue = 0x800cfe7c
+running_thread = 0x800cfe80
+event_table = 0x80112dc8
+vi_clock = 0x800d1078
+clock_rate = 0x800d1070
+final_rom = 0x80112f8c
+
+[bootstrap.parameters]
+"0x80000300" = 1
+"0x80000304" = 1
+"0x80000308" = 0
+"0x8000030c" = 0
+"0x80000318" = 0x800000

@@ -151,6 +151,8 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
               'metadata_issues': metadata.get('issues', []), 'functions': results,
               'code_inventory':metadata.get('code_inventory'),
               'checkpoints': checkpoints, 'generated': False}
+    report['registered_direct_calls'] = [dict(section=f['section'], **site)
+                                        for f in functions for site in f.get('registered_direct_calls', [])]
     write_json(output / 'coverage.json', report)
     log_emission('Coverage: %s; wrote %s', report['summary'], output / 'coverage.json')
     if report_only:

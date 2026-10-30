@@ -103,6 +103,18 @@ Computed local jumps can select a target from a switch table. Profiles can suppl
 checked targets and jump tables, and registered indirect calls can resolve
 against the compiled function registry at runtime.
 
+Partial ports may also declare `discovery.registered_direct_calls`, with `pc`,
+`expected_word`, `target`, and an optional source `section`. Each site must match
+an actual `JAL` and its encoded destination. This permits a caller's independent
+paths to run before every separately loaded module is converted. The taken call
+still uses the compiled registry and its loaded-section checks; an unavailable
+target fails at that call. These declarations do not seed speculative entries or
+authorize native replacements, and complete code inventories cannot use them.
+`coverage.json` lists the retained sites separately. Run
+`tools/check_registered_calls.py --build <existing-build>` to verify untaken
+branches, delay slots, loaded/unloaded dispatch and rejected fingerprints with a
+synthetic ROM. On Windows run it from Developer PowerShell against an MSVC build.
+
 Handwritten assembly can materialize a local return address before jumping or
 conditionally branching into a shared helper. `discovery.tail_continuations`
 binds the transfer's `pc` and `expected_word` to a `resume_pc` in the caller.

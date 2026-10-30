@@ -1,0 +1,278 @@
+{
+  "format_version": 1,
+  "rom_sha1": "d347159808f0374a93cf44cfb6135d8f56279f7b",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2147486116,
+      "origin": "checked-root",
+      "sha256": "c51877ae9da5151dab61186fad9e60c59d250ae52876efa0228fdcf4c36bad2c"
+    },
+    {
+      "vram": 2147484860,
+      "origin": "checked-root",
+      "sha256": "1764a2269223c847089acd6b0cec9a96f9f5a650fe049c851c888bb96a0e8570"
+    },
+    {
+      "vram": 2147485040,
+      "origin": "checked-root",
+      "sha256": "b5ef5699c57dc1607fb9378c0e908d32571f85dc72d42c70fd9749f9fa78c8cc",
+      "evidence": {
+        "kind": "osCreateThread-argument",
+        "caller": 2147486188,
+        "callee": 2148148352,
+        "argument_register": 6
+      }
+    },
+    {
+      "vram": 2147530384,
+      "origin": "checked-root",
+      "sha256": "5fdb61dc0e95cab4eb65b73108749cbcd84d073df10576ac0a80285d4c1c0378",
+      "evidence": {
+        "kind": "osCreateThread-argument",
+        "caller": 2147530736,
+        "callee": 2148148352,
+        "argument_register": 6
+      }
+    },
+    {
+      "vram": 2147528120,
+      "origin": "checked-root",
+      "sha256": "6881a24b20c587239a9ba6ffdb897fd290483b2ed2613deee63de6c83e736709",
+      "evidence": {
+        "kind": "osCreateThread-argument",
+        "caller": 2147530904,
+        "callee": 2148148352,
+        "argument_register": 6
+      }
+    },
+    {
+      "vram": 2147528396,
+      "origin": "checked-root",
+      "sha256": "afcb7d3785f6267369ec3a4eaeedc2588be0ae4da95f0ac7e4da174db1d78a4f",
+      "evidence": {
+        "kind": "osCreateThread-argument",
+        "caller": 2147530964,
+        "callee": 2148148352,
+        "argument_register": 6
+      }
+    },
+    {
+      "vram": 2148044720,
+      "origin": "checked-root",
+      "sha256": "7fae2026e24bbd5abc4c63e57f787d84656a1dd88ff9f298c6946aa8399ea1e8",
+      "evidence": {
+        "kind": "osCreateThread-argument",
+        "caller": 2148055924,
+        "callee": 2148148352,
+        "argument_register": 6
+      }
+    },
+    {
+      "vram": 2147528372,
+      "origin": "checked-root",
+      "sha256": "ab60799ea922fa46a4fd4d416a8a67fff6f347107bffd799da67e272dafd5cf3",
+      "evidence": {
+        "source": 2148214176,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2147528384,
+      "origin": "checked-root",
+      "sha256": "c1fdffe757fc710e5c08d22325437743462b9efd7f41d5ae507a94928f9202e2",
+      "evidence": {
+        "source": 2148214180,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2148053596,
+      "origin": "checked-root",
+      "sha256": "1f81c70567ef8e17daad86b827e4908a0d8bd6826f2d96ffcce66e12e582054d",
+      "evidence": {
+        "source": 2148055352,
+        "kind": "audio-callback-registration",
+        "consumer": 2147528332
+      }
+    },
+    {
+      "vram": 2147529392,
+      "origin": "checked-root",
+      "sha256": "824b219bb3eef1b3cffbeb50ff4d8a8494c2511a9bb3201a837d6a2b87487cc6",
+      "evidence": {
+        "source": 2148214168,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2147529352,
+      "origin": "checked-root",
+      "sha256": "e15c3191ee3af0f3d79b2557871031110d606d693c48b5fd9201671b0bc976ed",
+      "evidence": {
+        "source": 2148214172,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2147530576,
+      "origin": "checked-root",
+      "sha256": "e4c93b94dc9fcd935297af16bcc193313388729b8b6eb5eec35924ed9c2dd03c",
+      "evidence": {
+        "source": 2148214184,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2147530768,
+      "origin": "checked-root",
+      "sha256": "2094aceae628ac09cb7296c53ee4cea791c27248ad5e0b04581cec555bdc2617",
+      "evidence": {
+        "source": 2148214188,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2147529604,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": {
+        "source": 2148214192,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2147529848,
+      "origin": "checked-root",
+      "sha256": "b387e2eb3c4b7691ecc6a234c05692bb435fcb94ba73992449bb22f928005862",
+      "evidence": {
+        "source": 2148214196,
+        "kind": "audio-interface-table",
+        "table": 2148214168,
+        "count": 8,
+        "copy_function": 2148126864,
+        "destination": 2148532580
+      }
+    },
+    {
+      "vram": 2148108028,
+      "origin": "checked-root",
+      "sha256": "3a9d0285d7aa94d68471901617bd4bead97ff235da395ad20d93ad42e0b0ff9b",
+      "evidence": {
+        "source": 2148107780,
+        "kind": "bsearch-comparator-argument",
+        "consumer": 2148095812,
+        "argument_stack_offset": 16
+      }
+    },
+    {
+      "vram": 2148107996,
+      "origin": "checked-root",
+      "sha256": "43aa11c17cf95b1212d5d757c233fb58432c953eb7083ce2fb3483b36b18efee",
+      "evidence": {
+        "source": 2148107520,
+        "kind": "bsearch-comparator-argument",
+        "consumer": 2148095812,
+        "argument_stack_offset": 16
+      }
+    },
+    {
+      "vram": 2148108012,
+      "origin": "checked-root",
+      "sha256": "43aa11c17cf95b1212d5d757c233fb58432c953eb7083ce2fb3483b36b18efee",
+      "evidence": {
+        "source": 2148107624,
+        "kind": "bsearch-comparator-argument",
+        "consumer": 2148095812,
+        "argument_stack_offset": 16
+      }
+    },
+    {
+      "vram": 2148042300,
+      "origin": "checked-root",
+      "sha256": "3fae1848b3e0b8ae8b7bdbc43bcfb8db66e439d64eea8ce01a421da25631d09d",
+      "evidence": {
+        "source": 2148044144,
+        "kind": "stored-decoder-callback",
+        "consumer": 2148053640,
+        "global_pointer": 2148586536
+      }
+    },
+    {
+      "vram": 2148107964,
+      "origin": "checked-root",
+      "sha256": "43aa11c17cf95b1212d5d757c233fb58432c953eb7083ce2fb3483b36b18efee",
+      "evidence": {
+        "source": 2148107060,
+        "kind": "bsearch-comparator-argument",
+        "consumer": 2148095812,
+        "argument_stack_offset": 16
+      }
+    },
+    {
+      "vram": 2148126976,
+      "origin": "checked-root",
+      "sha256": "67202f80be272750b2673b2ff3ec86d0d32bae0fce7af5daa64591eb4a270e7c",
+      "evidence": {
+        "source": 2148127460,
+        "kind": "stored-audio-callback",
+        "consumer": 2148053848,
+        "global_pointer": 2148628268
+      }
+    },
+    {
+      "vram": 2147608240,
+      "origin": "checked-root",
+      "sha256": "c98370a7612586b0f9c7f7258faf06886c3a706540ef8f5f86238733382f3152",
+      "evidence": {
+        "kind": "menu-record-init",
+        "source": 2148260044,
+        "consumer": 2147642912,
+        "record": 2148260036,
+        "record_size": 20,
+        "observed": true
+      }
+    },
+    {
+      "vram": 2147604056,
+      "origin": "checked-root",
+      "sha256": "c9a8ca2d28befbaa699fcc998f377ce841c3d208f5f2511aec7895e49a4efa45",
+      "evidence": {
+        "kind": "menu-record-tick",
+        "source": 2148260052,
+        "consumer": 2147649060,
+        "record": 2148260036,
+        "record_size": 20,
+        "observed": true
+      }
+    }
+  ]
+}

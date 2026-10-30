@@ -80,6 +80,24 @@ def discover(rom: bytes, profile: dict) -> dict:
         offset = section['rom_offset'] + address - section['vram']
         return decode(rom[offset:offset + 4], address)[0]
 
+    registered_calls = {}
+    if config.get('registered_direct_calls') and inventory is not None:
+        raise RecompError('runtime-registered direct calls require partial discovery, not a complete code inventory')
+    for site in config.get('registered_direct_calls', []):
+        current_section = site.get('section')
+        pc = site.get('pc')
+        if type(pc) is not int:
+            raise RecompError('registered direct call requires an instruction PC')
+        instruction, section = read(pc), mapping(pc)
+        if (instruction is None or instruction.opcode != 'jal'
+                or instruction.word != site.get('expected_word')
+                or target(instruction) != site.get('target')
+                or (section['id'], pc) in registered_calls):
+            raise RecompError(f'invalid checked registered direct call at {pc:#010x}')
+        registered_calls[section['id'], pc] = dict(pc=pc, expected_word=instruction.word,
+                                                  target=target(instruction))
+    current_section = None
+
     entry = config.get('entry_vram', int.from_bytes(rom[8:12], 'big'))
     entries, queue = {}, deque()
     limit = config.get('max_functions', 8192)
@@ -242,6 +260,7 @@ def discover(rom: bytes, profile: dict) -> dict:
                         instruction_addresses=list(range(start, start + size, 4)), discovery_errors=[],
                         indirect_transfers=[])
         pending, visited, expanded, errors, used_transfers = deque([start]), set(), set(), [], []
+        used_registered_calls = []
         used_fallthroughs=[]
         used_continuations=[]
 
@@ -262,6 +281,10 @@ def discover(rom: bytes, profile: dict) -> dict:
                 pending.append(address)
 
         def call(address, source):
+            checked = registered_calls.get((section_id, source))
+            if checked:
+                used_registered_calls.append(checked)
+                return
             if mapping(address) is None or address % 4:
                 error(source, f'unmapped call target: {address:#010x}')
             else:
@@ -387,6 +410,8 @@ def discover(rom: bytes, profile: dict) -> dict:
                     indirect_transfers=used_transfers, fallthrough_transfers=used_fallthroughs)
         if entries[key].get('sources'):
             result['entry_sources'] = entries[key]['sources']
+        if used_registered_calls:
+            result['registered_direct_calls'] = sorted(used_registered_calls, key=lambda site: site['pc'])
         if used_continuations:
             result['tail_call_continuations'] = used_continuations
         link_registers = {t['entry_register'] for t in used_transfers if 'entry_register' in t}

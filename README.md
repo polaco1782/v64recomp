@@ -93,6 +93,9 @@ Resident Evil 2 US revision 1 is registered as experimental `re2-us-v1`; see its
 Release render the Nintendo 64 logo in bounded desktop replays; menus and riding
 remain unvalidated. See the [port notes](games/1080-us/README.md).
 Quake II runs with the Expansion Pak enabled; see its [port notes](games/quake2-us/README.md).
+007: The World Is Not Enough USA revision 0 is registered as experimental
+`twine-us`; native startup and MusyX audio bring-up are in progress. See its
+[port notes](games/twine-us/README.md).
 The imported, normalized files have these filenames and MD5 checksums:
 
 | Filename | MD5 |
@@ -113,6 +116,7 @@ The imported, normalized files have these filenames and MD5 checksums:
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
 | `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
 | `turok.us.v12.z64` | `039875b92c0e4fef9797ec1744877b17` |
+| `twine.us.z64` | `9d58996a8aa91263b5cd45c385f45fe4` |
 
 After importing a ROM, build and run its game:
 
@@ -223,10 +227,13 @@ Debug additionally supports `--input FILE`, `--wav FILE`, `--audio-trace FILE`,
 [the debug workflow](docs/debugging.md). For the CMake run target, pass arguments
 with `-DRECOMP_RUN_ARGS='--frames;300;--mute'` at configuration.
 
-VS Code's **Debug: <game>** configurations configure/build the debug preset and
-launch the native executable. Breakpoints work in game adapters, the shared
-runtime, backends and `build/<game>-debug/generated/<game>/cpu-*.c`. Persistent
-translation fixes belong in the generator or checked metadata.
+VS Code's **Debug: <game> (Windows)** and **Release: <game> (Windows)** configurations
+build with MSVC and launch the matching `.exe` with the Visual Studio debugger;
+see [VS Code on Windows](docs/windows.md#vs-code) for setup and output paths.
+The **(Linux)** configurations configure/build the matching Ninja preset and
+launch with GDB. Breakpoints work in game adapters, the shared runtime, backends
+and generated `cpu-*.c` files. Persistent translation fixes belong in the
+generator or checked metadata.
 
 ## Controls and data
 

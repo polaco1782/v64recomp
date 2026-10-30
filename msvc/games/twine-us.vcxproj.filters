@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <ClInclude Include="$(RecompRoot)games\twine-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\twine-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\twine-us\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\twine-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\twine-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\twine-us\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\twine-us\run.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\twine-us\run.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\twine-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\twine-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\twine-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\twine-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{92A7D097-99B9-5537-A7AC-D9BE50ACF805}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{3057E060-0B2D-5E83-AA10-D8F100F586AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5EAF79D5-A41D-5DE4-B41D-5152365B76D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{F6DEECCF-1A5A-57CD-967A-A04BDDE7BB7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{7E9C9658-6CFB-5B9F-9E23-54483E3AA411}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{C0A60A8D-610E-557A-BEBC-EBFFE99510AA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

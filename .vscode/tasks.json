@@ -12,7 +12,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "sm64-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Super Mario 64 US",
@@ -31,7 +49,28 @@
       "dependsOn": "Configure Debug: Super Mario 64 US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "sm64-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: GoldenEye 007 US",
@@ -44,7 +83,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "goldeneye-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: GoldenEye 007 US",
@@ -63,7 +120,28 @@
       "dependsOn": "Configure Debug: GoldenEye 007 US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "goldeneye-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Shadow Man US",
@@ -76,7 +154,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "shadowman-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Shadow Man US",
@@ -95,7 +191,28 @@
       "dependsOn": "Configure Debug: Shadow Man US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "shadowman-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Quake 64 US",
@@ -108,7 +225,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Quake 64 US",
@@ -127,7 +262,28 @@
       "dependsOn": "Configure Debug: Quake 64 US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Duke Nukem 64 US",
@@ -140,7 +296,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Duke Nukem 64 US",
@@ -159,7 +333,28 @@
       "dependsOn": "Configure Debug: Duke Nukem 64 US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Nightmare Creatures US",
@@ -172,7 +367,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "nightmare-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Nightmare Creatures US",
@@ -191,7 +404,28 @@
       "dependsOn": "Configure Debug: Nightmare Creatures US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "nightmare-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Ocarina of Time US V1.2",
@@ -204,7 +438,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "oot-us-v12",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Ocarina of Time US V1.2",
@@ -223,7 +475,28 @@
       "dependsOn": "Configure Debug: Ocarina of Time US V1.2",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "oot-us-v12",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Perfect Dark US V1.1",
@@ -236,7 +509,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "perfectdark-us-v11",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Perfect Dark US V1.1",
@@ -255,7 +546,28 @@
       "dependsOn": "Configure Debug: Perfect Dark US V1.1",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "perfectdark-us-v11",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Conker US",
@@ -268,7 +580,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "conker-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Conker US",
@@ -287,7 +617,28 @@
       "dependsOn": "Configure Debug: Conker US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "conker-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Duke Nukem Zero Hour US",
@@ -300,7 +651,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-zero-hour-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Duke Nukem Zero Hour US",
@@ -319,7 +688,28 @@
       "dependsOn": "Configure Debug: Duke Nukem Zero Hour US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-zero-hour-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Hexen US",
@@ -332,7 +722,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "hexen-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Hexen US",
@@ -351,7 +759,28 @@
       "dependsOn": "Configure Debug: Hexen US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "hexen-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Rayman 2 US",
@@ -364,7 +793,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "rayman2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Rayman 2 US",
@@ -383,7 +830,28 @@
       "dependsOn": "Configure Debug: Rayman 2 US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "rayman2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Quake II US",
@@ -396,7 +864,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Quake II US",
@@ -415,7 +901,28 @@
       "dependsOn": "Configure Debug: Quake II US",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Resident Evil 2 US revision 1",
@@ -428,7 +935,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "re2-us-v1",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Resident Evil 2 US revision 1",
@@ -447,7 +972,28 @@
       "dependsOn": "Configure Debug: Resident Evil 2 US revision 1",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "re2-us-v1",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: Turok US v1.2",
@@ -460,7 +1006,25 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok-us-v12",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: Turok US v1.2",
@@ -479,24 +1043,1377 @@
       "dependsOn": "Configure Debug: Turok US v1.2",
       "problemMatcher": [
         "$gcc"
-      ]
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok-us-v12",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     },
     {
       "label": "Configure Debug: 1080 Snowboarding JU",
       "type": "process",
       "command": "cmake",
-      "args": ["--preset", "1080-us-debug"],
-      "options": {"cwd": "${workspaceFolder}"},
-      "problemMatcher": []
+      "args": [
+        "--preset",
+        "1080-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "1080-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
     },
     {
       "label": "Build Debug: 1080 Snowboarding JU",
       "type": "process",
       "command": "cmake",
-      "args": ["--build", "--preset", "1080-us-debug", "-j", "4"],
-      "options": {"cwd": "${workspaceFolder}"},
+      "args": [
+        "--build",
+        "--preset",
+        "1080-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "dependsOn": "Configure Debug: 1080 Snowboarding JU",
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "1080-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Debug: 007: The World Is Not Enough US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "twine-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "twine-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Debug: 007: The World Is Not Enough US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "twine-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: 007: The World Is Not Enough US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "twine-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: 007: The World Is Not Enough US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "twine-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "twine-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: 007: The World Is Not Enough US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "twine-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: 007: The World Is Not Enough US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "twine-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Super Mario 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "sm64-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "sm64-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Super Mario 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "sm64-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Super Mario 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "sm64-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: GoldenEye 007 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "goldeneye-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "goldeneye-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: GoldenEye 007 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "goldeneye-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: GoldenEye 007 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "goldeneye-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Shadow Man US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "shadowman-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "shadowman-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Shadow Man US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "shadowman-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Shadow Man US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "shadowman-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Quake 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "quake-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Quake 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "quake-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Quake 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Duke Nukem 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "duke-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Duke Nukem 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "duke-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Duke Nukem 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Nightmare Creatures US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "nightmare-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "nightmare-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Nightmare Creatures US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "nightmare-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Nightmare Creatures US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "nightmare-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Ocarina of Time US V1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "oot-us-v12-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "oot-us-v12",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Ocarina of Time US V1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "oot-us-v12-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Ocarina of Time US V1.2",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "oot-us-v12",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Perfect Dark US V1.1",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "perfectdark-us-v11-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "perfectdark-us-v11",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Perfect Dark US V1.1",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "perfectdark-us-v11-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Perfect Dark US V1.1",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "perfectdark-us-v11",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Conker US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "conker-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "conker-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Conker US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "conker-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Conker US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "conker-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Duke Nukem Zero Hour US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "duke-zero-hour-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-zero-hour-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Duke Nukem Zero Hour US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "duke-zero-hour-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Duke Nukem Zero Hour US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "duke-zero-hour-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Hexen US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "hexen-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "hexen-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Hexen US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "hexen-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Hexen US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "hexen-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Rayman 2 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "rayman2-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "rayman2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Rayman 2 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "rayman2-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Rayman 2 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "rayman2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Quake II US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "quake2-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Quake II US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "quake2-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Quake II US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "quake2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Resident Evil 2 US revision 1",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "re2-us-v1-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "re2-us-v1",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Resident Evil 2 US revision 1",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "re2-us-v1-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Resident Evil 2 US revision 1",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "re2-us-v1",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Turok US v1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "turok-us-v12-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok-us-v12",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Turok US v1.2",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "turok-us-v12-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Turok US v1.2",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok-us-v12",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: 1080 Snowboarding JU",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "1080-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "1080-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: 1080 Snowboarding JU",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "1080-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: 1080 Snowboarding JU",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "1080-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     }
   ]
 }

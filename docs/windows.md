@@ -79,6 +79,28 @@ solution/project file lists and default game without reinstalling dependencies.
 CMake remains the authority for source selection, compiler flags and linking.
 The existing CMake presets also remain available for direct command-line builds.
 
+## VS Code
+
+After running setup and importing the game's ROM, open the repository folder in
+VS Code and install the recommended **C/C++** extension (`ms-vscode.cpptools`).
+In **Run and Debug**, select **Debug: <game> (Windows)** or
+**Release: <game> (Windows)**, then press **F5** to build and debug, or
+**Ctrl+F5** to build and run without debugging.
+Use **Ctrl+Shift+B** to select a **Build Debug/Release: <game>** task.
+
+The **Configure Debug/Release: <game>** and **Build Debug/Release: <game>** tasks
+select the Windows MSVC helper automatically. It locates Visual Studio's CMake
+and vcpkg, so a Developer PowerShell session is unnecessary. Configure tasks use
+`tools/build_msvc_project.ps1 -Action Configure` without compiling. Windows
+launches use the Visual Studio debugger (`cppvsdbg`) and the same
+`build/msvc/<game>/<mode>/bin/Debug|Release/<game>.exe` outputs as the solution.
+Build errors appear in the Problems panel through the MSVC problem matcher.
+
+The **(Linux)** launch configurations use GDB and the existing Ninja presets.
+Some Debug entry points require diagnostic arguments; edit the launch entry's
+`args` according to the game's README. Generated Windows CPU sources are under
+`build/msvc/<game>/debug/generated/<game>/` for source breakpoints.
+
 ROMs stay private in ignored `local/`. Builds explicitly disable ROM embedding;
 setup never downloads ROMs. Exclude `local/` when distributing source or binaries.
 Downloads, generated CPU sources, libraries, saves and captures stay outside the

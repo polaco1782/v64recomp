@@ -359,6 +359,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "twine-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/twine-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "twine-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "twine-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/twine-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "twine-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -522,6 +543,16 @@
     {
       "name": "1080-us-debug",
       "configurePreset": "1080-us-debug",
+      "jobs": 4
+    },
+    {
+      "name": "twine-us-release",
+      "configurePreset": "twine-us-release",
+      "jobs": 4
+    },
+    {
+      "name": "twine-us-debug",
+      "configurePreset": "twine-us-debug",
       "jobs": 4
     }
   ],
@@ -928,6 +959,32 @@
       "steps": [
         {"type": "configure", "name": "1080-us-debug"},
         {"type": "build", "name": "1080-us-debug"}
+      ]
+    },
+    {
+      "name": "twine-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "twine-us-release"
+        },
+        {
+          "type": "build",
+          "name": "twine-us-release"
+        }
+      ]
+    },
+    {
+      "name": "twine-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "twine-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "twine-us-debug"
+        }
       ]
     }
   ]

@@ -2,6 +2,8 @@
 
 These are the established port milestones, not new full-game acceptance claims.
 
+- **007: The World Is Not Enough USA revision 0**: Experimental partial port. Original startup, guest threads, VI/AI events, cartridge DMA and fingerprinted MusyX v1 task execution are integrated. Title/menu rendering, playable missions, input acceptance, audible accuracy and save/reload remain unverified. Unconverted module calls fail explicitly. See the [port notes](../games/twine-us/README.md).
+
 - **1080 Snowboarding JU revision 0**: First graphics verified. Debug and Release render the Nintendo 64 logo and complete 90-frame desktop replays with exit 0. Original USO loading, checked relocations/imports, RT64 F3DEX and NEAD audio task execution are integrated. Menus, riding, later module transitions, audible accuracy and gameplay save/reload remain unvalidated. Standard OS signatures live in the shared JSON catalog. See the [port notes](../games/1080-us/README.md) and [handoff](../games/1080-us/RESUME.md).
 
 - **Resident Evil 2 US header revision 1**: Experimental bring-up. Original main-image and overlay decompression run with full decoded-image verification. Opening logos, warning, movie and title menu render on the desktop; Start skips the movie. MusyX v1 synthesis and native video resize/conversion are integrated; gameplay, audible audio and save acceptance remain in progress. See the [port notes](../games/re2-us-v1/README.md).
