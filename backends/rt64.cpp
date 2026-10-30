@@ -614,6 +614,14 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
             if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) pad->buttons |= 0x0010;
             s->mouse_frame.move_x = keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A];
             s->mouse_frame.move_y = keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S];
+            if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) s->mouse_frame.actions |= RECOMP_MOUSE_ATTACK;
+            if (keys[SDL_SCANCODE_SPACE] || (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)))
+                s->mouse_frame.actions |= RECOMP_MOUSE_JUMP;
+            if (keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT])
+                s->mouse_frame.actions |= RECOMP_MOUSE_SPEED;
+            if (keys[SDL_SCANCODE_Q]) s->mouse_frame.actions |= RECOMP_MOUSE_NEXT_WEAPON;
+            if (keys[SDL_SCANCODE_E] || keys[SDL_SCANCODE_R]) s->mouse_frame.actions |= RECOMP_MOUSE_PREVIOUS_WEAPON;
+            if (keys[SDL_SCANCODE_F]) s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
         }
         pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;
         pad->stick_y = (keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * 80;

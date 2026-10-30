@@ -8,6 +8,14 @@ Strogg Outpost with first-person rendering and nonzero audio output, and the use
 confirmed that the game runs well. Further testing stopped at the user's request;
 save/reload, sustained audio quality and broader progression remain unverified.
 
+Single-player mouse-look and WASD are enabled by default. Mouse wheel changes
+weapons; Space/right-click jumps; Shift changes run speed while held; Tab pauses.
+Esc releases/recaptures the mouse and F4 recaptures it. See
+[controller findings and adapter controls](controller.md) for the complete
+mapping, verified ROM evidence and remaining gameplay checks. This adapter has
+static verification and Debug/Release build coverage; user gameplay testing is
+pending.
+
 ## ROM and launch
 
 Supply `Quake II (U) [!].z64` locally. The exact normalized identity is:
@@ -31,11 +39,8 @@ core crash reporter. Debug has its own entry point, input replay and captures:
 
 ```sh
 cmake --workflow --preset quake2-us-debug
-.venv/bin/python tools/controller_replay.py \
-  games/quake2-us/debug/gameplay-input.json build/quake2-us-gameplay-input.txt \
-  --game quake2-us
 ./build/quake2-us-debug/bin/quake2-us --frames 2400 \
-  --input build/quake2-us-gameplay-input.txt --capture-every 240
+  --capture-every 240
 ```
 
 Debug replay events count host presentations, while the cartridge uses guest VI

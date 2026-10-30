@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "audio.h"
 #include "quake2_config.h"
+#include "quake2_input.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,6 +131,7 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Quake II IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "Quake II");
     require(renderer != NULL, "renderer initialization failed", 0);
+    quake2_input_init();
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,
@@ -146,6 +148,7 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
     uint32_t frame = 0;
     for (; !options->frames || frame < options->frames; frame++) {
         RecompPad pad = {.connected = true};
+        recomp_renderer_mouse_mode(renderer, quake2_input_enabled(), quake2_input_playable(&rt));
         if (!recomp_renderer_input(renderer, &pad))
             break;
 #ifdef RECOMP_DEBUG
@@ -158,6 +161,7 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
         }
 #endif
         require(recomp_input_set(&rt, 0, &pad), "controller update failed", 0);
+        quake2_input_submit(recomp_renderer_mouse_frame(renderer));
         drain(&rt);
         require(recomp_renderer_present(renderer), "presentation failed", 0);
 #ifdef RECOMP_DEBUG

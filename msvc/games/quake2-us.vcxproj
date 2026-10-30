@@ -31,7 +31,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
     <None Include="$(RecompRoot)games\quake2-us\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\quake2-us\input.c" />
     <None Include="$(RecompRoot)games\quake2-us\profile.toml" />
+    <ClInclude Include="$(RecompRoot)games\quake2-us\quake2_input.h" />
     <ClCompile Include="$(RecompRoot)games\quake2-us\release\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
     </ClCompile>

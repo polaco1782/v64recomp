@@ -16,9 +16,15 @@
     <None Include="$(RecompRoot)games\quake2-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\quake2-us\input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\quake2-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
+    <ClInclude Include="$(RecompRoot)games\quake2-us\quake2_input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\quake2-us\release\app.c">
       <Filter>Source Files\release</Filter>
     </ClCompile>

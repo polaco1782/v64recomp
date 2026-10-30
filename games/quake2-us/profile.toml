@@ -1,3 +1,9 @@
+# Scoped player-command wrappers; original functions remain translated.
+function_wrappers = [
+  {section = ".main", vram = 0x80024dd0, size = 0x384, sha256 = "9af6e0767354303fd8eac06996f2be06a62b0fbdc845d25497f4c6e14e80ed0d", handler = "quake2_input_dispatch_hook"},
+  {section = ".main", vram = 0x80024a10, size = 0x3c0, sha256 = "270cff78dbd7ee1e5584ae21a673dd36e6c39e60c0d7d9b9bbd67249752c2546", handler = "quake2_input_command_hook"},
+]
+
 # Quake II US revision 0, original big-endian cartridge.
 [game]
 name = "Quake II (US)"
@@ -101,3 +107,68 @@ final_rom = 0x80096c70
 0x80000314 = 1
 # osMemSize is IPL data, read directly at 0x80006354; match game.ram_size.
 0x80000318 = 0x800000
+
+# Reviewed against this ROM; generation checks bodies, operands and call sites.
+[input_adapter]
+functions = [
+  {name = "packed_pad", vram = 0x80000d88, size = 0x2c, sha256 = "89b064937fdffadfa915356c6ddaf29553fa26b4b0f7763a7ffcda1f778ddf51"},
+  {name = "gameplay_loop", vram = 0x80006320, size = 0x278, sha256 = "b9714a85ee31343956da2e032c5e4742e989c0b844eee04eb8e9f7f0388df67f"},
+  {name = "input_defaults", vram = 0x80024920, size = 0xf0, sha256 = "9967084a5be45c45d15fc21164bb86adf3dc2eeebe8b592290fd99a4996dd6e7"},
+  {name = "command", vram = 0x80024a10, size = 0x3c0, sha256 = "270cff78dbd7ee1e5584ae21a673dd36e6c39e60c0d7d9b9bbd67249752c2546"},
+  {name = "dispatch", vram = 0x80024dd0, size = 0x384, sha256 = "9af6e0767354303fd8eac06996f2be06a62b0fbdc845d25497f4c6e14e80ed0d"},
+  {name = "angle_clamp", vram = 0x8002253c, size = 0xc4, sha256 = "aa01aeec33db1cf1b7e45ece526f5be4d3bbaacc1280690642ba0c5e925cee1e"},
+  {name = "movement", vram = 0x800226e8, size = 0x254, sha256 = "22001497e47658d3fc56bef8bd9cc18926733ec9b666c99a16584af3078c69b7"},
+  {name = "player_update", vram = 0x8002b820, size = 0x548, sha256 = "adba6e13a455b272d38013e85ab4e919273a2b1bd2ec7081e453b901eb33b858"},
+  {name = "entity_frame", vram = 0x80034044, size = 0x1d0, sha256 = "d4ac1c931ec4ce76c99ff2bef984b240dc50f9c3e598a7ee704422efce0bd1db"},
+  {name = "action_80025154", vram = 0x80025154, size = 0x8, sha256 = "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378"},
+  {name = "action_8002515c", vram = 0x8002515c, size = 0xc, sha256 = "3fea10795bf697dc8780aaebb3bc2aa964477c2cc1a9b0d037b00669f2f7c10a"},
+  {name = "action_80025168", vram = 0x80025168, size = 0xc, sha256 = "0ca98b239b4fc13adc6a7ef69576e341e0cecb9b8dbcd5b6f62c0a7f188b5835"},
+  {name = "action_80025174", vram = 0x80025174, size = 0xc, sha256 = "a2575419acb6c62a9e134d072fc4a4565b9998fe53d1b7c05fd3879cddbe1e81"},
+  {name = "action_80025180", vram = 0x80025180, size = 0xc, sha256 = "627f7a46530ea03c0d5fef521cc830316a5deaeb5f206bdcd8671744bd8220e8"},
+  {name = "action_8002518c", vram = 0x8002518c, size = 0x2c, sha256 = "340e8d258f7bd73fa9599b1a341a8c4c3328f95741dd25deb213b8489fbb9f66"},
+  {name = "action_800251b8", vram = 0x800251b8, size = 0x2c, sha256 = "6cefdea2af8bb1cc7a277f722d68874cf05b8a48452a134b4ed33f302d128ecc"},
+  {name = "action_800251e4", vram = 0x800251e4, size = 0x2c, sha256 = "dec3e61aacef7bbdd07ac97053286d022479fa1189d5b45b88ec70d44d351273"},
+  {name = "action_80025210", vram = 0x80025210, size = 0x2c, sha256 = "c98098422587f4fbefde8e907646363227370a9b39b74a040c27c059c1f30a46"},
+  {name = "action_8002523c", vram = 0x8002523c, size = 0xc, sha256 = "d76209bf32b9e63fe6832ced9b6e0c6a49c7f4debfd70e7a0c272e047cdde4d0"},
+  {name = "action_80025248", vram = 0x80025248, size = 0x18, sha256 = "ba202eaba80f035761fa765ab47cb03a8f69c657022dd63aabd7d8c93ea2e873"},
+  {name = "action_80025278", vram = 0x80025278, size = 0x18, sha256 = "aa6f55e4d01254b27225c423ba5a71dd5bb1c17a80e58fe196df2788eed015b9"},
+  {name = "action_80025290", vram = 0x80025290, size = 0x18, sha256 = "c9dd9a8ae5aa8602cc9efa9507a30d089a8b749a37d5615101cd279eeb290fc8"},
+  {name = "action_800252a8", vram = 0x800252a8, size = 0x18, sha256 = "6bdf4e164096ce3652a83f35e4172027253838bb883a10cbaed0883d217f1983"},
+  {name = "action_800252c0", vram = 0x800252c0, size = 0x18, sha256 = "3cf11f715622eaf06b4c4b0496c5b60abb54190be6eaf1265e553e3d2872878d"},
+  {name = "action_800252d8", vram = 0x800252d8, size = 0x18, sha256 = "5987e070f8981344769371f1d67e78610e8ce5dc2498a697bfb3bf542051c867"},
+  {name = "action_800252f0", vram = 0x800252f0, size = 0x18, sha256 = "a40f479f24a52890d5d87d4a050eb5b857382f6f6e64a681c521fddac8e74ba1"},
+  {name = "action_80025308", vram = 0x80025308, size = 0x18, sha256 = "ad6b49ea4798a0551f560848cd9029f888106b64a8b4eaf47315c16818b161ec"},
+]
+data = [
+  {name = "button_masks", vram = 0x80065730, size = 0x34, sha256 = "35b867f1ec2a558082c40e2a1f8177ef833bda08944299b55188b1cad6a4c57f"},
+  {name = "default_bindings", vram = 0x800657ac, size = 0x44, sha256 = "8040acaf6b2773eecf628e3d3dc61d27442d6143a905a59780960cc06e2a2ff5"},
+  {name = "action_names", vram = 0x8006455c, size = 0x48, sha256 = "54322d0b3b355cfb6ba1844eb0b078483c54b7a3c09fbab729d857c8ef8e8b94"},
+]
+# Values emitted into quake2_input_config.h; pcs tie each value to reviewed code.
+bindings = [
+  {name = "phase", value = 0x80085988, kind = "address", pcs = [0x80006424, 0x80006428], words = [0x3c018008, 0xac225988]},
+  {name = "mode", value = 0x8008ab1c, kind = "address", pcs = [0x80024e48, 0x80024e4c], words = [0x3c048009, 0x8c84ab1c]},
+  {name = "player_count", value = 0x8008d410, kind = "address", pcs = [0x800340d8, 0x800340dc], words = [0x3c028009, 0x8c42d410]},
+  {name = "intermission", value = 0x8008e890, kind = "address", pcs = [0x8002b84c, 0x8002b850], words = [0x3c028009, 0x8c42e890]},
+  {name = "clients", value = 0x80087b18, kind = "address", pcs = [0x80024dd0, 0x80024dd4], words = [0x3c038008, 0x8c637b18]},
+  {name = "entities", value = 0x800886ec, kind = "address", pcs = [0x80034054, 0x80034058], words = [0x3c128009, 0x8e5286ec]},
+  {name = "autorun", value = 0x8008e440, kind = "address", pcs = [0x80024b74, 0x80024b78], words = [0x3c038009, 0x8c63e440]},
+  {name = "client_size", value = 0x364, kind = "immediate", pcs = [0x800341f8], words = [0x24630364]},
+  {name = "entity_size", value = 0x224, kind = "immediate", pcs = [0x80034110], words = [0x26100224]},
+  {name = "entity_client", value = 0x68, kind = "immediate", pcs = [0x8002b840], words = [0x8e330068]},
+  {name = "entity_flags", value = 0x194, kind = "immediate", pcs = [0x8002b890], words = [0x8e220194]},
+  {name = "entity_move_flags", value = 0x1f8, kind = "immediate", pcs = [0x8002b878], words = [0x8e2201f8]},
+  {name = "command", value = 0x100, kind = "immediate", pcs = [0x80024e44], words = [0x26170100]},
+  {name = "pitch", value = 0x0, kind = "immediate", pcs = [0x80024bc8], words = [0xc6040000]},
+  {name = "yaw", value = 0x4, kind = "immediate", pcs = [0x80024b54], words = [0xc6020004]},
+  {name = "forward", value = 0xc, kind = "immediate", pcs = [0x80024a34], words = [0xae00000c]},
+  {name = "side", value = 0x10, kind = "immediate", pcs = [0x80024ac0], words = [0xe6020010]},
+  {name = "up", value = 0x14, kind = "immediate", pcs = [0x80024ab4], words = [0xe6040014]},
+  {name = "center_rate", value = 0x18, kind = "immediate", pcs = [0x80024c54], words = [0xae000018]},
+  {name = "center_timer", value = 0x1c, kind = "immediate", pcs = [0x80024c5c], words = [0xae00001c]},
+  {name = "held", value = 0x20, kind = "immediate", pcs = [0x80024a40], words = [0xae030020]},
+  {name = "previous", value = 0x24, kind = "immediate", pcs = [0x80024a50], words = [0xae040024]},
+  {name = "pressed", value = 0x28, kind = "immediate", pcs = [0x80024a48], words = [0xae020028]},
+  {name = "dispatch_return", value = 0x8002b84c, kind = "return", pcs = [0x8002b844, 0x8002b848], words = [0xc009374, 0x2602021]},
+  {name = "command_return", value = 0x80025124, kind = "return", pcs = [0x8002511c, 0x80025120], words = [0xc009284, 0x2e02021]},
+]

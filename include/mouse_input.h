@@ -3,6 +3,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+enum RecompMouseAction {
+    RECOMP_MOUSE_ATTACK = 1u << 0,
+    RECOMP_MOUSE_JUMP = 1u << 1,
+    RECOMP_MOUSE_SPEED = 1u << 2,
+    RECOMP_MOUSE_NEXT_WEAPON = 1u << 3,
+    RECOMP_MOUSE_PREVIOUS_WEAPON = 1u << 4,
+    RECOMP_MOUSE_STATUS = 1u << 5,
+};
+
 /* Host submits while guest execution is parked. The selected guest update
  * consumes deltas once; held movement/buttons survive successive consumes.
  * No SDL or guest addresses here, so other games can reuse this transport. */
@@ -11,6 +20,7 @@ typedef struct RecompMouseFrame {
     int8_t move_x, move_y;
     bool active;
     int32_t wheel; /* Positive = up. Queued detents, not held input. */
+    uint32_t actions; /* Held host actions; each game selects its own semantics. */
 } RecompMouseFrame;
 typedef struct RecompMouseBuffer { RecompMouseFrame pending; } RecompMouseBuffer;
 static inline int32_t recomp_mouse_wheel_sum(int32_t pending, int64_t delta) {
