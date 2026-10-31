@@ -45,6 +45,13 @@ cmake --workflow --preset bad-apple-release
 See the [demo notes](games/bad-apple/README.md) for its source, download behavior,
 runtime implementation and validation status.
 
+## MP3 player
+
+The `media-player` target runs Media Player V2's recompiled MP3 decoder with
+native file selection, pause/resume and restart controls. Import the official
+homebrew ROM, build **N64 MP3 Player**, then drop a local MP3 onto its window.
+See the [player notes](games/media-player/README.md) for setup and decoder scope.
+
 ## Build and play
 
 Requirements: Python 3.11+, C/C++ compiler, CMake 3.25+, OpenSSL 3, SDL2,

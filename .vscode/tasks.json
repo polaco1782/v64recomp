@@ -2,6 +2,144 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Configure Debug: N64 MP3 Player",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "media-player-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "media-player",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Debug: N64 MP3 Player",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "media-player-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "media-player",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "dependsOn": "Configure Debug: N64 MP3 Player",
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: N64 MP3 Player",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "media-player-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "media-player",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: N64 MP3 Player",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "media-player-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "media-player",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "dependsOn": "Configure Release: N64 MP3 Player",
+      "group": "build"
+    },
+    {
       "label": "Configure Debug: Bad Apple demo",
       "type": "process",
       "command": "cmake",

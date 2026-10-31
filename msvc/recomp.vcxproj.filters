@@ -202,6 +202,9 @@
     <None Include="$(RecompRoot)tools\check_registered_calls.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\check_teq.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\code_inventory.py">
       <Filter>Source Files\tools</Filter>
     </None>

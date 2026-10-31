@@ -91,6 +91,7 @@
     <None Include="$(RecompRoot)tools\check_overflow.py" />
     <None Include="$(RecompRoot)tools\check_overlays.py" />
     <None Include="$(RecompRoot)tools\check_registered_calls.py" />
+    <None Include="$(RecompRoot)tools\check_teq.py" />
     <None Include="$(RecompRoot)tools\code_inventory.py" />
     <None Include="$(RecompRoot)tools\common.py" />
     <None Include="$(RecompRoot)tools\compare_native_hooks.py" />

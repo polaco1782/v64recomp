@@ -30,7 +30,7 @@ nop cache lui addiu addi addu add subu sub daddiu dadd daddu dsubu
 and or xor nor andi ori xori slt sltu slti sltiu
 sll srl sra sllv srlv srav dsll dsrl dsra dsll32 dsrl32 dsra32 dsllv dsrlv dsrav
 mult multu div divu mfhi mflo mthi mtlo
-dmult dmultu ddiv ddivu break syscall
+dmult dmultu ddiv ddivu break syscall teq
 lb lbu lh lhu lw lwu ld sb sh sw sd
 lwl lwr ldl ldr swl swr sdl sdr
 mtc1 mfc1 dmtc1 dmfc1 lwc1 swc1 ldc1 sdc1
@@ -302,7 +302,7 @@ def overwritten_gprs(function: dict, instructions: list[Instruction]) -> dict[in
     barriers = {t['pc'] for t in function.get('fallthrough_transfers', [])}
     masks = {}
     for i in sorted(instructions, key=lambda instruction: instruction.pc, reverse=True):
-        if i.delay or i.pc in barriers or i.opcode in ('break', 'syscall'):
+        if i.delay or i.pc in barriers or i.opcode in ('break', 'syscall', 'teq'):
             masks[i.pc] = 0
         else:
             masks[i.pc] = ((i.gpr_write_mask | masks.get(i.pc + 4, 0))
@@ -345,6 +345,7 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
         # Translated CPU and native backends already share coherent host RAM.
         return '/* CACHE Index Writeback Invalidate D: coherent host RAM. */'
     if op == 'break': return f'recomp_fail("MIPS BREAK {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
+    if op == 'teq': return f'if ({a} == {b}) recomp_fail("MIPS TEQ {i.word >> 6 & 0x3ff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'syscall': return f'recomp_fail("MIPS SYSCALL {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'mtc1': return f'ctx->fpr[{i.rd}] = {b};'
     if op == 'mfc1': return set_reg(i.rt, f'mips_s32(ctx->fpr[{i.rd}])')

@@ -3,6 +3,17 @@
 v64recomp is distributed under GNU GPL version 2; see [LICENSE](LICENSE).
 Third-party components retain their original copyright and license notices.
 
+## N64 Media Player target
+
+The optional `media-player` target translates decoder instructions from
+[lewilou22's Media Player V2](https://github.com/lewilou22/N64-Media-Player).
+Its MIT notice is in [licenses/N64-Media-Player.txt](licenses/N64-Media-Player.txt).
+The decoder is [minimp3](https://github.com/lieff/minimp3), released under
+[CC0 1.0](https://github.com/lieff/minimp3/blob/master/LICENSE).
+The native interface uses Sean Barrett's public-domain `stb_easy_font.h` from
+the existing RT64 dependency. The external homebrew ROM and user music are not
+included in the repository or executable.
+
 ## RT64
 
 The renderer is from the RT64 project. Its main license is reproduced below.

@@ -2,6 +2,58 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug: N64 MP3 Player (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/media-player/debug/bin/Debug/media-player.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Debug: N64 MP3 Player",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug: N64 MP3 Player (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/media-player-debug/bin/media-player",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Debug: N64 MP3 Player",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "externalConsole": false
+    },
+    {
+      "name": "Release: N64 MP3 Player (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/media-player/release/bin/Release/media-player.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Release: N64 MP3 Player",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Release: N64 MP3 Player (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/media-player-release/bin/media-player",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Release: N64 MP3 Player",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "externalConsole": false
+    },
+    {
       "name": "Debug: Bad Apple demo (Windows)",
       "type": "cppvsdbg",
       "request": "launch",

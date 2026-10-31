@@ -2,6 +2,28 @@
   "version": 6,
   "configurePresets": [
     {
+      "name": "media-player-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/media-player-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "media-player",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RECOMP_EMBED_ROM": "OFF"
+      }
+    },
+    {
+      "name": "media-player-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/media-player-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "media-player",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RECOMP_EMBED_ROM": "OFF"
+      }
+    },
+    {
       "name": "bad-apple-debug",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/bad-apple-debug",
@@ -406,6 +428,16 @@
   ],
   "buildPresets": [
     {
+      "name": "media-player-debug",
+      "configurePreset": "media-player-debug",
+      "jobs": 4
+    },
+    {
+      "name": "media-player-release",
+      "configurePreset": "media-player-release",
+      "jobs": 4
+    },
+    {
       "name": "bad-apple-debug",
       "configurePreset": "bad-apple-debug",
       "jobs": 4
@@ -589,6 +621,32 @@
     }
   ],
   "workflowPresets": [
+    {
+      "name": "media-player-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "media-player-debug"
+        },
+        {
+          "type": "build",
+          "name": "media-player-debug"
+        }
+      ]
+    },
+    {
+      "name": "media-player-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "media-player-release"
+        },
+        {
+          "type": "build",
+          "name": "media-player-release"
+        }
+      ]
+    },
     {
       "name": "bad-apple-debug",
       "steps": [

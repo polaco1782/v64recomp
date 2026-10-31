@@ -1,0 +1,38 @@
+[game]
+name = "N64 MP3 Player (Media Player V2 decoder)"
+rom = "../../local/media-player.z64"
+rom_size = 0x80000
+rom_sha1 = "e453629d68936382266bd85bc47962078638e818"
+ram_size = 0x800000
+entry_symbol = "entry_point"
+fpu_fr = 1
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[packaging]
+allow_embedding = false
+
+[discovery]
+entry_vram = 0x800388a0
+regions = []
+rom_entry = 0x80000400
+elf_offset = 0x1e00
+symbol_offset = 0x6fc60
+symbol_size = 0xca36
+segments = [
+  {name = ".main", index = 2, vram = 0x80000400, size = 0xa7558, memory_size = 0xb3868, sha256 = "81f09d2aced9c00794a529f223a17523c3108e9da0648707b5c98e5375cdd4eb"},
+]
+
+[bootstrap]
+# Adapter-owned scratch RAM, above the ELF's BSS end (0x800b3c68).
+decoder_init = 0x80038880
+compressed_offset = 0x2070
+compressed_size = 0x6dbe9
+segment_vram = 0x80000400
+segment_size = 0xa7558
+global_pointer = 0x800af190
+stack = 0x807effe0
+state = 0x80100000
+input = 0x80200000
+pcm = 0x80300000
+info = 0x80302000

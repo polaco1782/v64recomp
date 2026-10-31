@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\media-player\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\media-player\codec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\media-player\codec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\media-player\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\media-player\debug\validate_audio.py">
+      <Filter>Source Files\debug</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\media-player\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\media-player\player.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\media-player\player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\media-player\prepare.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\media-player\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\media-player\release\app.c">
+      <Filter>Source Files\release</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\media-player\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\media-player\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\media-player\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{758BCED3-94E5-57F1-B9C0-E876F03A8AA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{4D9B0493-9320-51C8-BDCF-255F4694250A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{A4AFDB58-9F7C-5613-B7FA-E3B97A182BC4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{43EA5242-6983-55F9-B902-BBC67AB26BA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{73373C6B-D330-588C-A834-A1C101E1544A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\release">
+      <UniqueIdentifier>{8E109922-F736-57FA-992C-9FE15CDD4E8B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
