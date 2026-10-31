@@ -70,9 +70,15 @@ Debug writes `final.ppm`, `final.i8` and `audio.wav` beneath its build's
 - The cache instruction at `0x800012a0` is Index Writeback Invalidate D;
   native CPU and graphics already share coherent host memory.
 - The native adapter implements only this ROM's verified hardware accesses.
-  The line-480 wait paces the movie at 30 FPS; PI DMA completes synchronously,
-  and AI busy polling follows the shared timed audio queue. Unknown accesses
-  still fail through the common reporter.
+  PI DMA completes synchronously. AI busy polling advances a demo-owned guest
+  clock to the shared queue's DMA deadline before the PCM buffer is reused.
+  The line-480 wait paces each movie frame using the actual 734-sample AI block
+  duration, retaining fractional time and catching up after short host stalls.
+  Stalls beyond three audio blocks rebase the host deadline to avoid flooding
+  the playback queue with catch-up buffers.
+  This keeps audio and video on one timeline (approximately 30 FPS), without
+  accumulating host polling delays or draining audio against a separate 30 Hz
+  clock. Unknown accesses still fail through the common reporter.
 
 ## Validation
 
@@ -81,9 +87,21 @@ failure-path checks and CPU generation passed. Windows/MSVC Debug and Release
 built. A 90-frame Debug run exited successfully with the expected animation in
 the captured image, 90 audio buffers and nonzero PCM samples.
 
-The first Release launch crashed. Source inspection found that Release's inline
-stores treated MMIO addresses as RAM, bypassing the device adapter; those stores
-now fall back to the shared writer outside the ordinary RAM window. This final
-fix has not been rebuilt or run: further testing was left to the user on request.
-Release playback, a complete movie loop, sustained audio/listening quality and
-Linux builds remain unverified. Rebuild before testing the final changes.
+Release's original MMIO store bypass is fixed and rendered Release playback now
+runs successfully. A later audio trace reproduced the reported recurring gaps:
+600 buffers over 21.17 seconds produced six underruns. Host AI polling delays
+accumulated between single-buffer submissions; the independent 30 Hz video
+deadline also supplied fewer samples per second than playback consumed.
+
+After the timing correction, Windows/MSVC Debug and Release rebuilt successfully.
+Release completed 1,800 frames (60.76 seconds between audio submissions) with one
+startup underrun at 1.06 seconds, no later underruns and zero queue resets. Debug
+completed 900 frames (30.63 seconds) with zero underruns/resets. Its WAV matched
+all 900 aligned ROM PCM blocks byte-for-byte, and the final rendered frame was
+visually inspected. The normal 80 ms audio reserve is unchanged. Trace evidence
+is under ignored `build/bad-apple-audio-final-{release,debug}.csv`; the baseline
+summary is retained in `build/bad-apple-audio-before.log`.
+
+An isolated startup stall can still exhaust playback; this fix addresses the
+recurring buffer drain. A complete movie loop, listening acceptance and Linux
+builds remain unverified.

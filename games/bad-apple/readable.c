@@ -169,7 +169,8 @@ static void present_frame(Runtime *runtime) {
      * This is already a no-op in the generated C: host RAM is coherent. */
 
     while (recomp_load32(runtime, VI_BASE + 0x10) != 480) {
-        /* Wait for scanline 480. The native adapter paces this at 30 FPS. */
+        /* Wait for scanline 480. The native adapter paces each frame using
+         * its PCM block's AI duration (approximately 30 FPS). */
     }
 
     /* The list already loaded from the ROM draws the grayscale image in

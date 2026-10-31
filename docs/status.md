@@ -2,7 +2,7 @@
 
 These are the established port milestones, not new full-game acceptance claims.
 
-- **Bad Apple!! demo**: Build-time download of a pinned external ROM; no ROM is bundled. Windows Debug/Release builds passed and a 90-frame Debug run rendered the animation with nonzero PCM. The initial Release launch crashed; the identified MMIO store bypass is corrected in source, with rebuild and further playback testing left to the user. See the [demo notes](../games/bad-apple/README.md).
+- **Bad Apple!! demo**: Build-time download of a pinned external ROM; no ROM is bundled. Windows Debug/Release builds and rendered playback pass. The MMIO store bypass and recurring audio starvation are fixed. A 60-second Release trace had one startup underrun and none afterward; a 30-second Debug trace had zero underruns, exact ROM PCM output and a verified rendered frame. Neither run reset the audio queue. Full-loop, listening and Linux acceptance remain unverified. See the [demo notes](../games/bad-apple/README.md).
 
 - **007: The World Is Not Enough USA revision 0**: Experimental partial port. Original startup, guest threads, VI/AI events, cartridge DMA and fingerprinted MusyX v1 task execution are integrated. Title/menu rendering, playable missions, input acceptance, audible accuracy and save/reload remain unverified. Unconverted module calls fail explicitly. See the [port notes](../games/twine-us/README.md).
 

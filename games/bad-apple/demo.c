@@ -14,14 +14,24 @@ typedef struct Demo {
     RecompViRegisters vi;
     uint32_t pi_ram, pi_cart, ai_ram, dp_start, dp_end;
     uint32_t frames, limit, dac_rate;
-    uint64_t next_frame;
+    uint64_t guest_ns, next_frame, frame_ns;
+    uint32_t frame_fraction, frame_remainder, audio_clock;
     bool running;
 } Demo;
 
-static void short_wait(Runtime *rt, void *opaque) {
-    (void)rt;
-    (void)opaque;
-    recomp_game_sleep(recomp_game_monotonic() + 1000000);
+static uint64_t demo_clock(void *opaque) {
+    return ((Demo *)opaque)->guest_ns;
+}
+
+static void wait_audio(Runtime *rt, void *opaque) {
+    Demo *demo = opaque;
+    /* This bare-metal program reuses one PCM buffer and polls until DMA ends.
+     * Advance its hardware clock to that event, rather than adding host sleep
+     * and scheduling overhead to every block. VI below paces the same stream. */
+    uint64_t end = recomp_platform_next_deadline(rt);
+    uint64_t now = recomp_count64(rt), hz = recomp_clock_frequency(rt);
+    if (end != UINT64_MAX && end > now)
+        demo->guest_ns += ((end - now) * UINT64_C(1000000000) + hz - 1) / hz;
 }
 
 static void present(Runtime *rt, void *opaque) {
@@ -39,13 +49,21 @@ static void present(Runtime *rt, void *opaque) {
 
 static void wait_scanline(Runtime *rt, void *opaque) {
     Demo *demo = opaque;
-    /* The only VI poll in this pinned program waits for line 480 once per
-     * movie frame. Pace the 30 FPS stream at this hardware boundary. */
-    recomp_game_sleep(demo->next_frame);
+    /* One PCM block accompanies each movie frame. Use its actual AI duration:
+     * the ROM advances by 735 stereo frames but AI alignment plays only 734.
+     * A separate 30 Hz clock slowly drains playback even without host jitter.
+     * Catch up after short stalls. Rebase after a stall beyond three blocks
+     * instead of bursting enough stale PCM to trigger the backend queue cap. */
     uint64_t now = recomp_game_monotonic();
-    demo->next_frame += 1000000000 / 30;
-    if (demo->next_frame < now)
+    if (!demo->next_frame || (now > demo->next_frame && now - demo->next_frame > 3 * demo->frame_ns))
         demo->next_frame = now;
+    recomp_game_sleep(demo->next_frame);
+    demo->next_frame += demo->frame_ns;
+    demo->frame_remainder += demo->frame_fraction;
+    if (demo->frame_remainder >= demo->audio_clock) {
+        demo->next_frame++;
+        demo->frame_remainder -= demo->audio_clock;
+    }
     (void)rt;
 }
 
@@ -59,7 +77,7 @@ static bool device_read(Runtime *rt, uint32_t bus, unsigned bytes, uint64_t *val
     if (bus == 0x0450000c && bytes == 1) {
         RecompAiState ai = recomp_ai_state(rt);
         if (ai.queued) {
-            recomp_on_host(rt, short_wait, NULL);
+            recomp_on_host(rt, wait_audio, demo);
             ai = recomp_ai_state(rt);
         }
         /* LB reads the high byte of the big-endian AI status register. */
@@ -90,12 +108,18 @@ static bool device_write(Runtime *rt, uint32_t bus, unsigned bytes, uint64_t val
     }
     switch (bus) {
     case 0x04500000: demo->ai_ram = word & 0x00fffff8; return true;
-    case 0x04500004:
+    case 0x04500004: {
         call.gpr[4] = demo->ai_ram;
         call.gpr[5] = word & 0x3fff8;
         hook_os_ai_set_next_buffer(rt, &call);
         recomp_game_require(call.gpr[2] == 0, "Bad Apple AI FIFO full", bus);
+        RecompAiState ai = recomp_ai_state(rt);
+        uint64_t duration = (uint64_t)(call.gpr[5] / 4) * ai.dac_rate * UINT64_C(1000000000);
+        demo->audio_clock = ai.clock;
+        demo->frame_ns = duration / ai.clock;
+        demo->frame_fraction = (uint32_t)(duration % ai.clock);
         return true;
+    }
     case 0x04500008:
         recomp_game_require(word == 1, "unsupported Bad Apple AI control", bus);
         return true;
@@ -142,7 +166,9 @@ int bad_apple_main(int argc, char **argv, BadAppleDiagnostics diagnostics, const
                         "Bad Apple runtime init failed", 0);
     uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
-    RecompClockConfig clock = {.ticks_per_second = BOOT_COUNTER_HZ};
+    Demo demo = {.limit = options.frames, .running = true};
+    RecompClockConfig clock = {.ticks_per_second = BOOT_COUNTER_HZ,
+                              .now_ns = demo_clock, .userdata = &demo};
     RecompSchedulerConfig scheduler = {.thread_tail = BOOT_THREAD_TAIL, .checkpoint_interval = 4096};
     RecompPlatformConfig platform = {.vi_period_ticks = BOOT_COUNTER_HZ / 60};
     recomp_game_require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler) &&
@@ -152,7 +178,6 @@ int bad_apple_main(int argc, char **argv, BadAppleDiagnostics diagnostics, const
     recomp_store(&rt, 0x80000300, 1, 4);
     MipsContext init = {0};
     hook_os_initialize(&rt, &init);
-    Demo demo = {.limit = options.frames, .running = true};
     rt.device_userdata = &demo;
     rt.device_read = device_read;
     rt.device_write = device_write;
@@ -162,7 +187,6 @@ int bad_apple_main(int argc, char **argv, BadAppleDiagnostics diagnostics, const
     RecompAudioConfig audio_config = {.playback = !options.mute, .output_enabled = true, .wav_path = wav};
     demo.audio = recomp_audio_create(&rt, &audio_config);
     recomp_game_require(demo.audio != NULL, "Bad Apple audio init failed", 0);
-    demo.next_frame = recomp_game_monotonic();
     recomp_thread_create(&rt, BOOT_THREAD_OBJECT, 1, BOOT_ENTRY, 0, BOOT_THREAD_STACK, 10);
     recomp_thread_start(&rt, BOOT_THREAD_OBJECT);
     while (demo.running) {
