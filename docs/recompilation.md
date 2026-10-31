@@ -52,12 +52,12 @@ their targets, and explores both possible branch paths unless the instruction
 itself proves one impossible. N64 branch delay slots are included in that
 analysis. This stage does not need gameplay or a recorded execution trace.
 
-VR4300 branch-and-link instructions write `r31 = PC + 8` even when untaken.
+VR4300 branch-and-link instructions write `ra = PC + 8` even when untaken.
 Discovery therefore treats `BLTZAL $zero` as address materialization, without
 following its unreachable destination into possible inline data. Translation
-evaluates the condition before updating `r31` and preserves likely delay-slot
+evaluates the condition before updating `ra` and preserves likely delay-slot
 annulment. The synthetic execution check covers all four link branches, both
-outcomes, delay-slot reads of the link, and a predicate reading the old `r31`:
+outcomes, delay-slot reads of the link, and a predicate reading the old `ra`:
 `.venv/bin/python tools/check_branch_link.py --build build/re2-us-v1-debug`.
 Use any existing CMake runtime build; the check runs at `-O0` and `-O2` without a ROM.
 
@@ -168,14 +168,18 @@ unresolved targets in selected ordinary functions prevent generation. Explicit
 unsupported boundaries can be emitted as functions that fail if called; partial
 conversions report those boundaries rather than implying full game support.
 
-The generated C represents guest registers through `MipsContext`. Arithmetic
+The generated C caches guest registers in local variables using MIPS o32
+assembly names (`at`, `v0`/`v1`, `a0`–`a3`, `t0`–`t9`, `s0`–`s7`, `k0`/`k1`,
+`gp`, `sp`, `fp`, `ra`). Register 30 uses `fp`, also known as `s8`. These locals
+synchronize with the numbered `MipsContext.gpr` array at runtime boundaries;
+reads of `$zero` remain constant zero and writes are discarded. Arithmetic
 helpers preserve MIPS widths and sign extension, memory operations go through
 guest address helpers, and branches become C control flow with the required
 delay-slot behavior. For example, the instruction `addiu v0, v0, 1` is lowered
 to an operation equivalent to:
 
 ```c
-mips_set(ctx, 2, mips_s32((uint32_t)ctx->gpr[2] + (uint32_t)1));
+v0 = mips_s32((uint32_t)v0 + (uint32_t)1);
 ```
 
 This performs a wrapping 32-bit addition and sign-extends the result into the

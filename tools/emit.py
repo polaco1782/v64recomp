@@ -251,15 +251,24 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
     return errors
 
 
+# MIPS o32 assembly names for the generated C locals (register 30 is also s8).
+GPR_NAMES = (
+    'zero', 'at', 'v0', 'v1', 'a0', 'a1', 'a2', 'a3',
+    't0', 't1', 't2', 't3', 't4', 't5', 't6', 't7',
+    's0', 's1', 's2', 's3', 's4', 's5', 's6', 's7',
+    't8', 't9', 'k0', 'k1', 'gp', 'sp', 'fp', 'ra',
+)
+
+
 def reg(number: int) -> str:
-    return f"r{number}" if number else "UINT64_C(0)"
+    return GPR_NAMES[number] if number else "UINT64_C(0)"
 
 
 def set_reg(number: int, expression: str, effectful: bool = False) -> str:
     if number == 0:
         # Discard ALU results. Loads still perform the access (MMIO may have side effects).
         return f"(void)({expression});" if effectful else ""
-    return f"r{number} = {expression};"
+    return f"{reg(number)} = {expression};"
 
 
 def gpr_set(function: dict, instructions: list[Instruction]) -> list[int]:
@@ -506,10 +515,10 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
     def flush(indent: str) -> list[str]:
         # Read-only locals match ctx. Calls reload all cached registers;
         # checkpoints may omit a reload only before a proven overwrite.
-        return [f'{indent}ctx->gpr[{n}] = r{n};' for n in written_gprs]
+        return [f'{indent}ctx->gpr[{n}] = {reg(n)};' for n in written_gprs]
 
     def reload(indent: str, skip_mask: int = 0) -> list[str]:
-        return [f'{indent}r{n} = ctx->gpr[{n}];' for n in gprs if not skip_mask & (1 << n)]
+        return [f'{indent}{reg(n)} = ctx->gpr[{n}];' for n in gprs if not skip_mask & (1 << n)]
 
     def around(statements: list[str], indent: str, resume: bool = True,
                skip_reload: int = 0) -> list[str]:
@@ -518,19 +527,19 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
 
     if 'return_address_stack_offset' in function:
         ra_line = (f"    uint32_t return_address = recomp_load32(runtime, "
-                   f"(uint32_t)r29 + UINT32_C(0x{function['return_address_stack_offset']:x}));")
+                   f"(uint32_t){reg(29)} + UINT32_C(0x{function['return_address_stack_offset']:x}));")
     elif 'return_address_fpr' in function:
         ra_line = f"    uint32_t return_address = ctx->fpr[{function['return_address_fpr']}];"
     else:
-        ra_line = f"    uint32_t return_address = (uint32_t)r{function.get('return_address_register', 31)};"
+        ra_line = f"    uint32_t return_address = (uint32_t){reg(function.get('return_address_register', 31))};"
 
     lines = [f"/* {safe_name} at 0x{function['vram']:08x} */",
              f"void {cname(function)}(Runtime *runtime, MipsContext *ctx) {{",
-             *(['    uint64_t ' + ', '.join(f'r{n} = ctx->gpr[{n}]' for n in gprs) + ';'] if gprs else []),
+             *(['    uint64_t ' + ', '.join(f'{reg(n)} = ctx->gpr[{n}]' for n in gprs) + ';'] if gprs else []),
              ra_line,
              "    (void)return_address; (void)runtime; (void)ctx;"]
     if function.get('unwind_calls'):
-        lines.append('    uint32_t entry_stack_pointer = (uint32_t)r29;')
+        lines.append(f'    uint32_t entry_stack_pointer = (uint32_t){reg(29)};')
 
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
@@ -567,8 +576,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         code = emit_call(checked['target'], indent, resume='resume_pc' in checked)
         if 'resume_pc' in checked:
             resume, link = checked['resume_pc'], checked.get('resume_register', 31)
-            code.extend([f'{indent}if ((uint32_t)r{link} != UINT32_C(0x{resume:08x}))',
-                         f'{indent}    recomp_fail("checked continuation return mismatch", (uint32_t)r{link});',
+            code.extend([f'{indent}if ((uint32_t){reg(link)} != UINT32_C(0x{resume:08x}))',
+                         f'{indent}    recomp_fail("checked continuation return mismatch", (uint32_t){reg(link)});',
                          jump(resume, indent)])
         else:
             code.append(indent + 'return;')
@@ -618,8 +627,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if continuation:
             resume = continuation['resume_pc']
             return [*emit_call(address, indent),
-                    f'{indent}if ((uint32_t)r31 != UINT32_C(0x{resume:08x}))',
-                    f'{indent}    recomp_fail("checked continuation return mismatch", (uint32_t)r31);',
+                    f'{indent}if ((uint32_t){reg(31)} != UINT32_C(0x{resume:08x}))',
+                    f'{indent}    recomp_fail("checked continuation return mismatch", (uint32_t){reg(31)});',
                     jump(resume, indent)]
         if address in addresses:
             checkpoint = []
@@ -664,7 +673,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if i.opcode in LINK_BRANCHES:
             known = constant_condition(i)
             # VR4300 links unconditionally, even on a not-taken likely branch.
-            # Capture the predicate before writing r31 (rs may itself be r31).
+            # Capture the predicate before writing ra (rs may itself be ra).
             if known is None:
                 lines.append(f'        bool take_branch = {condition(i)};')
             ra = (f'mips_s32(recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc+8:08x})))'
@@ -772,13 +781,13 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
             unwind = next((c for c in function.get('unwind_calls', []) if c['pc'] == i.pc), None)
             if unwind:
                 if unwind.get('conditional'):
-                    lines.append('        if ((uint32_t)r29 > entry_stack_pointer) return;')
+                    lines.append(f'        if ((uint32_t){reg(29)} > entry_stack_pointer) return;')
                 else:
-                    lines.extend(['        if ((uint32_t)r29 <= entry_stack_pointer)',
-                                  '            recomp_fail("checked unwind did not restore outer stack", (uint32_t)r29);',
+                    lines.extend([f'        if ((uint32_t){reg(29)} <= entry_stack_pointer)',
+                                  f'            recomp_fail("checked unwind did not restore outer stack", (uint32_t){reg(29)});',
                                   '        return;'])
             if i.pc in function.get('nonlocal_return_calls', []):
-                lines.append('        if ((uint32_t)r31 == return_address) return;')
+                lines.append(f'        if ((uint32_t){reg(31)} == return_address) return;')
             lines.append(jump(i.pc + 8, '        ') if i.pc + 8 in addresses
                          else fallthrough(i.pc, '        '))
         elif i.opcode == 'j':
