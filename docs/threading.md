@@ -33,6 +33,20 @@ Each generated backedge first asks whether a checkpoint is due. This decision
 updates the thread's interval counter and checks priority preemption without
 reading guest registers, polling devices or yielding. Only a due checkpoint
 flushes cached GPRs, runs the scheduling action, and reloads the GPRs on return.
+At a generated checkpoint, a reload is omitted only when straight-line analysis
+proves that the resumed code overwrites that register before reading it or
+reaching another control-flow/synchronization boundary. Read-modify-write and
+merge-load inputs retain their reloads. All written GPRs are still saved before
+yielding, so the scheduler sees the complete current context. Calls and returns
+retain their existing synchronization; this optimization does not assume that
+runtime callbacks preserve guest registers.
+The priority check caches the highest ready-thread priority, including an empty
+ready set, so unchanged loops do not scan the thread list on every backedge.
+Readying, suspending, dispatching, stopping or retiring a thread, and changing
+its priority, invalidate that cache. New threads are created stopped; restarting
+a stopped queue waiter either keeps it waiting or readies it through the same
+invalidation path. Actual dispatch still selects by priority and FIFO order.
+The cache does not change checkpoint intervals or delay priority preemption.
 Forced checkpoints still yield immediately when interrupts are enabled;
 disabled interrupts skip both the decision and synchronization. Calls from
 native OS hooks use the same decision with their already synchronized context.

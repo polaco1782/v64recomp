@@ -1,5 +1,73 @@
 # Native debugging
 
+## Shared performance timing
+
+Set `RECOMP_TIMING` to a new CSV filename before launching any game in Debug or
+Release. Its parent directory must exist; existing reports are never replaced.
+Recording is off by default. Rebuild after adding the timing implementation.
+For the current Quake II slowdown investigation:
+
+```powershell
+$env:RECOMP_TIMING = "build/quake2-debug-$(Get-Date -Format yyyyMMdd-HHmmss).csv"
+.\build\msvc\quake2-us\debug\bin\Debug\quake2-us.exe
+Remove-Item Env:RECOMP_TIMING
+```
+
+Spend several seconds in a smooth area and then the slow area before closing
+normally. The CSV is flushed about once per second and receives a final partial
+window on shutdown. Repeat in Release with a different filename for comparison.
+No ROM data, RAM contents or input events are recorded.
+
+Each row contains `elapsed_s`, `window_ms`, `logical_cpus`, `cpu_cores`, and a
+`*_count` / `*_ms` pair for each category below. Values are window deltas, not
+lifetime totals. Divide a count by `window_ms / 1000` to obtain its rate.
+`cpu_cores` is total process CPU time divided by wall time, including backend
+workers: 1.0 means one logical CPU's worth of work, not 1% machine usage. On a
+16-thread system, 1.0 is roughly 6.25% total CPU. A value of -1 means unavailable.
+
+| Category | What it measures |
+| --- | --- |
+| `dispatch` | Guest scheduler resumptions; count only. |
+| `checkpoint` | Due checkpoint actions, not skipped loop checks; count only. |
+| `context_sync` | Wall time serializing guest thread contexts and queues. |
+| `guest_wait` | Owner thread waiting for the guest to yield or request a callback, including OS handoff latency. This is **not** guest CPU time. |
+| `host_callback` | Native services invoked through the guest-to-owner callback path. |
+| `graphics` | Display-list processing and submission, including internal RT64/GPU waits and texture collection. This is **not** GPU execution time. |
+| `graphics_cpu` | Calling-thread CPU time during graphics submission; excludes blocked time, render workers and GPU execution. Windows CPU accounting is coarse, so compare multi-second totals. A zero count means no valid CPU sample. |
+| `present` | Presentation preparation in the renderer. |
+| `audio` | Native DSP synthesis. |
+| `sleep` | Sleeps requested by the shared frame-pacing helper. |
+| `display` | Completed swap-chain draws, including interpolation; count only. |
+
+Categories overlap: graphics/audio can be inside host callbacks, and guest-side
+context synchronization can be inside `guest_wait`. Do not sum them as exclusive
+frame costs. Long spans are charged when they finish, so a window can exceed
+1000 ms in a category. Display counts are sampled on the owner during presentation;
+the last asynchronous draws at shutdown may not be included. Games with custom
+pacing outside the shared helper do not contribute to `sleep`.
+
+High handoff counts and context time suggest scheduler overhead; high graphics
+or presentation time suggests renderer processing/backpressure; high process
+CPU with long guest waits suggests CPU work but does not identify a particular
+guest function. Low CPU usage alone does not distinguish a game wait from a GPU
+or synchronization wait. Use this report to choose a targeted profiler or
+experiment, not as proof of a bottleneck. Enabling timing adds clock reads at
+service boundaries and periodic CSV writes; it does not time every instruction
+or alter checkpoint intervals, game speed, simulation, or graphics settings.
+
+All MSVC game builds default to `RECOMP_MSVC_DEBUG_ITERATORS=OFF`. This sets
+`_ITERATOR_DEBUG_LEVEL=0` throughout local C++ code and the shared RT64 dependency
+build, avoiding STL iterator checking and tracking overhead in Debug rendering.
+Debug retains its CRT, symbols, `RECOMP_DEBUG` and guest CPU checks. Explicitly
+configure `-DRECOMP_MSVC_DEBUG_ITERATORS=ON` and rebuild when STL diagnostics are
+needed. Existing explicit cache overrides remain in effect.
+The setting participates in RT64's shared cache identity, so incompatible STL
+layouts cannot reuse the same renderer library. Changing it rebuilds the C++
+adapter and selects/builds the matching shared renderer. Do not set this macro
+on an individual translation unit: C++ objects cross the adapter/library boundary.
+
+## Debugger and diagnostics
+
 For a new game, start with [adding a ROM and debugging a new port](adding-a-rom.md).
 It covers mapping discovery, missing host/guest symbols, GDB, memory corruption
 and the shared diagnostic scripts under `tools/`.
@@ -10,13 +78,16 @@ under `games/<game>/debug/`, and generated sources under the build's `generated/
 The original positional diagnostic interfaces are also retained for tools.
 
 RT64 and its bundled dependencies share a build under `build/shared/rt64/` across
-all games and both modes. The default `RelWithDebInfo` configuration uses
-`-O2 -g -DNDEBUG` with Clang/GCC. This retains renderer
+all games and both modes, with separate caches where the Windows CRT differs.
+The default `RelWithDebInfo` configuration uses release optimization and `NDEBUG`
+(`/O2 /Zi /DNDEBUG` on MSVC, `-O2 -g -DNDEBUG` on Clang/GCC). This retains renderer
 symbols while disabling RT64 assertions, internal file logging and Vulkan
 validation layers. Game code, the shared runtime and native adapters retain
-their Debug settings; F1 inspection and F6 wireframe remain available.
+their Debug settings and HUD. RT64 developer tools are disabled by default.
 Set `RECOMP_RT64_BUILD_TYPE=Debug` explicitly when debugging RT64 itself; this
-selects a separate shared build with its assertions and diagnostics enabled.
+selects a separate shared build with its assertions and diagnostics enabled,
+and enables RT64 developer tools in the game's Debug adapter. On Windows, RT64
+uses the same CRT as its callers because C++ objects cross that boundary.
 
 Debug builds automatically print timestamped diagnostics to stderr: game and ROM
 identity, boot/code loads, native OS hook entry arguments and caller addresses,
@@ -104,7 +175,8 @@ Convert one to the native harness's text input with:
 ./build/quake-us-debug/bin/quake-us --input /tmp/quake-input.txt --frames 900
 ```
 
-F1 toggles RT64's inspector; F6 toggles wireframe. Texture dumps are enabled only
+With `RECOMP_RT64_BUILD_TYPE=Debug`, F1 toggles RT64's inspector and F6 toggles
+wireframe. Texture dumps are enabled only
 in debug via `RECOMP_TEXTURE_DUMP`. `RECOMP_DUKE_PERFORMANCE=1` and
 `RECOMP_NIGHTMARE_PERFORMANCE=1` retain those games' timing logs.
 

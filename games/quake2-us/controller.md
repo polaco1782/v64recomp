@@ -149,6 +149,15 @@ The adapter clears centering rate/timer and computes newly pressed actions as
 to client `+0x100..0x108`, so the next mouse update starts from the engine's
 accepted orientation.
 
+Live input is refreshed on the owner thread immediately before each validated
+guest command consumes mouse motion, as well as in the outer presentation loop.
+The guest can run several updates during scheduler draining or frame pacing;
+polling only once per presentation previously let those updates consume one
+accumulated movement followed by empty samples. Command-time polling drains new
+events without reusing deltas, retains the shared capture/menu/focus rules, and
+also updates held input. Debug controller replay disables mouse injection, so
+its events remain indexed by presentation rather than by these extra polls.
+
 Injection and capture require all of these conditions:
 
 - Phase `0x80085988 == 1`, the gameplay loop. Start sets phase 2 and bypasses
@@ -178,6 +187,10 @@ Release compile and link with the shared renderer and input transport.
 
 The user reported that the adapter works great in gameplay. That confirms their
 overall experience; individual transitions were not separately reported.
+They subsequently reported choppy mouse turning in larger areas in Debug while
+walking and animation remained smooth. Command-time input polling addresses the
+sampling gap identified in source; this change has not been built or gameplay
+tested, at the user's request. Recheck those larger areas after rebuilding.
 Remaining targeted checks include pause/resume, Esc/F4 recapture, focus loss,
 death/respawn, level changes and controller fallback with capture released or
 `RECOMP_QUAKE2_MOUSE=0`.

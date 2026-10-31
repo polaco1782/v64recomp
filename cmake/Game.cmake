@@ -1,5 +1,10 @@
 # Only the selected game is generated and compiled. Python is a build dependency.
 set(RECOMP_GAME_DIR "${CMAKE_SOURCE_DIR}/games/${RECOMP_GAME}")
+if(NOT DEFINED RECOMP_OPTIMIZE_DEBUG_DEFAULT)
+    set(RECOMP_OPTIMIZE_DEBUG_DEFAULT OFF)
+endif()
+option(RECOMP_OPTIMIZE_DEBUG "Optimize Debug game/runtime code while retaining diagnostics and symbols"
+    ${RECOMP_OPTIMIZE_DEBUG_DEFAULT})
 option(RECOMP_EMBED_ROM "Embed ROM content with verified CPU instructions erased" OFF)
 set(RECOMP_OPT_LEVEL "2" CACHE STRING "Optimization level for release game code")
 if(NOT RECOMP_OPT_LEVEL MATCHES "^(2|3)$")
@@ -134,6 +139,9 @@ endif()
 if(RECOMP_GAME STREQUAL "goldeneye-us")
     target_include_directories(${RECOMP_GAME} SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
     target_compile_definitions(${RECOMP_GAME} PRIVATE HLSL_CPU FFX_GCC IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND RECOMP_OPTIMIZE_DEBUG)
+    include("${CMAKE_SOURCE_DIR}/cmake/OptimizeDebug.cmake")
 endif()
 recomp_source_groups(${RECOMP_GAME})
 add_custom_target(run COMMAND $<TARGET_FILE:${RECOMP_GAME}> ${RECOMP_RUN_ARGS}

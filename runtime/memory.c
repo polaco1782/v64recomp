@@ -1,5 +1,6 @@
 #include "runtime.h"
 #include "runtime_debug.h"
+#include "timing.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -204,6 +205,10 @@ bool recomp_runtime_init(Runtime *rt, size_t ram_size, const RecompFunctionEntry
     }
     if (loaded)
         memcpy(rt->section_loaded, loaded, sections * sizeof(bool));
+    if (!recomp_timing_init(rt)) {
+        recomp_runtime_destroy(rt);
+        return false;
+    }
     RECOMP_LOG("game", "runtime initialized: RAM=%zu bytes functions=%zu sections=%zu", ram_size, count, sections);
     return true;
 }
@@ -220,6 +225,7 @@ void recomp_runtime_destroy(Runtime *rt) {
         rt->destroy_platform(rt);
     if (rt->destroy_clock)
         rt->destroy_clock(rt);
+    recomp_timing_destroy(rt);
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);

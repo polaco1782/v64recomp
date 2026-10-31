@@ -46,6 +46,9 @@
     <None Include="$(RecompRoot)cmake\Game.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\OptimizeDebug.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
     <None Include="$(RecompRoot)cmake\PackUPX.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
@@ -112,6 +115,9 @@
     <ClInclude Include="$(RecompRoot)include\runtime_debug.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\timing.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)msvc\Recomp.props">
       <Filter>Configuration\msvc</Filter>
     </None>
@@ -164,6 +170,9 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\time.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\timing.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\video.c">

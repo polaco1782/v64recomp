@@ -47,6 +47,7 @@ typedef struct MipsContext {
 
 typedef struct Runtime Runtime;
 typedef struct RecompScheduler RecompScheduler;
+typedef struct RecompTiming RecompTiming;
 typedef struct RecompClock RecompClock;
 typedef struct RecompPlatform RecompPlatform;
 typedef struct RecompTasks RecompTasks;
@@ -85,6 +86,7 @@ struct Runtime {
      * guest context or yield. Invoke checkpoint only after flushing GPRs. */
     bool (*checkpoint_due)(Runtime *, bool force_yield);
     void (*checkpoint)(Runtime *);
+    RecompTiming *timing; /* Optional shared timing report; serialized access. */
     RecompClock *clock;
     RecompPlatform *platform;
     void (*destroy_clock)(Runtime *);

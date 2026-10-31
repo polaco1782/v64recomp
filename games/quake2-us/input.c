@@ -10,6 +10,7 @@ static bool enabled;
 static uint32_t current_client;
 static double sensitivity, vertical;
 static RecompMouseBuffer mouse;
+static void (*poll_live_input)(Runtime *, void *);
 
 static bool valid_span(Runtime *rt, uint32_t address, uint32_t size) {
     return address >= 0x80000000 && address < 0x80800000 && !(address & 3) &&
@@ -41,7 +42,8 @@ bool quake2_input_playable(Runtime *rt) {
            (flags & 1) && !(flags & 0x40) &&
            !(recomp_load32(rt, entity + Q2_INPUT_ENTITY_MOVE_FLAGS) & 0x2000);
 }
-void quake2_input_init(void) {
+void quake2_input_init(void (*poll)(Runtime *, void *)) {
+    poll_live_input = poll;
     const char *setting = getenv("RECOMP_QUAKE2_MOUSE");
     enabled = !setting || strcmp(setting, "0");
 #ifdef RECOMP_DEBUG
@@ -82,6 +84,11 @@ void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
         original(rt, ctx);
         return;
     }
+    /* Guest commands can run during both drain() and frame pacing. Sampling
+     * only at presentation boundaries delivers one lump of motion followed
+     * by empty commands when a slower frame spans several guest updates. */
+    if (poll_live_input)
+        recomp_on_host(rt, poll_live_input, NULL);
     RecompMouseFrame frame = recomp_mouse_consume(&mouse);
     if (!frame.active) { original(rt, ctx); return; }
     float pitch = read_float(rt, command + Q2_INPUT_PITCH);

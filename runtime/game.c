@@ -5,6 +5,7 @@
 #include "embedded_rom.h"
 #endif
 #include "profiler.h"
+#include "timing.h"
 #ifdef _WIN32
 #include <windows.h>
 #include <dbghelp.h>
@@ -189,7 +190,9 @@ void recomp_game_pace(Runtime *rt, uint64_t deadline) {
                     wake = now + ns;
             }
         }
+        uint64_t timing = recomp_timing_begin(rt);
         recomp_game_sleep(wake);
+        recomp_timing_end(rt, RECOMP_TIMING_SLEEP, timing);
     }
 }
 static void quoted(FILE *f, const char *s) {

@@ -291,6 +291,25 @@ def gpr_set(function: dict, instructions: list[Instruction]) -> list[int]:
     return sorted(regs)
 
 
+def overwritten_gprs(function: dict, instructions: list[Instruction]) -> dict[int, int]:
+    """GPRs overwritten before any use or synchronization after each entry PC.
+
+    Deliberately stop at control flow, including checked fallthrough calls.
+    This is a straight-line proof, not whole-function liveness: even a dead
+    register must be current when a later call/return/checkpoint flushes it.
+    Read-modify-write instructions and merge loads must retain their inputs.
+    """
+    barriers = {t['pc'] for t in function.get('fallthrough_transfers', [])}
+    masks = {}
+    for i in sorted(instructions, key=lambda instruction: instruction.pc, reverse=True):
+        if i.delay or i.pc in barriers or i.opcode in ('break', 'syscall'):
+            masks[i.pc] = 0
+        else:
+            masks[i.pc] = ((i.gpr_write_mask | masks.get(i.pc + 4, 0))
+                           & ~i.gpr_read_mask & ~1)
+    return masks
+
+
 def add_immediate(value: str, immediate: int | str) -> str:
     if isinstance(immediate, str):
         return f'{value} + (uint64_t)(int64_t)({immediate})'
@@ -477,22 +496,24 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                  verbose=True)
     safe_name = function['name'].replace('*/', '* /').replace('\n', ' ')
     gprs = gpr_set(function, instructions)
+    overwritten = overwritten_gprs(function, instructions)
     written_mask = 0
     for instruction in instructions:
         written_mask |= instruction.gpr_write_mask
     written_gprs = [r for r in gprs if written_mask & (1 << r)]
 
     def flush(indent: str) -> list[str]:
-        # Read-only locals already match ctx. Native calls/checkpoints reload
-        # every cached register afterward, including registers they may change.
+        # Read-only locals match ctx. Calls reload all cached registers;
+        # checkpoints may omit a reload only before a proven overwrite.
         return [f'{indent}ctx->gpr[{n}] = r{n};' for n in written_gprs]
 
-    def reload(indent: str) -> list[str]:
-        return [f'{indent}r{n} = ctx->gpr[{n}];' for n in gprs]
+    def reload(indent: str, skip_mask: int = 0) -> list[str]:
+        return [f'{indent}r{n} = ctx->gpr[{n}];' for n in gprs if not skip_mask & (1 << n)]
 
-    def around(statements: list[str], indent: str, resume: bool = True) -> list[str]:
+    def around(statements: list[str], indent: str, resume: bool = True,
+               skip_reload: int = 0) -> list[str]:
         # Anything here may run native code that reads or writes ctx.
-        return [*flush(indent), *statements, *(reload(indent) if resume else [])]
+        return [*flush(indent), *statements, *(reload(indent, skip_reload) if resume else [])]
 
     if 'return_address_stack_offset' in function:
         ra_line = (f"    uint32_t return_address = recomp_load32(runtime, "
@@ -575,7 +596,18 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 call = [f"{indent}recomp_prepare_direct_call(runtime, UINT32_C(0x{address:08x}), {direct.section});",
                         f"{indent}{direct.symbol}(runtime, ctx);"]
             else:
-                call = [f"{indent}recomp_call_generated(runtime, ctx, &recomp_functions[{direct.registry_index}]);"]
+                # Normal Release calls have a fixed compiled symbol. Preserve
+                # the shared dispatch path for Debug registry replacements and
+                # canonical address remapping; both can select another body.
+                call = [f'{indent}#ifndef RECOMP_DEBUG',
+                        f'{indent}if (!runtime->canonical_function_address) {{',
+                        f'{indent}    recomp_prepare_direct_call(runtime, UINT32_C(0x{address:08x}), {direct.section});',
+                        f'{indent}    {direct.symbol}(runtime, ctx);',
+                        f'{indent}}} else',
+                        f'{indent}#endif',
+                        f'{indent}{{',
+                        f'{indent}    recomp_call_generated(runtime, ctx, &recomp_functions[{direct.registry_index}]);',
+                        f'{indent}}}']
         else:
             call = [f"{indent}recomp_lookup(runtime, UINT32_C(0x{address:08x}))(runtime, ctx);"]
         return around(call, indent, resume)
@@ -594,11 +626,13 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 force_yield = 'true' if i.pc in yield_sites else 'false'
                 log_emission('Checkpoint %s s%s 0x%08x -> 0x%08x: force_yield=%s',
                              function['name'], function['section'], i.pc, address, force_yield, verbose=True)
-                # The decision never observes ctx or yields. Only the action
-                # needs synchronized registers, including reloads after resuming.
+                # The decision never observes ctx or yields. Save every written
+                # GPR before yielding. On resume, omit only reloads proven to
+                # be overwritten before use or another synchronization point.
                 nested = indent + '    '
                 checkpoint = [f'{indent}if (recomp_checkpoint_due(runtime, {force_yield})) {{',
-                              *around([f'{nested}runtime->checkpoint(runtime);'], nested),
+                              *around([f'{nested}runtime->checkpoint(runtime);'], nested,
+                                      skip_reload=overwritten.get(address, 0)),
                               f'{indent}}}']
             return [*checkpoint, jump(address, indent)]
         log_call(address, 'Tail/branch call')

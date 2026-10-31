@@ -6,6 +6,7 @@
 
 #include "runtime.h"
 #include "runtime_debug.h"
+#include "timing.h"
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -47,6 +48,10 @@ enum { PENDING_EVENTS = 256 };
 struct RecompScheduler {
     RecompSchedulerConfig config;
     NativeThread *threads, *current;
+    /* Reused by loop checkpoints while runnable state is unchanged. Access
+     * follows the same execution-token ownership as the thread list. */
+    int32_t ready_priority;
+    bool ready_priority_valid;
     NativeQueue *queues;
     uint64_t order;
     struct {
@@ -150,7 +155,9 @@ static RecompScheduler *scheduler(Runtime *rt) {
 void recomp_on_host(Runtime *rt, void (*callback)(Runtime *, void *), void *userdata) {
     RecompScheduler *s = rt->scheduler;
     if (!s || pthread_equal(pthread_self(), s->owner)) {
+        uint64_t timing = recomp_timing_begin(rt);
         callback(rt, userdata);
+        recomp_timing_end(rt, RECOMP_TIMING_HOST_CALLBACK, timing);
         return;
     }
     if (!guest_thread || guest_thread != s->current)
@@ -336,6 +343,7 @@ static void sync_list(Runtime *rt, RecompThreadState state, NativeQueue *q, uint
 }
 
 static void sync_guest(Runtime *rt) {
+    uint64_t timing = recomp_timing_begin(rt);
     RecompScheduler *s = scheduler(rt);
     NativeThread *active = NULL, *previous = NULL;
     for (NativeThread *t = s->threads; t; t = t->next) {
@@ -378,6 +386,7 @@ static void sync_guest(Runtime *rt) {
         sync_list(rt, RECOMP_WAIT_SEND, q, q->object + 4);
         q->wait_lists_dirty = false;
     }
+    recomp_timing_end(rt, RECOMP_TIMING_CONTEXT_SYNC, timing);
 }
 
 static void ready(RecompScheduler *s, NativeThread *t) {
@@ -385,6 +394,7 @@ static void ready(RecompScheduler *s, NativeThread *t) {
                        t->priority);
     if (t->wait_queue)
         t->wait_queue->wait_lists_dirty = true;
+    s->ready_priority_valid = false;
     t->state = RECOMP_READY;
     t->wait_queue = NULL;
     t->order = ticket(s);
@@ -398,6 +408,7 @@ static void suspend(Runtime *rt, RecompThreadState state) {
         t->object, debug_state_name(state), t->wait_queue ? t->wait_queue->object : 0, t->context.pc);
     if (t->wait_queue)
         t->wait_queue->wait_lists_dirty = true;
+    s->ready_priority_valid = false;
     t->state = state;
     t->order = ticket(s);
     sync_guest(rt);
@@ -414,8 +425,12 @@ static void suspend(Runtime *rt, RecompThreadState state) {
 static bool preemption_due(RecompScheduler *s) {
     if (!guest_thread || s->polling || !s->current)
         return false;
-    NativeThread *candidate = best(s, RECOMP_READY, NULL, NULL);
-    return candidate && candidate->priority > s->current->priority;
+    if (!s->ready_priority_valid) {
+        NativeThread *candidate = best(s, RECOMP_READY, NULL, NULL);
+        s->ready_priority = candidate ? candidate->priority : -1;
+        s->ready_priority_valid = true;
+    }
+    return s->ready_priority > s->current->priority;
 }
 
 static void preempt(Runtime *rt) {
@@ -432,6 +447,7 @@ static void wake(Runtime *rt, NativeQueue *q, RecompThreadState state) {
 
 static void retire(NativeThread *t) {
     RECOMP_LOG("thread", "retired id=%" PRId32 " thread=0x%08" PRIx32, t->id, t->object);
+    scheduler(t->runtime)->ready_priority_valid = false;
     t->state = RECOMP_DEAD;
     if (t->wait_queue)
         t->wait_queue->wait_lists_dirty = true;
@@ -564,6 +580,7 @@ static bool checkpoint_due(Runtime *rt, bool force_yield) {
 static void checkpoint(Runtime *rt) {
     /* The decision and this action execute under the same guest execution
      * token. Generated code flushes its registers between the two calls. */
+    recomp_timing_add(rt, RECOMP_TIMING_CHECKPOINT, 0, 1);
     if (!guest_thread)
         poll(rt);
     else
@@ -673,6 +690,7 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         if (!t || host_idle(s, t))
             break;
         s->current = t;
+        s->ready_priority_valid = false;
         t->state = RECOMP_RUNNING;
         RECOMP_LOG_SAMPLED("thread",
                            "dispatch id=%" PRId32 " thread=0x%08" PRIx32 " priority=%" PRId32 " pc=0x%08" PRIx32, t->id,
@@ -684,11 +702,16 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         rt->interrupts_disabled = t->interrupts_disabled;
         rt->interrupt_mask = t->interrupt_mask;
         t->running = true;
+        recomp_timing_add(rt, RECOMP_TIMING_DISPATCH, 0, 1);
         pthread_cond_signal(&t->resume);
         while (t->running) {
+            uint64_t timing = recomp_timing_begin(rt);
             pthread_cond_wait(&s->returned, &s->mutex);
+            recomp_timing_end(rt, RECOMP_TIMING_GUEST_WAIT, timing);
             if (s->host_callback) {
+                timing = recomp_timing_begin(rt);
                 s->host_callback(rt, s->host_userdata);
+                recomp_timing_end(rt, RECOMP_TIMING_HOST_CALLBACK, timing);
                 s->host_callback = NULL;
                 pthread_cond_signal(&t->resume);
             }
@@ -705,6 +728,7 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         sync_guest(rt);
     }
     NativeThread *next = best(s, RECOMP_READY, NULL, NULL);
+    recomp_timing_poll(rt);
     pthread_mutex_unlock(&s->mutex);
     if (next)
         return host_idle(s, next) ? RECOMP_RUN_WAITING : RECOMP_RUN_BUDGET;
@@ -827,6 +851,7 @@ void recomp_thread_stop(Runtime *rt, uint32_t object) {
     if (t == scheduler(rt)->current)
         suspend(rt, RECOMP_STOPPED);
     else {
+        scheduler(rt)->ready_priority_valid = false;
         t->state = RECOMP_STOPPED;
         sync_guest(rt);
     }
@@ -877,6 +902,7 @@ void recomp_thread_set_priority(Runtime *rt, uint32_t object, int32_t priority) 
                    t->object, t->priority, priority);
         if (t->wait_queue)
             t->wait_queue->wait_lists_dirty = true;
+        s->ready_priority_valid = false;
         t->priority = priority;
         if (t->state != RECOMP_RUNNING && t->state != RECOMP_STOPPED)
             t->order = ticket(s);

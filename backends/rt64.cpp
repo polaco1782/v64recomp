@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "timing.h"
 #include "input.h"
 #include "hle/rt64_application.h"
 #include "hle/rt64_workload_queue.h"
@@ -50,6 +51,7 @@ struct RecompRenderer {
     RecompRendererStats stats{};
     FILE *frame_trace = nullptr;
     std::atomic<uint64_t> display_frames{0}, first_display_ns{0}, last_display_ns{0};
+    uint64_t timing_display_frames = 0;
     RecompTextureFiles textureFiles;
     uint64_t token = 0;
     bool sp_seen = false, dp_seen = false;
@@ -177,6 +179,7 @@ static void interrupts() {
 
 static bool process_graphics(RecompRenderer *s) {
     uint64_t start = monotonic_ns();
+    uint64_t cpu_start = s->rt->timing ? recomp_timing_thread_clock() : 0;
     trace_frame(s, "graphics_begin", s->code);
     bool custom =
         s->microcode_hook && s->microcode_hook(s->app->interpreter.get(), s->rt->rdram_size, s->code, s->data);
@@ -201,7 +204,14 @@ static bool process_graphics(RecompRenderer *s) {
         s->graphics_hook(s->app->interpreter.get(), s->rt->rdram_size, &s->stats.rdp_triangles);
     s->app->processDisplayLists(s->rt->rdram, s->list, 0, true);
     s->textureFiles.collect(*s->app->textureCache);
-    s->stats.submit_ns += monotonic_ns() - start;
+    uint64_t elapsed = monotonic_ns() - start;
+    s->stats.submit_ns += elapsed;
+    recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
+    if (s->rt->timing) {
+        uint64_t cpu_end = recomp_timing_thread_clock();
+        if (cpu_start && cpu_end >= cpu_start)
+            recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS_CPU, cpu_end - cpu_start, 1);
+    }
     trace_frame(s, "graphics_end", s->dp_seen);
     return true;
 }
@@ -213,7 +223,14 @@ static void process_present(RecompRenderer *s) {
     s->app->screenApiProfiler.logAndRestart();
     s->app->state->updateScreen(s->app->core.decodeVI(), false);
     s->stats.presentations++;
-    s->stats.present_ns += monotonic_ns() - start;
+    uint64_t elapsed = monotonic_ns() - start;
+    s->stats.present_ns += elapsed;
+    recomp_timing_add(s->rt, RECOMP_TIMING_PRESENT, elapsed, 1);
+    if (s->rt->timing) {
+        uint64_t displayed = s->display_frames.load();
+        recomp_timing_add(s->rt, RECOMP_TIMING_DISPLAY, 0, displayed - s->timing_display_frames);
+        s->timing_display_frames = displayed;
+    }
     trace_frame(s, "present_end");
 }
 
@@ -293,7 +310,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
     RT64::SetRenderHooks(nullptr, display_draw, nullptr);
     try {
         s->app = std::make_unique<RT64::Application>(core, config);
-#ifdef RECOMP_DEBUG
+#ifdef RECOMP_RT64_DEBUG
         s->app->userConfig.developerMode = true;
 #else
         s->app->userConfig.developerMode = false;
@@ -496,8 +513,16 @@ bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
     s->raw_vi = s->raw_rdp = true;
     s->sp_seen = s->dp_seen = false;
     const uint64_t begin = monotonic_ns();
+    const uint64_t cpu_begin = s->rt->timing ? recomp_timing_thread_clock() : 0;
     s->app->processDisplayLists(s->rt->rdram, physical, physical + (end - start), false);
-    s->stats.submit_ns += monotonic_ns() - begin;
+    uint64_t elapsed = monotonic_ns() - begin;
+    s->stats.submit_ns += elapsed;
+    recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
+    if (s->rt->timing) {
+        uint64_t cpu_end = recomp_timing_thread_clock();
+        if (cpu_begin && cpu_end >= cpu_begin)
+            recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS_CPU, cpu_end - cpu_begin, 1);
+    }
     s->stats.graphics_tasks++;
     s->raw_rdp = false;
     return s->dp_seen;

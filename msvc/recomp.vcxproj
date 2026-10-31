@@ -39,6 +39,7 @@
     <ClInclude Include="$(RecompRoot)backends\textures.h" />
     <None Include="$(RecompRoot)cmake\BuildRT64.cmake" />
     <None Include="$(RecompRoot)cmake\Game.cmake" />
+    <None Include="$(RecompRoot)cmake\OptimizeDebug.cmake" />
     <None Include="$(RecompRoot)cmake\PackUPX.cmake" />
     <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt" />
     <None Include="$(RecompRoot)cmake\rt64\LookAtMatching.cmake" />
@@ -61,6 +62,7 @@
     <ClInclude Include="$(RecompRoot)include\renderer.h" />
     <ClInclude Include="$(RecompRoot)include\runtime.h" />
     <ClInclude Include="$(RecompRoot)include\runtime_debug.h" />
+    <ClInclude Include="$(RecompRoot)include\timing.h" />
     <None Include="$(RecompRoot)msvc\Recomp.props" />
     <None Include="$(RecompRoot)requirements.txt" />
     <ClCompile Include="$(RecompRoot)runtime\bootstrap.c" />
@@ -79,6 +81,7 @@
     <ClCompile Include="$(RecompRoot)runtime\scheduler.c" />
     <ClCompile Include="$(RecompRoot)runtime\tasks.c" />
     <ClCompile Include="$(RecompRoot)runtime\time.c" />
+    <ClCompile Include="$(RecompRoot)runtime\timing.c" />
     <ClCompile Include="$(RecompRoot)runtime\video.c" />
     <None Include="$(RecompRoot)tools\build_msvc_project.ps1" />
     <None Include="$(RecompRoot)tools\build_steamdeck.sh" />

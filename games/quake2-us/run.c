@@ -14,8 +14,10 @@ static RecompRenderer *renderer;
 static RecompAudio *audio;
 static uint64_t wall_origin;
 static bool boot_retired;
+static bool running;
 #ifdef RECOMP_DEBUG
 static bool bss_verified;
+static bool trace_calls;
 static uint64_t graphics_tasks;
 static uint64_t player_updates;
 static FILE *input;
@@ -40,7 +42,7 @@ static uint64_t guest_time(void *opaque) {
 }
 static void prepare_call(Runtime *rt, uint32_t address) {
 #ifdef RECOMP_DEBUG
-    if (getenv("RECOMP_TRACE_CALLS"))
+    if (trace_calls)
         fprintf(stderr, "Quake II call 0x%08x\n", address);
     if (address == 0x8002b820)
         player_updates++;
@@ -80,8 +82,26 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     require(ok, "Quake II RSP task rejected", task->words[4]);
     return true;
 }
+static bool poll_input(Runtime *rt, RecompPad *pad) {
+    recomp_renderer_mouse_mode(renderer, quake2_input_enabled(), quake2_input_playable(rt));
+    if (!recomp_renderer_input(renderer, pad)) {
+        running = false;
+        quake2_input_submit((RecompMouseFrame){0});
+        return false;
+    }
+    quake2_input_submit(recomp_renderer_mouse_frame(renderer));
+    return true;
+}
+static void poll_command_input(Runtime *rt, void *opaque) {
+    (void)opaque;
+    if (!running)
+        return;
+    RecompPad pad = {.connected = true};
+    if (poll_input(rt, &pad))
+        require(recomp_input_set(rt, 0, &pad), "controller update failed", 0);
+}
 static void drain(Runtime *rt) {
-    for (unsigned batch = 0; batch < 32; batch++) {
+    for (unsigned batch = 0; running && batch < 32; batch++) {
         if (recomp_scheduler_run(rt, 32) != RECOMP_RUN_BUDGET)
             break;
     }
@@ -98,6 +118,7 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
     rt.prepare_call = prepare_call;
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
 #ifdef RECOMP_DEBUG
+    trace_calls = getenv("RECOMP_TRACE_CALLS") != NULL;
     for (uint32_t a = BOOT_BSS_START; a <= BOOT_BSS_END; a += 4)
         recomp_store(&rt, a, 0xa5a5a5a5, 4);
     const char *replay_path = getenv("RECOMP_QUAKE2_INPUT");
@@ -131,7 +152,8 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Quake II IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "Quake II");
     require(renderer != NULL, "renderer initialization failed", 0);
-    quake2_input_init();
+    running = true;
+    quake2_input_init(poll_command_input);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,
@@ -146,10 +168,9 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
     recomp_thread_start(&rt, BOOT_BOOT_OBJECT);
     uint64_t next_present = recomp_game_monotonic();
     uint32_t frame = 0;
-    for (; !options->frames || frame < options->frames; frame++) {
+    for (; running && (!options->frames || frame < options->frames); frame++) {
         RecompPad pad = {.connected = true};
-        recomp_renderer_mouse_mode(renderer, quake2_input_enabled(), quake2_input_playable(&rt));
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!poll_input(&rt, &pad))
             break;
 #ifdef RECOMP_DEBUG
         if (input) {
@@ -161,8 +182,9 @@ int quake2_run(const RecompGameOptions *options, const char *report) {
         }
 #endif
         require(recomp_input_set(&rt, 0, &pad), "controller update failed", 0);
-        quake2_input_submit(recomp_renderer_mouse_frame(renderer));
         drain(&rt);
+        if (!running)
+            break;
         require(recomp_renderer_present(renderer), "presentation failed", 0);
 #ifdef RECOMP_DEBUG
         if (capture_every && (frame + 1) % capture_every == 0 && graphics_tasks && report) {

@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "recomp_audio.h"
 #include "runtime_debug.h"
+#include "timing.h"
 #include "hle_internal.h"
 #include "hle_external.h"
 #include "ucodes.h"
@@ -677,7 +678,9 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
     } else
         a->task_done = true; /* The rest of this list cannot be decoded safely. */
     a->hle_active = false;
-    a->stats.synth_ns += timer_ns() - start;
+    uint64_t elapsed = timer_ns() - start;
+    a->stats.synth_ns += elapsed;
+    recomp_timing_add(a->rt, RECOMP_TIMING_AUDIO, elapsed, 1);
     if (!a->task_done)
         recomp_fail("audio DSP task did not finish", list);
     a->stats.tasks++;
@@ -704,7 +707,9 @@ static void execute_musyx(RecompAudio *a, uint32_t list, uint32_t count) {
     else
         a->task_done = true;
     a->hle_active = false;
-    a->stats.synth_ns += timer_ns() - start;
+    uint64_t elapsed = timer_ns() - start;
+    a->stats.synth_ns += elapsed;
+    recomp_timing_add(a->rt, RECOMP_TIMING_AUDIO, elapsed, 1);
     if (!a->task_done)
         recomp_fail("MusyX task did not finish", list);
     a->stats.tasks++;
