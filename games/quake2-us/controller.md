@@ -176,9 +176,8 @@ Static generation passes with 1,274 ready functions and 59 SDK hooks, no
 unsupported functions. Both wrapper originals remain translated. Debug and
 Release compile and link with the shared renderer and input transport.
 
-Gameplay testing is left to the user as requested. Check mouse direction and
-sensitivity, walking/strafing/jumping and collision, firing and wheel cycling,
-then pause/resume, Esc/F4 recapture, focus loss, death/respawn and level changes.
-Also check controller fallback with capture released and with
-`RECOMP_QUAKE2_MOUSE=0`. These transitions are guarded by reviewed code evidence
-but are not claimed as live-verified for this adapter.
+The user reported that the adapter works great in gameplay. That confirms their
+overall experience; individual transitions were not separately reported.
+Remaining targeted checks include pause/resume, Esc/F4 recapture, focus loss,
+death/respawn, level changes and controller fallback with capture released or
+`RECOMP_QUAKE2_MOUSE=0`.

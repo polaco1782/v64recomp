@@ -13,8 +13,8 @@ weapons; Space/right-click jumps; Shift changes run speed while held; Tab pauses
 Esc releases/recaptures the mouse and F4 recaptures it. See
 [controller findings and adapter controls](controller.md) for the complete
 mapping, verified ROM evidence and remaining gameplay checks. This adapter has
-static verification and Debug/Release build coverage; user gameplay testing is
-pending.
+static verification and Debug/Release build coverage; the user confirmed it
+works well in gameplay.
 
 ## ROM and launch
 

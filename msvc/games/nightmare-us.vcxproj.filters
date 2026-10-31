@@ -22,6 +22,12 @@
     <ClInclude Include="$(RecompRoot)games\nightmare-us\hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\nightmare-us\input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\nightmare-us\nightmare_input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\nightmare-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>

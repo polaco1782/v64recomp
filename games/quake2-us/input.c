@@ -108,11 +108,12 @@ void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
     int32_t magnitude = speed != autorun ? 400 : 200;
     recomp_store32(rt, command + Q2_INPUT_FORWARD, (uint32_t)(frame.move_y * magnitude));
     recomp_store32(rt, command + Q2_INPUT_SIDE, (uint32_t)(frame.move_x * magnitude));
-    recomp_store32(rt, command + Q2_INPUT_UP, frame.actions & RECOMP_MOUSE_JUMP ? magnitude : 0);
+    bool jump = (frame.actions & (RECOMP_MOUSE_JUMP | RECOMP_MOUSE_SECONDARY_ATTACK)) != 0;
+    recomp_store32(rt, command + Q2_INPUT_UP, jump ? magnitude : 0);
     uint32_t flags = 0;
     if (frame.actions & RECOMP_MOUSE_ATTACK) flags |= 1;
     if (frame.actions & RECOMP_MOUSE_NEXT_WEAPON) flags |= 4;
-    if (frame.actions & RECOMP_MOUSE_PREVIOUS_WEAPON) flags |= 8;
+    if (frame.actions & (RECOMP_MOUSE_PREVIOUS_WEAPON | RECOMP_MOUSE_USE)) flags |= 8;
     if (frame.actions & RECOMP_MOUSE_STATUS) flags |= 0x10;
     if (speed) flags |= 0x40;
     if (frame.wheel) {
@@ -121,7 +122,7 @@ void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
         previous &= ~0xcu;
     }
     // The dispatcher also marks any digital input with bit 31 (0x80025100).
-    if (flags || frame.move_x || frame.move_y || (frame.actions & RECOMP_MOUSE_JUMP))
+    if (flags || frame.move_x || frame.move_y || jump)
         flags |= UINT32_C(0x80000000);
     recomp_store32(rt, command + Q2_INPUT_HELD, flags);
     recomp_store32(rt, command + Q2_INPUT_PREVIOUS, previous);

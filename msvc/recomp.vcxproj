@@ -102,6 +102,7 @@
     <None Include="$(RecompRoot)tools\format.sh" />
     <None Include="$(RecompRoot)tools\generate_game.py" />
     <None Include="$(RecompRoot)tools\import_rom.py" />
+    <None Include="$(RecompRoot)tools\input_evidence.py" />
     <None Include="$(RecompRoot)tools\inspect_address.py" />
     <None Include="$(RecompRoot)tools\inspect_callbacks.py" />
     <None Include="$(RecompRoot)tools\inspect_crash.py" />

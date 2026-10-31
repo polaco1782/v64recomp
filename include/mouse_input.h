@@ -10,6 +10,9 @@ enum RecompMouseAction {
     RECOMP_MOUSE_NEXT_WEAPON = 1u << 3,
     RECOMP_MOUSE_PREVIOUS_WEAPON = 1u << 4,
     RECOMP_MOUSE_STATUS = 1u << 5,
+    RECOMP_MOUSE_SECONDARY_ATTACK = 1u << 6,
+    RECOMP_MOUSE_USE = 1u << 7,
+    RECOMP_MOUSE_DEFEND = 1u << 8,
 };
 
 /* Host submits while guest execution is parked. The selected guest update

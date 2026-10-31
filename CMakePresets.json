@@ -2,6 +2,28 @@
   "version": 6,
   "configurePresets": [
     {
+      "name": "bad-apple-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/bad-apple-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "bad-apple",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RECOMP_EMBED_ROM": "OFF"
+      }
+    },
+    {
+      "name": "bad-apple-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/bad-apple-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "bad-apple",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RECOMP_EMBED_ROM": "OFF"
+      }
+    },
+    {
       "name": "windows-msvc-release",
       "displayName": "Windows x64 MSVC Release",
       "architecture": "x64",
@@ -383,6 +405,16 @@
     }
   ],
   "buildPresets": [
+    {
+      "name": "bad-apple-debug",
+      "configurePreset": "bad-apple-debug",
+      "jobs": 4
+    },
+    {
+      "name": "bad-apple-release",
+      "configurePreset": "bad-apple-release",
+      "jobs": 4
+    },
     { "name": "windows-msvc-release", "configurePreset": "windows-msvc-release", "configuration": "Release", "jobs": 4 },
     { "name": "windows-msvc-debug", "configurePreset": "windows-msvc-debug", "configuration": "Debug", "jobs": 4 },
     {
@@ -557,6 +589,32 @@
     }
   ],
   "workflowPresets": [
+    {
+      "name": "bad-apple-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "bad-apple-debug"
+        },
+        {
+          "type": "build",
+          "name": "bad-apple-debug"
+        }
+      ]
+    },
+    {
+      "name": "bad-apple-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "bad-apple-release"
+        },
+        {
+          "type": "build",
+          "name": "bad-apple-release"
+        }
+      ]
+    },
     {
       "name": "sm64-us-release",
       "steps": [

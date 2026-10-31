@@ -31,6 +31,7 @@ struct RecompRenderer {
     RecompGraphicsHook graphics_hook = nullptr;
     RecompMicrocodeHook microcode_hook = nullptr;
     bool custom_gbi = false;
+    bool raw_rdp = false, raw_vi = false;
     std::thread::id owner = std::this_thread::get_id();
     std::unique_ptr<RT64::Application> app;
     std::unique_ptr<RecompCheatMenu> cheat_menu;
@@ -75,6 +76,8 @@ struct RecompRenderer {
         app->presentQueue->waitForIdle();
     }
     void sync_vi() {
+        if (raw_vi)
+            return;
         (void)recomp_vi_registers(rt, &vi);
         // RT64 estimates the color-image base by subtracting a scanline from
         // VI_ORIGIN. Custom modes can start at row zero (Shadow Man does),
@@ -144,7 +147,7 @@ static void interrupts() {
     s->mi &= ~bits;
     if (!bits)
         return;
-    if (!s->token)
+    if (!s->token && !s->raw_rdp)
         recomp_fail("RT64 interrupt without task token", 0);
     if (bits & 0x20) {
         if (s->dp_seen)
@@ -163,6 +166,8 @@ static void interrupts() {
 #endif
     }
     if (bits & 1) {
+        if (s->raw_rdp)
+            recomp_fail("unexpected SP receipt during raw RDP DMA", 0);
         if (s->sp_seen)
             recomp_fail("invalid RT64 SP receipt", 0);
         s->sp_seen = true;
@@ -434,6 +439,7 @@ void recomp_renderer_destroy(RecompRenderer *s) {
 }
 bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
     s->check_owner();
+    s->raw_vi = false;
     if (!s->ready || s->token || task->resumed || task->words[0] != 1 ||
         (task->words[1] & ~(RECOMP_TASK_DP_WAIT | RECOMP_TASK_LOADABLE | RECOMP_TASK_USER_FLAGS)) || !task->words[4] ||
         task->words[5] > 0x2000 || !task->words[6] || !task->words[7] || task->words[7] > 0x2000 || !task->words[12] ||
@@ -472,6 +478,29 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
     s->token = 0;
     s->stats.graphics_tasks++;
     return true;
+}
+bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
+                                const RecompViRegisters *registers, uint32_t framebuffer) {
+    s->check_owner();
+    if (!s->ready || s->token || s->raw_rdp || !registers || end <= start || (start & 7) || (end & 7))
+        return false;
+    uint32_t physical = recomp_ram_address(s->rt, start, end - start);
+    s->vi = *registers;
+    s->vi.origin = recomp_ram_address(s->rt, s->vi.origin, 1);
+    const RT64::VI decoded = s->app->core.decodeVI();
+    if (decoded.visible() && s->vi.origin == recomp_ram_address(s->rt, framebuffer, 1)) {
+        const uint32_t rowOffset = s->vi.origin - decoded.fbAddress();
+        if (rowOffset && uint64_t(s->vi.origin) + rowOffset < s->rt->rdram_size)
+            s->vi.origin += rowOffset;
+    }
+    s->raw_vi = s->raw_rdp = true;
+    s->sp_seen = s->dp_seen = false;
+    const uint64_t begin = monotonic_ns();
+    s->app->processDisplayLists(s->rt->rdram, physical, physical + (end - start), false);
+    s->stats.submit_ns += monotonic_ns() - begin;
+    s->stats.graphics_tasks++;
+    s->raw_rdp = false;
+    return s->dp_seen;
 }
 bool recomp_renderer_present(RecompRenderer *s) {
     s->check_owner();
@@ -615,12 +644,14 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
             s->mouse_frame.move_x = keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A];
             s->mouse_frame.move_y = keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S];
             if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) s->mouse_frame.actions |= RECOMP_MOUSE_ATTACK;
-            if (keys[SDL_SCANCODE_SPACE] || (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)))
-                s->mouse_frame.actions |= RECOMP_MOUSE_JUMP;
+            if (keys[SDL_SCANCODE_SPACE]) s->mouse_frame.actions |= RECOMP_MOUSE_JUMP;
+            if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) s->mouse_frame.actions |= RECOMP_MOUSE_SECONDARY_ATTACK;
             if (keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT])
                 s->mouse_frame.actions |= RECOMP_MOUSE_SPEED;
             if (keys[SDL_SCANCODE_Q]) s->mouse_frame.actions |= RECOMP_MOUSE_NEXT_WEAPON;
-            if (keys[SDL_SCANCODE_E] || keys[SDL_SCANCODE_R]) s->mouse_frame.actions |= RECOMP_MOUSE_PREVIOUS_WEAPON;
+            if (keys[SDL_SCANCODE_R]) s->mouse_frame.actions |= RECOMP_MOUSE_PREVIOUS_WEAPON;
+            if (keys[SDL_SCANCODE_E]) s->mouse_frame.actions |= RECOMP_MOUSE_USE;
+            if (keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL]) s->mouse_frame.actions |= RECOMP_MOUSE_DEFEND;
             if (keys[SDL_SCANCODE_F]) s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
         }
         pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;

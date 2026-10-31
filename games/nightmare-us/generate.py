@@ -1,5 +1,12 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
+from common import write_json
+from input_evidence import verify_input_evidence
+
+
+def prepare(rom, profile, output):
+    verify_input_evidence(rom, profile)
+    return rom, profile
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
@@ -14,3 +21,11 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'nightmare_config.h').write_text('\n'.join(lines))
+    lines = ['/* Generated from verified Nightmare Creatures input operands. */']
+    lines.extend(f'#define NC_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['input_adapter']['bindings'])
+    (output / 'nightmare_input_config.h').write_text('\n'.join(lines) + '\n')
+
+
+def write_report(rom, profile, metadata, coverage, output):
+    write_json(output / 'input-hooks.json', verify_input_evidence(rom, profile, metadata, coverage))

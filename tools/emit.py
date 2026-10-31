@@ -26,7 +26,7 @@ def log_emission(message: str, *args: object, verbose: bool = False) -> None:
 rabbitizer.config.pseudos_enablePseudos = False
 
 SUPPORTED = set("""
-nop lui addiu addi addu add subu sub daddiu dadd daddu dsubu
+nop cache lui addiu addi addu add subu sub daddiu dadd daddu dsubu
 and or xor nor andi ori xori slt sltu slti sltiu
 sll srl sra sllv srlv srav dsll dsrl dsra dsll32 dsrl32 dsra32 dsllv dsrlv dsrav
 mult multu div divu mfhi mflo mthi mtlo
@@ -201,6 +201,8 @@ def analyze(function: dict, instructions: list[Instruction], registry: dict, fpu
         registered = transfer and transfer.get('registered_targets') is True
         if i.opcode not in SUPPORTED:
             reason = f"unsupported instruction: {i.opcode}"
+        elif i.opcode == 'cache' and i.rt != 1:
+            reason = 'only CACHE Index Writeback Invalidate D is supported'
         elif fp_error(i, fpu_fr):
             reason = fp_error(i, fpu_fr)
         elif fpu_fr == 0 and ((i.opcode in ('ldc1', 'sdc1') and i.rt % 2)
@@ -319,6 +321,10 @@ def body(i: Instruction, relocated_immediate: str | None = None) -> str:
     destination = i.rt
     expression = None
     if op == 'nop': return ""
+    if op == 'cache':
+        # Index Writeback Invalidate D affects cache tags, not addressed memory.
+        # Translated CPU and native backends already share coherent host RAM.
+        return '/* CACHE Index Writeback Invalidate D: coherent host RAM. */'
     if op == 'break': return f'recomp_fail("MIPS BREAK {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'syscall': return f'recomp_fail("MIPS SYSCALL {i.word >> 6 & 0xfffff}", UINT32_C(0x{i.pc:08x}));'
     if op == 'mtc1': return f'ctx->fpr[{i.rd}] = {b};'

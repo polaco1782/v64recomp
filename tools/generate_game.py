@@ -17,7 +17,7 @@ from translate import translate
 from symbol_database import DATABASE
 
 PROJECT = Path(__file__).resolve().parents[1]
-GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1','turok-us-v12','1080-us','banjo-kazooie-us','twine-us')
+GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1','turok-us-v12','1080-us','banjo-kazooie-us','twine-us','bad-apple')
 
 
 class GenerationProgress:
@@ -92,6 +92,12 @@ def generate(game: str, output: Path, report_only: bool) -> None:
 def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress) -> None:
     base = PROJECT/'games'/game
     profile = load_profile(base/'profile.toml')
+    sys.path.insert(0,str(base))
+    spec=importlib.util.spec_from_file_location('game_generate',base/'generate.py')
+    generator=importlib.util.module_from_spec(spec);spec.loader.exec_module(generator)
+    if hasattr(generator,'ensure_rom'):
+        progress.stage('Checking external demo ROM download')
+        generator.ensure_rom(profile)
     rom, _ = load_rom(profile['game']['rom'],profile['game']['rom_sha1'],profile['game']['rom_size'])
     original_rom=rom
     progress.stage('Checking generation cache')
@@ -111,9 +117,6 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     output.mkdir(parents=True,exist_ok=True)
     previous={p:(p.read_bytes(),p.stat().st_atime_ns,p.stat().st_mtime_ns)
               for pattern in ('*.c','*.h','sources.cmake') for p in output.glob(pattern)}
-    sys.path.insert(0,str(base))
-    spec=importlib.util.spec_from_file_location('game_generate',base/'generate.py')
-    generator=importlib.util.module_from_spec(spec);spec.loader.exec_module(generator)
     original_profile=profile
     if hasattr(generator,'prepare'):
         progress.stage('Preparing ROM code and overlays')

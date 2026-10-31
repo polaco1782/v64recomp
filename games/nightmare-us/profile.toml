@@ -1,3 +1,10 @@
+# Input wrappers retain the translated cartridge functions.
+function_wrappers = [
+  {section = ".main", vram = 0x80034850, size = 0x648, sha256 = "7e1091a367d67ff19b404d066e3ff28ab85d523634111c59219a25e2cf71b765", handler = "nightmare_input_game_hook"},
+  {section = ".main", vram = 0x800052e8, size = 0xf1c, sha256 = "acdcfd7d5041e0468fbbfd42d40ad1d509c0d938faa7f9e539daff8fe1964bac", handler = "nightmare_input_actions_hook"},
+  {section = ".main", vram = 0x800472ac, size = 0x308, sha256 = "d67ea9004d48d39b9301963b8e2d5a231bb8b5629a25e7919a55539bc20d57fb", handler = "nightmare_input_read_hook"},
+]
+
 # Retire the synthetic IPL thread after transferring to the first OS thread.
 hooks = [
   {symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "hook_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc020458, 0xafb10014, 0x96030010]},
@@ -104,3 +111,36 @@ clock_rate = 0x800a3670
 0x80000310 = 0x17d6
 0x80000314 = 0x1
 0x80000318 = 0x800000
+
+# Reviewed input evidence; see controller.md.
+[input_adapter]
+functions = [
+  {name = "game_loop", vram = 0x80034850, size = 0x648, sha256 = "7e1091a367d67ff19b404d066e3ff28ab85d523634111c59219a25e2cf71b765"},
+  {name = "player_actions", vram = 0x800052e8, size = 0xf1c, sha256 = "acdcfd7d5041e0468fbbfd42d40ad1d509c0d938faa7f9e539daff8fe1964bac"},
+  {name = "read_actions", vram = 0x800472ac, size = 0x308, sha256 = "d67ea9004d48d39b9301963b8e2d5a231bb8b5629a25e7919a55539bc20d57fb"},
+  {name = "convert_pad", vram = 0x80071d8c, size = 0x3fc, sha256 = "283e343edd98ac5e79e5eca4a5eb34c3a2a911b44ee176d3fbb01d3c158ff025"},
+  {name = "read_pad", vram = 0x8007f440, size = 0xdc, sha256 = "631f103348fa431e970e3e26eec177b630df369623333a762d7d7ff645511e5d"},
+  {name = "pad_thread", vram = 0x8007f51c, size = 0x28, sha256 = "871f950fc36db85fe20091f04d24b7d9b4b33657a26a6cfe39c9a72d0750099b"},
+  {name = "init_pad", vram = 0x80046c40, size = 0x84, sha256 = "1026d2841ad24be9680600dc13c65defb36b364bc2272fad66b7b900ff9f6245"},
+  {name = "pause", vram = 0x80034f58, size = 0x1e8, sha256 = "d94d0ce89be5e50f2e26a774472ef4794724e25a5b7a43e288296c8b6d2b9745"},
+  {name = "frame_controls", vram = 0x800469b0, size = 0x290, sha256 = "2c555a66b40ccaa5f0f75bb7b0c88e10923604bbd54c8f682cebdf2ba24a4965"},
+  {name = "turn", vram = 0x80003ab4, size = 0x45c, sha256 = "fd482a0845b099ee5454698f6d44d974b5a491c7de635b6b272b38f0358e67cb"},
+  {name = "animate", vram = 0x800039a0, size = 0xb0, sha256 = "8d7f377ed1cf54746282ea71805b7a07fe82a1741ea1c1b7a8d3a0bfe61f53d7"},
+  {name = "relative_angle", vram = 0x8001517c, size = 0x9c, sha256 = "425956d7ea5dcc75461f015e3f8bb4db0b80504fe7299005357fc0bb30103192"},
+  {name = "sine", vram = 0x80007424, size = 0x20, sha256 = "71d5004008bcae5a28b2b5c6b11cdbd4f2a054f474918c9b19c75d24dcbecec4"},
+  {name = "angle_wrap", vram = 0x8005455c, size = 0x30, sha256 = "0def7258016cdb031833b2ae6b6318917f987013683c232484c982d37e907385"},
+]
+data = []
+bindings = [
+  {name = "state", value = 0x80097860, kind = "address", pcs = [0x800052f0, 0x800052f4], words = [0x3c028009, 0x8c437860]},
+  {name = "player", value = 0x800b4b70, kind = "address", pcs = [0x80034a94, 0x80034a98], words = [0x3c02800b, 0x8c504b70]},
+  {name = "session", value = 0x800b7660, kind = "address", pcs = [0x80005370, 0x80005374], words = [0x3c02800b, 0x24437660]},
+  {name = "analog_x", value = 0x800b9480, kind = "address", pcs = [0x80047488, 0x8004748c], words = [0x3c03800c, 0xa0629480]},
+  {name = "analog_y", value = 0x800b9481, kind = "address", pcs = [0x80047498, 0x800474a0], words = [0x3c04800c, 0xa0829481]},
+  {name = "player_flags", value = 0x30c, kind = "immediate", pcs = [0x80005598], words = [0x8e04030c]},
+  {name = "transform", value = 0x20, kind = "immediate", pcs = [0x80003b94], words = [0x8e030020]},
+  {name = "heading", value = 0x48, kind = "immediate", pcs = [0x80003b98], words = [0x8c620048]},
+  {name = "previous", value = 0x33c, kind = "immediate", pcs = [0x800054b0], words = [0x8e03033c]},
+  {name = "actions_return", value = 0x80034b08, kind = "return", pcs = [0x80034b00, 0x80034b04], words = [0xc0014ba, 0x2002021]},
+  {name = "read_return", value = 0x8000536c, kind = "return", pcs = [0x80005364, 0x80005368], words = [0xc011cab, 0x24050001]},
+]

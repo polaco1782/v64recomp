@@ -28,6 +28,8 @@ def ranges_from_mask(mask: bytearray) -> list[dict]:
 
 
 def strip_rom(rom: bytes, analysis: bytes, metadata: dict, profile: dict) -> tuple[bytes, dict]:
+    if profile.get('packaging', {}).get('allow_embedding', True) is False:
+        raise RecompError('this demo uses an external ROM; embedding is disabled by its profile')
     # Appended/repacked analysis offsets cannot be applied to the cartridge.
     # In particular, zeroing compressed code can also destroy initialized data.
     if analysis != rom:

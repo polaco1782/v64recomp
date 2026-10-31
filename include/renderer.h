@@ -32,6 +32,10 @@ void recomp_renderer_set_graphics_hook(RecompRenderer *, RecompGraphicsHook);
 void recomp_renderer_set_microcode_hook(RecompRenderer *, RecompMicrocodeHook);
 void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
+/* Bare-metal RDP DMA, without an RSP microcode task. Registers describe the
+ * actual scanout; framebuffer is its base before the VI scanline offset. */
+bool recomp_renderer_submit_rdp(RecompRenderer *, uint32_t start, uint32_t end,
+                                const RecompViRegisters *, uint32_t framebuffer);
 bool recomp_renderer_present(RecompRenderer *);
 bool recomp_renderer_input(RecompRenderer *, RecompPad *);
 /* Opt-in PC controls. Gameplay false releases capture and clears motion.

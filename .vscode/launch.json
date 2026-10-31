@@ -2,6 +2,58 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug: Bad Apple demo (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/bad-apple/debug/bin/Debug/bad-apple.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Debug: Bad Apple demo",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug: Bad Apple demo (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bad-apple-debug/bin/bad-apple",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Debug: Bad Apple demo",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "externalConsole": false
+    },
+    {
+      "name": "Release: Bad Apple demo (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/bad-apple/release/bin/Release/bad-apple.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Release: Bad Apple demo",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Release: Bad Apple demo (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bad-apple-release/bin/bad-apple",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "preLaunchTask": "Build Release: Bad Apple demo",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "externalConsole": false
+    },
+    {
       "name": "Debug: Super Mario 64 US (Windows)",
       "type": "cppvsdbg",
       "request": "launch",

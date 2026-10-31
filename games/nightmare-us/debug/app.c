@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include "renderer.h"
+#include "nightmare_input.h"
 #include "audio.h"
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
@@ -171,6 +172,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Nightmare Creatures IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "Nightmare Creatures");
     require(renderer != NULL, "Nightmare Creatures renderer initialization failed", 0);
+    nightmare_input_init();
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = getenv("RECOMP_AUDIO_MUTE") == NULL,
                             .prebuffer_ms = 160,
@@ -200,6 +202,7 @@ int main(int argc, char **argv) {
     }
     while (!frames || presentations < frames) {
         RecompPad pad = {.connected = true};
+        recomp_renderer_mouse_mode(renderer, nightmare_input_enabled(), nightmare_input_playable(&rt));
         if (!recomp_renderer_input(renderer, &pad)) {
             window_closed = true;
             break;
@@ -211,6 +214,7 @@ int main(int argc, char **argv) {
             }
             pad = replay_pad;
         }
+        nightmare_input_submit(recomp_renderer_mouse_frame(renderer), &pad);
         require(recomp_input_set(&rt, 0, &pad), "Nightmare Creatures controller update failed", 0);
         drain(&rt);
         require(recomp_renderer_present(renderer), "Nightmare Creatures presentation failed", 0);

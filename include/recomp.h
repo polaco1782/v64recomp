@@ -106,6 +106,11 @@ struct Runtime {
     RecompAddressResolver resolve_address;
     void (*prepare_call)(Runtime *, uint32_t);
     void *address_userdata;
+    /* Optional bare-metal device adapter. Physical bus addresses; false leaves
+     * normal memory validation in force. Only the slow non-RAM path calls it. */
+    bool (*device_read)(Runtime *, uint32_t, unsigned, uint64_t *);
+    bool (*device_write)(Runtime *, uint32_t, unsigned, uint64_t);
+    void *device_userdata;
     /* Optional game loader: map relocated entries to their compiled addresses. */
     uint32_t (*canonical_function_address)(Runtime *, uint32_t);
     uint32_t (*relocated_address)(Runtime *, uint32_t section, uint32_t address);
@@ -290,7 +295,7 @@ static inline uint32_t recomp_ram_address_write(Runtime *rt, uint32_t address, s
  * Debug uses the shared writer so alignment/range failures retain their span. */
 static inline void recomp_store8(Runtime *rt, uint32_t address, uint8_t value) {
 #ifndef RECOMP_DEBUG
-    if (recomp_direct_address(address)) {
+    if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 1);
         rt->rdram[p ^ 3] = value;
         return;
@@ -301,7 +306,7 @@ static inline void recomp_store8(Runtime *rt, uint32_t address, uint8_t value) {
 
 static inline void recomp_store16(Runtime *rt, uint32_t address, uint16_t value) {
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
-    if (recomp_direct_address(address)) {
+    if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 2);
         memcpy(rt->rdram + (p ^ 2), &value, 2);
         return;
@@ -312,7 +317,7 @@ static inline void recomp_store16(Runtime *rt, uint32_t address, uint16_t value)
 
 static inline void recomp_store32(Runtime *rt, uint32_t address, uint32_t value) {
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
-    if (recomp_direct_address(address)) {
+    if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 4);
         memcpy(rt->rdram + p, &value, 4);
         return;
@@ -323,7 +328,7 @@ static inline void recomp_store32(Runtime *rt, uint32_t address, uint32_t value)
 
 static inline void recomp_store64(Runtime *rt, uint32_t address, uint64_t value) {
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
-    if (recomp_direct_address(address)) {
+    if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 8);
         uint64_t swapped = (value << 32) | (value >> 32);
         memcpy(rt->rdram + p, &swapped, 8);

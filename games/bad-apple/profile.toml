@@ -1,0 +1,28 @@
+[game]
+name = "Bad Apple!! (krom I8 LZRLE demo)"
+rom = "../../local/bad-apple.z64"
+rom_size = 59345912
+rom_sha1 = "638e81902bbd57114de3eba39fba3aabd322c6df"
+ram_size = 0x400000
+entry_symbol = "entry_point"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[download]
+url = "https://raw.githubusercontent.com/PeterLemon/N64/7085543e4a19d8c539fc9e0a4d2869e788b4ed4b/Video/I8LZRLEVideo/I8LZRLEVideo.N64"
+sha256 = "61bd899128485672c04aedf2dde310f633e39ab080fdcc3d41b740919650dd8b"
+
+[packaging]
+allow_embedding = false
+
+[discovery]
+regions = [{name = ".main", vram = 0x80001000, rom_offset = 0x1000, size = 0x2ec}]
+
+[bootstrap]
+initial_rom_offset = 0x1000
+initial_load_address = 0x80001000
+initial_load_size = 0x6d8
+thread_tail = 0x803f0000
+thread_object = 0x803f0100
+thread_stack = 0x803ff000
+counter_hz = 46875000

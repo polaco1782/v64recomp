@@ -2,6 +2,16 @@
 
 Original title, menus, character selection and playable Chelsea with graphics, ABI1 audio and live input. Full-game progression remains unverified.
 
+Mouse steering and WASD are enabled by default. W/S move forward/back; A/D use
+the native side dodges. Left/right mouse strike/kick, Space jumps, Ctrl defends,
+E uses an item, and the wheel selects inventory items. Horizontal mouse motion
+turns the character with the original following camera; vertical free-look is
+not added. Tab pauses; Esc/F4 release/recapture the mouse.
+
+See [controller findings](controller.md) for controls, settings, ROM hooks and
+state checks. The adapter has static ROM verification and Debug/Release build
+coverage; its gameplay acceptance is left to user testing.
+
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/nightmare-us/profile.toml --rom /path/to/rom`.
 

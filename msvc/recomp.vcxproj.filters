@@ -235,6 +235,9 @@
     <None Include="$(RecompRoot)tools\import_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\input_evidence.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\inspect_address.py">
       <Filter>Source Files\tools</Filter>
     </None>

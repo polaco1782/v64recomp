@@ -3,6 +3,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
+#include "nightmare_input.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -77,6 +78,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Nightmare Creatures IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Nightmare Creatures");
     require(renderer != NULL, "renderer initialization failed", 0);
+    nightmare_input_init();
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -90,8 +92,10 @@ int main(int argc, char **argv) {
     uint64_t next_present = monotonic_ns();
     for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
         RecompPad pad = {.connected = true};
+        recomp_renderer_mouse_mode(renderer, nightmare_input_enabled(), nightmare_input_playable(&rt));
         if (!recomp_renderer_input(renderer, &pad))
             break;
+        nightmare_input_submit(recomp_renderer_mouse_frame(renderer), &pad);
         require(recomp_input_set(&rt, 0, &pad), "controller update failed", 0);
         drain(&rt);
         require(recomp_renderer_present(renderer), "presentation failed", 0);

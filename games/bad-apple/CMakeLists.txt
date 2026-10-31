@@ -1,0 +1,7 @@
+set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/bad-apple.z64")
+set(RECOMP_SAVE "")
+if(RECOMP_EMBED_ROM)
+    message(FATAL_ERROR "Bad Apple uses an external downloaded ROM; embedding is disabled.")
+endif()
+set(RECOMP_GAME_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/demo.c")
+include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")

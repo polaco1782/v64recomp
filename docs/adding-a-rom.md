@@ -105,6 +105,14 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
     ...
 ```
 
+An explicitly downloadable demo may also export `ensure_rom(profile)` from its
+`generate.py`. The driver calls it before loading the ROM or checking the
+generation cache. Keep the pinned source URL, size and checksums in that game's
+single profile, and the fetch/cache implementation in its parent folder. This
+is an opt-in build prerequisite for that demo, not a default download policy for
+commercial games. Bad Apple demonstrates an atomic verified download into
+ignored `local/`, offline cache reuse, and rejection of mismatched local files.
+
 Examples are OOT's [Yaz0/overlay preparation](../games/oot-us-v12/prepare.py)
 and Perfect Dark's [RareZip preparation](../games/perfectdark-us-v11/generate.py).
 Preparation may append decoded sections to the analysis image. Their reported

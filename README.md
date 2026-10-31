@@ -17,6 +17,34 @@ The default preserves each game's original aspect ratio.
 
 ![Ocarina of Time rendered in an ultrawide window with RT64](docs/screenshots/zelda-wide.png)
 
+## Bad Apple demo
+
+The `bad-apple` target runs krom's N64 Bad Apple!! video demo. **The demo ROM
+is not included in this repository or release packages. Building this target
+automatically downloads it from the [upstream project](https://github.com/PeterLemon/N64/tree/7085543e4a19d8c539fc9e0a4d2869e788b4ed4b/Video/I8LZRLEVideo),
+verifies its pinned size and SHA-256, and caches it in `local/bad-apple.z64`.**
+Later builds reuse the verified local file and can run offline. The executable
+loads that external ROM; embedding is disabled for this target. The upstream
+code license does not establish redistribution permission for the music/video.
+
+After installing the build dependencies below, use the **Bad Apple demo**
+VS Code build/launch entries, the Visual Studio `bad-apple` project, or:
+
+```powershell
+# Windows
+.\tools\build_msvc_project.ps1 -Game bad-apple -Configuration Release
+.\build\msvc\bad-apple\release\bin\Release\bad-apple.exe
+```
+
+```sh
+# Linux
+cmake --workflow --preset bad-apple-release
+./build/bad-apple-release/bin/bad-apple
+```
+
+See the [demo notes](games/bad-apple/README.md) for its source, download behavior,
+runtime implementation and validation status.
+
 ## Build and play
 
 Requirements: Python 3.11+, C/C++ compiler, CMake 3.25+, OpenSSL 3, SDL2,
