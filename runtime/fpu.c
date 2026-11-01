@@ -8,8 +8,12 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
-#if !(defined(__x86_64__) && defined(__SSE2__)) && !defined(_M_X64)
-#error "This floating-point backend requires x86-64 SSE2"
+#if (defined(__x86_64__) && defined(__SSE2__)) || defined(_M_X64)
+#define RECOMP_FP_SSE USE_INTRISICS
+#elif defined(__aarch64__) && defined(__linux__)
+#define RECOMP_FP_SSE 0
+#else
+#error "Floating-point backend requires x86-64 SSE2 or Linux AArch64"
 #endif
 #if defined(__SSE2__) || defined(_M_X64)
 #include <emmintrin.h>
@@ -27,7 +31,7 @@ static const int rounding[] = {FE_TONEAREST, FE_TOWARDZERO, FE_UPWARD, FE_DOWNWA
 typedef struct FpEnvironment {
     fenv_t saved;
     int saved_errno;
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
     unsigned saved_mxcsr;
     bool sse_only;
 #endif
@@ -36,7 +40,7 @@ typedef struct FpEnvironment {
 static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
     FpEnvironment env;
     unsigned rm = mode < 0 ? ctx->fcr31 & 3 : (unsigned)mode;
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
     env.sse_only = sse_only;
     if (sse_only) {
         static const unsigned mxcsr_rounding[] = {0x0000, 0x6000, 0x4000, 0x2000};
@@ -58,12 +62,20 @@ static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
     /* Host DAZ/FTZ would corrupt guest subnormals and underflow detection.
      * fesetenv below restores the complete saved MXCSR on our Linux host. */
     _mm_setcsr(_mm_getcsr() & ~UINT32_C(0x8040));
+#elif defined(__aarch64__)
+    /* libc saves FPCR/FPSR, masks traps and selects rounding. Clear inherited
+     * flush/default-NaN/alternative modes as well; fesetenv restores all of
+     * them. FIZ/AH are RES0 on Armv8.0 but must be clear on newer hosts. */
+    uint64_t control;
+    __asm__ volatile("mrs %0, fpcr" : "=r"(control));
+    control &= ~UINT64_C(0x07080003);
+    __asm__ volatile("msr fpcr, %0" : : "r"(control) : "memory");
 #endif
     return env;
 }
 
 static unsigned end(MipsContext *ctx, const FpEnvironment *env) {
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
     if (env->sse_only) {
         unsigned flags = _mm_getcsr();
         _mm_setcsr(env->saved_mxcsr);
@@ -188,7 +200,7 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enu
     FpEnvironment env = begin(ctx, -1, true);
     if (fmt == MIPS_FP_S) {
         volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b), z;
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
         __m128 vx = _mm_set_ss(x), vy = _mm_set_ss(y);
         switch (op) {
             case MIPS_FP_ADD:
@@ -227,7 +239,7 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enu
         bits = float_bits(z);
     } else {
         volatile double x = as_double(a), y = as_double(b), z;
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
         __m128d vx = _mm_set_sd(x), vy = _mm_set_sd(y);
         switch (op) {
             case MIPS_FP_ADD:
@@ -283,7 +295,7 @@ void mips_fp_unary(MipsContext *ctx, unsigned fd, unsigned fs, enum MipsFpFormat
     }
     if (op == MIPS_FP_SQRT) {
         FpEnvironment env = begin(ctx, -1, true);
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
         if (fmt == MIPS_FP_S) {
             volatile float x = as_float((uint32_t)bits);
             volatile float y = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(x)));
@@ -324,7 +336,7 @@ void mips_fp_convert(MipsContext *ctx, unsigned fd, unsigned fs, enum MipsFpForm
         write_bits(ctx, fd, to, quiet_nan(to));
         return;
     }
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
     FpEnvironment env = begin(ctx, mode, true);
     if (from == MIPS_FP_W || from == MIPS_FP_L) {
         uint64_t signed_bits = from == MIPS_FP_W ? mips_s32(bits) : bits;

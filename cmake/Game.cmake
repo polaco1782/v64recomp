@@ -1,4 +1,7 @@
 # Only the selected game is generated and compiled. Python is a build dependency.
+if(RECOMP_RENDERER STREQUAL "gles2" AND NOT RECOMP_GAME_GLES2_SUPPORTED)
+    message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES2 graphics adapter")
+endif()
 set(RECOMP_GAME_DIR "${CMAKE_SOURCE_DIR}/games/${RECOMP_GAME}")
 if(NOT DEFINED RECOMP_OPTIMIZE_DEBUG_DEFAULT)
     set(RECOMP_OPTIMIZE_DEBUG_DEFAULT OFF)
@@ -90,7 +93,12 @@ if(RECOMP_EMBED_ROM)
 endif()
 target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}"
     "${RECOMP_GAME_DIR}" "${RECOMP_GAME_DIR}/${RECOMP_CONFIG_DIR}")
-target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_RT64 RECOMP_WITH_AUDIO)
+target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_AUDIO)
+if(RECOMP_RENDERER STREQUAL "gles2")
+    target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_GLES2)
+else()
+    target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_RT64)
+endif()
 if(MSVC)
     # Translated MIPS intentionally narrows register values and retains labels
     # and unreachable delay-slot tails. Keep warnings enabled for handwritten code.
@@ -124,12 +132,14 @@ if(WIN32)
         endif()
     endforeach()
     # Shader compiler DLLs are delay-loaded by RT64. vcpkg deploys its own DLLs.
-    foreach(dll dxcompiler dxil)
-        add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "${RECOMP_RT64_SOURCE}/src/contrib/dxc/bin/x64/${dll}.dll"
-                "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
-    endforeach()
+    if(RECOMP_RENDERER STREQUAL "rt64")
+        foreach(dll dxcompiler dxil)
+            add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${RECOMP_RT64_SOURCE}/src/contrib/dxc/bin/x64/${dll}.dll"
+                    "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
+        endforeach()
+    endif()
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")

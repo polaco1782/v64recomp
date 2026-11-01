@@ -1,3 +1,5 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/sm64.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/sm64-us.eeprom")
+set(RECOMP_GAME_SOURCES graphics.c)
+set(RECOMP_GAME_GLES2_SUPPORTED ON)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")

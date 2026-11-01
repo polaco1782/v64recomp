@@ -29,7 +29,7 @@ one operation. Cause bits describe the last operation; exception flags accumulat
 The condition bit is captured before executing a branch's delay slot. Likely
 branches annul their untaken slots. Diagnostics identify a faulting slot's address.
 
-This first arithmetic backend requires **Linux x86-64 SSE2**, IEEE binary32/64,
+The arithmetic backends target **x86-64 SSE2** and experimental **Linux AArch64**, IEEE binary32/64,
 `-fno-fast-math -frounding-math -ffp-contract=off`, and libm. With
 `USE_INTRISICS=1` (the default in `include/recomp.h`), binary arithmetic, square
 roots and conversions use scalar SSE/SSE2 intrinsics. These operations
@@ -55,6 +55,13 @@ Coroutines can therefore keep different guest rounding modes without changing
 host callbacks or other guest threads. Tests compare both modes across rounding,
 sticky flags, NaNs, subnormals, guest traps, FR=0/1 registers, and restoration of
 MXCSR, x87 state and errno with GCC and Clang at `-O0`, `-O2` and `-O3`.
+On AArch64, arithmetic and conversions select the C/libm implementation even
+when `USE_INTRISICS=1`; portable integer comparisons remain available. The host
+`fenv` saves and restores FPCR/FPSR, masks exceptions and selects guest rounding.
+The backend also clears inherited flush-to-zero, default-NaN and alternative
+floating-point modes before arithmetic. The saved environment restores those
+modes on return, including when the guest operation subsequently traps.
+This is an initial portability path, not a Pi performance or conformance claim.
 Other hosts need a validated backend.
 
 VR4300 NaNs use the legacy convention: the highest fraction bit is set for a

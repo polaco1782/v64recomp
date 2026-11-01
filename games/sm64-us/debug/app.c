@@ -18,6 +18,7 @@
 static RecompAudio *native_audio;
 static bool audio_playback;
 #include "renderer.h"
+#include "graphics.h"
 #include <time.h>
 static RecompRenderer *renderer;
 static unsigned rendered_tasks, presentations;
@@ -160,6 +161,7 @@ static bool submit(Runtime *rt, void *unused, const RecompTask *task) {
                 if (!renderer) {
                     renderer = recomp_renderer_create_named(rt, data, "Super Mario 64");
                     CHECK(renderer);
+                    sm64_graphics_bind(renderer);
                 }
                 if (!live_startup) {
                     recomp_audio_set_output_enabled(native_audio, true);
@@ -342,6 +344,7 @@ int main(int argc, char **argv) {
         CHECK(snprintf(data, sizeof(data), "%s/rt64-data", output) > 0);
         renderer = recomp_renderer_create_named(&rt, data, "Super Mario 64");
         CHECK(renderer);
+        sm64_graphics_bind(renderer);
         wall_origin = monotonic_ns();
         clock_origin = ns;
         live_clock = true;

@@ -2,6 +2,11 @@
 
 Working gameplay baseline, with Castle Grounds movement/jumping and the castle lobby transition previously validated. Broader courses, ending and prolonged runs still need validation.
 
+An experimental GLES2 backend parses the game's original Fast3D display lists,
+including scene, HUD and frame setup. Desktop Castle Grounds movement passes;
+Pi 3 hardware is not tested. See [Fast3D GLES2](../../docs/armv8-gles2.md) for
+build flags and validation limits. RT64 remains the default.
+
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/sm64-us/profile.toml --rom /path/to/rom`.
 

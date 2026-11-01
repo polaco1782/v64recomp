@@ -4,6 +4,10 @@ Native N64 recompilation for Windows and Linux. ROM instructions are translated 
 compiled for the host; shared native services supply scheduling, input, saves,
 audio, and RT64 Vulkan graphics. See [how it works](docs/recompilation.md).
 
+Experimental [ARMv8/Fast3D GLES2 bring-up](docs/armv8-gles2.md) includes an
+AArch64 floating-point path and an opt-in parser for the game's original display
+lists. RT64 remains the default; Raspberry Pi hardware validation is pending.
+
 ## Screenshots
 
 Captured from the native builds.

@@ -324,3 +324,8 @@ current_time = 0x80367110
 base_counter = 0x80367118
 vi_intr_count = 0x8036711c
 app_nmi_buffer = 0x8000031c
+
+[graphics]
+# Original Fast3D task identity from the pinned ROM.
+code = {vram = 0x8032b330, size = 0x1000, sha256 = "ffd76b7092ce0c1b6dc2b1fb9992ab2b330f0d813577f49b3a1f32b2af9ac618"}
+data = {vram = 0x80339ac0, size = 0x800, sha256 = "b842fb99d1899c2f0345fcd43bd9f61f38675c39e4ec7bab5cb130518fbf0f3a"}

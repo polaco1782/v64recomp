@@ -6,6 +6,9 @@
 extern "C" {
 #endif
 typedef struct RecompRenderer RecompRenderer;
+/* Configure the original graphics microcode accepted by the GLES2 parser. */
+void recomp_renderer_graphics_identity(RecompRenderer *, const char *code_sha256, uint32_t code_bytes,
+                                      const char *data_sha256, uint32_t data_bytes);
 typedef void (*RecompGraphicsHook)(void *interpreter, size_t ram_size, uint64_t *rdp_triangles);
 typedef bool (*RecompMicrocodeHook)(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
 typedef struct RecompRendererStats {

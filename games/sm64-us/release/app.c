@@ -4,6 +4,7 @@
 #include "game_config.h"
 #include "renderer.h"
 #include "audio.h"
+#include "graphics.h"
 #include <stdlib.h>
 #define require recomp_game_require
 static RecompRenderer *renderer;
@@ -69,6 +70,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io), "SM64 save/input init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Super Mario 64");
     require(renderer != NULL, "SM64 renderer init failed", 0);
+    sm64_graphics_bind(renderer);
     RecompAudioConfig ac = {
         .playback = !options.mute, .output_enabled = true, .task_profile = &sm64_audio_task_profile};
     audio = recomp_audio_create(&rt, &ac);
