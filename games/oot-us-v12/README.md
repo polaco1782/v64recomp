@@ -25,5 +25,50 @@ SHA-256 profile. Link's house background was checked through the original openin
 other JPEG rooms and full-game progression still need validation. Debug reports
 count completed tasks as `jpeg_tasks`.
 
+## Keyboard and mouse
+
+Default [WASD/mouse controls](controller.md) provide native camera-relative
+movement, third-person mouse orbit and adventure action bindings. Right mouse
+is Z-targeting, left mouse is the sword, E/Space is A and Ctrl is the shield.
+Mouse orbit currently covers the standard follow camera; first-person aiming
+and special camera modes retain native behavior. Set `RECOMP_OOT_MOUSE=0` to use
+the original mapping.
+
+## Field of view
+
+Set `RECOMP_FOV` to horizontal degrees at the original 4:3 reference aspect,
+from `60` through `120`. Unset, empty or `0` preserves the original camera. Its
+usual native vertical FOV is 60 degrees (about 75.2 degrees horizontal at 4:3).
+The override preserves native zoom ratios and applies to normal-family 3D
+gameplay cameras. Fixed/prerendered backgrounds, dialog, pause and scripted
+cameras keep their original framing. RT64 F7 aspect expansion is separate.
+
+```powershell
+.\tools\build_msvc_project.ps1 -Game oot-us-v12 -Configuration Release
+$env:RECOMP_FOV = '110'
+.\build\msvc\oot-us-v12\release\bin\Release\oot-us-v12.exe
+```
+
+The adapter adjusts the view FOV after the original camera update, before the
+shared CPU/GPU view-projection matrices are built. It leaves the native camera
+FOV unchanged to avoid compounding zoom. See the
+[investigation guide](../../docs/field-of-view.md#ocarina-of-time-investigation-record)
+for addresses, ABI details and the pinned public reference.
+
+## Focused control check
+
+```powershell
+.\tools\build_msvc_project.ps1 -Game oot-us-v12 -Configuration Debug
+$env:RECOMP_OOT_CHECK_CONTROLS = '1'
+.\build\msvc\oot-us-v12\debug\bin\Debug\oot-us-v12.exe --frames 1
+Remove-Item Env:RECOMP_OOT_CHECK_CONTROLS
+```
+
+MSVC Debug and Release builds and the focused Debug check passed. The check
+covers synthetic action mapping, camera/collision ABI, targeting,
+state exclusions, FOV conversion and native zoom ratios. In-game movement,
+collision, aiming, camera transitions, edge visibility and combined F7 behavior
+still require gameplay testing.
+
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).

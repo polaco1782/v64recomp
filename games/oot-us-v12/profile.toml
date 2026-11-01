@@ -1,3 +1,8 @@
+function_wrappers = [
+  {section = ".code", vram = 0x8009b60c, size = 0x10f4, sha256 = "25fbb556012b3eda23abf0c706234e5fc8501b95e767267c693cc69d8327304a", handler = "oot_play_update_hook"},
+  {section = ".code", vram = 0x80048c4c, size = 0x830, sha256 = "0f3b9e8d99bb1beb2989f64054c3d0399d83a716a6e1139c7c2f0f2d55a5419f", handler = "oot_camera_update_hook"},
+  {section = ".code", vram = 0x80039054, size = 0xa58, sha256 = "c99773dbaa0f888217eb3e2ca9a0b9562a459ee9b7cb5d9b3fe7ecfb4eb9a5d5", handler = "oot_normal_camera_hook"},
+]
 boundaries = [
   {symbol = "func_80002b24", vram = 0x80002b24, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x3c0a8001, 0x254aa420]},
   {symbol = "func_80002c0c", vram = 0x80002c0c, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x3c058000, 0x8ca568c0]},
@@ -45,6 +50,7 @@ fallthroughs = [
 ]
 # Scene_ExecuteCommands indexes this 26-entry command handler table.
 function_tables = [
+  {pc = 0x80049070, expected_word = 0x0320f809, table_vram = 0x800ef6c0, count = 0x47, indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70], sha256 = "70248eab1a997d1575bab178fe63e2670d8fafcd8e69e45bb653b528c42c1b20"},
   {pc = 0x80064680, expected_word = 0x320f809, table_vram = 0x800f2030, count = 0xb, sha256 = "57ddf786b3289d74ad1d34d2ccac341c2d06d241db6b8f884d86b438d3782fac"},
   {pc = 0x80831a60, expected_word = 0x320f809, table_vram = 0x80851f58, count = 0x43, sha256 = "5f0734128eb061aa9b15150039482dc80117ff722d5fe8e76515399a113d59ec"},
   {pc = 0x80081e20, expected_word = 0x320f809, table_vram = 0x800f95c0, count = 0x1a, indices = [0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x12, 0x13, 0x15, 0x16, 0x17, 0x18, 0x19], sha256 = "9ba43e6d4b9b6d192195cc16aa5c5b059905fa57044ced153e77247bab9dd97c"},
@@ -932,3 +938,47 @@ clock_rate = 0x800068d0
 0x80000310 = 0x91
 0x80000314 = 0x1
 0x80000318 = 0x800000
+
+[controls]
+reference = "https://github.com/zeldaret/oot"
+reference_revision = "14759abf9abb4295de142cdc1452998630ea70fb"
+normal_camera = 0x80039054
+native_fov = {vram = 0x800ec808, value = 60, tag = 7}
+camera_dispatch_pc = 0x80049070
+settings_table = {vram = 0x800ef4b0, count = 0x42, sha256 = "7fa2204db87113e350339f008dd6ff8156cab478e1d74256e15123f13b594fb5"}
+functions = [
+  {name = "Play_Init", vram = 0x8009ae40, size = 0x7cc, sha256 = "e233ced0fc30e0206a112e6561a52376de35e9345645ce0d6b2f18ffc1e65ac3"},
+  {name = "Play_Main", vram = 0x8009d1b8, size = 0x40, sha256 = "8e02ce4eebe442f3943d075fa525911e415942da1feb69060cb8e753d21960d1"},
+  {name = "Play_Update", vram = 0x8009b60c, size = 0x10f4, sha256 = "25fbb556012b3eda23abf0c706234e5fc8501b95e767267c693cc69d8327304a"},
+  {name = "Camera_Update", vram = 0x80048c4c, size = 0x830, sha256 = "0f3b9e8d99bb1beb2989f64054c3d0399d83a716a6e1139c7c2f0f2d55a5419f"},
+  {name = "Camera_Normal1", vram = 0x80039054, size = 0xa58, sha256 = "c99773dbaa0f888217eb3e2ca9a0b9562a459ee9b7cb5d9b3fe7ecfb4eb9a5d5"},
+  {name = "Camera_BGCheck", vram = 0x800362fc, size = 0x5c, sha256 = "0a482acb90f1c419846eb3d51e2c7f3855ea74c8f8fea592a8eccb9a39960b39"},
+  {name = "View_ApplyPerspective", vram = 0x80092620, size = 0x2f4, sha256 = "1012846c3425e5c9a77e2610c3a257381ee0ef0e4a9450c9f3fb9839dd9ee2f3"},
+]
+bindings = [
+  {name = "main_field", kind = "field", value = 0x4, pcs = [0x8009b394], words = [0xae290004]},
+  {name = "running", kind = "field", value = 0x98, pcs = [0x8009bb38], words = [0xae000098]},
+  {name = "play_main", kind = "address", value = 0x8009d1b8, pcs = [0x8009b380, 0x8009b388], words = [0x3c09800a, 0x2529d1b8]},
+  {name = "play_return", kind = "return", value = 0x8009d1e0, pcs = [0x8009d1d8, 0x8009d1dc], words = [0x0c026d83, 0x8fa40018]},
+  {name = "dispatch_return", kind = "return", value = 0x80049078, pcs = [0x80049070, 0x80049074], words = [0x0320f809, 0x00000000]},
+  {name = "camera_play", kind = "field", value = 0x8c, pcs = [0x80048c60], words = [0x8e0e008c]},
+  {name = "status", kind = "field", value = 0x140, pcs = [0x80048c78], words = [0x86190140]},
+  {name = "setting", kind = "field", value = 0x142, pcs = [0x80049038], words = [0x86080142]},
+  {name = "mode", kind = "field", value = 0x144, pcs = [0x80049040], words = [0x860b0144]},
+  {name = "camera_ptrs", kind = "field", value = 0x790, pcs = [0x8009c664], words = [0x8d650790]},
+  {name = "active_camera", kind = "field", value = 0x7a0, pcs = [0x8009c648], words = [0x860907a0]},
+  {name = "at", kind = "field", value = 0x50, pcs = [0x800491f8], words = [0x8e190050]},
+  {name = "eye", kind = "field", value = 0x5c, pcs = [0x8004923c], words = [0xc60a005c]},
+  {name = "eye_next", kind = "field", value = 0x74, pcs = [0x800391e8], words = [0x26060074]},
+  {name = "distance", kind = "field", value = 0xdc, pcs = [0x800396f8], words = [0xe60000dc]},
+  {name = "input_dir", kind = "field", value = 0x134, pcs = [0x80049438], words = [0xa6190134]},
+  {name = "view", kind = "field", value = 0xb8, pcs = [0x8004940c], words = [0x248400b8]},
+  {name = "view_fov", kind = "field", value = 0x18, pcs = [0x800926f4], words = [0x8e060018]},
+  {name = "game_mode", kind = "address", value = 0x8011bfdc, pcs = [0x800490c0, 0x800490c4], words = [0x3c028012, 0x8c42bfdc]},
+  {name = "health", kind = "address", value = 0x8011acb0, pcs = [0x80039994, 0x80039998], words = [0x3c028012, 0x8442acb0]},
+  {name = "cutscene", kind = "field", value = 0x1d6c, pcs = [0x8004914c], words = [0x904d1d6c]},
+  {name = "pause", kind = "large_field", value = 0x10934, pcs = [0x8009b628, 0x8009c2d4], words = [0x3c030001, 0x96220934]},
+  {name = "game_over", kind = "large_field", value = 0x10a20, pcs = [0x8009b628, 0x8009c2e4], words = [0x3c030001, 0x962a0a20]},
+  {name = "message", kind = "large_field", value = 0x103dc, pcs = [0x8009b628, 0x8009c2d8], words = [0x3c030001, 0x922903dc]},
+  {name = "transition", kind = "large_field", value = 0x1241b, pcs = [0x80049138, 0x80049144], words = [0x3c0a0001, 0x914a241b]},
+]

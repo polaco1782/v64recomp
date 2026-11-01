@@ -215,8 +215,8 @@ int main(int argc, char **argv) {
         RecompGameOptions options = {.rom = argv[1]};
         return duke_check_input(&options);
     }
-    require(duke_fov_configure(getenv("RECOMP_DUKE_FOV")),
-            "RECOMP_DUKE_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
+    require(duke_fov_configure(getenv("RECOMP_FOV")),
+            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Duke Nukem 64 invalid frame count", 0);

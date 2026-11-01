@@ -152,8 +152,8 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (getenv("RECOMP_GOLDENEYE_CHECK_FOV")) return goldeneye_check_fov();
-    require(goldeneye_fov_configure(getenv("RECOMP_GOLDENEYE_FOV")),
-            "RECOMP_GOLDENEYE_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
+    require(goldeneye_fov_configure(getenv("RECOMP_FOV")),
+            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
     char *end;
     unsigned long frames = strtoul(argv[4], &end, 10);
     if (*end || frames > 36000)

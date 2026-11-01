@@ -121,17 +121,17 @@ after recording their findings here.
 
 ## Field of view
 
-Set `RECOMP_GOLDENEYE_FOV` before launching to choose a horizontal FOV in degrees
+Set `RECOMP_FOV` before launching to choose a horizontal FOV in degrees
 at 4:3 (`60..120`, including fractional values). Unset, empty or `0` preserves
 the original camera, normally 60 degrees vertically (about 75.2 horizontally).
 The setting works in Debug and Release independently of mouse controls.
 
 ```powershell
-$env:RECOMP_GOLDENEYE_FOV = '100'
+$env:RECOMP_FOV = '100'
 .\build\msvc\goldeneye-us\release\bin\Release\goldeneye-us.exe
 ```
 
-Restore the original with `$env:RECOMP_GOLDENEYE_FOV = '0'`. Changes require a
+Restore the original with `$env:RECOMP_FOV = '0'`. Changes require a
 restart. Native weapon zoom scales with the chosen FOV, preserving its optical
 magnification ratio. The override applies to active single-player gameplay;
 menus, watch, death, locked controls, scripted cameras and multiplayer retain

@@ -38,7 +38,7 @@ an actual game save still needs validation.
 
 ## Field of view
 
-`RECOMP_HEXEN_FOV` optionally sets the horizontal world-camera FOV in degrees at
+`RECOMP_FOV` optionally sets the horizontal world-camera FOV in degrees at
 the original gameplay aspect ratio. The accepted range is `60..120`, including
 fractional values. An unset/empty value or `0` retains the exact original
 projection (67.5 degrees vertically, approximately 94.9 horizontally) and CPU
@@ -46,12 +46,12 @@ visibility tables. Set the variable before launching; changing it requires a
 restart. For example, from a repository-root PowerShell:
 
 ```powershell
-$env:RECOMP_HEXEN_FOV = '110'
+$env:RECOMP_FOV = '110'
 .\build\msvc\hexen-us\release\bin\Release\hexen-us.exe
 ```
 
-Restore the original with `$env:RECOMP_HEXEN_FOV = '0'` or
-`Remove-Item Env:RECOMP_HEXEN_FOV`. This works in both Debug and Release,
+Restore the original with `$env:RECOMP_FOV = '0'` or
+`Remove-Item Env:RECOMP_FOV`. This works in both Debug and Release,
 independently of the mouse adapter. The override targets the world projection;
 the intro's separate perspective and orthographic HUD/automap projections retain
 their original calls. RT64's F7 aspect expansion is separate and can widen the

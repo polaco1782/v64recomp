@@ -133,6 +133,12 @@ Hexen includes default single-player WASD/mouse controls and an optional FOV set
 GoldenEye also supports an optional [FOV setting](games/goldeneye-us/README.md#field-of-view), with the original view as the default and native weapon zoom preserved.
 
 Duke Nukem 64 includes default [WASD/mouse controls](games/duke-us/controller.md) and an optional [FOV setting](games/duke-us/README.md#field-of-view). For future game extensions, see [how to find and change FOV in the ROM code](docs/field-of-view.md).
+
+Ocarina of Time US V1.2 includes default [WASD/third-person mouse controls](games/oot-us-v12/controller.md) and an optional [FOV setting](games/oot-us-v12/README.md#field-of-view), preserving the original FOV by default.
+
+These games share `RECOMP_FOV=60..120` for horizontal FOV in degrees. Unset,
+empty or `0` preserves each game's original view. Set it before launching;
+for example, `$env:RECOMP_FOV = '110'` in PowerShell.
 007: The World Is Not Enough USA revision 0 is registered as experimental
 `twine-us`; native startup and MusyX audio bring-up are in progress. See its
 [port notes](games/twine-us/README.md).

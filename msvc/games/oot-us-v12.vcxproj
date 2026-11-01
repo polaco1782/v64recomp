@@ -26,8 +26,14 @@
   <ItemGroup>
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h" />
     <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\controls.h" />
+    <None Include="$(RecompRoot)games\oot-us-v12\controls_analysis.py" />
     <None Include="$(RecompRoot)games\oot-us-v12\debug\analyze_callbacks.py" />
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\controls_check.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py" />

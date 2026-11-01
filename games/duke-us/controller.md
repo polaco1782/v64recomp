@@ -31,7 +31,7 @@ shared controller state. Focus loss and overlays release capture automatically.
 Set `RECOMP_DUKE_MOUSE=0` to restore the ordinary keyboard/controller mapping.
 `RECOMP_MOUSE_SENSITIVITY` defaults to `0.08` degrees per mouse count, range
 `0.001..10`; `RECOMP_MOUSE_INVERT_Y=1` reverses vertical look. These apply at launch.
-The mouse setting is independent of `RECOMP_DUKE_FOV`.
+The mouse setting is independent of `RECOMP_FOV`.
 
 Capture requires game state 2, no inactive/demo flag, one local player, no pause
 or overhead map, positive player health, no fist/exit sequence and no remote

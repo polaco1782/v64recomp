@@ -7,10 +7,22 @@
     <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\oot-us-v12\controls_analysis.py">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="$(RecompRoot)games\oot-us-v12\debug\analyze_callbacks.py">
       <Filter>Source Files\debug</Filter>
     </None>
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\controls_check.c">
       <Filter>Source Files\debug</Filter>
     </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py">

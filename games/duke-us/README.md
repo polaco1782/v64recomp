@@ -19,18 +19,18 @@ cmake --workflow --preset duke-us-debug
 
 ## Field of view
 
-`RECOMP_DUKE_FOV` optionally sets the single-player world camera's horizontal
+`RECOMP_FOV` optionally sets the single-player world camera's horizontal
 FOV at the native 4:3 aspect. The range is `60..120` degrees, including fractional
 values. Unset, empty or `0` retains the exact original projections (60 degrees
 vertically, approximately 75.2 horizontally) and visibility window.
 
 ```powershell
-$env:RECOMP_DUKE_FOV = '100'
+$env:RECOMP_FOV = '100'
 .\build\msvc\duke-us\release\bin\Release\duke-us.exe
 ```
 
 The setting applies at launch in both Debug and Release. Restore the original
-with `$env:RECOMP_DUKE_FOV = '0'`. Multiplayer keeps its original camera;
+with `$env:RECOMP_FOV = '0'`. Multiplayer keeps its original camera;
 orthographic HUD/menu calls retain their original behavior. RT64 F7 aspect
 expansion is separate and can widen the displayed view further.
 

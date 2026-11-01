@@ -1,6 +1,7 @@
 # Finding and changing a game's field of view
 
-This is the investigation procedure used for Hexen, GoldenEye and Duke Nukem 64.
+This is the investigation procedure used for Hexen, GoldenEye, Duke Nukem 64
+and Ocarina of Time.
 It is intended for an agent extending another game in this repository. Run the
 commands from the repository root, substitute the game ID and use metadata from
 that exact ROM. On Linux, replace `.venv/Scripts/python.exe` with
@@ -130,16 +131,18 @@ Many unrelated addresses can share that low half. In this consumer,
 `0x8006cb6c` feed CPU multiply/add calculations. Generated comments are a useful
 index, while the ROM-bound disassembler verifies the owning instructions.
 
-The three existing implementations illustrate different boundaries:
+The existing implementations illustrate different boundaries:
 
 | Game | Projection boundary | CPU visibility handling |
 | --- | --- | --- |
 | Hexen US | `guPerspective`, restricted to the world return PC and matrix | Temporarily supplies a wider conservative scalar to the original angle-to-screen initializer, then restores it |
 | GoldenEye US | Gameplay calls to `viSetFovY` | Original setter updates VI projection and player perspective/scale together |
 | Duke Nukem 64 US | World calls reaching `guPerspectiveF`, both directly and through `guPerspective` | Both CPU float and GPU fixed matrices change; widen the initial sector window and correct depth-derived world billboard sizes |
+| Ocarina of Time US V1.2 | Gameplay view FOV after `Camera_Update`, before view matrices are built | Shared CPU/GPU view-projection path; preserve native camera FOV/zoom and exclude fixed backgrounds |
 
 ## 5. Choose conversion and scope
 
+Use the shared environment variable `RECOMP_FOV` in both Debug and Release.
 State the setting's convention explicitly. These ports use horizontal degrees
 at a documented reference aspect, accept `60..120`, and keep the exact original
 path when the environment variable is unset, empty or `0`.
@@ -177,10 +180,11 @@ Keep all game-specific work under `games/<game>/`:
    Check full bodies, decoded operands, metadata ownership/boundaries and
    translated coverage. Emit constants into a generated header and a
    `fov-hooks.json` report under the selected build directory.
-4. Implement parsing/math/wrappers in parent-folder `fov.c`/`fov.h`. Parse once
+4. Implement parsing/math/wrappers in parent-folder `fov.c`/`fov.h` (or the
+   game's combined control adapter, as in OoT). Parse once
    at startup in both apps. Reject malformed, nonfinite and out-of-range values.
    With the setting disabled, pass straight through to the original.
-5. Add `fov.c` to `RECOMP_GAME_SOURCES`; use `RECOMP_GAME_DEBUG_SOURCES` for any
+5. Add the adapter to `RECOMP_GAME_SOURCES`; use `RECOMP_GAME_DEBUG_SOURCES` for any
    maintained focused check. Regenerate the game's MSVC browse project using
    `tools/msvc_solution.py`'s `write_project` interface. Do not edit generated C.
 
@@ -256,3 +260,48 @@ projection matrix, about 0.54 at 110 degrees. Debug checks cover that angle,
 both world callers, unchanged anchors and HUD exclusion. They establish the
 argument scaling; the user subsequently confirmed the corrected FOV and input
 work well in game. Broader camera and portal cases remain unverified.
+
+## Ocarina of Time investigation record
+
+The NTSC 1.2 ROM has SHA-1 `41b3bdc48d98c48529219919015a1af22f5057c2`.
+Its `prepare.py` resolves compressed `.code` and overlays before analysis;
+`.code` starts at VRAM `0x800116e0`, analysis ROM offset `0x02000000`.
+Original cartridge offsets must not be substituted into this prepared mapping.
+The [zeldaret reference at the reviewed revision](https://github.com/zeldaret/oot/tree/14759abf9abb4295de142cdc1452998630ea70fb)
+supplied camera/view names and layout hypotheses. Local disassembly verified
+the following bodies, call sites and operands. Full fingerprints are in
+`games/oot-us-v12/profile.toml` under `controls`; the combined adapter emits
+`controls-hooks.json` and `oot_controls_config.h` through `generate.py`.
+
+| Evidence | Meaning and next trace |
+| --- | --- |
+| `Play_Init` at `0x8009ae40` installs `0x8009d1b8` in `GameState.main` | Identifies live `Play_Main`, rather than assuming every game state is gameplay |
+| `Play_Main` calls `Play_Update` at `0x8009d1d8` | Return PC `0x8009d1e0` scopes play-state discovery and live input refresh |
+| `Camera_Update` at `0x80048c4c` begins by using `a1` as `Camera*` | `Vec3s` return uses a hidden output pointer in `a0`; treating `a0` as the camera corrupts state |
+| Dispatch at `0x80049070` calls through `0x800ef6c0` | Full 71-entry table is fingerprinted; index 2 is `Camera_Normal1` at `0x80039054` |
+| `Camera_Normal1` calls `Camera_BGCheck` at `0x800398a8` | Mouse orbit reuses the original helper at `0x800362fc`, with camera/from/to arguments and scratch registers |
+| `Camera_Update` writes view FOV at `0x800493fc` | Adjust `PlayState.view.fovy` after the original update; keep `Camera.fov` native so zoom does not compound |
+| `View_ApplyPerspective` at `0x80092620` loads view FOV at `0x800926f4` | It feeds `guPerspective` at `0x8009271c`; hooking the earlier view scalar avoids altering menus and unrelated SDK callers |
+| Normal-camera parameter at `0x800ec808` is `(60, tag 7)` | Verifies the usual native vertical FOV of 60 degrees for tangent scaling |
+| Settings table at `0x800ef4b0`, 66 entries | Its default-mode function IDs identify normal-family 3D settings; fixed/prerendered settings stay excluded |
+
+Trace `Play_Draw` and actor projection/culling as well as SDK projection calls.
+The original world view builds the shared `viewProjectionMtxF`; actor culling
+uses coordinates projected through that matrix. World billboards follow the 3D
+pipeline. This differs from Duke's independent depth-derived 2D tile sizes and
+does not call for the same sprite scaling patch. Live room/edge visibility is
+still an acceptance check, not a consequence established by a static report.
+
+The adapter requires the normal game mode, health, active main camera and live
+play-state fields, excluding pause, message, game-over, transition and cutscene
+states. FOV uses the normal-family settings whitelist. Orbit is narrower: only
+normal mode dispatched to `Camera_Normal1`, yielding to native Z-targeting.
+Check the exact RAM offsets in the profile; for example `PauseContext.state` is
+at `PlayState + 0x10934`, not the pause-context base `+0x10760`.
+
+The maintained Debug check uses synthetic camera/play state and a collision
+observer. It verifies parsing, original-return preservation, horizontal FOV
+conversion, native zoom ratios, action mapping, delta consumption and state
+gates. It does not execute the original projection or collision geometry and
+cannot establish movement, aiming or camera-transition acceptance. Follow the
+game's README for the build command and current validation limits.
