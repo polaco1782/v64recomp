@@ -29,9 +29,20 @@
     <ClCompile Include="$(RecompRoot)games\duke-us\debug\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\duke-us\debug\fov_check.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
     <None Include="$(RecompRoot)games\duke-us\debug\gameplay-input.json" />
+    <ClCompile Include="$(RecompRoot)games\duke-us\debug\input_check.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
     <None Include="$(RecompRoot)games\duke-us\debug\new-game-input.json" />
+    <ClInclude Include="$(RecompRoot)games\duke-us\duke_input.h" />
+    <ClCompile Include="$(RecompRoot)games\duke-us\fov.c" />
+    <ClInclude Include="$(RecompRoot)games\duke-us\fov.h" />
+    <None Include="$(RecompRoot)games\duke-us\fov_analysis.py" />
     <None Include="$(RecompRoot)games\duke-us\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\duke-us\input.c" />
     <None Include="$(RecompRoot)games\duke-us\profile.toml" />
     <ClCompile Include="$(RecompRoot)games\duke-us\release\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>

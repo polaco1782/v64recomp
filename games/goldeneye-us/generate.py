@@ -1,6 +1,6 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
-import hashlib, json, zlib
+import hashlib, json, struct, zlib
 import re
 from common import RecompError
 from input_analysis import verify_input_analysis
@@ -91,6 +91,40 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'#define GE_INPUT_{name} UINT32_C(0x{value:x})' for name, value in constants.items())
     lines.append(f'#define GE_INPUT_ORIGINAL_ANGLES recomp_s{entry["section"]}_{entry["vram"]:08x}')
     (output / 'goldeneye_input_config.h').write_text('\n'.join(lines) + '\n')
+    fov = profile['fov_analysis']
+    constants = {'NATIVE_BITS': int.from_bytes(struct.pack('>f', fov['base_fovy']['value']), 'big'),
+                 'STAGE_ADDRESS': profile['inspection']['stage_address'],
+                 'TITLE_STAGE': profile['inspection']['title_stage']}
+    constants.update({f'{c["name"].upper()}_RETURN': c['pc'] + 8 for c in fov['calls']
+                      if c['name'] in ('viewport', 'zoom', 'render')})
+    constants.update({f['name'].upper(): f['offset'] for f in fov['player_fields']})
+    lines = ['/* Verified GoldenEye FOV addresses; generated from profile.toml. */']
+    lines.extend(f'#define GE_FOV_{name} UINT32_C(0x{value:x})' for name, value in constants.items())
+    (output / 'goldeneye_fov_config.h').write_text('\n'.join(lines) + '\n')
+
+
+def verify_fov_analysis(rom, profile, metadata=None, coverage=None):
+    report = verify_input_analysis(rom, profile, metadata, coverage,
+                                   analysis_key='fov_analysis', adapter_key=None)
+    spec = profile['fov_analysis']
+    literal = spec['base_fovy']
+    owner = next(f for f in spec['functions'] if f['name'] == literal['owner'])
+    pc = literal['pc']
+    region = next(r for r in profile['discovery']['regions'] if r['name'] == owner['section'])
+    offset = region['rom_offset'] + pc - region['vram']
+    code = [int.from_bytes(rom[offset+i:offset+i+4], 'big') for i in (0, 4)]
+    # LUI at, immediate; MTC1 at, f12: the native viewport's vertical FOV.
+    if (not owner['vram'] <= pc <= owner['vram'] + owner['size'] - 8
+            or code != literal['expected_words'] or code[0] >> 16 != 0x3c01
+            or code[1] != 0x44816000
+            or struct.unpack('>f', ((code[0] & 65535) << 16).to_bytes(4, 'big'))[0] != literal['value']):
+        raise RecompError('GoldenEye FOV: native vertical FOV literal mismatch')
+    if metadata:
+        entry = next(f for f in metadata['functions'] if f['vram'] == owner['vram'])
+        if not {pc, pc + 4} <= set(entry['instruction_addresses']):
+            raise RecompError('GoldenEye FOV: native FOV literal is not owned code')
+    report['base_fovy'] = literal
+    return report
 
 
 def checked_dispatches(rom: bytes, profile: dict) -> None:
@@ -164,6 +198,7 @@ def validate_inspection(rom: bytes, profile: dict) -> None:
 
 def prepare(rom, profile, output):
     verify_input_analysis(rom, profile)
+    verify_fov_analysis(rom, profile)
     validate_idle_loop(rom,profile)
     validate_inspection(rom,profile)
     checked_dispatches(rom,profile)
@@ -173,6 +208,7 @@ def prepare(rom, profile, output):
 def write_report(rom, profile, metadata, coverage, output):
     from common import write_json
     write_json(output / 'input-hooks.json', verify_input_analysis(rom, profile, metadata, coverage))
+    write_json(output / 'fov-hooks.json', verify_fov_analysis(rom, profile, metadata, coverage))
 
 
 def configure_translation(rom, metadata, profile, output):

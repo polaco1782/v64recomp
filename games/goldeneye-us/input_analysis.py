@@ -7,21 +7,22 @@ from common import RecompError
 
 
 def verify_input_analysis(rom: bytes, profile: dict, metadata: dict | None = None,
-                          coverage: dict | None = None) -> dict:
+                          coverage: dict | None = None, *, analysis_key='input_analysis',
+                          adapter_key='input_adapter') -> dict:
     """Check complete code spans, call/delay pairs, and decoded data operands.
 
     Semantic names come from reviewed disassembly and the pinned reference.
     Hashes bind that review to these bytes; they do not prove live behavior.
     metadata, when supplied, must have passed common.load_metadata first.
     """
-    spec = profile['input_analysis']
+    spec = profile[analysis_key]
     game = profile['game']
     if len(rom) != game['rom_size'] or hashlib.sha1(rom).hexdigest() != game['rom_sha1']:
-        raise RecompError('GoldenEye input analysis: ROM identity mismatch')
+        raise RecompError(f'GoldenEye {analysis_key}: ROM identity mismatch')
 
     def require(ok: bool, message: str) -> None:
         if not ok:
-            raise RecompError(f'GoldenEye input analysis: {message}')
+            raise RecompError(f'GoldenEye {analysis_key}: {message}')
 
     def raw(section: str, address: int, size: int) -> bytes:
         regions = [r for r in profile['discovery']['regions'] if r['name'] == section
@@ -106,7 +107,7 @@ def verify_input_analysis(rom: bytes, profile: dict, metadata: dict | None = Non
                 and (word & 65535) == field['offset'] and 0 <= field['offset'] < 0x8000,
                 f"{field['name']} is not the declared player-relative access")
 
-    adapter = profile.get('input_adapter')
+    adapter = profile.get(adapter_key) if adapter_key else None
     if adapter:
         require(any(c['owner'] == 'MoveBond' and c['target'] == functions['bondviewProcessInput']['vram']
                     and c['pc'] + 8 == adapter['process_return'] for c in spec['calls']),

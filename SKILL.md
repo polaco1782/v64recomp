@@ -260,6 +260,10 @@ configured bytes, with checked coverage and fingerprints.
 
 ## 4. Resolve native services without hiding missing behavior
 
+For camera/FOV changes, use [Finding and changing field of view](docs/field-of-view.md).
+It documents candidate discovery, guest ABI/data-flow checks, CPU visibility,
+ROM-bound wrappers and focused validation, including the Duke investigation.
+
 Reuse `tools/symbols.json` for ordinary SDK OS/library functions. Only its
 `native_signatures` authorize native replacements; imported `sdk_signatures`
 and their library caller/callee indexes are identification evidence. Recognition

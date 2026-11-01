@@ -3,6 +3,9 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
+#include "fov.h"
+#include "duke_input.h"
+static bool window_closed;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +13,12 @@
 #define require recomp_game_require
 #define monotonic_ns recomp_game_monotonic
 static RecompRenderer *renderer;
+static void poll_command_input(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (!duke_input_poll(rt, renderer, &pad)) window_closed = true;
+    else recomp_game_require(recomp_input_set(rt, 0, &pad), "Duke controller update failed", 0);
+}
 static RecompAudio *audio;
 static uint64_t now_ns, wall_origin;
 #include "duke_config.h"
@@ -113,6 +122,8 @@ int main(int argc, char **argv) {
     int parsed = recomp_game_options(argc, argv, &options);
     if (parsed)
         return parsed < 0 ? 2 : 0;
+    require(duke_fov_configure(getenv("RECOMP_DUKE_FOV")),
+            "RECOMP_DUKE_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
     Runtime rt;
     require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
                                 recomp_section_count),
@@ -144,6 +155,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Duke Nukem 64 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Duke Nukem 64");
     require(renderer != NULL, "renderer initialization failed", 0);
+    duke_input_init(poll_command_input);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -154,9 +166,9 @@ int main(int argc, char **argv) {
     recomp_thread_create(&rt, 0x803ff000, -1, BOOT_ENTRY, 0, 0x803fd000, 0);
     recomp_thread_start(&rt, 0x803ff000);
     uint64_t next_present = monotonic_ns();
-    for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
+    for (uint32_t frame = 0; !window_closed && (!options.frames || frame < options.frames); frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!duke_input_poll(&rt, renderer, &pad))
             break;
         require(recomp_input_set(&rt, 0, &pad), "controller update failed", 0);
         drain(&rt);

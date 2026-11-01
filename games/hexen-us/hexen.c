@@ -4,12 +4,32 @@
 #include "audio.h"
 #include "generated.h"
 #include "hexen_config.h"
+#include "hexen_input.h"
+#include "fov.h"
 #include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define require recomp_game_require
 static Hexen *game;
+
+bool hexen_poll_input(Hexen *g, RecompPad *pad) {
+    recomp_renderer_mouse_mode(g->renderer, hexen_input_enabled(),
+                              g->program_verified && hexen_input_playable(&g->runtime));
+    if (!g->running || !recomp_renderer_input(g->renderer, pad)) {
+        g->running = false;
+        hexen_input_submit((RecompMouseFrame){0}, pad);
+        return false;
+    }
+    hexen_input_submit(recomp_renderer_mouse_frame(g->renderer), pad);
+    return true;
+}
+static void poll_command_input(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (hexen_poll_input(game, &pad))
+        require(recomp_input_set(rt, 0, &pad), "Hexen controller update failed", 0);
+}
 
 static void check_image(Runtime *rt, uint32_t address, uint32_t size, const uint8_t expected[32]) {
     uint8_t *raw = malloc(size), digest[32];
@@ -92,6 +112,8 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
 void hexen_init(Hexen *g, const RecompGameOptions *options, const char *wav) {
     memset(g, 0, sizeof(*g));
     game = g;
+    require(hexen_fov_configure(getenv("RECOMP_HEXEN_FOV")),
+            "RECOMP_HEXEN_FOV must be 0 (original) or 60..120 horizontal degrees", 0);
     Runtime *rt = &g->runtime;
     require(recomp_runtime_init(rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
                                 recomp_section_count),
@@ -119,6 +141,8 @@ void hexen_init(Hexen *g, const RecompGameOptions *options, const char *wav) {
     require(recomp_io_init(rt, &io) && recomp_tasks_init(rt, &backend), "Hexen IO/tasks initialization failed", 0);
     g->renderer = recomp_renderer_create_named(rt, options->data, "Hexen");
     require(g->renderer != NULL, "Hexen renderer initialization failed", 0);
+    g->running = true;
+    hexen_input_init(poll_command_input);
     recomp_renderer_set_microcode_hook(g->renderer, hexen_bind_microcode);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
@@ -135,7 +159,7 @@ void hexen_step(Hexen *g, const RecompPad *pad) {
     Runtime *rt = &g->runtime;
     if (pad)
         require(recomp_input_set(rt, 0, pad), "Hexen controller update failed", 0);
-    for (unsigned batch = 0; batch < 16; batch++) {
+    for (unsigned batch = 0; g->running && batch < 16; batch++) {
         if (recomp_scheduler_run(rt, 16) != RECOMP_RUN_BUDGET)
             break;
         RecompThreadSnapshot threads[32];

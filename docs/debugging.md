@@ -4,7 +4,11 @@
 
 Set `RECOMP_TIMING` to a new CSV filename before launching any game in Debug or
 Release. Its parent directory must exist; existing reports are never replaced.
-Recording is off by default. Rebuild after adding the timing implementation.
+Recording is off by default. CSV creation/header errors warn and disable profiling
+without preventing the game from starting. Later CSV write errors also disable
+profiling; existing reports remain untouched. Remove `RECOMP_TIMING` to stop
+requesting profiling in subsequent launches. Rebuild after changing the timing
+implementation.
 For the current Quake II slowdown investigation:
 
 ```powershell
@@ -12,6 +16,11 @@ $env:RECOMP_TIMING = "build/quake2-debug-$(Get-Date -Format yyyyMMdd-HHmmss).csv
 .\build\msvc\quake2-us\debug\bin\Debug\quake2-us.exe
 Remove-Item Env:RECOMP_TIMING
 ```
+
+The ROM-free regression check is `python tools/check_timing.py --cc cl` from a
+Developer PowerShell, or `python3 tools/check_timing.py --cc clang` on Linux. It
+covers exclusive creation, missing/unusable targets, injected header/write
+failures, healthy recording, and shutdown after profiling disables itself.
 
 Spend several seconds in a smooth area and then the slow area before closing
 normally. The CSV is flushed about once per second and receives a final partial

@@ -1,4 +1,12 @@
 # Exact US revision 0 ROM. Ordinary SDK calls use the shared native catalog.
+function_wrappers = [
+  {section = ".main", vram = 0x800a2754, size = 0x6a0, sha256 = "d62a15157194346303344e541126765ed705c353a7326b2f719308516c4daad3", handler = "duke_input_command_hook"},
+  {section = ".main", vram = 0x800a34e0, size = 0x320c, sha256 = "d13a7ecdb8fe34d0a88bac3e4932a48e2b41166344cef40e4317fb20e08118b1", handler = "duke_input_process_hook"},
+  {section = ".main", vram = 0x8006cf8c, size = 0x12d8, sha256 = "31309f8c4dee86fed6d5db388b9fe2ae2c55b515619df3b02700e965f649f97a", handler = "duke_fov_sprite_hook"},
+  {section = ".main", vram = 0x800c3130, size = 0x230, sha256 = "6ea2110098cbd38180f77645602c66f985ec23604d1bb6139bb762e8cf9b27d7", handler = "duke_fov_projection_hook"},
+  {section = ".main", vram = 0x8005962c, size = 0x6bc, sha256 = "e1f7c8c2ae9e697fa9d9c97edcdbb483fb3fc91d21c852a21148e3d8151c68cf", handler = "duke_fov_visibility_hook"},
+]
+
 [game]
 name = "Duke Nukem 64 (US)"
 rom_sha1 = "98d6778004becc672eba0a5e887f6e3f3d1b5c15"
@@ -218,3 +226,67 @@ final_rom = 0x802aaca0
 0x80000310 = 0x17d6
 0x80000314 = 0x1
 0x80000318 = 0x800000
+
+[fov_adapter]
+reference = "https://github.com/NBlood/Duke64-RE"
+reference_revision = "7ec429c4ba37245da5a5671a019e911b22ff318c"
+functions = [
+  {name = "world_sprite_projection", vram = 0x8006cb30, size = 0x45c, sha256 = "8468b848673a513b45a66a07d0807dc21a5b3a70debf77e953ba223e06663905"},
+  {name = "world_effect_projection", vram = 0x80065458, size = 0x60c, sha256 = "e99617820cc104b30a10711631b4201c85676101be5316ffd338713a3ee2ae84"},
+  {name = "rendertileworld", vram = 0x8006cf8c, size = 0x12d8, sha256 = "31309f8c4dee86fed6d5db388b9fe2ae2c55b515619df3b02700e965f649f97a"},
+  {name = "guPerspectiveF", vram = 0x800c3130, size = 0x230, sha256 = "6ea2110098cbd38180f77645602c66f985ec23604d1bb6139bb762e8cf9b27d7"},
+  {name = "guPerspective", vram = 0x800c3360, size = 0x58, sha256 = "9019e73cbe12497079ac39eacd39bd0b02f4e316ee561c96d898e102ed9e9835"},
+  {name = "camera_setup", vram = 0x80063bb8, size = 0x3b0, sha256 = "f8cf0792c27d9bf615002e2aa09f411a05d5971004287274f6a6ad25c96eff3c"},
+  {name = "drawrooms", vram = 0x80059dec, size = 0x678, sha256 = "c441a506346d8bfe634d52e68116a78da8a10bdfe27b20a9de0efa83d361b150"},
+  {name = "scansector", vram = 0x8005962c, size = 0x6bc, sha256 = "e1f7c8c2ae9e697fa9d9c97edcdbb483fb3fc91d21c852a21148e3d8151c68cf"},
+  {name = "player_render", vram = 0x8005bf2c, size = 0x360, sha256 = "2ce5371e08119e3fabe6f95c3d083cd3da84423fed5ed88c4eeec0396a88e850"},
+]
+bindings = [
+  {name = "sprite_return", kind = "return", value = 0x8006cf08, target = 0x8006cf8c, pcs = [0x8006cf00, 0x8006cf04], words = [0x0c01b3e3, 0x00000000]},
+  {name = "effect_return", kind = "return", value = 0x800659e0, target = 0x8006cf8c, pcs = [0x800659d8, 0x800659dc], words = [0x0c01b3e3, 0x00000000]},
+  {name = "cpu_return", kind = "return", value = 0x80063cd0, target = 0x800c3130, pcs = [0x80063cc8, 0x80063ccc], words = [0x0c030c4c, 0xe7a40018]},
+  {name = "gpu_return", kind = "return", value = 0x80063d28, target = 0x800c3360, pcs = [0x80063d20, 0x80063d24], words = [0x0c030cd8, 0xe7aa0018]},
+  {name = "inner_return", kind = "return", value = 0x800c339c, target = 0x800c3130, pcs = [0x800c3394, 0x800c3398], words = [0x0c030c4c, 0xe7a80018]},
+  {name = "scan_return", kind = "return", value = 0x80059fe8, target = 0x8005962c, pcs = [0x80059fe0, 0x80059fe4], words = [0x0c01658b, 0x468083a0]},
+  {name = "camera_return", kind = "return", value = 0x8005bfa4, target = 0x80063bb8, pcs = [0x8005bf9c, 0x8005bfa0], words = [0x0c018eee, 0x00000000]},
+  {name = "players", kind = "address", value = 0x800ff624, pcs = [0x80059df0, 0x80059df4], words = [0x3c0e8010, 0x85cef624]},
+  {name = "vertical_bits", kind = "upper_bits", value = 0x42700000, pcs = [0x80063cbc], words = [0x3c064270]},
+  {name = "gpu_vertical_bits", kind = "upper_bits", value = 0x42700000, pcs = [0x80063d10], words = [0x3c064270]},
+  {name = "aspect_bits", kind = "literal_bits", value = 0x3faaaaab, pcs = [0x80063ca4, 0x80063ca8], words = [0x3c073faa, 0x34e7aaab]},
+  {name = "gpu_aspect_bits", kind = "literal_bits", value = 0x3faaaaab, pcs = [0x80063d00, 0x80063d08], words = [0x3c073faa, 0x34e7aaab]},
+  {name = "saved_ra_offset", kind = "saved_ra", value = 0x24, pcs = [0x800c3378], words = [0xafbf0024]},
+  {name = "scan_half_bits", kind = "upper_bits", value = 0x420c0000, pcs = [0x80059e48], words = [0x3c01420c]},
+]
+
+[input_adapter]
+functions = [
+  {name = "getinput", vram = 0x800a2754, size = 0x6a0, sha256 = "d62a15157194346303344e541126765ed705c353a7326b2f719308516c4daad3"},
+  {name = "processinput", vram = 0x800a34e0, size = 0x320c, sha256 = "d13a7ecdb8fe34d0a88bac3e4932a48e2b41166344cef40e4317fb20e08118b1"},
+  {name = "gameplay", vram = 0x800998d4, size = 0x3a4, sha256 = "7e2305723a520b72fbab946a8827ccd01962623f010b608b0a9b775baf832076"},
+]
+data = []
+bindings = [
+  {name = "command_return", kind = "return", value = 0x80099b40, pcs = [0x80099b38, 0x80099b3c], words = [0x0c0289d5, 0x01002025]},
+  {name = "process_return", kind = "return", value = 0x80099ba0, pcs = [0x80099b98, 0x80099b9c], words = [0x0c028d38, 0x03002025]},
+  {name = "players", kind = "address", value = 0x800ff624, pcs = [0x80099924, 0x80099928], words = [0x3c028010, 0x8442f624]},
+  {name = "player", kind = "address", value = 0x802a5770, pcs = [0x800a34ec, 0x800a3510], words = [0x3c18802a, 0x27185770]},
+  {name = "command", kind = "address", value = 0x802aac18, pcs = [0x800a2834, 0x800a2844], words = [0x3c10802b, 0x2610ac18]},
+  {name = "sync", kind = "address", value = 0x802a5600, pcs = [0x800a3520, 0x800a352c], words = [0x3c18802a, 0x27185600]},
+  {name = "control_map", kind = "address", value = 0x801c93d0, pcs = [0x800a27a8, 0x800a27b0], words = [0x3c0e801d, 0x25ce93d0]},
+  {name = "control_buttons", kind = "address", value = 0x801c93b8, pcs = [0x800a2780, 0x800a278c], words = [0x3c19801d, 0x973993b8]},
+  {name = "control_x", kind = "address", value = 0x801c93c0, pcs = [0x800a2760, 0x800a2774], words = [0x3c0f801d, 0x85ef93c0]},
+  {name = "control_y", kind = "address", value = 0x801c93c8, pcs = [0x800a2764, 0x800a277c], words = [0x3c18801d, 0x871893c8]},
+  {name = "work_controls", kind = "address", value = 0x80279762, pcs = [0x800a2784, 0x800a2798], words = [0x3c018028, 0xa42f9762]},
+  {name = "inactive", kind = "address", value = 0x80101360, pcs = [0x800a27c0, 0x800a27c4], words = [0x3c198010, 0x83391360]},
+  {name = "game_state", kind = "address", value = 0x800d36c8, pcs = [0x80099aa8, 0x80099ab0], words = [0x3c01800d, 0xa02b36c8]},
+  {name = "user", kind = "address", value = 0x802aaa68, pcs = [0x800a2860, 0x800a2864], words = [0x3c03802b, 0x2463aa68]},
+  {name = "paused", kind = "immediate", value = 0xe8, pcs = [0x800999cc], words = [0x869900e8]},
+  {name = "overhead", kind = "immediate", value = 0xe4, pcs = [0x800a2ca4], words = [0x904e00e4]},
+  {name = "aim_mode", kind = "immediate", value = 0x280, pcs = [0x800a2ac8], words = [0x91f80280]},
+  {name = "yaw", kind = "immediate", value = 0x282, pcs = [0x800a2cdc], words = [0x87020282]},
+  {name = "pitch", kind = "immediate", value = 0x220, pcs = [0x800a3718], words = [0x8e0f0220]},
+  {name = "health", kind = "immediate", value = 0x28c, pcs = [0x800a2890], words = [0x8458028c]},
+  {name = "fist", kind = "immediate", value = 0x2e6, pcs = [0x800a285c], words = [0x844d02e6]},
+  {name = "new_owner", kind = "immediate", value = 0x2be, pcs = [0x800a40ac], words = [0x861802be]},
+  {name = "centering", kind = "immediate", value = 0x36c, pcs = [0x800a5c2c], words = [0xa205036c]},
+]

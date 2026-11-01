@@ -19,13 +19,80 @@ cmake --workflow --preset hexen-us-debug
 ./build/hexen-us-debug/bin/hexen-us --help
 ```
 
-The shared keyboard bindings use `S` for Start, `A` for the N64 A button, `Z` for
-the trigger and arrow keys for the stick. With the default Control Stick scheme,
-`I` (C-Up) toggles the automap; `C`/`V` (L/R) zoom it. These map controls follow
-the [instruction booklet](https://manuals.plus/m/7baa08667bd9411710be5c41d9b90f74bf8673035ef47cbf69759d3703df7af0.pdf).
+Single-player WASD/mouse input is enabled by default in both configurations.
+Use Tab for Start/menu, arrows and Enter to navigate, WASD to move/strafe,
+mouse to look, left mouse to attack, E to use doors/switches, Space to jump,
+Shift to run, Q/R or the wheel to cycle weapons, right mouse to use the selected
+artifact, and F for the automap. Esc releases capture, F4 recaptures, and F10
+quits. See [controller findings](controller.md) for the full mapping, settings,
+ROM evidence and validation boundary.
+
+Set `RECOMP_HEXEN_MOUSE=0` for the original shared keyboard/controller bindings:
+`S` for Start, `A` for N64 A, `Z` for the trigger and arrows for the stick.
+With the default Control Stick scheme, `I` (C-Up) toggles the automap and
+`C`/`V` (L/R) zoom it. These original map controls follow the
+[instruction booklet](https://manuals.plus/m/7baa08667bd9411710be5c41d9b90f74bf8673035ef47cbf69759d3703df7af0.pdf).
 Controller Pak storage uses
 `local/saves/hexen-us.mpk`; initialization has been exercised, but persistence of
 an actual game save still needs validation.
+
+## Field of view
+
+`RECOMP_HEXEN_FOV` optionally sets the horizontal world-camera FOV in degrees at
+the original gameplay aspect ratio. The accepted range is `60..120`, including
+fractional values. An unset/empty value or `0` retains the exact original
+projection (67.5 degrees vertically, approximately 94.9 horizontally) and CPU
+visibility tables. Set the variable before launching; changing it requires a
+restart. For example, from a repository-root PowerShell:
+
+```powershell
+$env:RECOMP_HEXEN_FOV = '110'
+.\build\msvc\hexen-us\release\bin\Release\hexen-us.exe
+```
+
+Restore the original with `$env:RECOMP_HEXEN_FOV = '0'` or
+`Remove-Item Env:RECOMP_HEXEN_FOV`. This works in both Debug and Release,
+independently of the mouse adapter. The override targets the world projection;
+the intro's separate perspective and orthographic HUD/automap projections retain
+their original calls. RT64's F7 aspect expansion is separate and can widen the
+displayed view further; combined widescreen/FOV behavior needs gameplay testing.
+
+The full bodies at `0x800559f0` (`guPerspective`) and `0x803bba90` (CPU
+angle-to-screen table setup) are wrapped with their originals retained. The
+perspective override is restricted to return PC `0x8004e85c` and world matrix
+`0x80084c78`. Its o32 `a2` argument carries vertical FOV bits; horizontal degrees
+are converted using the checked aspect bits `0x3fd097b4`. See Nintendo's
+[guPerspective reference](https://ultra64.ca/files/documentation/online-manuals/man-v5-1/n64man/gu/guPerspective.htm)
+for the ABI and vertical-angle convention. The SDK scanner supplied name
+candidates; addresses, full bodies, operands and matrix math were verified in
+this cartridge independently.
+
+The CPU initializer reads a conservative half-angle scalar at `0x803d1a48` in
+8192-per-turn units. Wider settings temporarily increase this scalar while the
+original body builds its 4096-entry angle-to-screen table and clip angle, then
+restore it. Narrower settings keep the stock conservative table. The 120-degree
+limit leaves a one-degree visibility margin on each side below the native
+initializer's `tan(angle)=2` cutoff. Checked bodies, scalar bits and decoded
+operands live in `profile.toml`; generation writes `hexen_fov_config.h` and
+`fov-hooks.json` with `runtime_verified=false`.
+
+MSVC Debug/Release builds and focused non-gameplay checks pass. The check runs
+the original translated `guPerspective`, verifies byte-identical default matrices,
+checks 60/100/120-degree projection coefficients, rejects invalid settings, and
+checks wrapper scope, visibility span and scalar restoration. It observes the
+visibility wrapper at a synthetic boundary; it does not run the guest allocator
+or establish rendered culling acceptance. To run it:
+
+```powershell
+$env:RECOMP_HEXEN_CHECK_FOV = '1'
+.\build\msvc\hexen-us\debug\bin\Debug\hexen-us.exe --frames 1
+Remove-Item Env:RECOMP_HEXEN_CHECK_FOV
+```
+
+The user confirmed that the FOV works well in game. Broader geometry/sprite
+visibility, weapon placement and combined F7 expansion remain unverified.
+
+## Existing gameplay validation
 
 The bounded automap replay selects a fighter, waits through loading, opens the
 map, zooms it, moves, and toggles between the map and 3D gameplay twice.
@@ -39,7 +106,7 @@ map, zooms it, moves, and toggles between the map and 3D gameplay twice.
 The final 70-second Debug run completed with 1,509 graphics tasks, 3,978 audio
 tasks and 2,911,929 nonzero audio samples. The audio backend recorded four queue
 underruns and zero resets. PCM generation is verified; listening quality has not
-been assessed. The inventory currently translates 1,431 functions (54 native
+been assessed. The inventory currently translates 1,430 functions (55 native
 hooks) without reported instruction or transfer errors. It remains partial.
 Both a 70-second Release keyboard replay and a separate 70-second idle
 attract-mode run exited successfully after the callback fixes. The latter

@@ -128,6 +128,11 @@ Resident Evil 2 US revision 1 is registered as experimental `re2-us-v1`; see its
 Release render the Nintendo 64 logo in bounded desktop replays; menus and riding
 remain unvalidated. See the [port notes](games/1080-us/README.md).
 Quake II runs with the Expansion Pak enabled; see its [port notes](games/quake2-us/README.md).
+Hexen includes default single-player WASD/mouse controls and an optional FOV setting; see its [input mapping](games/hexen-us/controller.md) and [FOV setting](games/hexen-us/README.md#field-of-view).
+
+GoldenEye also supports an optional [FOV setting](games/goldeneye-us/README.md#field-of-view), with the original view as the default and native weapon zoom preserved.
+
+Duke Nukem 64 includes default [WASD/mouse controls](games/duke-us/controller.md) and an optional [FOV setting](games/duke-us/README.md#field-of-view). For future game extensions, see [how to find and change FOV in the ROM code](docs/field-of-view.md).
 007: The World Is Not Enough USA revision 0 is registered as experimental
 `twine-us`; native startup and MusyX audio bring-up are in progress. See its
 [port notes](games/twine-us/README.md).

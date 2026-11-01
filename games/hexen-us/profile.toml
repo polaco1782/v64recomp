@@ -1,3 +1,9 @@
+function_wrappers = [
+  {section = ".game", vram = 0x80106f04, size = 0x968, sha256 = "c810354d31bf8dceacd6a80f6d238a0fff508fe77a1fc46f2c822ef726e0b150", handler = "hexen_input_player_hook"},
+  {section = ".main", vram = 0x800559f0, size = 0x58, sha256 = "207672d36cc7f914362839dae53025b6a18d818d1aec2003b8059a42b7b4b85b", handler = "hexen_fov_projection_hook"},
+  {section = ".support", vram = 0x803bba90, size = 0x2b4, sha256 = "56033a78f2b1cf36885cb848215601fa8cdf3feff596bebcc5d6168595473296", handler = "hexen_fov_culling_hook"},
+]
+
 # Hexen US revision 0, normalized big-endian cartridge.
 [game]
 name = "Hexen (US)"
@@ -150,3 +156,63 @@ vi_clock = 0x80069768
 clock_rate = 0x800688e0
 final_rom = 0x800cba40
 app_nmi_buffer = 0x8000031c
+
+# Reviewed operands in the LZH-decoded image; original cartridge identity is checked first.
+[input_adapter]
+functions = [
+  {name = "build_command", vram = 0x800d8860, size = 0x6a8, sha256 = "06daa2c888aa7ee016339961fff51b745f1694b0725957e4197de141a2e7447b"},
+  {name = "game_tick", vram = 0x800d9504, size = 0x4b0, sha256 = "bff528d9dbd728af3da8d9d08fd8e4b4dbd61568a5bf94030029a71bf6d474fc"},
+  {name = "play_tick", vram = 0x80104e80, size = 0x188, sha256 = "a0702614d75fc03782a82d7e34c04f77a253062cbcb3410496611afa97eee579"},
+  {name = "move_player", vram = 0x80106284, size = 0x4c8, sha256 = "963ab782db95c905dc24544a02b71835042b9ec7a94eb39881ec4e5954556afa"},
+  {name = "player_think", vram = 0x80106f04, size = 0x968, sha256 = "c810354d31bf8dceacd6a80f6d238a0fff508fe77a1fc46f2c822ef726e0b150"},
+  {name = "menu_responder", vram = 0x8011c8c8, size = 0x580, sha256 = "2db18f6a09f5ea5f37f36542d93451ba30c820d7463151b17820dce326c7d914"},
+]
+data = [
+  {name = "forward_speeds", vram = 0x80120f10, size = 0x20, sha256 = "6d3438da390f2b5ce442a57c383377a133f78c073b1be5212078944400f3a19f"},
+  {name = "side_speeds", vram = 0x80120f80, size = 0x20, sha256 = "2719b4a652a248d68db33db48d6e3022929cd3e9fcaabda0fa61fadb1e73c845"},
+]
+bindings = [
+  {name = "gamestate", value = 0x8013da62, kind = "address", pcs = [0x800d98dc, 0x800d98e0], words = [0x3c028014, 0x8442da62]},
+  {name = "gameaction", value = 0x8013da60, kind = "address", pcs = [0x800d9588, 0x800d958c], words = [0x3c028014, 0x8442da60]},
+  {name = "demo", value = 0x8013e108, kind = "address", pcs = [0x80106284, 0x80106288], words = [0x3c0e8014, 0x85cee108]},
+  {name = "paused", value = 0x8013da74, kind = "address", pcs = [0x80104e84, 0x80104e88], words = [0x3c0e8014, 0x85ceda74]},
+  {name = "menu", value = 0x8014a608, kind = "address", pcs = [0x8011c8f4, 0x8011c900], words = [0x3c038015, 0x8463a608]},
+  {name = "player_count", value = 0x8014a714, kind = "address", pcs = [0x800d96f8, 0x800d96fc], words = [0x3c018015, 0xac2ea714]},
+  {name = "players", value = 0x8013da88, kind = "address", pcs = [0x80104ea8, 0x80104eac], words = [0x3c128014, 0x2652da88]},
+  {name = "playeringame", value = 0x8013da80, kind = "address", pcs = [0x80104ea4, 0x80104eb0], words = [0x3c118014, 0x2631da80]},
+  {name = "playerstate", value = 0x4, kind = "immediate", pcs = [0x80106fac], words = [0x860c0004]},
+  {name = "class", value = 0xe, kind = "immediate", pcs = [0x8010709c], words = [0x860c000e]},
+  {name = "command", value = 0x6, kind = "immediate", pcs = [0x80106f18], words = [0x26020006]},
+  {name = "player_return", value = 0x80104edc, kind = "return", pcs = [0x80104ed4, 0x80104ed8], words = [0xc041bc1, 0x0]},
+  {name = "forward_table", value = 0x80120f10, kind = "address", pcs = [0x800d8b8c, 0x800d8b94], words = [0x3c058012, 0x8ca50f10]},
+  {name = "side_table", value = 0x80120f80, kind = "address", pcs = [0x800d8c28, 0x800d8c30], words = [0x3c198012, 0x8f390f80]},
+  {name = "lookdir", value = 0x22, kind = "immediate", pcs = [0x801065b8], words = [0x860e0022]},
+  {name = "centering", value = 0x24, kind = "immediate", pcs = [0x801065b4], words = [0xa60c0024]},
+  {name = "lookfly", value = 0x5, kind = "immediate", pcs = [0x80106588], words = [0x91030005]},
+  {name = "forward", value = 0x0, kind = "immediate", pcs = [0x801063a4], words = [0x91040000]},
+  {name = "side", value = 0x1, kind = "immediate", pcs = [0x80106468], words = [0x91040001]},
+  {name = "turn", value = 0x2, kind = "immediate", pcs = [0x800d8b0c], words = [0xa4990002]},
+  {name = "buttons", value = 0x4, kind = "immediate", pcs = [0x80107438], words = [0x91020004]},
+  {name = "artifact", value = 0x6, kind = "immediate", pcs = [0x80107348], words = [0x91030006]},
+  {name = "ready_artifact", value = 0xbc, kind = "immediate", pcs = [0x800d8cac], words = [0xa4ee00bc]},
+  {name = "speed_power", value = 0xd0, kind = "immediate", pcs = [0x800d8e04], words = [0x84ee00d0]},
+  {name = "morph", value = 0x194, kind = "immediate", pcs = [0x800d8e10], words = [0x84f90194]},
+]
+
+# World perspective and conservative CPU angle-to-screen visibility setup.
+[fov_adapter]
+functions = [
+  {name = "projection_setup", vram = 0x8004e820, size = 0x174, sha256 = "2b05395ffdc66b05c7d56ec8a9a143f41361bbbf60814671dbf6f5f3e5fb1f16"},
+  {name = "guPerspectiveF", vram = 0x800557c0, size = 0x230, sha256 = "0b1ac3b032d18252c975a80085a68070baa41b78a40742ec2da9e12eb359f6da"},
+  {name = "guPerspective", vram = 0x800559f0, size = 0x58, sha256 = "207672d36cc7f914362839dae53025b6a18d818d1aec2003b8059a42b7b4b85b"},
+  {name = "visibility_setup", vram = 0x803bba90, size = 0x2b4, sha256 = "56033a78f2b1cf36885cb848215601fa8cdf3feff596bebcc5d6168595473296"},
+]
+bindings = [
+  {name = "projection_return", value = 0x8004e85c, kind = "return", pcs = [0x8004e854, 0x8004e858], words = [0x0c01567c, 0xe7a00018]},
+  {name = "projection_matrix", value = 0x80084c78, kind = "address", pcs = [0x8004e830, 0x8004e844], words = [0x3c048008, 0x24844c78]},
+  {name = "vertical_bits", value = 0x42870000, kind = "upper_bits", pcs = [0x8004e84c], words = [0x3c064287]},
+  {name = "aspect_bits", value = 0x3fd097b4, kind = "literal_bits", pcs = [0x8004e838, 0x8004e83c], words = [0x3c073fd0, 0x34e797b4]},
+  {name = "cull_angle", value = 0x803d1a48, kind = "address", pcs = [0x803bbb5c, 0x803bbb60], words = [0x3c01803d, 0xc4261a48]},
+  {name = "cull_bits", value = 0x449c81c7, kind = "data_word", pcs = [0x803d1a48], words = [0x449c81c7]},
+  {name = "fine_angles", value = 8192, kind = "double_high", pcs = [0x803bbad0], words = [0x3c0140c0]},
+]

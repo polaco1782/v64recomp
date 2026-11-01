@@ -29,11 +29,22 @@
     <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\fov_check.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\input_check.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\fov.c" />
+    <ClInclude Include="$(RecompRoot)games\hexen-us\fov.h" />
+    <None Include="$(RecompRoot)games\hexen-us\fov_analysis.py" />
     <None Include="$(RecompRoot)games\hexen-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\graphics.cpp" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\graphics.h" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\hexen.c" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\hexen.h" />
+    <ClInclude Include="$(RecompRoot)games\hexen-us\hexen_input.h" />
+    <ClCompile Include="$(RecompRoot)games\hexen-us\input.c" />
     <None Include="$(RecompRoot)games\hexen-us\lzh.py" />
     <None Include="$(RecompRoot)games\hexen-us\profile.toml" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\release\app.c">

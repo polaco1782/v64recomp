@@ -118,3 +118,50 @@ Debug retains optional `RECOMP_GOLDENEYE_INPUT_TRACE` CSV output and
 `eligible_update dx dy move_x move_y active` with increasing update indices.
 The standalone investigation checks, fixtures and scratch output were removed
 after recording their findings here.
+
+## Field of view
+
+Set `RECOMP_GOLDENEYE_FOV` before launching to choose a horizontal FOV in degrees
+at 4:3 (`60..120`, including fractional values). Unset, empty or `0` preserves
+the original camera, normally 60 degrees vertically (about 75.2 horizontally).
+The setting works in Debug and Release independently of mouse controls.
+
+```powershell
+$env:RECOMP_GOLDENEYE_FOV = '100'
+.\build\msvc\goldeneye-us\release\bin\Release\goldeneye-us.exe
+```
+
+Restore the original with `$env:RECOMP_GOLDENEYE_FOV = '0'`. Changes require a
+restart. Native weapon zoom scales with the chosen FOV, preserving its optical
+magnification ratio. The override applies to active single-player gameplay;
+menus, watch, death, locked controls, scripted cameras and multiplayer retain
+their original FOV. RT64's F7 aspect expansion can widen the displayed view
+further than the 4:3 reference angle.
+
+`fov.c` wraps the fingerprinted `viSetFovY` at `0x70004544`, scoped to the
+viewport, zoom and level-render calls returning to `0x7f086fcc`, `0x7f07e730`
+and `0x7f0be510`. The original setter updates both the VI projection and the
+player's perspective/scale values used by CPU culling and screen calculations.
+The native player FOV/zoom fields remain unchanged, so repeated updates cannot
+compound the override. The conversion scales the tangent of each incoming
+vertical half-angle rather than replacing zoomed views with a fixed angle.
+
+The [pinned camera reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/bondview.c)
+guided identification; full ROM bodies, call/delay pairs, player offsets and
+the original 60-degree literal are verified independently by `generate.py`
+and `input_analysis.py` against `profile.toml`. Generation writes
+`fov-hooks.json` alongside `input-hooks.json`.
+
+On 2026-10-31, ROM/translation checks, Debug/Release builds and the synthetic
+Debug check passed. To rerun the wrapper checks without opening a game window:
+
+```powershell
+$env:RECOMP_GOLDENEYE_CHECK_FOV = '1'
+.\build\msvc\goldeneye-us\debug\bin\Debug\goldeneye-us.exe --frames 1
+Remove-Item Env:RECOMP_GOLDENEYE_CHECK_FOV
+```
+
+These checks cover defaults, range validation, zoom ratios, repeat updates,
+call scope and state gates; they do not execute the paged camera routines.
+The user confirmed that the FOV works well in game. Broader aiming, zoom
+transitions and combined widescreen behavior remain unverified.

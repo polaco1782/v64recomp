@@ -75,9 +75,10 @@ bool recomp_timing_init(Runtime *rt) {
     /* Existing reports are never replaced. Choose a fresh path per run. */
     t->file = fopen(path, "wx");
     if (!t->file) {
-        fprintf(stderr, "Timing: cannot create %s; use a new file in an existing directory\n", path);
+        fprintf(stderr, "Timing: warning: cannot create %s; profiling disabled "
+                        "(use a new file in an existing directory)\n", path);
         free(t);
-        return false;
+        return true;
     }
 #ifdef _WIN32
     t->logical_cpus = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
@@ -92,9 +93,10 @@ bool recomp_timing_init(Runtime *rt) {
         fprintf(t->file, ",%s_count,%s_ms", phase_names[i], phase_names[i]);
     fputc('\n', t->file);
     if (fflush(t->file) || ferror(t->file)) {
+        fprintf(stderr, "Timing: warning: cannot write CSV header to %s; profiling disabled\n", path);
         fclose(t->file);
         free(t);
-        return false;
+        return true;
     }
     rt->timing = t;
     fprintf(stderr, "Timing: writing one-second windows to %s (cpu_cores=1 means one busy logical CPU)\n", path);
@@ -125,9 +127,11 @@ void recomp_timing_report(Runtime *rt, bool final) {
     }
     fputc('\n', t->file);
     if (fflush(t->file) || ferror(t->file)) {
-        fputs("Timing: report write failed; recording stopped\n", stderr);
+        fputs("Timing: warning: report write failed; profiling disabled\n", stderr);
         fclose(t->file);
-        t->file = NULL;
+        free(t);
+        rt->timing = NULL;
+        return;
     }
     t->previous_wall = now;
     t->previous_cpu = cpu;
@@ -138,8 +142,11 @@ void recomp_timing_destroy(Runtime *rt) {
     if (!rt->timing)
         return;
     recomp_timing_report(rt, true);
+    /* A failed final write can disable and free the optional profiler. */
+    if (!rt->timing)
+        return;
     if (rt->timing->file && fclose(rt->timing->file))
-        fputs("Timing: report close failed\n", stderr);
+        fputs("Timing: warning: report close failed\n", stderr);
     free(rt->timing);
     rt->timing = NULL;
 }

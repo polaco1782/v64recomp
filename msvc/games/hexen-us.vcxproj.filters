@@ -10,6 +10,21 @@
     <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
       <Filter>Source Files\debug</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\fov_check.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\input_check.c">
+      <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\fov.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\hexen-us\fov.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\hexen-us\fov_analysis.py">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="$(RecompRoot)games\hexen-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
@@ -25,6 +40,12 @@
     <ClInclude Include="$(RecompRoot)games\hexen-us\hexen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)games\hexen-us\hexen_input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\hexen-us\lzh.py">
       <Filter>Source Files</Filter>
     </None>

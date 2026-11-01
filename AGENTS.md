@@ -1,5 +1,8 @@
 # Game layout conventions
 
+For camera/FOV extensions, follow [the FOV investigation guide](docs/field-of-view.md)
+to trace projection, CPU visibility and scope against the exact ROM.
+
 When adding or extending a game, read [SKILL.md](SKILL.md) and follow the layout
 in [docs/adding-a-rom.md](docs/adding-a-rom.md). Apply the same filenames and
 generation interface to every game:

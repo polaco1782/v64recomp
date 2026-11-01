@@ -6,11 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 #define require recomp_game_require
+int hexen_check_input(void);
+int hexen_check_fov(const RecompGameOptions *options);
 int main(int argc, char **argv) {
     if (argc != 5) {
         fprintf(stderr, "usage: %s ROM REPORT FRAMES RENDERER_DATA\n", argv[0]);
         return 2;
     }
+    if (getenv("RECOMP_HEXEN_CHECK_INPUT")) return hexen_check_input();
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Hexen invalid frame count", 0);
@@ -21,6 +24,7 @@ int main(int argc, char **argv) {
                                  .data = argv[4],
                                  .save = getenv("RECOMP_HEXEN_SAVE"),
                                  .mute = getenv("RECOMP_AUDIO_MUTE") != NULL};
+    if (getenv("RECOMP_HEXEN_CHECK_FOV")) return hexen_check_fov(&options);
     Hexen game;
     hexen_init(&game, &options, getenv("RECOMP_HEXEN_WAV"));
     const char *input = getenv("RECOMP_HEXEN_INPUT");
@@ -34,7 +38,7 @@ int main(int argc, char **argv) {
     uint32_t frame = 0;
     for (; !frames || frame < frames; frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(game.renderer, &pad))
+        if (!hexen_poll_input(&game, &pad))
             break;
         while (pending && next_frame <= frame) {
             require(buttons <= UINT16_MAX && x >= -128 && x <= 127 && y >= -128 && y <= 127, "Hexen invalid replay pad",
@@ -47,6 +51,7 @@ int main(int argc, char **argv) {
         if (replay)
             pad = replay_pad;
         hexen_step(&game, &pad);
+        if (!game.running) break;
         require(recomp_renderer_present(game.renderer), "Hexen presentation failed", 0);
         if (interval && (frame + 1) % interval == 0) {
             char path[4096];

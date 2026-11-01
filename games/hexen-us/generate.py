@@ -1,7 +1,9 @@
 """Prepare Hexen's compressed CPU image; retain cartridge offsets at runtime."""
 import hashlib
 from pathlib import Path
-from common import RecompError
+from common import RecompError, write_json
+from input_evidence import verify_input_evidence
+from fov_analysis import verify_fov
 from lzh import decode_lzh
 
 
@@ -35,9 +37,13 @@ def prepare(rom: bytes, profile: dict, output: Path):
             targets.add(callback)
     transfer = dict(pc=states['pc'], expected_word=states['expected_word'],
                     kind='call', targets=sorted(targets))
-    return rom + raw, {**profile, 'discovery': {**profile['discovery'],
+    prepared = rom + raw
+    resolved = {**profile, 'discovery': {**profile['discovery'],
         'regions': [*profile['discovery']['regions'], region],
         'transfers': [*profile['discovery']['transfers'], transfer]}}
+    verify_input_evidence(prepared, resolved, identity_rom=rom)
+    verify_fov(prepared, resolved)
+    return prepared, resolved
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
@@ -61,3 +67,20 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.extend(f'    .{k}=UINT32_C(0x{v:x}),' for k,v in profile[name].items())
         lines.append('};')
     (output / 'hexen_config.h').write_text('\n'.join(lines))
+    lines = ['/* Generated from verified Hexen input operands. */']
+    lines.extend(f'#define HEXEN_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['input_adapter']['bindings'])
+    (output / 'hexen_input_config.h').write_text('\n'.join(lines) + '\n')
+    lines = ['/* Generated from verified Hexen projection/visibility operands. */']
+    lines.extend(f'#define HEXEN_FOV_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['fov_adapter']['bindings'])
+    (output / 'hexen_fov_config.h').write_text('\n'.join(lines) + '\n')
+
+
+def write_report(rom, profile, metadata, coverage, output):
+    prepared, resolved = prepare(rom, profile, output)
+    write_json(output / 'input-hooks.json', verify_input_evidence(
+        prepared, resolved, metadata, coverage, identity_rom=rom))
+    report = verify_fov(prepared, resolved, metadata, coverage)
+    report['rom_sha1'] = profile['game']['rom_sha1']
+    write_json(output / 'fov-hooks.json', report)

@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "pager.h"
 #include "goldeneye_input.h"
+#include "fov.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,6 +71,8 @@ int main(int argc, char **argv) {
     int parsed = recomp_game_options(argc, argv, &options);
     if (parsed)
         return parsed < 0 ? 2 : 0;
+    require(goldeneye_fov_configure(getenv("RECOMP_GOLDENEYE_FOV")),
+            "RECOMP_GOLDENEYE_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
     Runtime rt;
     require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
                                 recomp_section_count),

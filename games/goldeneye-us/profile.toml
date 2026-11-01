@@ -6,6 +6,7 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".lib", vram = 0x70004544, size = 0x4c, sha256 = "af46a44737c33db1923e0beba3107cdb818b54d9a1ace9b9eb6c1931553ca2e3", handler = "goldeneye_fov_hook"},
   {section = ".lib", vram = 0x70002424, size = 0x1b4, sha256 = "537587229e186714f1cfa141395889bad59b066ed36367c0087abf26ee27590d", handler = "goldeneye_audio_dma_hook"},
   {section = ".lib", vram = 0x7000bd0c, size = 0x7c, sha256 = "c0e8344bbcadd3894686f4403c1162896985863ba6cb6256d543f7e045a1bc47", handler = "goldeneye_input_samples_hook"},
   {section = ".lib", vram = 0x7000bd88, size = 0x364, sha256 = "f7086f28a24e3debf14e607d430487eb8e36635b5b406d84a1a890070c744921", handler = "goldeneye_input_poll_hook"},
@@ -352,3 +353,44 @@ globals = [
   {name = "camera", address = 0x80036494, owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f087338, expected_words = [0x3c028003, 0x8c426494]},
   {name = "timer_active", address = 0x800364b0, owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f087350, expected_words = [0x3c0e8003, 0x8dce64b0]},
 ]
+
+# The VI setter updates the projection and the player's perspective/scale state.
+# Scope the override to these gameplay calls; other callers include menus/watch.
+[fov_analysis]
+reference = "https://github.com/n64decomp/007"
+reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
+functions = [
+  {name = "viSetFovY", section = ".lib", vram = 0x70004544, size = 0x4c, sha256 = "af46a44737c33db1923e0beba3107cdb818b54d9a1ace9b9eb6c1931553ca2e3"},
+  {name = "currentPlayerSetPerspective", section = ".game", vram = 0x7f077c30, size = 0x2c, sha256 = "f92ad88d78bbbfde67686ad6abf14e5381421886f6cb507a78f6e26cce3cb077"},
+  {name = "currentPlayerSetCameraScale", section = ".game", vram = 0x7f077c5c, size = 0x290, sha256 = "9c1e37c330f1fd98ba9887452fd77483569f866a37c6b79747abf32eb2bb1ac3"},
+  {name = "bondviewUpdateWatchZoomIn", section = ".game", vram = 0x7f07e62c, size = 0x114, sha256 = "4a3df864a37691cadbebc8415bdc940c3213d80a0564acfffa34039eee379912"},
+  {name = "bondviewMovePlayerUpdateViewport", section = ".game", vram = 0x7f086f9c, size = 0x648, sha256 = "b95a3003dfed3ea8d5bf128b14bd5e9043e89559d08111b3e78e48adec96545c"},
+  {name = "lvlRender", section = ".game", vram = 0x7f0be30c, size = 0x5c4, sha256 = "9196155b44ecc5cb9c7f57a26e0081ec31989b2078ed46603fe2b71709e153cd"},
+]
+calls = [
+  {name = "perspective", owner = "viSetFovY", pc = 0x70004570, target = 0x7f077c30, expected_words = [0x0fc1df0c, 0x8c46000c]},
+  {name = "scale", owner = "viSetFovY", pc = 0x70004578, target = 0x7f077c5c, expected_words = [0x0fc1df17, 0x00000000]},
+  {name = "zoom", owner = "bondviewUpdateWatchZoomIn", pc = 0x7f07e728, target = 0x70004544, expected_words = [0x0c001151, 0xc72c11c4]},
+  {name = "viewport", owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f086fc4, target = 0x70004544, expected_words = [0x0c001151, 0x00000000]},
+  {name = "render", owner = "lvlRender", pc = 0x7f0be508, target = 0x70004544, expected_words = [0x0c001151, 0xc5cc11d0]},
+]
+player_fields = [
+  {name = "persp_fovy", offset = 0x10a4, owner = "currentPlayerSetPerspective", pc = 0x7f077c48, expected_word = 0xe5ee10a4},
+  {name = "persp_aspect", offset = 0x10a8, owner = "currentPlayerSetPerspective", pc = 0x7f077c58, expected_word = 0xe70410a8},
+  {name = "scale_x", offset = 0x10b4, owner = "currentPlayerSetCameraScale", pc = 0x7f077cfc, expected_word = 0xe44810b4},
+  {name = "scale_y", offset = 0x10b8, owner = "currentPlayerSetCameraScale", pc = 0x7f077cd8, expected_word = 0xe45210b8},
+  {name = "zoom_fovy", offset = 0x11c4, owner = "bondviewUpdateWatchZoomIn", pc = 0x7f07e72c, expected_word = 0xc72c11c4},
+  {name = "native_fovy", offset = 0x11d0, owner = "lvlRender", pc = 0x7f0be50c, expected_word = 0xc5cc11d0},
+]
+
+[fov_analysis.current_player]
+address = 0x8007a0b0
+owner = "currentPlayerSetPerspective"
+pc = 0x7f077c30
+expected_words = [0x3c028008, 0x2442a0b0, 0x8c4e0000]
+
+[fov_analysis.base_fovy]
+owner = "bondviewMovePlayerUpdateViewport"
+pc = 0x7f086fbc
+expected_words = [0x3c014270, 0x44816000]
+value = 60.0

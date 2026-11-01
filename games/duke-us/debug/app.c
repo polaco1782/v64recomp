@@ -11,6 +11,10 @@
 #include <time.h>
 #include "renderer.h"
 #include "audio.h"
+#include "fov.h"
+#include "duke_input.h"
+int duke_check_fov(const RecompGameOptions *);
+int duke_check_input(const RecompGameOptions *);
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
 #define LOG_DUKE_CALLS (getenv("RECOMP_TRACE_CALLS") != NULL)
@@ -24,6 +28,12 @@ static RecompRenderer *renderer;
 static RecompAudio *audio;
 static unsigned graphics_tasks, presentations;
 static bool window_closed;
+static void poll_command_input(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (!duke_input_poll(rt, renderer, &pad)) window_closed = true;
+    else require(recomp_input_set(rt, 0, &pad), "Duke controller update failed", 0);
+}
 static uint64_t wall_origin;
 static bool performance;
 static uint64_t run_start, cpu_start, scheduler_ns, sleep_ns, frame_waits;
@@ -197,6 +207,16 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: %s NORMALIZED_ROM REPORT FRAMES RENDERER_DATA\n", argv[0]);
         return 2;
     }
+    if (getenv("RECOMP_DUKE_CHECK_FOV")) {
+        RecompGameOptions options = {.rom = argv[1]};
+        return duke_check_fov(&options);
+    }
+    if (getenv("RECOMP_DUKE_CHECK_INPUT")) {
+        RecompGameOptions options = {.rom = argv[1]};
+        return duke_check_input(&options);
+    }
+    require(duke_fov_configure(getenv("RECOMP_DUKE_FOV")),
+            "RECOMP_DUKE_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Duke Nukem 64 invalid frame count", 0);
@@ -272,9 +292,10 @@ int main(int argc, char **argv) {
         performance_log = fopen(path, "w");
         require(performance_log != NULL, "Duke Nukem 64 performance log cannot open", 0);
     }
-    while (!frames || presentations < frames) {
+    duke_input_init(poll_command_input);
+    while (!window_closed && (!frames || presentations < frames)) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad)) {
+        if (!duke_input_poll(&rt, renderer, &pad)) {
             window_closed = true;
             break;
         }

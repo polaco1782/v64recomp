@@ -3,9 +3,12 @@ import hashlib
 from common import RecompError
 
 
-def verify_input_evidence(rom, profile, metadata=None, coverage=None):
+def verify_input_evidence(rom, profile, metadata=None, coverage=None, *, identity_rom=None):
     """Bind the reviewed command ABI to complete bodies and decoded operands.
 
+    Compressed games may pass a verified prepared image as rom and the original
+    cartridge as identity_rom. Their preparation helper must verify the decoded
+    image before calling this checker; mappings refer to that prepared image.
     These checks establish static ROM evidence, not live gameplay acceptance.
     """
     spec = profile['input_adapter']
@@ -22,8 +25,9 @@ def verify_input_evidence(rom, profile, metadata=None, coverage=None):
         require(offset + size <= len(rom), 'evidence outside ROM')
         return rom[offset:offset + size]
 
-    require(len(rom) == profile['game']['rom_size'] and
-            hashlib.sha1(rom).hexdigest() == profile['game']['rom_sha1'], 'ROM identity mismatch')
+    cartridge = rom if identity_rom is None else identity_rom
+    require(len(cartridge) == profile['game']['rom_size'] and
+            hashlib.sha1(cartridge).hexdigest() == profile['game']['rom_sha1'], 'ROM identity mismatch')
     owned = set()
     for item in spec['functions'] + spec['data']:
         require(hashlib.sha256(raw(item['vram'], item['size'])).hexdigest() == item['sha256'],

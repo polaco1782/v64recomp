@@ -24,6 +24,8 @@ typedef enum RecompTimingPhase {
     RECOMP_TIMING_PHASES
 } RecompTimingPhase;
 
+/* CSV open/write failures warn and leave profiling disabled; existing reports
+ * are never replaced. They do not prevent runtime initialization. */
 bool recomp_timing_init(Runtime *);
 void recomp_timing_destroy(Runtime *);
 uint64_t recomp_timing_clock(void);
