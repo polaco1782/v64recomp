@@ -42,7 +42,12 @@ int nanosleep(const struct timespec *duration, struct timespec *remaining) {
     }
     uint64_t ticks = (uint64_t)duration->tv_sec * UINT64_C(10000000) + (duration->tv_nsec + 99) / 100;
     if (ticks) {
-        HANDLE timer = CreateWaitableTimerW(NULL, TRUE, NULL);
+        /* Coarse timers can oversleep a VI or AI deadline by a full system
+         * tick. Use precise one-shot waits where the OS supports them. */
+        HANDLE timer =
+            CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_MODIFY_STATE | SYNCHRONIZE);
+        if (!timer && GetLastError() == ERROR_INVALID_PARAMETER)
+            timer = CreateWaitableTimerW(NULL, FALSE, NULL);
         LARGE_INTEGER due;
         due.QuadPart = -(LONGLONG)ticks;
         if (!timer) {

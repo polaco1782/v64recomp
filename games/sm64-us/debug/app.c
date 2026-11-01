@@ -75,8 +75,8 @@ static void capture_renderer(void) {
     CHECK(snprintf(path, sizeof(path), "%s/window.ppm", output) > 0);
     CHECK(recomp_renderer_capture(renderer, path));
     FILE *f = artifact("renderer_results.json", "w");
-    fprintf(f, "{\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64 ",", rs.display_frames,
-            rs.display_elapsed_ns);
+    fprintf(f, "{\"display_frames\":%" PRIu64 ",\"display_elapsed_ns\":%" PRIu64
+               ",\"interpolated_frames\":%" PRIu64 ",", rs.display_frames, rs.display_elapsed_ns, rs.interpolated_frames);
     fprintf(f,
             "\"graphics_tasks\":%u,\"sp_callbacks\":%" PRIu64 ",\"dp_callbacks\":%" PRIu64
             ",\"presentations\":%u,\"startup_tasks_captured\":%u,\"audio_synthesized\":%s,\"submit_ns\":%" PRIu64
@@ -265,8 +265,9 @@ static bool drain(Runtime *rt) {
     /* Check for sleeping game/sound threads before spending a full batch on
      * the guest idle loop. Keep the same overall 8192-resume work limit. */
     for (unsigned n = 0; n < 512; n++) {
-        CHECK(recomp_scheduler_run(rt, 16) == RECOMP_RUN_BUDGET);
-        if (waiting(rt)) {
+        RecompRunResult run = recomp_scheduler_run(rt, 16);
+        CHECK(run == RECOMP_RUN_BUDGET || run == RECOMP_RUN_WAITING);
+        if (run == RECOMP_RUN_WAITING || waiting(rt)) {
             done = true;
             break;
         }
@@ -329,7 +330,8 @@ int main(int argc, char **argv) {
                                    .run_queue = GAME_RUN_QUEUE,
                                    .active_queue = GAME_ACTIVE_QUEUE,
                                    .running_thread = GAME_RUNNING_THREAD,
-                                   .event_table = GAME_EVENT_TABLE};
+                                   .event_table = GAME_EVENT_TABLE,
+                                   .idle_thread = GAME_IDLE_THREAD};
     CHECK(recomp_scheduler_init(&rt, &sched));
     RecompClockConfig clock = {
         .ticks_per_second = GAME_COUNTER_HZ, .now_ns = now_ns, .timer_sentinel = GAME_TIMER_SENTINEL};
@@ -389,11 +391,13 @@ int main(int argc, char **argv) {
                 next_present = monotonic_ns();
             CHECK(recomp_renderer_present(renderer));
             presentations++;
-            /* Rendering and guest work consume part of the VI interval. A
-             * fixed extra sleep delays audio service and loses wall-clock VIs.
-             * Absolute deadlines also prevent sleep overshoot accumulating. */
+            /* Service guest deadlines between presentations in live play;
+             * deterministic replays advance their synthetic clock above. */
             next_present += UINT64_C(16666667);
-            pace(next_present);
+            if (live_clock)
+                recomp_game_pace(&rt, next_present);
+            else
+                pace(next_present);
         }
     }
     CHECK(ready && (route_mode() ? route_target_frames == goal : play_frames == goal) && world_frames >= goal);

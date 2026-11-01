@@ -34,8 +34,9 @@ static bool waiting(Runtime *rt) {
 }
 static void drain(Runtime *rt) {
     for (unsigned n = 0; n < 512; n++) {
-        require(recomp_scheduler_run(rt, 16) == RECOMP_RUN_BUDGET, "SM64 scheduler stopped", 0);
-        if (waiting(rt))
+        RecompRunResult run = recomp_scheduler_run(rt, 16);
+        require(run == RECOMP_RUN_BUDGET || run == RECOMP_RUN_WAITING, "SM64 scheduler stopped", 0);
+        if (run == RECOMP_RUN_WAITING || waiting(rt))
             break;
     }
 }
@@ -57,7 +58,8 @@ int main(int argc, char **argv) {
                                        .run_queue = GAME_RUN_QUEUE,
                                        .active_queue = GAME_ACTIVE_QUEUE,
                                        .running_thread = GAME_RUNNING_THREAD,
-                                       .event_table = GAME_EVENT_TABLE};
+                                       .event_table = GAME_EVENT_TABLE,
+                                       .idle_thread = GAME_IDLE_THREAD};
     require(recomp_scheduler_init(&rt, &scheduler), "SM64 scheduler init failed", 0);
     wall_origin = recomp_game_monotonic();
     RecompClockConfig clock = {
@@ -90,7 +92,7 @@ int main(int argc, char **argv) {
         drain(&rt);
         require(recomp_renderer_present(renderer), "SM64 presentation failed", 0);
         next_present += 16666667;
-        recomp_game_sleep(next_present);
+        recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);

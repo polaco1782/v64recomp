@@ -15,7 +15,10 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *, const char *title);
 void recomp_fast3d_gles2_destroy(RecompFast3DGles2 *);
 bool recomp_fast3d_gles2_poll(RecompFast3DGles2 *);
 void recomp_fast3d_gles2_draw(RecompFast3DGles2 *, uint32_t root);
-void recomp_fast3d_gles2_present(RecompFast3DGles2 *);
+/* Returns true when a distinct geometry midpoint was presented. */
+bool recomp_fast3d_gles2_present(RecompFast3DGles2 *);
+void recomp_fast3d_gles2_set_frame_rate(RecompFast3DGles2 *, uint32_t fps);
+void recomp_fast3d_gles2_set_vertex_identity(RecompFast3DGles2 *, const RecompVertexIdentity *);
 bool recomp_fast3d_gles2_capture(RecompFast3DGles2 *, const char *path);
 bool recomp_fast3d_gles2_input(RecompFast3DGles2 *, RecompPad *);
 bool recomp_fast3d_gles2_full_sync(RecompFast3DGles2 *);

@@ -411,6 +411,10 @@ void recomp_renderer_set_graphics_hook(RecompRenderer *s, RecompGraphicsHook hoo
     s->check_owner();
     s->graphics_hook = hook;
 }
+void recomp_renderer_set_vertex_identity(RecompRenderer *, const RecompVertexIdentity *identity) {
+    if (identity)
+        recomp_fail("packed vertex identity hooks require GLES2", 0);
+}
 void recomp_renderer_set_microcode_hook(RecompRenderer *s, RecompMicrocodeHook hook) {
     s->check_owner();
     s->microcode_hook = hook;

@@ -2,6 +2,11 @@
 # Ordinary CPU text, native OS bodies, RSP programs and data are classified
 # by code-inventory.json. The build does not read a reference ELF/map or C tree.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
+# Original Goddard vertex converters run first; graphics.c annotates their Vtx links.
+function_wrappers = [
+  {section = ".goddard", vram = 0x801930d8, size = 0x34c, sha256 = "777e7cb77b724e429ed16bef367f17c7c0a3f38778194e151aa6d4629d76d963", handler = "sm64_head_vertices_hook"},
+  {section = ".goddard", vram = 0x80193424, size = 0x118, sha256 = "e16e2c10ea005b0d908e4f85476926de915e0e21756a08f92e9270c85436dba7", handler = "sm64_head_vertices_hook"},
+]
 checkpoints = [
   {pc = 0x80246dd8, expected_word = 0x1000ffff, kind = "yield", reason = "Return control to the host on every iteration of SM64's idle loop"},
 ]

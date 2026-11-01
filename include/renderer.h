@@ -6,6 +6,15 @@
 extern "C" {
 #endif
 typedef struct RecompRenderer RecompRenderer;
+/* Optional game-owned identities for packed vertices. Called on the renderer
+ * thread while the guest is parked. begin selects frames with fresh metadata;
+ * identify returns zero for unannotated vertices. No guest RAM is modified. */
+typedef struct RecompVertexIdentity {
+    void *userdata;
+    bool (*begin)(void *);
+    uint64_t (*identify)(void *, uint32_t physical, const float position[3]);
+} RecompVertexIdentity;
+void recomp_renderer_set_vertex_identity(RecompRenderer *, const RecompVertexIdentity *);
 /* Configure the original graphics microcode accepted by the GLES2 parser. */
 void recomp_renderer_graphics_identity(RecompRenderer *, const char *code_sha256, uint32_t code_bytes,
                                       const char *data_sha256, uint32_t data_bytes);
@@ -19,6 +28,7 @@ typedef struct RecompRendererStats {
     uint64_t graphics_tasks_without_dp;
     /* Swap-chain draws, including interpolated frames, and time from first to last. */
     uint64_t display_frames, display_elapsed_ns;
+    uint64_t interpolated_frames; /* Distinct GLES2 geometry midpoint presentations. */
 } RecompRendererStats;
 /* Linux/X11 Vulkan adapter. Public entry points run on the host owner with
  * guest execution parked. Display-list parsing, readbacks and presentation
@@ -26,6 +36,7 @@ typedef struct RecompRendererStats {
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
 /* Defaults to 60 FPS interpolation. 0 preserves the game's original rate;
  * 10..1000 enables RT64 interpolation at the requested rate.
+ * GLES2 defaults to native and accepts 0/30 (native) or 60 (geometry midpoints).
  * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */
 void recomp_renderer_set_frame_rate(RecompRenderer *, uint32_t target_fps);
 /* Configure a game-specific microcode extension after RT64 recognizes a task. */

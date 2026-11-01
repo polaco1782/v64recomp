@@ -86,7 +86,18 @@ typedef struct Surface {
     uint32_t address;
     GLuint framebuffer, texture, depth;
     bool valid;
+    uint64_t frame;
+    bool midpoint;
 } Surface;
+#define HISTORY_SIZE 16384
+typedef struct VertexHistory {
+    float position[4], local[3];
+} VertexHistory;
+typedef struct IdentityHistory {
+    uint64_t id, frame;
+    float position[4], midpoint[4];
+    bool matched;
+} IdentityHistory;
 struct RecompFast3DGles2 {
     Runtime *rt;
     SDL_Window *window;
@@ -100,6 +111,7 @@ struct RecompFast3DGles2 {
     } gl;
     RecompFast3D frontend;
     GLuint buffer, white, blit;
+    GLint blit_gamma;
     Program programs[256];
     unsigned program_count;
     Texture textures[128];
@@ -108,12 +120,26 @@ struct RecompFast3DGles2 {
     unsigned tex_width[2], tex_height[2];
     bool textures_dirty;
     Surface surfaces[8];
+    Surface midpoints[8];
+    Surface readback, capture;
     Surface *surface;
+    unsigned render_scale;
+    float color_gamma;
     uint32_t color_address, depth_address, present_address;
     bool clearing_depth, depth_clear;
     float projection[4][4], modelview[32][4][4];
     unsigned matrix_depth;
     Vertex vertices[16], batch[1536];
+    Vertex midpoint_vertices[16], midpoint_batch[1536];
+    VertexHistory *history[2];
+    RecompVertexIdentity vertex_identity;
+    IdentityHistory *identity_history;
+    bool identity_frame, identity_seen;
+    unsigned history_count, previous_count;
+    uint64_t topology, previous_topology;
+    uint64_t frame, presented_frame;
+    bool interpolate, recording, history_valid, midpoint_valid, midpoint_changed, history_full;
+    uint32_t frame_color;
     bool valid_vertices[16];
     unsigned batch_count;
     uint32_t geometry, other_high, other_low, mux0, mux1, fill_color, blend_color;
@@ -141,6 +167,9 @@ static void owner(RecompFast3DGles2 *s) {
 }
 static float clampf(float x, float lo, float hi) {
     return x < lo ? lo : x > hi ? hi : x;
+}
+static uint64_t hash_word(uint64_t hash, uint64_t word) {
+    return (hash ^ word) * UINT64_C(1099511628211);
 }
 static void identity(float m[4][4]) {
     memset(m, 0, 64);
@@ -308,6 +337,32 @@ static Program *program(RecompFast3DGles2 *s) {
     s->gl.Uniform1i(s->gl.GetUniformLocation(p->id, "tex1"), 1);
     return p;
 }
+static void create_surface(RecompFast3DGles2 *s, Surface *f, unsigned width, unsigned height, bool depth) {
+    f->valid = true;
+    s->gl.GenTextures(1, &f->texture);
+    s->gl.BindTexture(GL_TEXTURE_2D, f->texture);
+    s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)width, (GLsizei)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    s->gl.GenFramebuffers(1, &f->framebuffer);
+    s->gl.BindFramebuffer(GL_FRAMEBUFFER, f->framebuffer);
+    s->gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, f->texture, 0);
+    if (depth) {
+        s->gl.GenRenderbuffers(1, &f->depth);
+        s->gl.BindRenderbuffer(GL_RENDERBUFFER, f->depth);
+        s->gl.RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)width, (GLsizei)height);
+        s->gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, f->depth);
+    }
+    if (s->gl.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        recomp_fail("GLES2 framebuffer incomplete", f->address);
+    s->gl.Disable(GL_SCISSOR_TEST);
+    s->gl.DepthMask(GL_TRUE);
+    s->gl.ClearColor(0, 0, 0, 1);
+    s->gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    s->textures_dirty = true;
+}
 static Surface *surface(RecompFast3DGles2 *s, uint32_t address) {
     for (unsigned i = 0; i < 8; i++)
         if (s->surfaces[i].valid && s->surfaces[i].address == address)
@@ -320,38 +375,25 @@ static Surface *surface(RecompFast3DGles2 *s, uint32_t address) {
         }
     if (!f)
         recomp_fail("GLES2 framebuffer cache exhausted", address);
-    f->valid = true;
     f->address = address;
-    s->gl.GenTextures(1, &f->texture);
-    s->gl.BindTexture(GL_TEXTURE_2D, f->texture);
-    s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    s->gl.GenFramebuffers(1, &f->framebuffer);
-    s->gl.BindFramebuffer(GL_FRAMEBUFFER, f->framebuffer);
-    s->gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, f->texture, 0);
-    s->gl.GenRenderbuffers(1, &f->depth);
-    s->gl.BindRenderbuffer(GL_RENDERBUFFER, f->depth);
-    s->gl.RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, 320, 240);
-    s->gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, f->depth);
-    if (s->gl.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        recomp_fail("GLES2 framebuffer incomplete", address);
-    s->gl.Disable(GL_SCISSOR_TEST);
-    s->gl.DepthMask(GL_TRUE);
-    s->gl.ClearColor(0, 0, 0, 1);
-    s->gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    s->textures_dirty = true;
+    create_surface(s, f, 320 * s->render_scale, 240 * s->render_scale, true);
     return f;
 }
 static void bind_surface(RecompFast3DGles2 *s) {
     s->surface = surface(s, s->color_address);
+    Surface *mid = &s->midpoints[s->surface - s->surfaces];
+    if (s->recording && !mid->valid)
+        create_surface(s, mid, 320 * s->render_scale, 240 * s->render_scale, true);
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
     if (s->depth_clear) {
         s->gl.Disable(GL_SCISSOR_TEST);
         s->gl.DepthMask(GL_TRUE);
         s->gl.Clear(GL_DEPTH_BUFFER_BIT);
+        if (s->recording) {
+            s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
+            s->gl.Clear(GL_DEPTH_BUFFER_BIT);
+            s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+        }
         s->depth_clear = false;
     }
 }
@@ -379,11 +421,23 @@ static GLuint texture(RecompFast3DGles2 *s, Tile *t, unsigned *width, unsigned *
         recomp_fail("GLES2 unsupported tile dimensions", t->sh);
     }
     uint64_t hash = UINT64_C(1469598103934665603);
-    for (unsigned i = 0; i < 4096; i++) {
-        hash ^= s->tmem[i];
-        hash *= UINT64_C(1099511628211);
-    }
-    unsigned key[] = {*width, *height, t->fmt, t->siz, t->line, t->tmem, t->palette, (s->other_high >> 14) & 3};
+    unsigned tlut = (s->other_high >> 14) & 3, mask = (t->siz == 3 || tlut) ? 2047 : 4095;
+    unsigned row_bytes = t->siz == 3 ? *width * 2 : (*width * (4u << t->siz) + 7) / 8;
+    /* Cache the tile's contents, independent of unrelated TMEM loads and of
+     * where the game placed the same texture in TMEM. */
+    for (unsigned y = 0; y < *height; y++)
+        for (unsigned bank = 0; bank < (t->siz == 3 ? 2u : 1u); bank++)
+            for (unsigned x = 0; x < row_bytes; x++) {
+                unsigned offset = (t->tmem * 8 + y * t->line * 8 + x) ^ ((y & 1) ? 4 : 0);
+                hash ^= byte(s, (offset & mask) | (bank * 2048));
+                hash *= UINT64_C(1099511628211);
+            }
+    if (tlut && t->fmt == 2)
+        for (unsigned i = 2048; i < 4096; i++) {
+            hash ^= s->tmem[i];
+            hash *= UINT64_C(1099511628211);
+        }
+    unsigned key[] = {*width, *height, t->fmt, t->siz, t->palette, tlut};
     for (unsigned i = 0; i < sizeof(key) / sizeof(*key); i++) {
         hash ^= key[i];
         hash *= UINT64_C(1099511628211);
@@ -403,7 +457,6 @@ static GLuint texture(RecompFast3DGles2 *s, Tile *t, unsigned *width, unsigned *
     uint8_t *pixels = malloc(size);
     if (!pixels)
         recomp_fail("GLES2 texture allocation failed", 0);
-    unsigned tlut = (s->other_high >> 14) & 3, mask = (t->siz == 3 || tlut) ? 2047 : 4095;
     for (unsigned y = 0; y < *height; y++)
         for (unsigned x = 0; x < *width; x++) {
             unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << (t->siz == 3 ? 2 : t->siz)) >> 1);
@@ -470,7 +523,7 @@ static void flush(RecompFast3DGles2 *s) {
         } else if (s->textures_dirty)
             s->active_texture[i] = texture(s, t, &s->tex_width[i], &s->tex_height[i]);
         s->gl.BindTexture(GL_TEXTURE_2D, s->active_texture[i]);
-        GLint filter = ((s->other_high >> 12) & 3) ? GL_LINEAR : GL_NEAREST;
+        GLint filter = p->cycle == 2 ? GL_NEAREST : GL_LINEAR;
         s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
         s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
         float dim[4] = {(float)s->tex_width[i], (float)s->tex_height[i],
@@ -508,11 +561,13 @@ static void flush(RecompFast3DGles2 *s) {
                                                         : GL_BACK);
     } else
         s->gl.Disable(GL_CULL_FACE);
-    s->gl.Viewport((GLint)s->viewport[0], (GLint)(240 - s->viewport[1] - s->viewport[3]), (GLsizei)s->viewport[2],
-                   (GLsizei)s->viewport[3]);
+    float scale = (float)s->render_scale;
+    s->gl.Viewport((GLint)(s->viewport[0] * scale), (GLint)((240 - s->viewport[1] - s->viewport[3]) * scale),
+                   (GLsizei)(s->viewport[2] * scale), (GLsizei)(s->viewport[3] * scale));
     s->gl.Enable(GL_SCISSOR_TEST);
-    s->gl.Scissor((GLint)s->scissor[0], (GLint)(240 - s->scissor[3]), (GLsizei)(s->scissor[2] - s->scissor[0]),
-                  (GLsizei)(s->scissor[3] - s->scissor[1]));
+    s->gl.Scissor((GLint)(s->scissor[0] * s->render_scale), (GLint)((240 - s->scissor[3]) * s->render_scale),
+                  (GLsizei)((s->scissor[2] - s->scissor[0]) * s->render_scale),
+                  (GLsizei)((s->scissor[3] - s->scissor[1]) * s->render_scale));
     s->gl.BindBuffer(GL_ARRAY_BUFFER, s->buffer);
     s->gl.BufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(s->batch_count * sizeof(Vertex)), s->batch, GL_STREAM_DRAW);
     for (unsigned i = 0; i < 4; i++)
@@ -522,6 +577,14 @@ static void flush(RecompFast3DGles2 *s) {
     s->gl.VertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, uv));
     s->gl.VertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, fog));
     s->gl.DrawArrays(GL_TRIANGLES, 0, (GLsizei)s->batch_count);
+    if (s->recording) {
+        Surface *mid = &s->midpoints[s->surface - s->surfaces];
+        s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
+        s->gl.BufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(s->batch_count * sizeof(Vertex)), s->midpoint_batch,
+                         GL_STREAM_DRAW);
+        s->gl.DrawArrays(GL_TRIANGLES, 0, (GLsizei)s->batch_count);
+        s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+    }
     s->triangles += s->batch_count / 3;
     s->batch_count = 0;
 }
@@ -583,14 +646,117 @@ static void load_texture(RecompFast3DGles2 *s, Tile *t, uint32_t w0, uint32_t w1
     }
     s->textures_dirty = true;
 }
+/* Game-provided logical identities survive repacking of the same mesh. A
+ * missing previous position or ambiguous transform rejects the whole pose. */
+static void interpolate_identity(RecompFast3DGles2 *s, uint64_t id, const Vertex *current, Vertex *mid) {
+    s->identity_seen = true;
+    unsigned hash = (unsigned)hash_word(id >> 32, id) & (HISTORY_SIZE - 1);
+    IdentityHistory *entry = NULL, *reusable = NULL;
+    for (unsigned i = 0; i < HISTORY_SIZE; i++) {
+        IdentityHistory *candidate = &s->identity_history[(hash + i) & (HISTORY_SIZE - 1)];
+        if (candidate->id == id || !candidate->id) {
+            entry = candidate;
+            break;
+        }
+        if (!reusable && candidate->frame + 1 < s->frame)
+            reusable = candidate;
+    }
+    if (!entry)
+        entry = reusable;
+    if (!entry) {
+        s->midpoint_valid = false;
+        return;
+    }
+    if (entry->id != id || entry->frame != s->frame) {
+        bool matched = entry->id == id && entry->frame + 1 == s->frame;
+        float extent = fmaxf(128, fmaxf(fabsf(entry->position[3]), fabsf(current->position[3])));
+        for (unsigned j = 0; j < 4; j++) {
+            float p = entry->position[j], q = current->position[j];
+            if (!isfinite(p) || !isfinite(q) || fabsf(p - q) > extent * 0.5f)
+                matched = false;
+            entry->midpoint[j] = (p + q) * 0.5f;
+        }
+        entry->id = id;
+        entry->frame = s->frame;
+        entry->matched = matched;
+        memcpy(entry->position, current->position, sizeof(entry->position));
+    } else if (memcmp(entry->position, current->position, sizeof(entry->position))) {
+        /* One identity under different transforms is ambiguous. Reject the
+         * complete candidate, including copies already submitted to the GPU. */
+        entry->matched = false;
+    }
+    if (!entry->matched) {
+        s->midpoint_valid = false;
+        return;
+    }
+    memcpy(mid->position, entry->midpoint, sizeof(mid->position));
+    if (memcmp(mid->position, current->position, sizeof(mid->position)))
+        s->midpoint_changed = true;
+    mid->fog = mid->position[3] > 0
+                   ? clampf((mid->position[2] / mid->position[3] * s->fog_mul + s->fog_offset) / 255, 0, 1)
+                   : 1;
+}
+/* Without explicit identities, pair vertex loads only when the complete
+ * command topology matches. Colors/normals are payload, not identity. */
+static void interpolate_vertex(RecompFast3DGles2 *s, unsigned index, uint32_t address, const float local[4]) {
+    Vertex *current = &s->vertices[index], *mid = &s->midpoint_vertices[index];
+    *mid = *current;
+    unsigned slot = s->history_count++;
+    if (slot >= HISTORY_SIZE) {
+        s->midpoint_valid = false;
+        s->history_full = true;
+        return;
+    }
+    VertexHistory *entry = &s->history[1][slot];
+    memcpy(entry->position, current->position, sizeof(entry->position));
+    memcpy(entry->local, local, sizeof(entry->local));
+    if (s->identity_frame) {
+        uint64_t id = s->vertex_identity.identify(s->vertex_identity.userdata, address, local);
+        if (id)
+            interpolate_identity(s, id, current, mid);
+        return;
+    }
+    if (!s->history_valid || slot >= s->previous_count) {
+        s->midpoint_valid = false;
+        return;
+    }
+    const VertexHistory *previous = &s->history[0][slot];
+    const float *p = previous->position, *q = current->position;
+    /* Orthographic UI remains native. Perspective vertices are interpolated in
+     * homogeneous coordinates, including clipped/behind-camera vertices, so
+     * adjacent triangles do not separate at the near plane. */
+    if (p[3] == 1 && q[3] == 1)
+        return;
+    float extent = fmaxf(128, fmaxf(fabsf(p[3]), fabsf(q[3])));
+    for (unsigned j = 0; j < 4; j++) {
+        if (!isfinite(p[j]) || !isfinite(q[j]) || fabsf(p[j] - q[j]) > extent * 0.5f ||
+            (j < 3 && fabsf(previous->local[j] - local[j]) > 128)) {
+            s->midpoint_valid = false;
+            return;
+        }
+    }
+    for (unsigned j = 0; j < 4; j++) {
+        mid->position[j] = (p[j] + q[j]) * 0.5f;
+        if (mid->position[j] != q[j])
+            s->midpoint_changed = true;
+    }
+    mid->fog = mid->position[3] > 0
+                   ? clampf((mid->position[2] / mid->position[3] * s->fog_mul + s->fog_offset) / 255, 0, 1)
+                   : 1;
+}
 static void triangle(RecompFast3DGles2 *s, unsigned a, unsigned b, unsigned c) {
     if (a >= 16 || b >= 16 || c >= 16 || !s->valid_vertices[a] || !s->valid_vertices[b] || !s->valid_vertices[c])
         recomp_fail("GLES2 triangle references an unloaded vertex", a);
     if (s->batch_count + 3 > 1536)
         flush(s);
-    s->batch[s->batch_count++] = s->vertices[a];
-    s->batch[s->batch_count++] = s->vertices[b];
-    s->batch[s->batch_count++] = s->vertices[c];
+    const unsigned indices[] = {a, b, c};
+    for (unsigned i = 0; i < 3; i++) {
+        unsigned index = indices[i];
+        s->batch[s->batch_count] = s->vertices[index];
+        if (s->recording)
+            s->midpoint_batch[s->batch_count] = s->midpoint_vertices[index];
+        s->batch_count++;
+    }
 }
 static void rectangle(RecompFast3DGles2 *s, float x0, float y0, float x1, float y1, float u, float v, float du,
                       float dv, bool flip) {
@@ -616,6 +782,8 @@ static void rectangle(RecompFast3DGles2 *s, float x0, float y0, float x1, float 
     const unsigned order[] = {0, 1, 2, 0, 2, 3};
     for (unsigned i = 0; i < 6; i++)
         s->batch[s->batch_count++] = q[order[i]];
+    if (s->recording)
+        memcpy(s->midpoint_batch, s->batch, s->batch_count * sizeof(Vertex));
     flush(s);
     s->geometry = geometry;
     memcpy(s->viewport, oldviewport, sizeof(oldviewport));
@@ -672,6 +840,8 @@ static void vertex(RecompFast3DGles2 *s, uint32_t address, unsigned first, unsig
         }
         v->fog =
             v->position[3] > 0 ? clampf((v->position[2] / v->position[3] * s->fog_mul + s->fog_offset) / 255, 0, 1) : 1;
+        if (s->recording)
+            interpolate_vertex(s, first + i, a, local);
         s->valid_vertices[first + i] = true;
     }
 }
@@ -682,6 +852,13 @@ static bool consume(Runtime *rt, void *opaque, const RecompFast3D *state, const 
     uint32_t w0 = cmd->w0, w1 = cmd->w1;
     (void)rt;
     (void)state;
+    if (s->recording) {
+        /* Task-buffer addresses, textures and transforms are allowed to change;
+         * command order, vertex slots and triangle connectivity must match. */
+        s->topology = hash_word(s->topology, w0);
+        if (op == 0xbf || op == 0xb6 || op == 0xb7 || op == 0xbd || op == 0xfc)
+            s->topology = hash_word(s->topology, w1);
+    }
     /* Vertices are transformed/lit when loaded and copied into the batch.
      * Matrix/vertex updates and list control do not change its raster state. */
     if (op != 0xbf && op != 0x01 && op != 0x04 && op != 0x06 && op != 0xb8 && op != 0xbc && op != 0xbd && op != 0x00 &&
@@ -933,6 +1110,11 @@ static bool consume(Runtime *rt, void *opaque, const RecompFast3D *state, const 
             uint32_t address = span(s, w1, 1);
             s->clearing_depth = address == s->depth_address;
             if (!s->clearing_depth) {
+                if (s->recording) {
+                    if (s->frame_color && s->frame_color != address)
+                        s->midpoint_valid = false;
+                    s->frame_color = address;
+                }
                 s->color_address = address;
                 bind_surface(s);
             }
@@ -953,9 +1135,16 @@ static bool consume(Runtime *rt, void *opaque, const RecompFast3D *state, const 
                 uint8_t p[4];
                 pixel16(s->fill_color & 65535, p, false);
                 s->gl.Enable(GL_SCISSOR_TEST);
-                s->gl.Scissor((GLint)x0, (GLint)(240 - y1), (GLsizei)(x1 - x0), (GLsizei)(y1 - y0));
+                s->gl.Scissor((GLint)(x0 * s->render_scale), (GLint)((240 - y1) * s->render_scale),
+                              (GLsizei)((x1 - x0) * s->render_scale), (GLsizei)((y1 - y0) * s->render_scale));
                 s->gl.ClearColor((float)p[0] / 255, (float)p[1] / 255, (float)p[2] / 255, (float)p[3] / 255);
                 s->gl.Clear(GL_COLOR_BUFFER_BIT);
+                if (s->recording) {
+                    Surface *mid = &s->midpoints[s->surface - s->surfaces];
+                    s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
+                    s->gl.Clear(GL_COLOR_BUFFER_BIT);
+                    s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+                }
             } else {
                 bool enabled = s->texture_enabled;
                 s->texture_enabled = false;
@@ -992,6 +1181,28 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
         return NULL;
     s->rt = rt;
     s->owner = SDL_ThreadID();
+#if defined(__aarch64__) || defined(_M_ARM64)
+    s->render_scale = 1;
+#else
+    s->render_scale = 3;
+#endif
+    const char *scale = getenv("RECOMP_GLES2_SCALE");
+    if (scale && *scale) {
+        char *end;
+        unsigned long value = strtoul(scale, &end, 10);
+        if (*end || value < 1 || value > 4)
+            recomp_fail("RECOMP_GLES2_SCALE must be 1..4", 0);
+        s->render_scale = (unsigned)value;
+    }
+    s->color_gamma = 1.2f;
+    const char *gamma = getenv("RECOMP_GLES2_GAMMA");
+    if (gamma && *gamma) {
+        char *end;
+        float value = strtof(gamma, &end);
+        if (*end || !isfinite(value) || value < 0.5f || value > 2.5f)
+            recomp_fail("RECOMP_GLES2_GAMMA must be 0.5..2.5", 0);
+        s->color_gamma = value;
+    }
     s->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 960, 720,
                                  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (s->window)
@@ -1042,8 +1253,9 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
     bind_surface(s);
     const char *vs =
         "attribute vec4 position;attribute vec2 uv;varying vec2 tc;void main(){gl_Position=position;tc=uv;}";
-    const char *fs = "precision mediump float;varying vec2 tc;uniform sampler2D image;void "
-                     "main(){gl_FragColor=texture2D(image,tc);}";
+    const char *fs = "precision mediump float;varying vec2 tc;uniform sampler2D image;uniform float colorGamma;"
+                     "void main(){vec4 c=texture2D(image,tc);if(colorGamma!=1.0)c.rgb=pow(c.rgb,vec3(colorGamma));"
+                     "gl_FragColor=c;}";
     GLuint v = shader(s, GL_VERTEX_SHADER, vs), f = shader(s, GL_FRAGMENT_SHADER, fs);
     s->blit = s->gl.CreateProgram();
     s->gl.AttachShader(s->blit, v);
@@ -1057,82 +1269,26 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
     s->gl.GetProgramiv(s->blit, GL_LINK_STATUS, &ok);
     if (!ok)
         recomp_fail("GLES2 presentation shader link failed", 0);
+    s->blit_gamma = s->gl.GetUniformLocation(s->blit, "colorGamma");
     s->input = recomp_input_create();
     if (!s->input)
         recomp_fail("GLES2 controller initialization failed", 0);
     (void)SDL_GL_SetSwapInterval(0);
     return s;
 }
-void recomp_fast3d_gles2_draw(RecompFast3DGles2 *s, uint32_t root) {
-    owner(s);
-    s->full_sync = false;
-    s->rect_stage = 0;
-    memset(s->valid_vertices, 0, sizeof(s->valid_vertices));
-    bind_surface(s);
-    recomp_fast3d_walk(s->rt, &s->frontend, root, 1000000, consume, s);
-    flush(s);
-    if (s->rect_stage)
-        recomp_fail("incomplete GLES2 texture rectangle", root);
-    if (s->full_sync) {
-        /* ReadPixels completes the color image before DP completion. Preserve
-         * CPU-visible RAM, with one checked destination span for the copy. */
-        if (s->color_address) {
-            uint8_t *pixels = malloc(320 * 240 * 4);
-            if (!pixels)
-                recomp_fail("GLES2 color readback allocation failed", root);
-            uint32_t target = recomp_ram_address_write_slow(s->rt, 0x80000000u | s->color_address, 320 * 240 * 2);
-            if (target & 1)
-                recomp_fail("unaligned GLES2 color image", s->color_address);
-            s->gl.PixelStorei(GL_PACK_ALIGNMENT, 1);
-            s->gl.ReadPixels(0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-            for (unsigned y = 0; y < 240; y++)
-                for (unsigned x = 0; x < 320; x++) {
-                    const uint8_t *p = pixels + ((239 - y) * 320 + x) * 4;
-                    uint16_t value =
-                        (uint16_t)((p[0] >> 3) << 11 | (p[1] >> 3) << 6 | (p[2] >> 3) << 1 | (p[3] >= 128));
-                    uint32_t offset = target + (y * 320 + x) * 2;
-#if RECOMP_LITTLE_ENDIAN_HOST
-                    memcpy(s->rt->rdram + (offset ^ 2), &value, sizeof(value));
-#else
-                    s->rt->rdram[offset] = (uint8_t)(value >> 8);
-                    s->rt->rdram[offset + 1] = (uint8_t)value;
-#endif
-                }
-            free(pixels);
-        } else
-            s->gl.Finish();
-    }
-}
-void recomp_fast3d_gles2_set_framebuffer(RecompFast3DGles2 *s, uint32_t address) {
-    owner(s);
-    s->present_address = address;
-}
-void recomp_fast3d_gles2_present(RecompFast3DGles2 *s) {
-    owner(s);
-    flush(s);
-    Surface *image = s->surface;
-    for (unsigned i = 0; i < 8; i++)
-        if (s->surfaces[i].valid && s->surfaces[i].address == s->present_address)
-            image = &s->surfaces[i];
-    s->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-    int width, height;
-    SDL_GL_GetDrawableSize(s->window, &width, &height);
+static void blit_texture(RecompFast3DGles2 *s, GLuint texture, GLuint framebuffer, int x, int y, int width, int height,
+                         bool color_correct) {
+    s->gl.BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     s->gl.Disable(GL_SCISSOR_TEST);
     s->gl.Disable(GL_DEPTH_TEST);
     s->gl.Disable(GL_BLEND);
     s->gl.Disable(GL_CULL_FACE);
     s->gl.Disable(GL_POLYGON_OFFSET_FILL);
-    s->gl.ClearColor(0, 0, 0, 1);
-    s->gl.Clear(GL_COLOR_BUFFER_BIT);
-    int w = width, h = width * 3 / 4;
-    if (h > height) {
-        h = height;
-        w = height * 4 / 3;
-    }
-    s->gl.Viewport((width - w) / 2, (height - h) / 2, w, h);
+    s->gl.Viewport(x, y, width, height);
     s->gl.UseProgram(s->blit);
+    s->gl.Uniform1f(s->blit_gamma, color_correct ? s->color_gamma : 1.0f);
     s->gl.ActiveTexture(GL_TEXTURE0);
-    s->gl.BindTexture(GL_TEXTURE_2D, image->texture);
+    s->gl.BindTexture(GL_TEXTURE_2D, texture);
     s->gl.Uniform1i(s->gl.GetUniformLocation(s->blit, "image"), 0);
     Vertex q[6] = {0};
     const float xy[6][2] = {{-1, -1}, {1, -1}, {1, 1}, {-1, -1}, {1, 1}, {-1, 1}};
@@ -1150,9 +1306,139 @@ void recomp_fast3d_gles2_present(RecompFast3DGles2 *s) {
     s->gl.VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, position));
     s->gl.VertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, uv));
     s->gl.DrawArrays(GL_TRIANGLES, 0, 6);
+    s->textures_dirty = true;
+}
+void recomp_fast3d_gles2_draw(RecompFast3DGles2 *s, uint32_t root) {
+    owner(s);
+    s->frame++;
+    s->recording = s->interpolate;
+    s->identity_frame =
+        s->recording && s->vertex_identity.begin && s->vertex_identity.begin(s->vertex_identity.userdata);
+    s->identity_seen = false;
+    s->midpoint_valid = s->identity_frame || s->history_valid;
+    s->midpoint_changed = false;
+    s->history_full = false;
+    s->frame_color = 0;
+    s->history_count = 0;
+    s->topology = UINT64_C(1469598103934665603);
+    s->full_sync = false;
+    s->rect_stage = 0;
+    memset(s->valid_vertices, 0, sizeof(s->valid_vertices));
+    bind_surface(s);
+    recomp_fast3d_walk(s->rt, &s->frontend, root, 1000000, consume, s);
+    flush(s);
+    if (s->rect_stage)
+        recomp_fail("incomplete GLES2 texture rectangle", root);
+    s->recording = false;
+    s->surface->frame = s->frame;
+    bool correspondence = s->identity_frame
+                              ? s->identity_seen
+                              : s->history_count == s->previous_count && s->topology == s->previous_topology;
+    s->surface->midpoint = s->interpolate && s->full_sync && s->midpoint_valid && s->midpoint_changed && correspondence;
+    if (s->interpolate) {
+        VertexHistory *previous = s->history[0];
+        s->history[0] = s->history[1];
+        s->history[1] = previous;
+        s->history_valid = s->full_sync && !s->history_full;
+        s->previous_count = s->history_count;
+        s->previous_topology = s->topology;
+    }
+    if (s->full_sync) {
+        /* ReadPixels completes the color image before DP completion. Preserve
+         * CPU-visible RAM, with one checked destination span for the copy. */
+        if (s->color_address) {
+            uint8_t *pixels = malloc(320 * 240 * 4);
+            if (!pixels)
+                recomp_fail("GLES2 color readback allocation failed", root);
+            uint32_t target = recomp_ram_address_write_slow(s->rt, 0x80000000u | s->color_address, 320 * 240 * 2);
+            if (target & 1)
+                recomp_fail("unaligned GLES2 color image", s->color_address);
+            if (s->render_scale > 1) {
+                if (!s->readback.valid)
+                    create_surface(s, &s->readback, 320, 240, false);
+                /* Guest framebuffer addresses and sizes remain native. Only
+                 * this downsampled image crosses the GPU-to-CPU boundary. */
+                blit_texture(s, s->surface->texture, s->readback.framebuffer, 0, 0, 320, 240, false);
+            }
+            s->gl.PixelStorei(GL_PACK_ALIGNMENT, 1);
+            s->gl.ReadPixels(0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+            for (unsigned y = 0; y < 240; y++)
+                for (unsigned x = 0; x < 320; x++) {
+                    const uint8_t *p = pixels + ((239 - y) * 320 + x) * 4;
+                    uint16_t value =
+                        (uint16_t)((p[0] >> 3) << 11 | (p[1] >> 3) << 6 | (p[2] >> 3) << 1 | (p[3] >= 128));
+                    uint32_t offset = target + (y * 320 + x) * 2;
+#if RECOMP_LITTLE_ENDIAN_HOST
+                    memcpy(s->rt->rdram + (offset ^ 2), &value, sizeof(value));
+#else
+                    s->rt->rdram[offset] = (uint8_t)(value >> 8);
+                    s->rt->rdram[offset + 1] = (uint8_t)value;
+#endif
+                }
+            free(pixels);
+            bind_surface(s);
+        } else
+            s->gl.Finish();
+    }
+}
+void recomp_fast3d_gles2_set_framebuffer(RecompFast3DGles2 *s, uint32_t address) {
+    owner(s);
+    s->present_address = address;
+}
+void recomp_fast3d_gles2_set_frame_rate(RecompFast3DGles2 *s, uint32_t fps) {
+    owner(s);
+    if (s->frame || (fps != 0 && fps != 30 && fps != 60))
+        recomp_fail("GLES2 frame rate must be configured as native or 60 before drawing", fps);
+    s->interpolate = fps == 60;
+    if (s->interpolate && !s->history[0]) {
+        for (unsigned i = 0; i < 2; i++) {
+            s->history[i] = calloc(HISTORY_SIZE, sizeof(VertexHistory));
+            if (!s->history[i])
+                recomp_fail("GLES2 interpolation history allocation failed", 0);
+        }
+    }
+}
+void recomp_fast3d_gles2_set_vertex_identity(RecompFast3DGles2 *s, const RecompVertexIdentity *identity) {
+    owner(s);
+    if (s->frame || !identity || !identity->begin || !identity->identify)
+        recomp_fail("configure complete GLES2 vertex identity callbacks before drawing", 0);
+    s->vertex_identity = *identity;
+    if (!s->identity_history) {
+        s->identity_history = calloc(HISTORY_SIZE, sizeof(IdentityHistory));
+        if (!s->identity_history)
+            recomp_fail("GLES2 vertex identity history allocation failed", 0);
+    }
+}
+bool recomp_fast3d_gles2_present(RecompFast3DGles2 *s) {
+    owner(s);
+    flush(s);
+    Surface *image = s->surface;
+    for (unsigned i = 0; i < 8; i++)
+        if (s->surfaces[i].valid && s->surfaces[i].address == s->present_address)
+            image = &s->surfaces[i];
+    /* Show (previous,current)/2 first, then current on the next display tick.
+     * Never interpolate across a skipped/reordered VI framebuffer. Native
+     * rendering and guest readback are independent of this presentation delay. */
+    bool midpoint = image->midpoint && image->frame == s->presented_frame + 1;
+    s->presented_frame = image->frame;
+    if (midpoint)
+        image = &s->midpoints[image - s->surfaces];
+    s->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
+    int width, height;
+    SDL_GL_GetDrawableSize(s->window, &width, &height);
+    s->gl.Disable(GL_SCISSOR_TEST);
+    s->gl.ClearColor(0, 0, 0, 1);
+    s->gl.Clear(GL_COLOR_BUFFER_BIT);
+    int w = width, h = width * 3 / 4;
+    if (h > height) {
+        h = height;
+        w = height * 4 / 3;
+    }
+    blit_texture(s, image->texture, 0, (width - w) / 2, (height - h) / 2, w, h, true);
     SDL_GL_SwapWindow(s->window);
     bind_surface(s);
     s->textures_dirty = true;
+    return midpoint;
 }
 bool recomp_fast3d_gles2_poll(RecompFast3DGles2 *s) {
     owner(s);
@@ -1201,22 +1487,28 @@ bool recomp_fast3d_gles2_capture(RecompFast3DGles2 *s, const char *path) {
     for (unsigned i = 0; i < 8; i++)
         if (s->surfaces[i].valid && s->surfaces[i].address == s->present_address)
             f = &s->surfaces[i];
-    s->gl.BindFramebuffer(GL_FRAMEBUFFER, f->framebuffer);
-    uint8_t *pixels = malloc(320 * 240 * 4);
+    unsigned width = 320 * s->render_scale, height = 240 * s->render_scale;
+    if (s->color_gamma != 1.0f) {
+        if (!s->capture.valid)
+            create_surface(s, &s->capture, width, height, false);
+        blit_texture(s, f->texture, s->capture.framebuffer, 0, 0, (int)width, (int)height, true);
+    } else
+        s->gl.BindFramebuffer(GL_FRAMEBUFFER, f->framebuffer);
+    uint8_t *pixels = malloc((size_t)width * height * 4);
     if (!pixels)
         return false;
     s->gl.PixelStorei(GL_PACK_ALIGNMENT, 1);
-    s->gl.ReadPixels(0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    s->gl.ReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     bool ok = s->gl.GetError() == GL_NO_ERROR;
     FILE *file = ok ? fopen(path, "wb") : NULL;
     if (!file)
         ok = false;
     else {
-        if (fprintf(file, "P6\n320 240\n255\n") < 0)
+        if (fprintf(file, "P6\n%u %u\n255\n", width, height) < 0)
             ok = false;
-        for (unsigned y = 240; y-- > 0;)
-            for (unsigned x = 0; x < 320; x++)
-                if (fwrite(pixels + (y * 320 + x) * 4, 1, 3, file) != 3)
+        for (unsigned y = height; y-- > 0;)
+            for (unsigned x = 0; x < width; x++)
+                if (fwrite(pixels + ((size_t)y * width + x) * 4, 1, 3, file) != 3)
                     ok = false;
         if (fclose(file))
             ok = false;
@@ -1250,10 +1542,27 @@ void recomp_fast3d_gles2_destroy(RecompFast3DGles2 *s) {
                 s->gl.DeleteFramebuffers(1, &s->surfaces[i].framebuffer);
                 s->gl.DeleteRenderbuffers(1, &s->surfaces[i].depth);
             }
+        for (unsigned i = 0; i < 8; i++)
+            if (s->midpoints[i].valid) {
+                s->gl.DeleteTextures(1, &s->midpoints[i].texture);
+                s->gl.DeleteFramebuffers(1, &s->midpoints[i].framebuffer);
+                s->gl.DeleteRenderbuffers(1, &s->midpoints[i].depth);
+            }
+        if (s->readback.valid) {
+            s->gl.DeleteTextures(1, &s->readback.texture);
+            s->gl.DeleteFramebuffers(1, &s->readback.framebuffer);
+        }
+        if (s->capture.valid) {
+            s->gl.DeleteTextures(1, &s->capture.texture);
+            s->gl.DeleteFramebuffers(1, &s->capture.framebuffer);
+        }
         SDL_GL_DeleteContext(s->context);
     }
     if (s->window)
         SDL_DestroyWindow(s->window);
+    free(s->history[0]);
+    free(s->history[1]);
+    free(s->identity_history);
     free(s);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 }

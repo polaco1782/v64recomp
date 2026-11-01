@@ -41,6 +41,12 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data, cons
         free(s);
         return NULL;
     }
+    const char *fps = getenv("RECOMP_GLES2_FPS");
+    if (fps && *fps) {
+        if (strcmp(fps, "30") && strcmp(fps, "60"))
+            recomp_fail("RECOMP_GLES2_FPS must be 30 or 60", 0);
+        recomp_renderer_set_frame_rate(s, (uint32_t)strtoul(fps, NULL, 10));
+    }
     return s;
 }
 void recomp_renderer_graphics_identity(RecompRenderer *s, const char *code, uint32_t code_bytes, const char *data,
@@ -89,7 +95,8 @@ bool recomp_renderer_present(RecompRenderer *s) {
     RecompViState vi = recomp_vi_state(s->rt);
     if (vi.framebuffer)
         recomp_fast3d_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, vi.framebuffer, 1));
-    recomp_fast3d_gles2_present(s->gpu);
+    if (recomp_fast3d_gles2_present(s->gpu))
+        s->stats.interpolated_frames++;
     uint64_t now = recomp_game_monotonic();
     if (!s->first_display)
         s->first_display = now;
@@ -117,9 +124,12 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     }
 }
 void recomp_renderer_set_frame_rate(RecompRenderer *s, uint32_t fps) {
-    (void)s;
-    if (fps)
-        recomp_fail("GLES2 does not implement frame interpolation", fps);
+    if (s->stats.graphics_tasks)
+        recomp_fail("configure GLES2 frame rate before submitting tasks", fps);
+    recomp_fast3d_gles2_set_frame_rate(s->gpu, fps);
+}
+void recomp_renderer_set_vertex_identity(RecompRenderer *s, const RecompVertexIdentity *identity) {
+    recomp_fast3d_gles2_set_vertex_identity(s->gpu, identity);
 }
 void recomp_renderer_set_graphics_hook(RecompRenderer *s, RecompGraphicsHook hook) {
     (void)s;
