@@ -36,7 +36,7 @@ static inline void recomp_mouse_submit(RecompMouseBuffer *buffer, RecompMouseFra
         frame.dy += buffer->pending.dy;
         frame.wheel = recomp_mouse_wheel_sum(buffer->pending.wheel, frame.wheel);
     }
-    if (!frame.active) { RecompMouseFrame empty = {0}; frame = empty; }
+    if (!frame.active) { RecompMouseFrame empty = {0, 0, 0, 0, false, 0, 0}; frame = empty; }
     buffer->pending = frame;
 }
 static inline RecompMouseFrame recomp_mouse_consume(RecompMouseBuffer *buffer) {
@@ -48,7 +48,7 @@ static inline RecompMouseFrame recomp_mouse_consume(RecompMouseBuffer *buffer) {
     return frame;
 }
 static inline void recomp_mouse_clear(RecompMouseBuffer *buffer) {
-    RecompMouseFrame empty = {0};
+    RecompMouseFrame empty = {0, 0, 0, 0, false, 0, 0};
     buffer->pending = empty;
 }
 #endif
