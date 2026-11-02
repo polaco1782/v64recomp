@@ -238,10 +238,14 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         target = 0x80000000 | ((word & 0x03ffffff) << 2)
         lines.append(f'    {{0x{uso["text_vram"] + offset:x}, 0x{target:x}, 0x{word:x}}},')
     lines.append('};')
-    lines.append('static const struct { uint32_t address, size, section; uint8_t sha256[32]; } uso_modules[] = {')
+    lines.append('static const struct { uint32_t address, size, section; uint8_t storage_sha256[32]; } uso_modules[] = {')
     for module in profile['discovery'].get('uso_modules', []):
         section = next(s['id'] for s in metadata['sections'] if s['name'] == module['name'])
-        digest = ','.join(f'0x{b:02x}' for b in bytes.fromhex(module['sha256']))
+        image, _, _, _ = prepare_text(rom, module)
+        # RDRAM stores each aligned guest word in reversed byte order for RT64.
+        # Pin that same full image so entry checks can hash RAM without copying.
+        storage = b''.join(image[n:n + 4][::-1] for n in range(0, len(image), 4))
+        digest = ','.join(f'0x{b:02x}' for b in hashlib.sha256(storage).digest())
         lines.append(f"    {{0x{module['text_vram']:x}, 0x{module['text_size']:x}, {section}, {{{digest}}}}},")
     lines.append('};')
     lines.append('static const uint32_t boot_parameters[][2] = {')

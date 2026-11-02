@@ -1,91 +1,134 @@
 # 1080 Snowboarding continuation notes
 
-## Accepted milestone (2026-10-23)
+## Verified state (2026-11-02)
 
-Debug and Release workflows build. Both 90-frame desktop replays render the
-Nintendo 64 logo, exit 0 and complete without timeout. Retained artifacts:
-`build/1080-us-debug/logo-verified/` and
-`build/1080-us-release/logo-verified/`. Debug logged 35 graphics tasks and
-90 presentations. The last interruption, audio callback `0x800dbdc8`, is fixed
-with a checked original-code entry; both successful replays pass that point.
-There is no currently failing target within this bound. Extend the replay to
-find the next transition; title, menus and riding are not accepted yet.
+Debug and Release render the intro/title and navigate Match Race into Select
+Rider, including the character animation and stats. Both complete the
+3,000-frame `debug/first-menu.txt` replay with exit 0 and no timeout:
 
-Focused shared validation covered the global-mask SDK variant's preserved IE,
-CPU/RCP filtering and zero-RCP special case against the reviewed MIPS semantics,
-plus the existing ordinary interrupt-mask handler. The temporary harness was
-removed after passing. The shared symbol catalog loads successfully. This is
-focused validation, not a full cross-game regression run.
+| Build | Duration | Evidence directory |
+| --- | --- | --- |
+| Debug | 65.7 seconds | `build/1080-us-debug/first-menu-verified/` |
+| Release | 51.3 seconds | `build/1080-us-release/first-menu-verified/` |
+
+Debug logged 3,491 graphics tasks and 3,000 presentations. The input sends Start
+at 26 seconds, A at 30 seconds and A at 34 seconds. Player-controlled riding,
+later modes/transitions, audible accuracy and gameplay save/reload are unverified.
+The earlier successful idle intro is retained in
+`build/1080-us-debug/module-symbols-verified/`.
+
+## Discovery and source files
+
+Use the game-specific symbol tool before replaying a newly mapped module:
+
+```sh
+.venv/bin/python games/1080-us/discover_symbols.py
+# Install only after every reported ordinary CPU transfer is resolved:
+.venv/bin/python games/1080-us/discover_symbols.py --apply
+cmake --build build/1080-us-debug -j4
+```
+
+The tool reads original 12-byte USO symbol records. The loader at
+`0x800025d4..0x80002624` resolves defined symbols as `section_base + value`.
+Flags `0x52` identify defined Text symbols; section markers (`0x54`), imports
+and data symbols are not function declarations. Checked profile ranges exclude
+15 RSP/padding symbols. Normal metadata and instruction validation must pass
+before the tool installs an inventory. It never launches a game or guesses
+roots from pointer scans.
+
+The current `uso-entries.json` contains 2,489 CPU entries. Discovery registers
+2,785 functions: 2,718 ready, 55 SDK hooks and 12 explicit privileged boundaries.
+These counts cover mapped modules, not the whole cartridge. Reports are generated
+under `build/1080-us-debug/uso-symbol-review/`.
+
+Keep one complete `profile.toml`. `uso.py` handles directories/Yay0;
+`uso_symbols.py` reconstructs symbol evidence; `generate.py` verifies inventories,
+prepares Text/ROD and emits configuration. `startup-entries.json` retains checked
+resident/observed entries. The `*-symbols.json` files pin original section,
+relocation and complete prepared Text hashes; they contain metadata, not code.
 
 ## Exact load model
 
-Original cartridge: `local/1080.ju.z64`, SHA-1
-`79cd1166c365e5809dec9b62e6d40d6032d5db3a`, 16 MiB, 4 MiB RDRAM.
-Kernel ROM `0x1000` maps at `0x80000400`, size `0xa7c0`. Original stub clears
-`0x8000abc0..0x8001ffa0`; Debug checks clearing and an overrun guard. The header
-entry `0x80100400` is the IPL load address. IPL3 at ROM `0x6d8/0x6dc` supplies
-CIC 6103 value `0x17d7` at `0x80000310`; omitting it triggers the original
-security-check panic. The profile supplies that measured value.
+ROM: `local/1080.ju.z64`, 16 MiB, SHA-1
+`79cd1166c365e5809dec9b62e6d40d6032d5db3a`; RDRAM is 4 MiB.
+Kernel ROM `0x1000` maps at `0x80000400`, size `0xa7c0`. The original stub clears
+`0x8000abc0..0x8001ffa0`; Debug checks clearing and an overrun guard. Header entry
+`0x80100400` is the IPL load address. IPL3 at ROM `0x6d8/0x6dc` supplies CIC 6103
+value `0x17d7` at `0x80000310`; the profile preserves this security-check input.
 
-| Module | Header ROM | Text ROM | Text VRAM | Text size | Reloc ROM / count |
-| --- | --- | --- | --- | --- | --- |
-| bootup | `0xd9fe28` | `0xdd0a6c` | `0x80095e50` | `0x89910` | `0xe620ec` / 15543 |
-| n64proc | `0x5926dc` | `0x594a58` | `0x802660b0` | `0x430` | `0x5950b0` / 49 |
-| gui | `0x58d4ac` | `0x58d534` | `0x8024cbb0` | `0x4880` | `0x592048` / 131 |
+| Module | Header ROM | Text ROM | Text VRAM | Logical Text size |
+| --- | --- | --- | --- | --- |
+| bootup | `0xd9fe28` | `0xdd0a6c` | `0x80095e50` | `0x89910` |
+| n64proc | `0x5926dc` | `0x594a58` | `0x802660b0` | `0x430` |
+| gui | `0x58d4ac` | `0x58d534` | `0x8024cbb0` | `0x4880` |
+| titproc | `0x595408` | `0x599ccc` | `0x802686d0` | `0x2a20` |
+| game | `0x7cc900` | `0x7ccf86` | `0x803ecaa0` | `0x11b30` |
+| snoweffects | `0x9023d2` | `0x909926` | `0x803ca590` | `0xa900` |
+| heli | `0x7e3d9a` | `0x7f0a82` | `0x802dee00` | `0x1b60` |
+| mgrproc | `0x5a0184` | `0x5a0a56` | `0x80264a90` | `0x3420` |
+| genproc | `0x5bca4e` | `0x5bd2c2` | `0x803ef230` | `0xe620` |
 
-The USO marker is `0x12345678`. Headers start at module +4 and are
-`kind,size,flags`; data starts after the 12-byte header. BSS kind 8 has no
-payload; kind 11 terminates. Relocations are 12-byte records:
-`encoded_symbol_and_kind, byte_offset, saved_word_storage`. The loader writes
-the original instruction into the third word. Text uses J26/HI16/LO16; ROD uses
-ABS32. Earlier notes with Text ROM `0xdd0a68` or base `0x80095e4c` were off by
-one word and are superseded by this checked directory layout.
+The normal USO marker is `0x12345678`; snoweffects has a checked zero marker.
+Directory records are `kind,size,flags`. BSS kind 8 has no payload; kind 11
+terminates. Stored compressed lengths are exact bytes, without implicit word
+padding. Named filesystem headers may precede a USO by 40 bytes. Game, mgrproc
+and genproc Text use Yay0. Relocation records are 12 bytes:
+`encoded_symbol_and_kind, byte_offset, saved_word_storage`. Text uses J26/HI16/LO16;
+ROD uses ABS32. All ROD mappings, relocations and checked switches are in the
+profile. Prepared analysis offsets must never be used as cartridge DMA offsets.
 
-Bootup ROD: ROM `0xd9fe44`, VRAM `0x80065240`, size `0x25a0`, 922 relocations
-at ROM `0xe95950`. Prepared analysis offsets live in the profile and must never
-be used as cartridge DMA offsets.
-
-`uso-symbols.json` contains 1672 resolved symbol values and 24 initial values
-for imports bound when GUI/N64 modules load. Initial bootup Text hash:
-`1a7c94c794028a09ff001d4fae47039afed676931bcf67ba300650018a53b48a`.
-Linked Text hash:
+Bootup's initial Text SHA-256 is
+`1a7c94c794028a09ff001d4fae47039afed676931bcf67ba300650018a53b48a`;
+its GUI/N64-linked hash is
 `551aab4e973d0a93f9e16ba0ca176af4c3163fc51e5bd603c825815c520606df`.
-Generated import guards validate live J26 sites; relocated HI/LO instructions
-read guest immediates. Module activation runs through canonical-address lookup
-before the shared loaded-section check.
+Unbound JAL imports read the live instruction before the delay slot. Relocated
+HI/LO instructions read guest immediates. Scene activation hashes complete Text
+directly in word-swapped RAM storage at every entry, without allocations.
 
-The original initial snapshot is
-`local/crashes/1080-us/crash-4-978705462886552.json`; the linked snapshot is
-`local/crashes/1080-us/crash-3-985183580513219.json`. Keep their adjacent
-`.json.rdram.bin` files to reproduce full-image evidence. For example:
+## First-menu repair and retained evidence
+
+The original stop at `0x80264c2c`, called at `0x800a74b4`, identifies mgrproc.
+Its companion genproc enters at `0x803ef6a8` through the guest-linked import at
+`0x800b30bc`. Complete RAM verification matched 3,336 mgrproc and 14,728 genproc
+Text words. Ten additional bounded switches matched ROM and RAM.
+
+Mgrproc reuses n64proc Text/title ROD; genproc reuses game Text. Explicit overlay
+groups describe this reuse. Activation updates all overlapping candidates and
+requires a matching full image; stale code remains rejected. Switches with reused
+addresses declare `section` for the owning Text and `table_section` for the ROD.
+Preparation verifies their fingerprints before resolving checked transfers.
+The adapter supports the measured allocations, not arbitrary rebasing.
+
+Five JSON/RAM snapshot pairs remain in `local/crashes/1080-us/`:
+
+- `crash-4-978705462886552.json`: initial bootup image.
+- `crash-3-985183580513219.json`: linked bootup and early GUI/N64 evidence.
+- `crash-152959-9774774110853.json`: complete intro scene modules and SDK probe.
+- `crash-162862-23124539313485.json`: mgrproc menu mapping.
+- `crash-165311-23543119497698.json`: genproc menu mapping.
+
+For example, recheck the complete menu image with the maintained inspector:
 
 ```sh
 .venv/bin/python games/1080-us/debug/inspect_uso.py \
   --rom local/1080.ju.z64 \
-  --crash local/crashes/1080-us/crash-3-985183580513219.json \
-  --module-offset 0x58d4ac --text-base 0x8024cbb0 \
-  --output build/1080-us-debug/gui-evidence.json
+  --crash local/crashes/1080-us/crash-162862-23124539313485.json \
+  --target 0x80264c2c --output build/1080-us-debug/mgrproc-evidence.json
 ```
 
-This inspector checks complete Text against word-swapped crash RAM and exports
-symbol evidence. It does not register code. Current GUI verification matches
-all 4640 words. Keep module mappings and tables in the profile, with symbol
-inventories as separate ROM-bound evidence.
+The SDK caller `osVirtualToPhysical` at `0x80116840` has a catalog-authorized
+124-byte body. Its shared hook returns signed `-1` for probe misses/invalid page
+halves; actual invalid RAM accesses and overlapping mappings still fail. Focused
+translation checks passed; their temporary standalone harness was removed.
+The maintained shared registered-call fixture covers late JAL binding, rebasing
+and delay-slot ordering.
 
 ## Next work
 
-1. Extend the bounded desktop run beyond the logo; capture the first failure or
-   new scene module. Diagnose with the shared crash/callback tools and the USO
-   inspector. Do not assume the three current modules cover menus or gameplay.
-2. Add verified module mappings and callback/table ownership, then handle any
-   changed allocations or import bindings. The current adapter deliberately
-   rejects different live Text; it is not a general relocation implementation.
-3. Validate title, menu selection, riding and a scene transition in both builds,
-   then audible output, input behavior and gameplay save/reload. Preserve the
-   existing `local/saves/1080-us.sra`.
-
-Standard OS signatures belong in shared `tools/symbols.json`. The explicit
-CP0/TLB/exception boundaries in the profile were not reached by the accepted
-replay. Do not replace them with success stubs. The public decomp reference and
-its pinned revision are linked in README; it supplies hypotheses, not automatic
-native replacement authorization.
+Continue from Select Rider: confirm a rider/board, start Match Race and validate
+controls, visible riding and a race/scene transition in both builds. Map new
+modules with complete ROM/RAM evidence, then use the static symbol tool; do not
+restart per-callback replay loops. Keep SDK hooks in the shared symbol catalog
+and preserve fatal privileged boundaries until their exact behavior is implemented.
+Retain `local/saves/1080-us.sra`. The public reference and pinned revision are
+linked in README; external findings remain hypotheses until locally verified.

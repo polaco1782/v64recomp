@@ -1,0 +1,7 @@
+# Wall-clock input at 60 Hz: dismiss title, select default first menu option.
+1560 4096 0 0
+1580 0 0 0
+1800 32768 0 0
+1820 0 0 0
+2040 32768 0 0
+2060 0 0 0

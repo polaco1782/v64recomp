@@ -40,6 +40,55 @@ kind = "unsupported_function"
 reason = "Bootup CP0 Compare timer path needs verified native scheduling"
 expected_words = [0x40845800, 0x03e00008, 0x00000000]
 
+[[boundaries]]
+symbol = "func_80114ab0"
+vram = 0x80114ab0
+kind = "unsupported_function"
+reason = "Exception-vector preamble jumps into the CP0 exception handler; fail if reached"
+expected_words = [0x3c1a8011, 0x275a4ac0]
+
+[[boundaries]]
+symbol = "func_80114ac0"
+vram = 0x80114ac0
+kind = "unsupported_function"
+reason = "Exception handler saves CP0 state and returns via privileged dispatch; fail if reached"
+expected_words = [0x3c1a8006, 0x275a2850]
+
+[[boundaries]]
+symbol = "func_80114ff4"
+vram = 0x80114ff4
+kind = "unsupported_function"
+reason = "RCP exception-event dispatch needs native scheduler exception context; fail if reached"
+expected_words = [0x3c0a8006, 0x254a3ed0]
+
+[[boundaries]]
+symbol = "func_801150a8"
+vram = 0x801150a8
+kind = "unsupported_function"
+reason = "Coprocessor-unusable exception branch enters the CP0 handler interior; fail if reached"
+expected_words = [0x3c013000, 0x01014824]
+
+[[boundaries]]
+symbol = "func_80116e90"
+vram = 0x80116e90
+kind = "unsupported_function"
+reason = "SDK Status write needs exact native CP0 semantics; fail if reached"
+expected_words = [0x40846000, 0x00000000]
+
+[[boundaries]]
+symbol = "func_80116ea0"
+vram = 0x80116ea0
+kind = "unsupported_function"
+reason = "SDK Status read needs exact native CP0 semantics; fail if reached"
+expected_words = [0x40026000, 0x03e00008]
+
+[[boundaries]]
+symbol = "func_8011d720"
+vram = 0x8011d720
+kind = "unsupported_function"
+reason = "TLB initialization writes CP0 registers and indexed TLB entries; fail if reached"
+expected_words = [0x40085000, 0x2409001f]
+
 [game]
 name = "1080 Snowboarding (JU, revision 0)"
 rom = "../../local/1080.ju.z64"
@@ -47,13 +96,29 @@ rom_sha1 = "79cd1166c365e5809dec9b62e6d40d6032d5db3a"
 rom_size = 0x1000000
 ram_size = 0x400000
 entry_symbol = "entry_point"
-code_sections = [".kernel", ".bootup", ".bootup_rodata", ".n64proc", ".gui"]
+code_sections = [".kernel", ".bootup", ".bootup_rodata", ".n64proc", ".gui", ".titproc", ".titproc_rodata", ".game", ".game_rodata", ".snoweffects", ".heli", ".heli_rodata", ".mgrproc", ".mgrproc_rodata", ".genproc", ".genproc_rodata"]
 boot_sections = [".kernel"]
 
 [discovery]
+uso_entry_inventory = "uso-entries.json"
+uso_non_cpu_ranges = [
+  {section = ".bootup", vram = 0x800b9150, size = 0xdd40, kind = "rsp", sha256 = "7cd8c4a4137a0bf198520946799d617fdc39c7b212f1d52a341e2a0951b1a371", reason = "Concatenated graphics RSP images and their shared start/end symbols: vector loads, SP register transfers and IMEM jumps; passed as task microcode, not CPU calls."},
+  {section = ".bootup", vram = 0x800c6e90, size = 0x10, kind = "padding", sha256 = "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb", reason = "Last graphics microcode end symbol, followed by sixteen zero alignment bytes before CPU entry 0x800c6ea0."},
+  {section = ".bootup", vram = 0x800dc2c0, size = 0xf80, kind = "rsp", sha256 = "2a7f9b924c89434623ffcf0ed96b9400ec425adbdc22dce638c1115fae653837", reason = "NEAD audio RSP Text, selected by the checked task descriptor in audio.h; IMEM calls and SP register transfers. Next CPU entry is 0x800dd240."},
+]
+fallthroughs = [
+  # __osCleanupThread destroys the current thread (a0=0); preserve its original
+  # padding fallthrough to the next exported body if that call ever returns.
+  {pc = 0x801153bc, expected_word = 0x00000000, target = 0x801153c0, reason = "CleanupThread padding falls through to the next exported body if destroying the current thread returns"},
+]
 entry_vram = 0x80000400
 entry_inventory = "startup-entries.json"
 regions = [
+  {name = ".genproc", vram = 0x803ef230, rom_offset = 0x10b5320, size = 0xe620, overlay_group = "uso-scenes"},
+  {name = ".genproc_rodata", vram = 0x803ff020, rom_offset = 0x10c3940, size = 0x440},
+  {name = ".mgrproc", vram = 0x80264a90, rom_offset = 0x10b18e0, size = 0x3420, overlay_group = "uso-scenes"},
+  {name = ".mgrproc_rodata", vram = 0x80263d90, rom_offset = 0x10b4d00, size = 0x620, overlay_group = "uso-scenes"},
+  {name = ".heli_rodata", vram = 0x802ed560, rom_offset = 0x10b17e0, size = 0x100},
   # Text ends at cartridge 0xae60. The mapped rodata/data contains the
   # checked local switch tables; BSS starts after cartridge 0xb7c0.
   {name = ".kernel", vram = 0x80000400, rom_offset = 0x1000, size = 0xa7c0},
@@ -61,21 +126,150 @@ regions = [
   # analysis image after verified guest relocations, not a cartridge DMA span.
   {name = ".bootup", vram = 0x80095e50, rom_offset = 0x1000000, size = 0x89910},
   {name = ".gui", vram = 0x8024cbb0, rom_offset = 0x108c2e0, size = 0x4880},
-  {name = ".n64proc", vram = 0x802660b0, rom_offset = 0x108beb0, size = 0x430},
+  {name = ".n64proc", vram = 0x802660b0, rom_offset = 0x108beb0, size = 0x430, overlay_group = "uso-scenes"},
   {name = ".bootup_rodata", vram = 0x80065240, rom_offset = 0x1089910, size = 0x25a0},
+  # Module loaded for the intro scene after the publisher screens.
+  {name = ".titproc", vram = 0x802686d0, rom_offset = 0x1090b60, size = 0x2a20},
+  {name = ".titproc_rodata", vram = 0x80263e00, rom_offset = 0x1093580, size = 0x50, overlay_group = "uso-scenes"},
+  {name = ".game", vram = 0x803ecaa0, rom_offset = 0x10935d0, size = 0x11b30, overlay_group = "uso-scenes"},
+  {name = ".game_rodata", vram = 0x803ff920, rom_offset = 0x10a5100, size = 0x280},
+  {name = ".snoweffects", vram = 0x803ca590, rom_offset = 0x10a5380, size = 0xa900},
+  {name = ".heli", vram = 0x802dee00, rom_offset = 0x10afc80, size = 0x1b60},
 ]
 uso = {module_rom_offset = 0xd9fe28, text_rom_offset = 0xdd0a6c, text_vram = 0x80095e50, text_size = 0x89910, reloc_rom_offset = 0xe620ec, reloc_count = 15543, symbols = "uso-symbols.json", sha256 = "551aab4e973d0a93f9e16ba0ca176af4c3163fc51e5bd603c825815c520606df"}
 uso_modules = [
   {name = ".n64proc", module_rom_offset = 0x5926dc, text_rom_offset = 0x594a58, text_vram = 0x802660b0, text_size = 0x430, reloc_rom_offset = 0x5950b0, reloc_count = 49, symbols = "n64proc-symbols.json", sha256 = "97dcb76448830fd50072355c163aa7f3522f643d564e58bb4a2ca3113e6a0fae"},
   {name = ".gui", module_rom_offset = 0x58d4ac, text_rom_offset = 0x58d534, text_vram = 0x8024cbb0, text_size = 0x4880, reloc_rom_offset = 0x592048, reloc_count = 131, symbols = "gui-symbols.json", sha256 = "0f7d604d522d42e95c6a985bd4a18878dca8b1eb2c236b71eaa7e46917fade44"},
+  {name = ".titproc", module_rom_offset = 0x595408, text_rom_offset = 0x599ccc, text_vram = 0x802686d0, text_size = 0x2a20, reloc_rom_offset = 0x59cefc, reloc_count = 608, symbols = "titproc-symbols.json", sha256 = "1069d64793ff4296139d8f8c90c74c0a40555892b6bedcfffbdce67923f166a0", rodata = {name = ".titproc_rodata", rom_offset = 0x595424, vram = 0x80263e00, size = 0x50, reloc_rom_offset = 0x59f11c, reloc_count = 16, sha256 = "a1e9d22d99ba46ddf6fc1db8ef8c530b9fd6b85548c20b7c52897fd13efcd1e3"}},
+  {name = ".game", module_rom_offset = 0x7cc900, text_rom_offset = 0x7ccf86, text_rom_size = 0x9d70, compression = "yay0", text_vram = 0x803ecaa0, text_size = 0x11b30, reloc_rom_offset = 0x7d7d3a, reloc_count = 2038, symbols = "game-symbols.json", sha256 = "c85f299021aa7cb9f0c476bc9615e797da67b3ac54db7dd9a0857570f10c2351", rodata = {name = ".game_rodata", rom_offset = 0x7cc91c, vram = 0x803ff920, size = 0x280, reloc_rom_offset = 0x7deaae, reloc_count = 42, sha256 = "dcbe0dcd276e59166546bed3a21fd82e49b7e35957788c4ce516953338429dd8"}},
+  {name = ".snoweffects", module_rom_offset = 0x9023d2, header_word = 0, text_rom_offset = 0x909926, text_vram = 0x803ca590, text_size = 0xa900, reloc_rom_offset = 0x914b7a, reloc_count = 562, symbols = "snoweffects-symbols.json", sha256 = "d8bed02524db33f6a6aea72561c56d49bf9eb15d6916f98341336846e4fbe979"},
+  {name = ".heli", module_rom_offset = 0x7e3d9a, text_rom_offset = 0x7f0a82, text_vram = 0x802dee00, text_size = 0x1b60, reloc_rom_offset = 0x7f2d3e, reloc_count = 214, symbols = "heli-symbols.json", sha256 = "31295bacd9903e4110100c1c13e364e165b473eb170ae30c92a2e880115fd1b2", rodata = {name = ".heli_rodata", rom_offset = 0x7e3daa, vram = 0x802ed560, size = 0x100, reloc_rom_offset = 0x7f3dbe, reloc_count = 8, sha256 = "d9d19aa4cbfb05d331a36a1b5a5cf7efb1eee5914d0bb90f1361bd908349e0f7"}},
+  {name = ".mgrproc", module_rom_offset = 0x5a0184, text_rom_offset = 0x5a0a56, text_rom_size = 0x1ed2, compression = "yay0", text_vram = 0x80264a90, text_size = 0x3420, reloc_rom_offset = 0x5a336c, reloc_count = 606, symbols = "mgrproc-symbols.json", sha256 = "1eadb133e712cc3d4535ced5fbb4d5255b13366272c95bd298bed90b30c598c2", rodata = {name = ".mgrproc_rodata", rom_offset = 0x5a01a0, vram = 0x80263d90, size = 0x620, reloc_rom_offset = 0x5a5b20, reloc_count = 14, sha256 = "582f4e1088daaa949cc946bcaec965369b8d8e2d75ed1f4de8c29b4852f7d6c6"}},
+  {name = ".genproc", module_rom_offset = 0x5bca4e, text_rom_offset = 0x5bd2c2, text_rom_size = 0x75a8, compression = "yay0", text_vram = 0x803ef230, text_size = 0xe620, reloc_rom_offset = 0x5c5932, reloc_count = 2652, symbols = "genproc-symbols.json", sha256 = "173f47856693fbcdca60361a3fb2a542e6fb919b0aaf2eab28142ceaed9c8fb0", rodata = {name = ".genproc_rodata", rom_offset = 0x5bca6a, vram = 0x803ff020, size = 0x440, reloc_rom_offset = 0x5ce902, reloc_count = 76, sha256 = "d4ee74f6e71fff092ac17026a599d12cbdbe47cdebe79c21e94adff18626ccbf"}},
 ]
 uso_rodata = {rom_offset = 0xd9fe44, vram = 0x80065240, size = 0x25a0, reloc_rom_offset = 0xe95950, reloc_count = 922, sha256 = "9dda666006893a12307e02c08293f2d25e73d3c3d67770100c87c5c798537f38"}
 allow_registered_indirect_calls = true
+registered_direct_calls = [
+  # Unbound J26 imports checked from USO relocation records by discover_symbols.py.
+  {section = ".mgrproc", pc = 0x8026617c, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".mgrproc", pc = 0x802675f4, expected_word = 0x0c000000, target = 0x80000000},
+  # Unbound J26 imports checked from USO relocation records by discover_symbols.py.
+  {section = ".bootup", pc = 0x8009b310, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800b30bc, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800b3218, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800b3224, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800b7794, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800b8560, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800b8584, expected_word = 0x0c000000, target = 0x80000000},
+  # Bootup imports 601..605: original J26 placeholders, linked to game.uso at runtime.
+  {section = ".bootup", pc = 0x800a3abc, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800a3ae8, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800a3b28, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800a3b80, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800a3b98, expected_word = 0x0c000000, target = 0x80000000},
+  # Import 409 is linked to the heli.uso factory during title initialization.
+  {section = ".bootup", pc = 0x8009aed8, expected_word = 0x0c000000, target = 0x80000000},
+  # ROM-checked J26 imports remain unbound
+  # until their owning USO loads. Generated calls read the guest-linked word.
+  {section = ".bootup", pc = 0x80098c2c, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x80099154, expected_word = 0x0c000000, target = 0x80000000}, # symbol 317
+  {section = ".bootup", pc = 0x80099174, expected_word = 0x0c000000, target = 0x80000000}, # symbol 318
+  {section = ".bootup", pc = 0x800991a0, expected_word = 0x0c000000, target = 0x80000000}, # symbol 320
+  {section = ".bootup", pc = 0x80099240, expected_word = 0x0c000000, target = 0x80000000}, # symbol 322
+  {section = ".bootup", pc = 0x8009c7b4, expected_word = 0x0c000000, target = 0x80000000}, # symbol 441
+  {section = ".bootup", pc = 0x8009c7cc, expected_word = 0x0c000000, target = 0x80000000}, # symbol 442
+  {section = ".bootup", pc = 0x8009ccc4, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x8009ccf8, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x8009cef8, expected_word = 0x0c000000, target = 0x80000000},
+  {section = ".bootup", pc = 0x800a0a58, expected_word = 0x0c000000, target = 0x80000000}, # symbol 549
+  {section = ".bootup", pc = 0x800a0e30, expected_word = 0x0c000000, target = 0x80000000}, # symbol 555
+  {section = ".bootup", pc = 0x800a0e38, expected_word = 0x0c000000, target = 0x80000000}, # symbol 556
+  {section = ".bootup", pc = 0x800a0fd4, expected_word = 0x0c000000, target = 0x80000000}, # symbol 558
+  {section = ".bootup", pc = 0x800a2a88, expected_word = 0x0c000000, target = 0x80000000}, # symbol 589
+  {section = ".bootup", pc = 0x800a2a90, expected_word = 0x0c000000, target = 0x80000000}, # symbol 590
+  {section = ".bootup", pc = 0x800b32c8, expected_word = 0x0c000000, target = 0x80000000},
+]
 transfers = [
   # The entry stub sets t2 to 0x80000460 before this tail jump.
   {pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80000460]},
 ]
 jump_tables = [
+  # genproc unsigned bound 8 at 0x803f4cac; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f4cc4, expected_word = 0x01000008, table_vram = 0x803ff190, count = 8, sha256 = "74b4e3d13ac2481ef8db09498f7e25e762ae668376f1f91edd00acadee5fe35b"},
+  # genproc unsigned bound 11 at 0x803f527c; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f5294, expected_word = 0x03200008, table_vram = 0x803ff1b0, count = 11, sha256 = "30be6d04b5cab7b99b24d48c13575333973f1586ed59babdca637d3643a7fb91"},
+  # genproc unsigned bound 8 at 0x803f79d4; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f79f0, expected_word = 0x01c00008, table_vram = 0x803ff1f4, count = 8, sha256 = "3b7c4b5cce8a5085105a5006212af149258a9436383a988a73e93b9d5343dfbd"},
+  # genproc unsigned bound 8 at 0x803f7a2c; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f7a44, expected_word = 0x01e00008, table_vram = 0x803ff214, count = 8, sha256 = "cb3ea109c8c137043d9846853080ecaf0367ec6314f1a6dad1148060abf08fff"},
+  # genproc unsigned bound 8 at 0x803f7ad8; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f7af0, expected_word = 0x01e00008, table_vram = 0x803ff234, count = 8, sha256 = "1000bbcb95f86810f6405f1c37ee4c4c5c529fd4bedaecb4f142d8cb69c42ff9"},
+  # genproc unsigned bound 5 at 0x803f9ab8; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f9ad0, expected_word = 0x01200008, table_vram = 0x803ff344, count = 5, sha256 = "e88a2df4ab0b5f3b2f1a0c9e0f361a9f456c09798452d5e58407457727c7f282"},
+  # genproc unsigned bound 14 at 0x803fcd20; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803fcd38, expected_word = 0x01600008, table_vram = 0x803ff3e0, count = 14, sha256 = "8c3e15c6b9de69757f414527a257506cd9df882b9a428aa090e7217aebc0336e"},
+  # genproc unsigned bound 14 at 0x803fd3b8; complete ROD table matches menu RAM.
+  {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803fd3d0, expected_word = 0x01800008, table_vram = 0x803ff420, count = 14, sha256 = "971f8474dacf76905f773705b9a513c910535769ed93aeda85394939e608b324"},
+  # mgrproc selector unsigned bound 9 at 0x80264c50; full table verified in menu RAM.
+  {section = ".mgrproc", table_section = ".mgrproc_rodata", pc = 0x80264c6c, expected_word = 0x01c00008, table_vram = 0x80263d90, count = 9, sha256 = "c8201b5b091bf54890b491a59113a286910d5e2c3628a3ec7d61a19584ce2d74"},
+  # mgrproc selector unsigned bound 5 at 0x8026630c; full table verified in menu RAM.
+  {section = ".mgrproc", table_section = ".mgrproc_rodata", pc = 0x80266324, expected_word = 0x03000008, table_vram = 0x80264348, count = 5, sha256 = "ed270c18332f781715f6fc62b050d8ebad85a026f1de01ea7bf2b0f4acf7bd3c"},
+  # Nested selector unsigned bound 4 at 0x800b1ccc; full table matches RAM.
+  {pc = 0x800b1ce8, expected_word = 0x01800008, table_vram = 0x8006605c, count = 4, sha256 = "9de5cd952f758c500ddbefd4cbef2b292e8d17d3596104b9c2c1f321e8bc4950"},
+  # Defined-symbol batch: unsigned SLTIU 6 at 0x800aca70; complete table matches RAM.
+  {pc = 0x800aca90, expected_word = 0x01c00008, table_vram = 0x80065edc, count = 6, sha256 = "c98e7b7f5c76d91d51d26454e26f3eff2a42e1be1eb576ea4f1128b950217de9"},
+  # Defined-symbol batch: unsigned SLTIU 8 at 0x800ad94c; complete table matches RAM.
+  {pc = 0x800ad964, expected_word = 0x03000008, table_vram = 0x80065f0c, count = 8, sha256 = "e716725479acb443c45811f82792e31771b82335eef07fa69c1cf6f49e0c207e"},
+  # Defined-symbol batch: unsigned SLTIU 7 at 0x800b180c; complete table matches RAM.
+  {pc = 0x800b1834, expected_word = 0x01c00008, table_vram = 0x80066028, count = 7, sha256 = "0b4c1c6e5b3cbd6e4cdd5d8402899d6dc00fa1292cccb7963520247051695bb4"},
+  # Defined-symbol batch: unsigned SLTIU 6 at 0x800b1bcc; complete table matches RAM.
+  {pc = 0x800b1be4, expected_word = 0x01e00008, table_vram = 0x80066044, count = 6, sha256 = "21ce2fef3c8a1bfecd86aa3bb3e1ab1d30e56c936528cec45ff787a175fa0fcb"},
+  # Defined-symbol batch: unsigned SLTIU 4 at 0x800b23c4; complete table matches RAM.
+  {pc = 0x800b23dc, expected_word = 0x01e00008, table_vram = 0x80066080, count = 4, sha256 = "e5a119bfe37eed56aaa6a88388c84a4ebf5e585ca0fce6fc78924a2713ae99b7"},
+  # Defined-symbol batch: unsigned SLTIU 9 at 0x800e357c; complete table matches RAM.
+  {pc = 0x800e3594, expected_word = 0x01e00008, table_vram = 0x80066c80, count = 9, sha256 = "2ce1d8114eb16bec42ceb043383563cf2ff142ecd29ee7016c604a440569214c"},
+  # Defined-symbol batch: unsigned SLTIU 5 at 0x800e51a0; complete table matches RAM.
+  {pc = 0x800e51b8, expected_word = 0x01c00008, table_vram = 0x80066cd0, count = 5, sha256 = "74bf0875cac1064c943b10fae7896254b02d9b07e33d95dbc18168ea9a2c6387"},
+  # Defined-symbol batch: unsigned SLTIU 6 at 0x800ea7dc; complete table matches RAM.
+  {pc = 0x800ea7f4, expected_word = 0x01e00008, table_vram = 0x80066d24, count = 6, sha256 = "a18f20e3a1c0b50072fbb12e16b2a8523b79171f7d42a5076a4d05784023336a"},
+  # Defined-symbol batch: unsigned SLTIU 10 at 0x800eab28; complete table matches RAM.
+  {pc = 0x800eab40, expected_word = 0x01e00008, table_vram = 0x80066d40, count = 10, sha256 = "afb1686f74af741fda260ce8fcb9112d55e3c5b150f1868edfaca64c95d3647c"},
+  # Defined-symbol batch: unsigned SLTIU 7 at 0x801184a0; complete table matches RAM.
+  {pc = 0x801184bc, expected_word = 0x01200008, table_vram = 0x800675f0, count = 7, sha256 = "ee7fc45ad3c7f26118c760628046582554b573548fdc058450fd25ad55e2e167"},
+  # Defined-symbol batch: unsigned SLTIU 4 at 0x80269850; complete table matches RAM.
+  {section = ".titproc", table_section = ".titproc_rodata", pc = 0x80269868, expected_word = 0x01c00008, table_vram = 0x80263e30, count = 4, sha256 = "16890670fdb79ddf9e6ee81fe7c08e18cc31e4c60c8628453b8a22b7b50e0e0f"},
+  # Defined-symbol batch: unsigned SLTIU 8 at 0x802dfa3c; complete table matches RAM.
+  {pc = 0x802dfa54, expected_word = 0x01c00008, table_vram = 0x802ed5dc, count = 8, sha256 = "cbf11431be04d1d74869f1ca9764a594d65559bcd0aaa88a3bb7e81ce525521e"},
+  # Defined-symbol batch: unsigned SLTIU 4 at 0x803ed840; complete table matches RAM.
+  {section = ".game", table_section = ".game_rodata", pc = 0x803ed858, expected_word = 0x01200008, table_vram = 0x803ff970, count = 4, sha256 = "a34aee228870a61428de32d474bcb4a707cc36bba9833b406f336ddf491b393b"},
+  # Game selectors have unsigned bounds of five at 0x803fb798, 0x803fb874,
+  # and 0x803fe34c. Complete tables match the captured relocated ROD.
+  {section = ".game", table_section = ".game_rodata", pc = 0x803fb7b0, expected_word = 0x01c00008, table_vram = 0x803ffb30, count = 5, sha256 = "5d83651c99d76d94bb059acce00116d1c523bdaae42899516dcc185a9d3cef86"},
+  {section = ".game", table_section = ".game_rodata", pc = 0x803fb894, expected_word = 0x01c00008, table_vram = 0x803ffb44, count = 5, sha256 = "5ea367c82ba5666d787e2d6817fc1dc9aae65a52637cdc764607e8d60b319c10"},
+  {section = ".game", table_section = ".game_rodata", pc = 0x803fe370, expected_word = 0x01c00008, table_vram = 0x803ffb80, count = 5, sha256 = "393199eeae251d5b05317c86ac6402a2aca78ace9f9698ec87612bc7b7fb3b7b"},
+  # Selector ANDI 3 and unsigned bound 4 at 0x803f611c/0x803f6124; RAM-matched ROD.
+  {section = ".game", table_section = ".game_rodata", pc = 0x803f6140, expected_word = 0x03200008, table_vram = 0x803ffa20, count = 4, sha256 = "b7c3db5e86192339bae192962c01352d878c5983ffefe0ea358a617069dc5414"},
+  # Unsigned selector bounds at 0x800d8774, 0x800d8f1c and 0x800d9190.
+  # All target bytes match the captured bootup ROD in guest RAM.
+  {pc = 0x800d878c, expected_word = 0x01c00008, table_vram = 0x800668a0, count = 32, sha256 = "db010fabaccfd90e89102c4bc6c786e8b50193c89c351ecd384e9f88bcf2c144"},
+  {pc = 0x800d8f34, expected_word = 0x03200008, table_vram = 0x80066924, count = 5, sha256 = "aa29c649710cee858883bfb580fd0172368e582f1031bf3a8552b39265f0cfd8"},
+  {pc = 0x800d91ac, expected_word = 0x03200008, table_vram = 0x80066938, count = 11, sha256 = "57968be122216e6c94b6c7e9348efb4cb59f64f287f5f63cbb8d1df8f36cc9bd"},
+  # Both nested state selectors subtract two, then enforce unsigned bounds of six.
+  # Complete tables match the captured game ROD in guest RAM.
+  {section = ".game", table_section = ".game_rodata", pc = 0x803ed478, expected_word = 0x01000008, table_vram = 0x803ff940, count = 6, sha256 = "29137889e4b39c7853c5ae5cbe195d39bef4c924e765f66de4650b5d9156e04c"},
+  {section = ".game", table_section = ".game_rodata", pc = 0x803ed4f4, expected_word = 0x01600008, table_vram = 0x803ff958, count = 6, sha256 = "0e4d54268ff0166f25ecdaa3f35149d2062ffe931e15044b4a9518315802a6aa"},
+  # Game state selector: unsigned SLTIU 7 at 0x803ed3f4; complete ROD verified against RAM.
+  {section = ".game", table_section = ".game_rodata", pc = 0x803ed40c, expected_word = 0x01e00008, table_vram = 0x803ff924, count = 7, sha256 = "605c38462031989e5894836a0163c85cba621a4007067117af7b337dc8876fb9"},
+  # Object tag minus 0x6d, unsigned bound 6 at 0x800e3bd0; full table also matches crash RAM.
+  {pc = 0x800e3be8, expected_word = 0x01e00008, table_vram = 0x80066ca4, count = 6, sha256 = "39b30fc58c5ef17598ec9dc2d76b5aee7048177305b477c10193152defd8588a"},
+  # Object tag minus 200 is bounded by unsigned SLTIU 12 at 0x800fbfac.
+  {pc = 0x800fbfc4, expected_word = 0x01c00008, table_vram = 0x80066df4, count = 12, sha256 = "b1da46cf51840a8bf264d8e5a668131f03410c0479189a9c62fafdfe3e81f206"},
+  # Bootup selector bounds: tag-1 < 12, tag < 13 and tag < 37, respectively.
+  {pc = 0x80098ce0, expected_word = 0x03200008, table_vram = 0x80065734, count = 12, sha256 = "8c6e55680c10cb88f51a9f0bc5b2dc5117929f3e7300269b0e4021e53c52b0da"},
+  {pc = 0x8009c79c, expected_word = 0x01a00008, table_vram = 0x800657f4, count = 13, sha256 = "f80a68d6d88e5b9f55d15a30c70bd356b42c04e121d18ead9de2c93687132b6b"},
+  {pc = 0x800fd1e0, expected_word = 0x01c00008, table_vram = 0x80066e24, count = 37, sha256 = "86c8432ebc19c674cdd1ca59d5d3029bdce48fcb274955161ddc485170704eb2"},
+  # Scene selector has unsigned SLTIU 12 at 0x80268cf8; complete ROD verified against guest RAM.
+  {section = ".titproc", table_section = ".titproc_rodata", pc = 0x80268d10, expected_word = 0x01c00008, table_vram = 0x80263e00, count = 12, sha256 = "ba4e6124da8a65291e7b0ba19ea55d1b1219d29bc21d7d40aed4898cee86a989"},
   {pc = 0x800db9b8, expected_word = 0x01c00008, table_vram = 0x80066b7c, count = 11, sha256 = "c7723876bcf4b9fc7539af4dd98fe192fee9dd3186b60845927431db75483e1a"},
   {pc = 0x800db854, expected_word = 0x03000008, table_vram = 0x80066b40, count = 15, sha256 = "f27e60b57211347854b2b272576c0a1eb466b885d2635bd0b71d2de1a4ccc865"},
   {pc = 0x800db680, expected_word = 0x01800008, table_vram = 0x80066b20, count = 8, sha256 = "277ca8dcd739be760f0d7591116a74c11b734322810b1820d22f216fcf33a5e4"},
@@ -116,6 +310,399 @@ jump_tables = [
   # Original unsigned SLTIU bounds at 0x80001f90 and 0x800024a4.
   {pc = 0x80001fac, expected_word = 0x01c00008, table_vram = 0x8000a63c, count = 4, sha256 = "ecc6e692b3dd91d8958c66be5911ed695dde9064633c08b545ee312caa9217ac"},
   {pc = 0x800024bc, expected_word = 0x01a00008, table_vram = 0x8000a64c, count = 12, sha256 = "67a206df8503f6f53eb5074fbe2255a9827325003de1ef181a71b9cacddcaaf8"},
+]
+
+roots = [
+  # Observed object callback at 0x800e2e7c; imports 601..605 use the checked runtime J26 path.
+  {name = "object_callback_800a3750", vram = 0x800a3750, section = ".bootup"},
+  # Observed object callback at 0x800ffd0c; ROM-bounded six-way tag switch.
+  {name = "object_tags_800e3bb8", vram = 0x800e3bb8, section = ".bootup"},
+  # Observed virtual call at 0x800e8e48; its J26 import 409 resolves to the checked heli factory.
+  {name = "object_callback_8009aeb8", vram = 0x8009aeb8, section = ".bootup"},
+  # Exact guest-linked call at 0x8009aed8; closed heli constructor after return at 0x802defcc.
+  {name = "heli_object_802defd4", vram = 0x802defd4, section = ".heli"},
+  # Observed object callback at 0x800e78dc; complete heli.uso Text checked against guest RAM.
+  {name = "heli_callback_802def40", vram = 0x802def40, section = ".heli"},
+  # Observed virtual call at 0x800e7dfc; closed leaf starts with a branch and restores its 16-byte frame.
+  {name = "object_callback_800e7ff4", vram = 0x800e7ff4, section = ".bootup"},
+  # ROM-verified function roots.
+  {name = "live_800a7518", vram = 0x800a7518, section = ".bootup"},
+  # Scene entry observed in the crash, matched to ROM 0x59a2a8 and verified relocated Text.
+  {name = "titproc_entry", vram = 0x80268cac, section = ".titproc"},
+  # 0x80110e1c installs this closed wrapper in service slot +0x98; observed via kernel dispatch.
+  {name = "bootup_service_800dd8b0", vram = 0x800dd8b0, section = ".bootup"},
+  # Paired release wrapper installed at 0x80110e2c in service slot +0x9c; observed next.
+  {name = "bootup_service_800dd8d8", vram = 0x800dd8d8, section = ".bootup"},
+  # Guest linker binds bootup import 441 at JAL 0x8009c7b4 to this game.uso constructor.
+  {name = "game_object_803f78bc", vram = 0x803f78bc, section = ".game"},
+  # Next observed constructor: guest linker binds import 442 at JAL 0x8009c7cc.
+  {name = "game_object_803f8374", vram = 0x803f8374, section = ".game"},
+  # Observed title initialization callback; separate closed body after return at 0x803f8a14.
+  {name = "game_callback_803f8a1c", vram = 0x803f8a1c, section = ".game"},
+  # Observed object virtual slot +0x0c at 0x800e01d8; separate closed ROM body.
+  {name = "game_callback_803f0408", vram = 0x803f0408, section = ".game"},
+  # Next observed virtual slot +0x0c at 0x800e01d8; closed body after return at 0x803f0460.
+  {name = "game_callback_803f0468", vram = 0x803f0468, section = ".game"},
+  # Observed virtual callback at 0x8009d268; closed wrapper after return at 0x803f7f30.
+  {name = "game_callback_803f7f38", vram = 0x803f7f38, section = ".game"},
+  # Observed virtual slot +0x0c at 0x800e01d8; closed body after return at 0x803f8b24.
+  {name = "game_callback_803f8b2c", vram = 0x803f8b2c, section = ".game"},
+  # Object dispatch at 0x800fa174 loads vtable +0x24; observed target, distinct ROM entry.
+  {name = "object_tags_800fbf94", vram = 0x800fbf94, section = ".bootup"},
+  # Observed virtual dispatch at 0x800e2660; ROM-verified closed entry and call tree.
+  {name = "object_callback_8009d178", vram = 0x8009d178, section = ".bootup"},
+  # Observed virtual callback at 0x8009d268; closed wrapper after return at 0x800ff0b8.
+  {name = "object_callback_800ff0c0", vram = 0x800ff0c0, section = ".bootup"},
+  # Observed virtual slot +0x0c at 0x800e01d8; closed body after return at 0x800969f8.
+  {name = "object_callback_80096a00", vram = 0x80096a00, section = ".bootup"},
+  # Observed object callback at 0x800f3edc; closed body after return at 0x800f4270.
+  {name = "object_callback_800f4278", vram = 0x800f4278, section = ".bootup"},
+  # Observed object callback at 0x800f3d54; closed body after return at 0x800f52f4.
+  {name = "object_callback_800f52fc", vram = 0x800f52fc, section = ".bootup"},
+  # Observed virtual callback at 0x800e2660; closed body after return at 0x800e8850.
+  {name = "object_callback_800e8858", vram = 0x800e8858, section = ".bootup"},
+  # Observed bootup import 448 at JAL 0x8009ccc4, bound by the original linker.
+  {name = "snoweffects_object_803d4418", vram = 0x803d4418, section = ".snoweffects"},
+  # Exact live J26 bindings at owned bootup PCs 0x8009ccf8, 0x800a0e30 and 0x800a0e38.
+  # Each target is a distinct ROM entry in the completely verified snoweffects Text.
+  {name = "snoweffects_callback_803d44d4", vram = 0x803d44d4, section = ".snoweffects"},
+  {name = "snoweffects_object_803d06d4", vram = 0x803d06d4, section = ".snoweffects"},
+  {name = "snoweffects_object_803d07d8", vram = 0x803d07d8, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e8988 in object_callback_800e8858; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x800e7878.
+  {name = "runtime_800e7880", vram = 0x800e7880, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e78dc in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80096a58.
+  {name = "runtime_80096a60", vram = 0x80096a60, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e772c in func_800e76e4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e7dc8.
+  {name = "runtime_800e7dd0", vram = 0x800e7dd0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e7904 in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8009c070.
+  {name = "runtime_8009c078", vram = 0x8009c078, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e7bc0 in func_800e7b48; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e7ad4.
+  {name = "runtime_800e7adc", vram = 0x800e7adc, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e78dc in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e7d5c.
+  {name = "runtime_800e7d64", vram = 0x800e7d64, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e78dc in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8009dabc.
+  {name = "runtime_8009dac4", vram = 0x8009dac4, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e772c in func_800e76e4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e8144.
+  {name = "runtime_800e814c", vram = 0x800e814c, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e8178 in runtime_800e814c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e840c.
+  {name = "runtime_800e8414", vram = 0x800e8414, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e7904 in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e3f50.
+  {name = "runtime_800e3f58", vram = 0x800e3f58, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e8e48 in func_800e8e24; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8009aee8.
+  {name = "runtime_8009aef0", vram = 0x8009aef0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e7904 in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x802e07d8.
+  {name = "runtime_802e07e0", vram = 0x802e07e0, section = ".heli"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e78dc in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x802df06c.
+  {name = "runtime_802df074", vram = 0x802df074, section = ".heli"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e772c in func_800e76e4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x802e07bc.
+  {name = "runtime_802e07c4", vram = 0x802e07c4, section = ".heli"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e7904 in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x802df494.
+  {name = "runtime_802df49c", vram = 0x802df49c, section = ".heli"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x8009cef8 in func_8009c658; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803f0550.
+  {name = "runtime_803f0560", vram = 0x803f0560, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e78dc in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f0c58.
+  {name = "runtime_803f0c60", vram = 0x803f0c60, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e7904 in runtime_800e7880; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f0f60.
+  {name = "runtime_803f0f68", vram = 0x803f0f68, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e01d8 in func_800e0128; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f0490.
+  {name = "runtime_803f0498", vram = 0x803f0498, section = ".game"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x80098c2c in func_80098bf4; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803f8d6c.
+  {name = "runtime_803f8d74", vram = 0x803f8d74, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f8e90.
+  {name = "runtime_803f8e98", vram = 0x803f8e98, section = ".game"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x800a0a58 in func_8009ef1c; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803f8f24.
+  {name = "runtime_803f8f2c", vram = 0x803f8f2c, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ff840 in func_800ff808; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x801130c4.
+  {name = "runtime_801130d0", vram = 0x801130d0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ff840 in func_800ff808; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e1fa4.
+  {name = "runtime_800e1fac", vram = 0x800e1fac, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ff840 in func_800ff808; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800fb9d4.
+  {name = "runtime_800fb9dc", vram = 0x800fb9dc, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ffd0c in func_800ff92c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800fca20.
+  {name = "runtime_800fca28", vram = 0x800fca28, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ff840 in func_800ff808; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8010c350.
+  {name = "runtime_8010c358", vram = 0x8010c358, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ff840 in func_800ff808; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x801131cc.
+  {name = "runtime_801131d4", vram = 0x801131d4, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800ff840 in func_800ff808; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80113288.
+  {name = "runtime_80113290", vram = 0x80113290, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x80113398 in runtime_80113290; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e3274.
+  {name = "runtime_800e327c", vram = 0x800e327c, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a0dd0 in func_8009ef1c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803d055c.
+  {name = "runtime_803d0564", vram = 0x803d0564, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803ce598 in func_803ce474; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803ce63c.
+  {name = "runtime_803ce644", vram = 0x803ce644, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803d06b8 in runtime_803d0564; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803ca794.
+  {name = "runtime_803ca79c", vram = 0x803ca79c, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803ca7e8 in runtime_803ca79c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803cbfa0.
+  {name = "runtime_803cbfa8", vram = 0x803cbfa8, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a0e28 in func_8009ef1c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803d24e8.
+  {name = "runtime_803d24f0", vram = 0x803d24f0, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803ce598 in func_803ce474; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803d31e8.
+  {name = "runtime_803d31f0", vram = 0x803d31f0, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803ca7e8 in runtime_803ca79c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803cbb58.
+  {name = "runtime_803cbb60", vram = 0x803cbb60, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803ca7e8 in runtime_803ca79c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803cc3e8.
+  {name = "runtime_803cc3f0", vram = 0x803cc3f0, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a0e90 in func_8009ef1c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803d1e70.
+  {name = "runtime_803d1e78", vram = 0x803d1e78, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x800a0fd4 in func_8009ef1c; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803f0f8c.
+  {name = "runtime_803f0f94", vram = 0x803f0f94, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800a4324.
+  {name = "runtime_800a432c", vram = 0x800a432c, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e01d8 in func_800e0128; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80096998.
+  {name = "runtime_800969a0", vram = 0x800969a0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e01d8 in func_800e0128; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80096a28.
+  {name = "runtime_80096a30", vram = 0x80096a30, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a4398 in runtime_800a432c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f9eb0.
+  {name = "runtime_803f9eb8", vram = 0x803f9eb8, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a43b0 in runtime_800a432c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f2250.
+  {name = "runtime_803f2258", vram = 0x803f2258, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e01d8 in func_800e0128; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800969c8.
+  {name = "runtime_800969d0", vram = 0x800969d0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800a4568.
+  {name = "runtime_800a4570", vram = 0x800a4570, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x8010f8ec in func_8010f81c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800eb344.
+  {name = "runtime_800eb34c", vram = 0x800eb34c, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x8010d210 in func_8010cee8; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e3e14.
+  {name = "runtime_800e3e1c", vram = 0x800e3e1c, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x800a2a90 in func_800a2938; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803f21c0.
+  {name = "runtime_803f21c8", vram = 0x803f21c8, section = ".game"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x80099154 in func_80099010; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803ed2f0.
+  {name = "runtime_803ed2f8", vram = 0x803ed2f8, section = ".game"},
+  # Published runtime_803ee1b4 calls this entry at 0x803ee1d4; pinned
+  # .game Text has a separate closed body after the return at 0x803ed398.
+  {name = "runtime_803ed39c", vram = 0x803ed39c, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803ee0dc.
+  {name = "runtime_803ee0e4", vram = 0x803ee0e4, section = ".game"},
+  # Observed JALR at 0x800e2e7c loads the callback from object table +0x2c;
+  # crash RAM holds 0x803ee1b4 there. Pinned prepared Text matches the closed
+  # stack-framed body following the return at 0x803ee1ac.
+  {name = "runtime_803ee1b4", vram = 0x803ee1b4, section = ".game"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x80099174 in func_80099010; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803ee7c8.
+  {name = "runtime_803ee7d0", vram = 0x803ee7d0, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803eef34.
+  {name = "runtime_803eef3c", vram = 0x803eef3c, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e01d8 in func_800e0128; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f0430.
+  {name = "runtime_803f0438", vram = 0x803f0438, section = ".game"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x800991a0 in func_80099010; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803ef2ac.
+  {name = "runtime_803ef2b4", vram = 0x803ef2b4, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803ef740.
+  {name = "runtime_803ef748", vram = 0x803ef748, section = ".game"},
+  # ROM-verified function roots.
+  # Observed guest-linked JAL at 0x80099240 in func_80099010; live target and entry prefix
+  # match the pinned ROM. Separate closed body follows return at 0x803eff3c.
+  {name = "runtime_803eff44", vram = 0x803eff44, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2660 in func_800e25c4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f03e0.
+  {name = "runtime_803f03e8", vram = 0x803f03e8, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a5f88 in func_800a5f40; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800a6094.
+  {name = "runtime_800a609c", vram = 0x800a609c, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e3ad8.
+  {name = "runtime_800e3ae0", vram = 0x800e3ae0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800eb160.
+  {name = "runtime_800eb168", vram = 0x800eb168, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800fce48.
+  {name = "runtime_800fce50", vram = 0x800fce50, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8010cbc0.
+  {name = "runtime_8010cbc8", vram = 0x8010cbc8, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80098608.
+  {name = "runtime_80098610", vram = 0x80098610, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8010d40c.
+  {name = "runtime_8010d414", vram = 0x8010d414, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8010e598.
+  {name = "runtime_8010e5a0", vram = 0x8010e5a0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x802df5ac.
+  {name = "runtime_802df5b4", vram = 0x802df5b4, section = ".heli"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80269698.
+  {name = "runtime_802696a0", vram = 0x802696a0, section = ".titproc"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2e7c in func_800e2e20; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800b7290.
+  {name = "runtime_800b7298", vram = 0x800b7298, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e6d20.
+  {name = "runtime_800e6d28", vram = 0x800e6d28, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e386c.
+  {name = "runtime_800e3874", vram = 0x800e3874, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800eae28.
+  {name = "runtime_800eae30", vram = 0x800eae30, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803d4694.
+  {name = "runtime_803d469c", vram = 0x803d469c, section = ".snoweffects"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8010cbf0.
+  {name = "runtime_8010cbf8", vram = 0x8010cbf8, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x80098300.
+  {name = "runtime_80098308", vram = 0x80098308, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e8fd4 in func_800e8f9c; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800e7ec8.
+  {name = "runtime_800e7ed0", vram = 0x800e7ed0, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x8009859c in runtime_80098308; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x8009a75c.
+  {name = "runtime_8009a764", vram = 0x8009a764, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800e2c9c in func_800e2be4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x800a3288.
+  {name = "runtime_800a3290", vram = 0x800a3290, section = ".bootup"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a33b0 in runtime_800a3290; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f2270.
+  {name = "runtime_803f2278", vram = 0x803f2278, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x800a3400 in runtime_800a3290; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803f9c9c.
+  {name = "runtime_803f9ca4", vram = 0x803f9ca4, section = ".game"},
+  # ROM-verified function roots.
+  # Observed JALR at 0x803f9e54 in runtime_803f9ca4; live target and entry prefix match the
+  # pinned ROM. Separate closed body follows return at 0x803fdff4.
+  {name = "runtime_803fdffc", vram = 0x803fdffc, section = ".game"},
 ]
 
 [bootstrap]
