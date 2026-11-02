@@ -154,6 +154,11 @@ def discover(rom: bytes, profile: dict) -> dict:
         section = sections[key[0]]
         offset = section['rom_offset'] + key[1] - section['vram']
         size = validate_hook_prefix(rom, offset, key[1], section['vram'] + section['size'] - key[1], hook)
+        # Shared native signatures verify the complete body. A custom handler
+        # overriding one of them may check only a short prefix, but it must
+        # still replace the entire recognized body in the function registry.
+        if 'catalog_body_size' in hook:
+            size = hook['catalog_body_size']
         if key in replacements:
             raise RecompError(f"duplicate native replacement: {hook['symbol']}")
         replacements[key] = (size, hook.get('kind'))
