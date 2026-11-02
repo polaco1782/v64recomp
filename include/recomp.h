@@ -95,6 +95,10 @@ struct Runtime {
     void (*poll_platform)(Runtime *);
     const uint8_t *rom; /* Verified canonical bytes, owned by the caller. */
     size_t rom_size;
+    uint8_t rom_sha1[20];
+    const char *live_patch_dir; /* Default control directory for this game. */
+    const char *live_patch_python, *live_patch_script, *live_patch_game, *live_patch_build_dir;
+    void *live_modules; /* Shared repair modules; unloaded after guest threads stop. */
     bool platform_initialized;
     RecompTasks *tasks;
     void (*destroy_tasks)(Runtime *);
@@ -152,6 +156,16 @@ static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #endif
 }
 RecompFunction recomp_lookup(Runtime *, uint32_t);
+bool recomp_has_function(Runtime *, uint32_t);
+RecompFunction recomp_live_lookup(Runtime *, uint32_t);
+/* Called only at an explicitly checked indirect-call miss. */
+void recomp_live_checked_call(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section);
+void recomp_live_checked_jump(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section,
+                              uint32_t return_address, uint32_t entry_stack_pointer);
+void recomp_live_indirect_jump(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section,
+                               uint32_t return_address, uint32_t entry_stack_pointer);
+bool recomp_live_boundary(Runtime *, MipsContext *, uint32_t address);
+void recomp_live_destroy(Runtime *);
 static inline uint32_t recomp_relocated_address(Runtime *rt, uint32_t section, uint32_t address) {
     return rt->relocated_address ? rt->relocated_address(rt, section, address) : address;
 }

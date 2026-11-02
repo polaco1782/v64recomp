@@ -114,6 +114,9 @@ bool recomp_timer_stop(Runtime *, uint32_t timer);
 uint64_t recomp_clock_next_deadline(Runtime *); /* UINT64_MAX if none. */
 uint32_t recomp_clock_timer_sentinel(Runtime *);
 uint64_t recomp_clock_frequency(Runtime *);
+/* Freeze the guest counter while a live code repair blocks execution. */
+void recomp_clock_pause(Runtime *);
+void recomp_clock_resume(Runtime *);
 
 typedef struct RecompBootLoad {
     uint32_t section, vram, rom_offset, size;

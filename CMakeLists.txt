@@ -64,7 +64,7 @@ if(NOT RECOMP_GAME STREQUAL "none")
 endif()
 find_package(OpenSSL 3 REQUIRED COMPONENTS Crypto)
 find_package(Threads REQUIRED)
-add_library(recomp_runtime STATIC runtime/host.c runtime/memory.c runtime/dispatch.c runtime/fpu.c runtime/scheduler.c
+add_library(recomp_runtime STATIC runtime/host.c runtime/memory.c runtime/dispatch.c runtime/live_patch.c runtime/fpu.c runtime/scheduler.c
     runtime/os.c runtime/bootstrap.c runtime/time.c runtime/platform.c runtime/tasks.c runtime/io.c runtime/video.c runtime/profiler.c
     runtime/cheats.c runtime/timing.c runtime/fov_control.c)
 target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto Threads::Threads ${CMAKE_DL_LIBS})

@@ -226,6 +226,7 @@ void recomp_runtime_destroy(Runtime *rt) {
     if (rt->destroy_clock)
         rt->destroy_clock(rt);
     recomp_timing_destroy(rt);
+    recomp_live_destroy(rt);
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);
@@ -259,11 +260,27 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
             result = entry->function;
         }
     }
+    if (!result && first == rt->function_count)
+        result = recomp_live_lookup(rt, address);
     if (!result)
         recomp_fail("unregistered or unloaded function", address);
     if (rt->prepare_call)
         rt->prepare_call(rt, address);
     return result;
+}
+
+bool recomp_has_function(Runtime *rt, uint32_t address) {
+    address = recomp_canonical_function_address(rt, address);
+    if (!rt->function_lookup)
+        return false;
+    size_t slot = function_hash(address) & rt->function_lookup_mask;
+    while (rt->function_lookup[slot]) {
+        size_t index = rt->function_lookup[slot] - 1;
+        if (rt->function_index[index]->address == address)
+            return true;
+        slot = (slot + 1) & rt->function_lookup_mask;
+    }
+    return false;
 }
 
 static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write) {

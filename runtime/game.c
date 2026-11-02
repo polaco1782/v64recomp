@@ -336,6 +336,14 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
     if (!crash_dir)
         crash_dir = RECOMP_DEFAULT_CRASH;
     directory(crash_dir);
+    rt->live_patch_dir = RECOMP_DEFAULT_LIVE_PATCH_DIR;
+    rt->live_patch_python = RECOMP_DEFAULT_LIVE_PYTHON;
+    rt->live_patch_script = RECOMP_DEFAULT_LIVE_SCRIPT;
+    rt->live_patch_game = RECOMP_GAME_ID;
+    rt->live_patch_build_dir = RECOMP_DEFAULT_LIVE_BUILD_DIR;
+    const char *live_override = getenv("RECOMP_LIVE_PATCH_DIR");
+    if (!live_override || (*live_override && strcmp(live_override, "off")))
+        directory(live_override ? live_override : rt->live_patch_dir);
     memcpy(rom_sha1, sha1, sizeof(rom_sha1));
     recomp_set_failure_handler(failure, rt);
 #ifdef RECOMP_EMBED_ROM

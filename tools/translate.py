@@ -18,7 +18,8 @@ from native_hooks import resolve_native_hooks
 
 
 def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
-              names: list[str] | None = None, report_only: bool = False) -> dict:
+              names: list[str] | None = None, report_only: bool = False,
+              live_mode: bool = False) -> dict:
     profile = dict(profile, hooks=resolve_native_hooks(rom, profile))
     output.mkdir(parents=True, exist_ok=True)
     previous={}
@@ -113,7 +114,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         errors = [] if key in hooks else ([{'pc': f['vram'], 'word': instructions[0].word, 'assembly': '',
                                           'reason': 'unsupported execution boundary: ' + boundaries[key]}] if key in boundaries
                                          else [*f.get('discovery_errors', []), *analyze(f, instructions, registry, fpu_fr)])
-        if key in selected_keys and not report_only and key not in hooks and key not in boundaries:
+        if key in selected_keys and not report_only and not live_mode and key not in hooks and key not in boundaries:
             for i in instructions:
                 if i.delay and i.opcode not in ('jr', 'jalr'):
                     address = target(i)
@@ -187,7 +188,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
     log_emission('Memory lowering uses recomp_load/store helpers (RDRAM and supported native registers). '
                  'OS/HW services use the verified native hooks.')
     bindings = {**hooks, **{key: f'recomp_wrap_s{key[0]}_{key[1]:08x}' for key in wrappers}}
-    direct_targets = direct_call_targets(registry, bindings, selected)
+    direct_targets = {} if live_mode else direct_call_targets(registry, bindings, selected)
     for f in selected:
         key = (f['section'], f['vram'])
         symbol = hooks.get(key, cname(f))
@@ -198,6 +199,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
             source.append(f'void {symbol}(Runtime *runtime, MipsContext *ctx) {{\n'
                           f'    (void)runtime; (void)ctx;\n'
                           f'    RECOMP_TRACE(runtime, ctx, UINT32_C(0x{f["vram"]:08x}));'
+                          f'    if (recomp_live_boundary(runtime, ctx, UINT32_C(0x{f["vram"]:08x}))) return;\n'
                           f'    recomp_fail({json.dumps(boundaries[key])}, UINT32_C(0x{f["vram"]:08x}));\n}}')
         elif key in hooks:
             log_emission('Bind native hook %s s%s 0x%08x -> %s', f['name'], f['section'], f['vram'], symbol)
