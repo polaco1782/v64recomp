@@ -191,6 +191,9 @@ typedef struct RecompIOConfig {
     const char *eeprom_path; /* NULL keeps an in-memory device. Copied at init. */
     /* SI completion delay; zero completes at the next scheduler poll. */
     uint64_t si_transfer_ticks;
+    /* Optional ROM-linked queue created by osContInit itself. */
+    uint32_t cont_init_queue, cont_init_messages;
+    int32_t cont_init_queue_capacity;
     uint8_t pak_mask;         /* One 32 KiB Controller Pak per selected port. */
     const char *pak_paths[4]; /* NULL keeps that Pak in memory. Copied at init. */
 } RecompIOConfig;

@@ -35,6 +35,8 @@ struct RecompIO {
     bool initialized, published;
     uint8_t max_channels;
     uint32_t eeprom_size;
+    uint32_t cont_init_queue, cont_init_messages;
+    int32_t cont_init_queue_capacity;
     uint64_t si_transfer_ticks, si_deadline;
     uint8_t eeprom[2048];
     char *path;
@@ -144,7 +146,11 @@ static void poll_io(Runtime *rt) {
 bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
     if (rt->io || !rt->scheduler || !config || config->connected_mask > 15 || config->pak_mask > 15 ||
         (config->eeprom_size != 0 && config->eeprom_size != 512 && config->eeprom_size != 2048) ||
-        (config->eeprom_path && (!config->eeprom_size || !*config->eeprom_path)))
+        (config->eeprom_path && (!config->eeprom_size || !*config->eeprom_path)) ||
+        (config->cont_init_queue == 0 &&
+         (config->cont_init_messages || config->cont_init_queue_capacity)) ||
+        (config->cont_init_queue != 0 &&
+         (!config->cont_init_messages || config->cont_init_queue_capacity <= 0)))
         return false;
     for (unsigned n = 0; n < 4; n++) {
         if (!config->pak_paths[n])
@@ -161,6 +167,9 @@ bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
         return false;
     s->max_channels = 4;
     s->si_transfer_ticks = config->si_transfer_ticks;
+    s->cont_init_queue = config->cont_init_queue;
+    s->cont_init_messages = config->cont_init_messages;
+    s->cont_init_queue_capacity = config->cont_init_queue_capacity;
     s->eeprom_size = config->eeprom_size;
     memset(s->eeprom, 0xff, sizeof(s->eeprom));
     for (unsigned n = 0; n < 4; n++)
@@ -450,6 +459,8 @@ void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
     }
     recomp_store(rt, pattern, mask, 1);
     s->initialized = true;
+    if (s->cont_init_queue)
+        recomp_queue_create(rt, s->cont_init_queue, s->cont_init_messages, s->cont_init_queue_capacity);
     /* SDK initialization consumes its own SI notifications; none are left for the caller. */
     result(ctx, 0);
 }

@@ -258,6 +258,12 @@
       "origin": "checked-root",
       "sha256": "3b597824368633f38fac7b24613e68bdb5878c879539db2a4ab6f53f0a7963d6",
       "note": "Effect callback passed as stack argument 8 at 0x15114ee4, stored in record+0x14 at 0x1000fb90 and called at 0x1001187c; also passed in a0 at 0x15114f2c. Complete 24-instruction leaf body reviewed."
+    },
+    {
+      "vram": 354300540,
+      "origin": "checked-root",
+      "sha256": "745112e97c09aa298cc2e7ff0f163dc89af78c031baf01d770b5d1d1af154bff",
+      "note": "Callback address materialized at 0x151e0250/60, stored at 0x800e0a88 by 0x151e0278, then called through that slot at 0x151e501c. The 0x151e327c body is a closed 50-instruction function ending before 0x151e3344."
     }
   ]
 }

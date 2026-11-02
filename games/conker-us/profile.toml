@@ -17,7 +17,7 @@ checkpoints = [
 name = "Conker's Bad Fur Day (US revision 0)"
 rom_sha1 = "4cbadd3c4e0729dec46af64ad018050eada4f47a"
 rom_size = 0x4000000
-ram_size = 0x400000
+ram_size = 0x800000
 fpu_fr = 0x1
 entry_symbol = "entry_point"
 rom = "../../local/conker.us.z64"
@@ -36,9 +36,50 @@ roots = [
   {name = "bootproc", vram = 0x10001050},
   {name = "idleproc", vram = 0x100010f8},
   {name = "mainproc", vram = 0x10001194},
+  # Functions promoted from verified live modules.
+  {name = "live_15005af0", vram = 0x15005af0, section = ".game"},
+  {name = "live_1501407c", vram = 0x1501407c, section = ".game"},
+  {name = "live_150ae5b0", vram = 0x150ae5b0, section = ".game"},
+  {name = "live_15146970", vram = 0x15146970, section = ".game"},
+  {name = "live_151488c4", vram = 0x151488c4, section = ".game"},
+  {name = "live_15148af4", vram = 0x15148af4, section = ".game"},
+  {name = "live_15148de0", vram = 0x15148de0, section = ".game"},
+  {name = "live_1515aa84", vram = 0x1515aa84, section = ".game"},
+  {name = "live_15189ebc", vram = 0x15189ebc, section = ".game"},
+  {name = "live_151d7538", vram = 0x151d7538, section = ".game"},
+  {name = "live_151d75c4", vram = 0x151d75c4, section = ".game"},
+  {name = "live_151d8efc", vram = 0x151d8efc, section = ".game"},
+  {name = "live_151d8f30", vram = 0x151d8f30, section = ".game"},
+  {name = "live_151d9918", vram = 0x151d9918, section = ".game"},
+  {name = "live_151d9960", vram = 0x151d9960, section = ".game"},
+  # Functions promoted from verified live modules.
+  {name = "live_1000ee70", vram = 0x1000ee70, section = ".init"},
+  {name = "live_15005e70", vram = 0x15005e70, section = ".game"},
+  {name = "live_15008bf0", vram = 0x15008bf0, section = ".game"},
+  {name = "live_1500b1f4", vram = 0x1500b1f4, section = ".game"},
+  {name = "live_1500b3b0", vram = 0x1500b3b0, section = ".game"},
+  {name = "live_1506b740", vram = 0x1506b740, section = ".game"},
+  {name = "live_1506f8c0", vram = 0x1506f8c0, section = ".game"},
+  {name = "live_150d0650", vram = 0x150d0650, section = ".game"},
+  {name = "live_15146bb8", vram = 0x15146bb8, section = ".game"},
+  {name = "live_15148ba4", vram = 0x15148ba4, section = ".game"},
+  {name = "live_151a9634", vram = 0x151a9634, section = ".game"},
+  {name = "live_151a99d0", vram = 0x151a99d0, section = ".game"},
+  {name = "live_151aa170", vram = 0x151aa170, section = ".game"},
+  {name = "live_151aa17c", vram = 0x151aa17c, section = ".game"},
+  {name = "live_151aa1f0", vram = 0x151aa1f0, section = ".game"},
+  {name = "live_151aa210", vram = 0x151aa210, section = ".game"},
+  {name = "live_151aadf8", vram = 0x151aadf8, section = ".game"},
+  {name = "live_151ab090", vram = 0x151ab090, section = ".game"},
+  {name = "live_151ab180", vram = 0x151ab180, section = ".game"},
+  {name = "live_151ac3cc", vram = 0x151ac3cc, section = ".game"},
+  {name = "live_151ac550", vram = 0x151ac550, section = ".game"},
 ]
 # Handwritten assembly preserves RA in an alternate register across local calls.
 transfers = [
+  # The renderer callback selector in 0x151a8cec materializes one of these
+  # adjacent functions in s7 immediately before jalr at 0x151a8e48.
+  {pc = 0x151a8e48, expected_word = 0x02e0f809, kind = "call", targets = [0x151a8f1c, 0x151a8f6c]},
   {pc = 0x80001030, expected_word = 0x1400008, kind = "tail", targets = [0x80005ab0]},
   {pc = 0x150a7a40, expected_word = 0x3200008, kind = "return", targets = [], save_pc = 0x150a7a00, expected_save_word = 0x3e0c825},
   # Local sine-table helper at 0x150a76f0 returns through v0; all six links
@@ -87,6 +128,10 @@ fallthroughs = [
   {pc = 0x150a3ba8, expected_word = 0x2128025, target = 0x150a3bac, resume_pc = 0x150a3b88, reason = "Shared collision helper returns to the explicit RA materialized at 0x150a3aec"},
 ]
 function_tables = [
+  # Object callback selector at +0x18 is checked to 0..7. Slots 0..5 share
+  # 0x151a90c0; slot 6 is 0x1515a974 and slot 7 is 0x15012020.
+  # The following word at 0x8008f9a4 starts non-callback data.
+  {pc = 0x151a90a4, expected_word = 0x0040f809, table_vram = 0x8008f984, count = 0x8, sha256 = "ec512d42ef9b444faa6154236a5b288325d345b33d9585b5fba8b66e9832c302"},
   # Effect descriptor byte +0x3f selects two callbacks; adjacent signed selector +0x21 skips -1.
   # Second table ends at the data-pointer array beginning at 0x8008d630.
   {pc = 0x1518df14, expected_word = 0x0320f809, table_vram = 0x8008d620, count = 0x2, sha256 = "805b022596801cef752dc2e537f796716749040e881539f51b3324eea52895f0"},
@@ -253,8 +298,15 @@ function_tables = [
   {pc = 0x1514d264, expected_word = 0x320f809, table_vram = 0x8008aa70, count = 0x3a, indices = [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39], sha256 = "6e7fb7871d7ad0a731ab05433757d219eb2d50be59a8d6c82c92d025b5084ebd"},
   {pc = 0x1514d2a4, expected_word = 0x320f809, table_vram = 0x8008aa70, count = 0x3a, indices = [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39], sha256 = "6e7fb7871d7ad0a731ab05433757d219eb2d50be59a8d6c82c92d025b5084ebd"},
   {pc = 0x15008990, expected_word = 0x320f809, table_vram = 0x80082bd0, count = 0x2, sha256 = "284566a6c9cb2480d25c72038b18d206de0dbeaa9467d84687d0e6349586cb29"},
+  # Reviewed before gameplay from bounded ROM table evidence.
+  {pc = 0x1514c3f4, expected_word = 0x0040f809, table_vram = 0x8008aa00, count = 0x1a, sha256 = "81790bfb3cfdb2cadde086b2113869a23ded554385878f883f567adc5626d5cb"},
+  {pc = 0x1514c5fc, expected_word = 0x0040f809, table_vram = 0x8008aa00, count = 0x1a, sha256 = "81790bfb3cfdb2cadde086b2113869a23ded554385878f883f567adc5626d5cb"},
+  {pc = 0x1514c7ec, expected_word = 0x0040f809, table_vram = 0x8008aa00, count = 0x1a, sha256 = "81790bfb3cfdb2cadde086b2113869a23ded554385878f883f567adc5626d5cb"},
+  {pc = 0x1514ca08, expected_word = 0x0040f809, table_vram = 0x8008aa00, count = 0x1a, sha256 = "81790bfb3cfdb2cadde086b2113869a23ded554385878f883f567adc5626d5cb"},
 ]
 jump_tables = [
+  # Status selector is clamped to 0..8 at 0x1514697c; all cases stay local.
+  {pc = 0x15146998, expected_word = 0x01c00008, table_vram = 0x800a56e4, count = 0x9, sha256 = "d4dbdbe38de266a85a6d199fc5c02a67939d1dad262a84b358706c2371015b0b"},
   # Newly reached helpers: byte selector -1 <12 and state selector -1 <66.
   {pc = 0x15064338, expected_word = 0x01400008, table_vram = 0x800997a0, count = 0xc, sha256 = "64203d90db7d988cc6ce8b36ed68a18491042271a8f65be4441f3e5bc7b67faf"},
   {pc = 0x15065b7c, expected_word = 0x03200008, table_vram = 0x80099880, count = 0x42, sha256 = "34342de0f6209bbbb4c31c21aab6812f0e51238de9524c6897e2bdaac3141610"},

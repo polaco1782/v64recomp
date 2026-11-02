@@ -34,6 +34,9 @@ brought up through the intro. Debug keeps its
 report/captures under `build/conker-us-debug/debug-output/conker-us/`; crashes include a JSON
 report and RDRAM under ignored `local/crashes/conker-us/`. Release uses the
 `conker-us-release` presets and shares the runtime adapter.
+Both copies of Conker's `osContInit` use the shared native hook. Its optional
+private SI queue configuration creates the queue at `0x80042a78`. This addresses the observed unknown-queue failure
+at `0x80042a78`; reaching that scene again has not yet been verified.
 Debug logs final thread states and PCs. Set `RECOMP_CONKER_RAM` to an output
 filename to retain a word-swapped RDRAM snapshot after a bounded run; this also
 supports diagnosing stalls that do not trigger the crash reporter.
