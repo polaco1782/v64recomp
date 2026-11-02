@@ -1,3 +1,10 @@
+function_wrappers = [
+  {section = ".main", vram = 0x800469d8, size = 0x764, sha256 = "ff1229452a7f293082b53e5bf64019473d92d12faf9d10fd4ca22aa6466e64e7", handler = "quake_command_hook"},
+  {section = ".main", vram = 0x800574f0, size = 0x68, sha256 = "03ca5c9b65e3dd35735e964902dadacca9222a0c90c53d81bbaf9cb1e3a264b1", handler = "quake_frustum_hook"},
+  {section = ".main", vram = 0x80028378, size = 0x50, sha256 = "5da917c9177a78e4d37efd2e8bf253c1ae59d768a3780ef6925f7490e3965d2f", handler = "quake_render_hook"},
+  {section = ".main", vram = 0x80027378, size = 0x164, sha256 = "4dad58c464ec0815d432a33ea601c6c77fe55af4374d7e752958baa743c7af57", handler = "quake_planes_hook"},
+]
+
 # Exact US revision 0 ROM. Shared catalog recognizes identical SDK bodies.
 # Plain OS/library routines are supplied by the shared catalog.
 [game]
@@ -99,6 +106,10 @@ function_tables = [
   {pc = 0x80053d14, expected_word = 0x320f809, table_vram = 0x8006f76c, count = 0x11, sha256 = "5c48085b847c3b5caac40ecfa8b90cbd4b6786c0e7e65bffe36424031d3cf0c9"},
   # Original 16-entry controller action table (move, turn, fire and jump).
   {pc = 0x80046e4c, expected_word = 0x320f809, table_vram = 0x8006d3e0, count = 0x10, sha256 = "3d7c1435bc6ab3e6d3c9c370123abe181cf19c884251c740f1552b429612631b"},
+  {pc = 0x80046b38, expected_word = 0x320f809, table_vram = 0x8006d3e0, count = 0x10, sha256 = "3d7c1435bc6ab3e6d3c9c370123abe181cf19c884251c740f1552b429612631b"},
+  {pc = 0x80046da4, expected_word = 0x320f809, table_vram = 0x8006d3e0, count = 0x10, sha256 = "3d7c1435bc6ab3e6d3c9c370123abe181cf19c884251c740f1552b429612631b"},
+  {pc = 0x80046df8, expected_word = 0x320f809, table_vram = 0x8006d3e0, count = 0x10, sha256 = "3d7c1435bc6ab3e6d3c9c370123abe181cf19c884251c740f1552b429612631b"},
+  {pc = 0x80046ea4, expected_word = 0x320f809, table_vram = 0x8006d3e0, count = 0x10, sha256 = "3d7c1435bc6ab3e6d3c9c370123abe181cf19c884251c740f1552b429612631b"},
   {pc = 0x800420e8, expected_word = 0x320f809, table_vram = 0x8006d174, count = 0x9a, indices = [0x3, 0x5, 0x7, 0x9, 0xb, 0xd, 0xf, 0x11, 0x13, 0x15, 0x17, 0x19, 0x1b, 0x1d, 0x1f, 0x21, 0x23, 0x25, 0x27, 0x29, 0x2b, 0x2d, 0x2f, 0x31, 0x33, 0x35, 0x37, 0x39, 0x3b, 0x3d, 0x3f, 0x41, 0x43, 0x45, 0x47, 0x49, 0x4b, 0x4d, 0x4f, 0x51, 0x53, 0x55, 0x57, 0x59, 0x5b, 0x5d, 0x5f, 0x61, 0x63, 0x65, 0x67, 0x69, 0x6b, 0x6d, 0x6f, 0x71, 0x73, 0x75, 0x77, 0x79, 0x7b, 0x7d, 0x7f, 0x81, 0x83, 0x85, 0x87, 0x89, 0x8b, 0x8d, 0x8f, 0x91, 0x93, 0x95, 0x97, 0x99], sha256 = "67b5a4a87c5306da730b4521e4760362afb58109c341e1505798ff80ae691241"},
 ]
 
@@ -130,3 +141,86 @@ health_offset = 0x1c0
 0x80000310 = 0x17d6
 0x80000314 = 0x1
 0x80000318 = 0x400000
+
+# Quake US ROM-derived command, projection and CPU culling boundaries.
+[controls]
+reference = "https://github.com/id-Software/Quake"
+reference_revision = "bf4ac424ce754894ac8f1dae6a3981954bc9852d"
+reference_scope = "PC engine structure only; N64 addresses/layouts derived independently from ROM"
+functions = [
+  {name = "skill_reader", vram = 0x8001ad04, size = 0x80, sha256 = "c4082c743ceb9676b83796ca05d933649bde16c31cbf8b589396b148c899116f"},
+  {name = "cull_box", vram = 0x800260f0, size = 0x84, sha256 = "beb643cccf8560a1f6750ef2cc9387c0225e4624b36583aec41c4754f4089155"},
+  {name = "plane_signbits", vram = 0x80027334, size = 0x44, sha256 = "c9c31008e855ad586137c48a1b4840ae004cbb426ba5a56361e1242c4c4edb91"},
+  {name = "build_clip_planes", vram = 0x80027378, size = 0x164, sha256 = "4dad58c464ec0815d432a33ea601c6c77fe55af4374d7e752958baa743c7af57"},
+  {name = "submit_world_matrix", vram = 0x800276b0, size = 0x244, sha256 = "09e073cd30ab9f4def0237058af99389380f052c99202128685876a2252040ae"},
+  {name = "render_world", vram = 0x80028378, size = 0x50, sha256 = "5da917c9177a78e4d37efd2e8bf253c1ae59d768a3780ef6925f7490e3965d2f"},
+  {name = "projection_setup", vram = 0x800284ac, size = 0xf0, sha256 = "ad4d1e5a9af47b64fb93b0b083a249938fe39fa8268357a8ba12094deebfe5a7"},
+  {name = "view_setup", vram = 0x80038588, size = 0x444, sha256 = "04d63a7081894501309e1eab775ba09622b5c65d871e865e43268feb640e1e8f"},
+  {name = "game_loop", vram = 0x8003b420, size = 0x290, sha256 = "3fb6fcf5ebf324266bc19215bde27ae950145b3099fec691b57c973a3fcadbaa"},
+  {name = "game_session", vram = 0x8003b6b0, size = 0x1a0, sha256 = "b17601846b15a3e82a5141988b57e15420e767172936ea53973b2cfc3957f782"},
+  {name = "move_player", vram = 0x80046808, size = 0x1d0, sha256 = "e5c0a9cd07ee8fa00a0e6452e41a71c25b735018ecde6881e7e95ce36b0755bd"},
+  {name = "action_dispatch", vram = 0x800469d8, size = 0x764, sha256 = "ff1229452a7f293082b53e5bf64019473d92d12faf9d10fd4ca22aa6466e64e7"},
+  {name = "action_0", vram = 0x80047254, size = 0x8, sha256 = "aab9a3b4a314f107dee9217d6d10144c96feaf7d3f083e0f94c1ee0811c96054"},
+  {name = "action_7", vram = 0x8004725c, size = 0x88, sha256 = "8afaddf2a78bbfb735f5f3ec32ef42b82960bb3e013536fce1bb90e2141d0f9e"},
+  {name = "action_8", vram = 0x800472e4, size = 0x80, sha256 = "27795f527528fe326fdad0012bf6a225d851fa4baae60cbe45543a25898489f0"},
+  {name = "action_5", vram = 0x80047364, size = 0x38, sha256 = "1521b4f93cfef790be72829e5b1dd937865d3707a35eab92325937c0fd2cab36"},
+  {name = "action_6", vram = 0x8004739c, size = 0x3c, sha256 = "9fef0d616b8678e6f22f6775bc82845952eaea334fcba57da82e22cca8f294a0"},
+  {name = "action_3", vram = 0x800473d8, size = 0x24, sha256 = "cda8517f0e079b82af68f89e83b9838d367759926d2c3cf9c2c5f464d7c47b6f"},
+  {name = "action_4", vram = 0x800473fc, size = 0x24, sha256 = "94d33e921ada3915f22b5202b0d6eb5470c2080e84faf3a684d3a612140c337a"},
+  {name = "action_1", vram = 0x80047420, size = 0x24, sha256 = "14f52ba75b9bfcff5c9efe3f792446df18814f544cb22f174ef51b89a5e0b411"},
+  {name = "action_2", vram = 0x80047444, size = 0x24, sha256 = "8757339c922a3351d96fce194c4551ed28e3c3ce189c60c27c85d1d266d8e89e"},
+  {name = "action_13", vram = 0x80047468, size = 0x14, sha256 = "70d657e3881e364c43f38cfaff1418c4bc5762f564e47c3c3d89ef7ef21741e0"},
+  {name = "action_12", vram = 0x8004747c, size = 0x14, sha256 = "d1c8b59d3384e2dd0fe7f2be15ed273d5e7a4987627d5884dd20de6ec384f2fb"},
+  {name = "action_14", vram = 0x800474a4, size = 0x38, sha256 = "b01899f9bbd1bbea1ff08ba8f502c3e78700f351b796acd5bc0483db79a57a0b"},
+  {name = "action_15", vram = 0x800474dc, size = 0x38, sha256 = "13c12ad7bebb50a14941ae1ae26ba911cd2df741ed04a5bc68c71759242773e6"},
+  {name = "action_10", vram = 0x80047514, size = 0x14, sha256 = "cba168e9b94a85a45573e750b5f2cd74e9df60caf88c2c478d1812dde66ac0ad"},
+  {name = "action_9", vram = 0x80047528, size = 0x14, sha256 = "7e3a3e7e039e6f0363ee1d24b0b43fbcc415367a1985216a87882d64fe65cfe5"},
+  {name = "action_11", vram = 0x8004753c, size = 0x14, sha256 = "3aaf0018a76ab98215d8654624269bfdc9769842654a5dab4b2132cc571953a2"},
+  {name = "guFrustum", vram = 0x800574f0, size = 0x68, sha256 = "03ca5c9b65e3dd35735e964902dadacca9222a0c90c53d81bbaf9cb1e3a264b1"},
+  {name = "draw_effect_vertices", vram = 0x8002db24, size = 0x47c, sha256 = "d7527e01cf53831df76b020f2a6d63999931b6e93d9b33754e4506aa508ec9ac"},
+  {name = "draw_effects", vram = 0x8002dfa0, size = 0x88, sha256 = "2e2602e4005f107711385957c886becabef06a43c54dca3fd926306d9f10bcd1"},
+]
+bindings = [
+  {name = "current_client", kind = "address", value = 0x80086ec8, pcs = [0x800469dc, 0x800469e0], words = [0x3c028008, 0x8c426ec8]},
+  {name = "clients", kind = "address", value = 0x8008e720, pcs = [0x8003b4b0, 0x8003b4d4], words = [0x3c158009, 0x26b5e720]},
+  {name = "current_entity", kind = "address", value = 0x8008e880, pcs = [0x80046a28, 0x80046a2c], words = [0x3c028009, 0x8c42e880]},
+  {name = "players", kind = "address", value = 0x80086ecc, pcs = [0x800284ac, 0x800284b0], words = [0x3c0e8008, 0x8dce6ecc]},
+  {name = "phase", kind = "address", value = 0x8006caa4, pcs = [0x8003b720, 0x8003b72c], words = [0x3c138007, 0x2673caa4]},
+  {name = "running", kind = "address", value = 0x8006caa8, pcs = [0x8003b444, 0x8003b474], words = [0x3c018007, 0xac2ecaa8]},
+  {name = "skill", kind = "address", value = 0x8006caa0, pcs = [0x8001ad04, 0x8001ad08], words = [0x3c0e8007, 0x8dcecaa0]},
+  {name = "default_skill", kind = "data_word", value = 0x1, pcs = [0x8006caa0], words = [0x1]},
+  {name = "intermission", kind = "address", value = 0x800774c8, pcs = [0x8004701c, 0x80047024], words = [0x3c0b8007, 0x8d6b74c8]},
+  {name = "autorun", kind = "address", value = 0x8006c4a0, pcs = [0x80046f38, 0x80046f4c], words = [0x3c0a8007, 0x8d4ac4a0]},
+  {name = "controller", kind = "field", value = 0x4, pcs = [0x800469f0], words = [0x8c440004]},
+  {name = "entity_pointer", kind = "field", value = 0x8, pcs = [0x8003b51c], words = [0x8f280008]},
+  {name = "command", kind = "field", value = 0xc, pcs = [0x800469f8], words = [0x2451000c]},
+  {name = "client_stride", kind = "field", value = 0xa8, pcs = [0x8003b53c], words = [0x252a00a8]},
+  {name = "health", kind = "field", value = 0x1c0, pcs = [0x800470dc], words = [0xc44801c0]},
+  {name = "move_type", kind = "field", value = 0x2a8, pcs = [0x80046818], words = [0x844e02a8]},
+  {name = "fix_angle", kind = "field", value = 0x29e, pcs = [0x80046a34], words = [0x8448029e]},
+  {name = "pitch", kind = "field", value = 0xcc, pcs = [0x800470b0], words = [0xe59000cc]},
+  {name = "yaw", kind = "field", value = 0xd0, pcs = [0x800470c0], words = [0xe5b200d0]},
+  {name = "model_pitch", kind = "field", value = 0x78, pcs = [0x80046a44], words = [0xc4440078]},
+  {name = "model_yaw", kind = "field", value = 0x7c, pcs = [0x80046a50], words = [0xc446007c]},
+  {name = "forward", kind = "field", value = 0x8, pcs = [0x80047440], words = [0xe4900008]},
+  {name = "side", kind = "field", value = 0xc, pcs = [0x800473f8], words = [0xe490000c]},
+  {name = "up", kind = "field", value = 0x10, pcs = [0x80046ac4], words = [0xe6300010]},
+  {name = "flags", kind = "field", value = 0x14, pcs = [0x80046aac], words = [0xae200014]},
+  {name = "previous", kind = "field", value = 0x18, pcs = [0x80047124], words = [0xae280018]},
+  {name = "delta_yaw", kind = "field", value = 0x0, pcs = [0x80046ab4], words = [0xe6240000]},
+  {name = "delta_pitch", kind = "field", value = 0x4, pcs = [0x80046ab8], words = [0xe6260004]},
+  {name = "entity_buttons", kind = "field", value = 0x27c, pcs = [0x80047020], words = [0xad49027c]},
+  {name = "command_return", kind = "return", value = 0x8003b528, pcs = [0x8003b520, 0x8003b524], words = [0xc011a76, 0xae680000]},
+  {name = "frustum_return", kind = "return", value = 0x8002858c, pcs = [0x80028584, 0x80028588], words = [0xc015d3c, 0xe7aa001c]},
+  {name = "planes_return", kind = "return", value = 0x80028390, pcs = [0x80028388, 0x8002838c], words = [0xc009cde, 0x0]},
+  {name = "projection_matrix", kind = "address", value = 0x80078160, pcs = [0x8002856c, 0x80028574], words = [0x3c048008, 0x24848160]},
+  {name = "right", kind = "address", value = 0x80078200, pcs = [0x80027378, 0x80027384], words = [0x3c038008, 0x24638200]},
+  {name = "forward_vector", kind = "address", value = 0x800781f0, pcs = [0x8002737c, 0x80027380], words = [0x3c048008, 0x248481f0]},
+  {name = "up_vector", kind = "address", value = 0x800781e0, pcs = [0x800273b0, 0x800273b8], words = [0x3c058008, 0x24a581e0]},
+  {name = "near_bits", kind = "upper_bits", value = 0x40800000, pcs = [0x8002853c], words = [0x3c014080]},
+  {name = "top_bits", kind = "upper_bits", value = 0x40400000, pcs = [0x80028544], words = [0x3c014040]},
+  {name = "pitch_max_bits", kind = "upper_bits", value = 0x42a00000, pcs = [0x8004706c], words = [0x3c0142a0]},
+  {name = "forward_speed", kind = "double_upper", value = 200.0, pcs = [0x80047424], words = [0x3c014069]},
+  {name = "side_speed", kind = "data_double", value = 250.0, pcs = [0x80075d10, 0x80075d14], words = [0x406f4000, 0x0]},
+  {name = "pitch_min", kind = "data_double", value = -70.0, pcs = [0x80075cd0, 0x80075cd4], words = [0xc0518000, 0x0]},
+]

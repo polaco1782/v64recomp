@@ -3,6 +3,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
+#include "controls.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,13 @@
 #define require recomp_game_require
 #define monotonic_ns recomp_game_monotonic
 static RecompRenderer *renderer;
+static bool window_closed;
+static void poll_controls(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (!quake_controls_poll(rt, renderer, &pad)) window_closed = true;
+    else require(recomp_input_set(rt, 0, &pad), "Quake controller update failed", 0);
+}
 static RecompAudio *audio;
 static uint64_t now_ns, wall_origin;
 #include "quake_config.h"
@@ -58,6 +66,8 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Quake 64 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Quake 64");
     require(renderer != NULL, "renderer initialization failed", 0);
+    quake_controls_init(poll_controls);
+    recomp_renderer_set_fov_hook(renderer, quake_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -69,9 +79,9 @@ int main(int argc, char **argv) {
     recomp_thread_create(&rt, 0x803ff000, -1, BOOT_ENTRY, 0, 0x803fd000, 0);
     recomp_thread_start(&rt, 0x803ff000);
     uint64_t next_present = monotonic_ns();
-    for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
+    for (uint32_t frame = 0; !window_closed && (!options.frames || frame < options.frames); frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!quake_controls_poll(&rt, renderer, &pad))
             break;
         require(recomp_input_set(&rt, 0, &pad), "controller update failed", 0);
         for (unsigned batch = 0; batch < 32; batch++) {

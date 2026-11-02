@@ -11,6 +11,7 @@
 #include <time.h>
 #include "renderer.h"
 #include "audio.h"
+#include "controls.h"
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
 #define LOG_QUAKE_CALLS (getenv("RECOMP_TRACE_CALLS") != NULL)
@@ -26,6 +27,12 @@ static RecompRenderer *renderer;
 static RecompAudio *audio;
 static unsigned graphics_tasks, presentations;
 static bool window_closed;
+static void poll_controls(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (!quake_controls_poll(rt, renderer, &pad)) window_closed = true;
+    else require(recomp_input_set(rt, 0, &pad), "Quake controller update failed", 0);
+}
 static uint64_t wall_origin;
 static FILE *input_script;
 static bool next_input;
@@ -161,6 +168,8 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Quake 64 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "Quake 64");
     require(renderer != NULL, "Quake 64 renderer initialization failed", 0);
+    quake_controls_init(poll_controls);
+    recomp_renderer_set_fov_hook(renderer, quake_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = getenv("RECOMP_AUDIO_MUTE") == NULL,
                             .prebuffer_ms = 160,
@@ -180,9 +189,9 @@ int main(int argc, char **argv) {
     recomp_thread_create(&rt, 0x803ff000, -1, BOOT_ENTRY, 0, 0x803fd000, 0);
     recomp_thread_start(&rt, 0x803ff000);
     uint64_t next_present = monotonic_ns();
-    while (!frames || presentations < frames) {
+    while (!window_closed && (!frames || presentations < frames)) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad)) {
+        if (!quake_controls_poll(&rt, renderer, &pad)) {
             window_closed = true;
             break;
         }

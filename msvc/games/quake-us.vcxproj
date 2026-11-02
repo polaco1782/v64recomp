@@ -26,6 +26,9 @@
   <ItemGroup>
     <ClInclude Include="$(RecompRoot)games\quake-us\audio.h" />
     <None Include="$(RecompRoot)games\quake-us\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\quake-us\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\quake-us\controls.h" />
+    <None Include="$(RecompRoot)games\quake-us\controls_analysis.py" />
     <ClCompile Include="$(RecompRoot)games\quake-us\debug\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>

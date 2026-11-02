@@ -128,6 +128,7 @@ Resident Evil 2 US revision 1 is registered as experimental `re2-us-v1`; see its
 Release render the Nintendo 64 logo in bounded desktop replays; menus and riding
 remain unvalidated. See the [port notes](games/1080-us/README.md).
 Quake II runs with the Expansion Pak enabled; see its [port notes](games/quake2-us/README.md).
+Quake 64 includes default [WASD/mouse controls and keypad FOV adjustment](games/quake-us/controller.md), from its original 90 degrees through 140.
 Hexen includes default single-player WASD/mouse controls and an optional FOV setting; see its [input mapping](games/hexen-us/controller.md) and [FOV setting](games/hexen-us/README.md#field-of-view).
 
 GoldenEye also supports an optional [FOV setting](games/goldeneye-us/README.md#field-of-view), with the original view as the default and native weapon zoom preserved.

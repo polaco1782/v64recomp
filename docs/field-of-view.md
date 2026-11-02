@@ -1,7 +1,7 @@
 # Finding and changing a game's field of view
 
-This is the investigation procedure used for Hexen, GoldenEye, Duke Nukem 64
-and Ocarina of Time.
+This is the investigation procedure used for Hexen, GoldenEye, Duke Nukem 64,
+Ocarina of Time and Quake 64.
 It is intended for an agent extending another game in this repository. Run the
 commands from the repository root, substitute the game ID and use metadata from
 that exact ROM. On Linux, replace `.venv/Scripts/python.exe` with
@@ -139,6 +139,7 @@ The existing implementations illustrate different boundaries:
 | GoldenEye US | Gameplay calls to `viSetFovY` | Original setter updates VI projection and player perspective/scale together |
 | Duke Nukem 64 US | World calls reaching `guPerspectiveF`, both directly and through `guPerspective` | Both CPU float and GPU fixed matrices change; widen the initial sector window and correct depth-derived world billboard sizes |
 | Ocarina of Time US V1.2 | Gameplay view FOV after `Camera_Update`, before view matrices are built | Shared CPU/GPU view-projection path; preserve native camera FOV/zoom and exclude fixed backgrounds |
+| Quake 64 US | Saved fixed `guFrustum` matrix selected at world render, scale X/Y diagonals only | Temporarily reduce right/up basis vectors during original four-plane construction; retain distances, sign bits and conservative coverage |
 
 ## 5. Choose conversion and scope
 
@@ -334,3 +335,55 @@ parked. They never re-enter the guest allocator. The ROM operands and an
 analytical table model were reviewed during implementation. This extension was
 not rebuilt at the user's request; live
 geometry/edge visibility and combined F7 behavior still need acceptance.
+
+## Quake 64 investigation record
+
+US revision 0 has SHA-1 `25a7fe0342490d3c23328040bb34f8748995537a`.
+Its `.main` maps VRAM `0x80000400`, ROM `0x1000`, size `0x77080`.
+The SDK inspector found `guFrustum` at `0x800574f0`, not `guPerspective`.
+The [pinned PC engine reference](https://github.com/id-Software/Quake/tree/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake)
+provided structural hypotheses only; the N64 layout and addresses came from
+local disassembly. See the game's controller guide and complete `profile.toml`
+for fingerprints and decoded operands.
+
+| Evidence | Interpretation |
+| --- | --- |
+| `0x80028584` calls `guFrustum` | Left/right `-4/+4`, bottom/top `-3/+3`, near 4, far 4096, scale 1; original horizontal FOV is 90 degrees |
+| `0x80028574` constructs `0x80078160` | Fixed world projection is initialized separately from per-frame view/culling work |
+| `0x80027740`/`0x80027744` emit a matrix load | GPU task reads that global matrix later; restoring it at the end of a host wrapper would restore too early |
+| `0x80028378` calls camera setup, plane setup and world drawing | Scope the chosen projection at this render boundary, preserving native views when gameplay is inactive |
+| `0x80027378` constructs `forward +/- right` and `forward +/- up` planes | CPU clipping does not use the GPU matrix; widening only the matrix would clip newly visible geometry |
+| `0x800274ac` calls the plane sign-bit helper | Let the original recalculate distances/types/sign bits, rather than editing plane normals afterward |
+| `0x800260f0` loops over four planes | Confirms the CPU visibility consumer and exact plane span |
+| `0x8002db24` emits Vtx/triangle geometry for effects | Effects follow the 3D projection; no independent Duke-style screen-size correction was identified |
+
+Save the original 64 matrix bytes when the verified world `guFrustum` call
+returns. For selected horizontal angle `h`, scale only fixed-point diagonal
+entries 0 and 5 by `1/tan(h/2)`; keep the native depth terms. At minimum,
+restore the original bytes exactly. Keep the selected matrix resident until a
+later render boundary chooses another view, so the submitted RSP task sees it.
+
+For CPU culling, temporarily scale right by `1/tan(h/2 + 1 degree)` and up by
+`1/max(1, tan(atan(0.75*tan(h/2)) + 1 degree))`. The original vertical planes
+already cover a conservative 90-degree span, wider than the native 73.74-degree
+vertical projection; never narrow that span. Run the original plane constructor
+once, then restore all six basis-component words. Rendering and billboard
+orientation must see the original camera basis afterward.
+
+The same game-owned adapter injects mouse/WASD after the controller dispatcher
+at `0x800469d8`, restricted to gameplay return `0x8003b528`. This avoids changing
+menu pad reads or replacing physics. See
+[Quake's controller guide](../games/quake-us/controller.md) for command fields,
+state gates, native speeds and weapon-edge behavior.
+
+Do not treat `0x8006caa0` as a gameplay-mode flag. It is the difficulty selector,
+initialized to 1 (Normal), with menu labels Easy/Normal/Hard/Nightmare. The first
+adapter incorrectly required zero, disabling capture, injection and FOV on
+Normal and higher difficulties. The gate was removed; difficulty is independent
+of gameplay eligibility. Its address and original default are retained in the
+ROM evidence as `skill` and `default_skill`.
+
+Generation retained four translated originals with 1,402 ready functions and 58
+SDK hooks. This is static evidence only: no standalone tests were added, and
+MSVC Debug compiles and links. Release has not been rebuilt and the game has not
+been launched. Gameplay and combined F7 acceptance remain.

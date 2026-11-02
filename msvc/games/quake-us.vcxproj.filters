@@ -7,6 +7,15 @@
     <None Include="$(RecompRoot)games\quake-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\quake-us\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\quake-us\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\quake-us\controls_analysis.py">
+      <Filter>Source Files</Filter>
+    </None>
     <ClCompile Include="$(RecompRoot)games\quake-us\debug\app.c">
       <Filter>Source Files\debug</Filter>
     </ClCompile>
