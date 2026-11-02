@@ -24,6 +24,11 @@ Use a desktop Vulkan session and a wall-time limit during investigation;
 `--frames` counts host presentations, not game progress. Debug supports shared
 crash reports, `--trace-calls`, `--input`, `--capture-every` and `--wav`.
 Routine diagnostic output stays in Debug. Replay frames count host presentations.
+The Debug workflow promotes published live modules and reviews bounded batches
+of missing-function tables and roots when checked evidence changes. Accepted
+entries are saved in `profile.toml`; routine builds reuse them without another
+Codex call. Use the `candidate-review-tables` or `candidate-review-roots` CMake
+target to review another batch explicitly.
 
 Cartridge saves use 32 KiB SRAM at `local/saves/re2-us-v1.sra` (override with
 `--save`). The previous `.mpk` path was a Controller Pak image and is kept

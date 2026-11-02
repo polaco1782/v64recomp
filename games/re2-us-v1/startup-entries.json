@@ -596,6 +596,68 @@
       "origin": "checked-root",
       "sha256": "743ed7772817bd8c5180151cce6a766a0c4e6ac00c4c377c4685e08694cfb1db",
       "evidence": "Enemy type 0x10: slot entry initialized by 0x800324a8, selected/stored in actor handler table by 0x8003287c, called with actor a0 at 0x80065304/0x8006534c; slot 1 is record 11 plus complete record 39 byte patches."
+    },
+    {
+      "vram": 2147834280,
+      "origin": "checked-root",
+      "sha256": "7dacaa487fea6d5a76fe4f640d78e66e434d25ba942a22aa76a1abe698e067cb",
+      "evidence": "Actor no-op callback at 0x800559a8 (jr ra; nop), stored by 0x80055854 in actor +0x2a4 after address materialization at 0x80055838/0x80055850; consumed by JALR at 0x8009aa98 after load from actor +0x2a4 at 0x8009aa8c."
+    },
+    {
+      "section": ".overlay39",
+      "vram": 2149027008,
+      "origin": "checked-root",
+      "sha256": "892f651fb751a4df1464cee984d4384288a510ba14a1a58d591371afa3533afc",
+      "evidence": "ROM-checked function table at 0x8017b3dc has 0x80178cc0 in slots 0 and 1; 0x80178c44 loads actor state byte +5 and calls through it at 0x80178c6c. Entry follows the 0x80178cb8 return and begins a stack frame. Local switch at 0x80178d54 is bounded by unsigned state <7 at 0x80178d34 and has a checked seven-target table at 0x8017aa68."
+    },
+    {
+      "vram": 2147857624,
+      "origin": "checked-root",
+      "sha256": "35a83a2faedc6b1704790632b692dc2975ad25f15dcbdc3710b98349bc704691",
+      "evidence": "Three direct JALs at 0x8005ae3c, 0x8005af58 and 0x8005b074 pass record a0, selector a1 and output pointers a2/a3. Entry follows the 0x8005b4d0 return; its seven-way local switch at 0x8005b520 is bounded by unsigned index <7 at 0x8005b504, with ROM-checked table 0x800b9090. All seven targets converge on the return at 0x8005b694; next function begins at 0x8005b69c."
+    },
+    {
+      "vram": 2147858076,
+      "origin": "checked-root",
+      "sha256": "ea1620dc5dfe726065fd1212343abbd1f078d9675687b884823d0efcfc98f8c1",
+      "evidence": "Direct JALs at 0x8005aea4, 0x8005afc0 and 0x8005b0dc target 0x8005b69c from the same main-code region. Entry follows the 0x8005b694 return and delay slot, opens a 0xa0-byte stack frame, and restores saved registers before returning at 0x8005b928; the next known function starts at 0x8005b930."
+    },
+    {
+      "section": ".overlay39",
+      "vram": 2149029652,
+      "origin": "checked-root",
+      "sha256": "aeda44cd4332b70180f05ad1bc18d8f3864e24cb21b1e3b21d91588e2f6f8111",
+      "evidence": "ROM-checked two-entry function table at 0x8017b3ec contains 0x80179714 in both slots; 0x8017969c loads actor state byte +5 and calls through it at 0x801796b0. Entry follows return at 0x8017970c with delay slot at 0x80179710 and opens a 0x30-byte stack frame. Its local switch at 0x80179764 is bounded by unsigned state <7 at 0x80179744; all seven targets are pinned by the checked table at 0x8017aab8."
+    },
+    {
+      "vram": 2147984344,
+      "origin": "checked-root",
+      "sha256": "64eaf3db89b7b0a7a378bc522ccec22c5747333336b75927186d05f78e5c09f4",
+      "evidence": "ROM-verified slot 8 at 0x8011a924 in the callback array based at 0x8011a904 points to 0x8007a3d8. The 0x80079c98 JALR loads the slot after indexing actor byte +8 minus 0x40. Entry is a separate jr ra; nop stub after the 0x8007a3d0 return and before the 0x8007a3e0 stack-framed function."
+    },
+    {
+      "vram": 2147776696,
+      "origin": "checked-root",
+      "sha256": "58fce2a03dcb13a342948936b734a61ae6965feb0bd0a29c01a50eb01278f41f",
+      "evidence": "Direct JALs at 0x8009405c and 0x800985e0 encode 0x800478b8. This separate three-instruction leaf stores a1/a2 as halfwords at a0+4/+6 and returns; it follows the 0x800478b0 return and 0x800478b4 delay slot."
+    },
+    {
+      "vram": 2147794796,
+      "origin": "checked-root",
+      "sha256": "52188cce5284f0ac4ab31cf42468c7fdbce5d2c91fae3e9299a70549361bffed",
+      "evidence": "Direct JAL at 0x8008c2ec in the published 0x8008c25c caller encodes 0x8004bf6c. Entry follows the 0x8004bf64 return and delay slot, opens a 0x30-byte stack frame, and restores saved registers before returning at 0x8004c214; the next known function starts at 0x8004c21c."
+    },
+    {
+      "vram": 2148103012,
+      "origin": "checked-root",
+      "sha256": "455cdff01b721e0e3916f4431329976e24b25117320f673e2c3e2e637bd4a167",
+      "evidence": "Direct JALs at 0x8008db18, 0x8008db30 and 0x8008ddfc in the checked 0x8008d8a4 callback path encode 0x80097364. The entry follows the 0x8009735c return and delay slot, opens a 0x38-byte stack frame, and returns at 0x80097570 with delay slot at 0x80097574; the next function begins at 0x80097578."
+    },
+    {
+      "vram": 2148103544,
+      "origin": "checked-root",
+      "sha256": "5c004b6e21ce8c4a9edbcb21df06fee394119e58693768c91dcb3e2e924e4756",
+      "evidence": "Direct JAL at 0x8008dd7c in the checked 0x8008d8a4 callback path encodes 0x80097578. The separate body follows the 0x80097570 return and 0x80097574 delay slot, opens a 0x38-byte stack frame, and returns at 0x8009775c with delay slot at 0x80097760; the next function starts at 0x80097764."
     }
   ]
 }
