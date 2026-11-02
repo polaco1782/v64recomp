@@ -32,7 +32,7 @@ static void read_replay(void) {
                             fabs(dx) <= 100000 && fabs(dy) <= 100000 && x >= -1 && x <= 1 && y >= -1 && y <= 1 &&
                             (active == 0 || active == 1), "invalid GoldenEye mouse replay", 0);
     next_move = previous_move = step;
-    replay_frame = (RecompMouseFrame){dx, dy, (int8_t)x, (int8_t)y, active != 0};
+    replay_frame = (RecompMouseFrame){dx, dy, (int8_t)x, (int8_t)y, active != 0, 0, 0};
 }
 #endif
 static void write_float(Runtime *rt, uint32_t address, float value) {
