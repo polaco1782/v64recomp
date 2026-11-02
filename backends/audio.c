@@ -684,12 +684,6 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
         recomp_fail("audio DSP task did not finish", list);
     a->stats.tasks++;
 }
-void recomp_audio_execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
-    owner(a);
-    if (a->microcode == RECOMP_AUDIO_MUSYX_V1)
-        recomp_fail("MusyX requires subframe descriptors, not ABI1 commands", list);
-    execute_abi1(a, list, bytes);
-}
 static void execute_musyx(RecompAudio *a, uint32_t list, uint32_t count) {
     if (!count || count > 64)
         recomp_fail("invalid MusyX subframe count", list);

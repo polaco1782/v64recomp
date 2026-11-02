@@ -78,7 +78,7 @@ map, zooms it, moves, and toggles between the map and 3D gameplay twice.
 
 ```sh
 ./build/hexen-us-debug/bin/hexen-us --frames 4500 \
-  --input games/hexen-us/debug/automap.txt --capture-every 120 \
+  --input local/replays/hexen-us-automap.txt --capture-every 120 \
   --wav build/hexen-us-debug/automap.wav
 ```
 
@@ -96,7 +96,7 @@ For Release keyboard replay and window captures, use the shared desktop tool:
 ```sh
 .venv/bin/python tools/desktop_replay.py \
   --executable build/hexen-us-release/bin/hexen-us --frames 4500 \
-  --input games/hexen-us/debug/automap.txt \
+  --input local/replays/hexen-us-automap.txt \
   --output build/hexen-us-release/acceptance-map \
   --capture-at 56 --capture-at 58 --capture-at 62 --capture-at 65 --capture-at 73
 ```
@@ -119,12 +119,12 @@ then clears the remaining background with a maximum-primitive-depth rectangle.
 The shared RT64 build corrects primitive Z from inclusive UNORM to unsigned
 0.15 fixed point, so that rectangle passes `LESS` against cleared depth outside
 the sky masks. See [the shared renderer correction](../../docs/recompilation.md).
-`debug/sky-depth.txt` reaches the first level, backs into the courtyard and turns
+`local/replays/hexen-us-sky-depth.txt` reaches the first level, backs into the courtyard and turns
 for a focused rendering replay:
 
 ```sh
 ./build/hexen-us-debug/bin/hexen-us --frames 3300 \
-  --input games/hexen-us/debug/sky-depth.txt
+  --input local/replays/hexen-us-sky-depth.txt
 ```
 
 Debug and Release passed 55-second first-level runs with movement and turning.
@@ -170,9 +170,10 @@ scanner. These commands prepare and verify the analysis image automatically:
   --target 0x800dff00 --data .game:0x80130e70:0x80131008
 ```
 
-`release/` and `debug/` have independent app entry points. Shared headers,
-adapters, `generate.py`, `profile.toml` and inventories live in this parent folder.
-Generated C stays in the selected build directory; private ROM/save data stays in
-`local/`.
+`main.c` contains the entry point and lifecycle for both builds. Headers,
+adapters, generation helpers and maintained replay inputs live beside it.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md), and [support status](../../docs/status.md).
+
+Replay commands above use private input files under `local/replays/`; create or
+restore those recordings before running them. They are not shipped with the port.

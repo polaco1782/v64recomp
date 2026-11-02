@@ -60,4 +60,4 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         digest = ','.join(str(b) for b in bytes.fromhex(overlay['sha256']))
         lines.append(f'    {{{section}, 0x{overlay["vram"]:x}, 0x{overlay["size"]:x}, {{{digest}}}}},')
     lines += ['};']
-    (output / 'banjo_config.h').write_text('\n'.join(lines) + '\n')
+    (output / 'game_config.h').write_text('\n'.join(lines) + '\n')

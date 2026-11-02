@@ -66,7 +66,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'static const {ctype} hexen_{tag}_config = {{')
         lines.extend(f'    .{k}=UINT32_C(0x{v:x}),' for k,v in profile[name].items())
         lines.append('};')
-    (output / 'hexen_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     lines = ['/* Generated from verified Hexen input operands. */']
     lines.extend(f'#define HEXEN_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['input_adapter']['bindings'])

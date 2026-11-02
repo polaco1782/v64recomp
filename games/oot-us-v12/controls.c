@@ -60,7 +60,7 @@ void oot_controls_init(void (*poll)(Runtime *, void *)) {
     const char *setting = getenv("RECOMP_OOT_MOUSE");
     mouse_enabled = !setting || strcmp(setting, "0");
 #ifdef RECOMP_DEBUG
-    if (getenv("RECOMP_OOT_INPUT"))
+    if (recomp_game_replaying())
         mouse_enabled = false;
 #endif
     sensitivity = 0.08;

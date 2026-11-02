@@ -24,7 +24,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.append('static const uint32_t boot_parameters[][2] = {')
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
-    (output / 'quake_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     lines = ['/* Verified Quake US command, projection and culling operands. */']
     for binding in profile['controls']['bindings']:
         value = binding['value']

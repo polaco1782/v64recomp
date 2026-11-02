@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\duke-zero-hour-us\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\duke-zero-hour-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\duke-zero-hour-us\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\duke-zero-hour-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\duke-zero-hour-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\duke-zero-hour-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\duke-zero-hour-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\duke-zero-hour-us\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\duke-zero-hour-us\run.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\duke-zero-hour-us\run.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\duke-zero-hour-us\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -50,12 +41,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{15863D4E-A6E3-5A1E-BD9A-959DDD3B8676}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{1BB456A7-7990-5C90-B3B2-B7185FF989F2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{25283381-7F3E-5B71-BDAD-D1DD9B5C9960}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

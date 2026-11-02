@@ -24,19 +24,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\audio.h" />
     <None Include="$(RecompRoot)games\banjo-kazooie-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\banjo-kazooie-us\debug\import_reference.py" />
+    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\audio.h" />
     <None Include="$(RecompRoot)games\banjo-kazooie-us\generate.py" />
+    <None Include="$(RecompRoot)games\banjo-kazooie-us\import_reference.py" />
+    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\main.c" />
     <None Include="$(RecompRoot)games\banjo-kazooie-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\run.c" />
-    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\run.h" />
     <None Include="$(RecompRoot)games\banjo-kazooie-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\banjo-kazooie-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\banjo-kazooie-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\banjo-kazooie-us\functions.c')" />

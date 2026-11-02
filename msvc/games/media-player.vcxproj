@@ -27,18 +27,10 @@
     <None Include="$(RecompRoot)games\media-player\CMakeLists.txt" />
     <ClCompile Include="$(RecompRoot)games\media-player\codec.c" />
     <ClInclude Include="$(RecompRoot)games\media-player\codec.h" />
-    <ClCompile Include="$(RecompRoot)games\media-player\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\media-player\debug\validate_audio.py" />
     <None Include="$(RecompRoot)games\media-player\generate.py" />
-    <ClCompile Include="$(RecompRoot)games\media-player\player.c" />
-    <ClInclude Include="$(RecompRoot)games\media-player\player.h" />
+    <ClCompile Include="$(RecompRoot)games\media-player\main.c" />
     <None Include="$(RecompRoot)games\media-player\prepare.py" />
     <None Include="$(RecompRoot)games\media-player\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\media-player\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="$(RecompBuildDir)\generated\media-player\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\media-player\functions.c" Condition="Exists('$(RecompBuildDir)\generated\media-player\functions.c')" />
     <ClInclude Include="$(RecompBuildDir)\generated\media-player\*.h" />

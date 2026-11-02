@@ -27,7 +27,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.append('static const uint32_t boot_parameters[][2] = {')
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
-    (output / 'duke_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     lines = ['/* Verified Duke FOV operands; generated from profile.toml. */']
     lines.extend(f'#define DUKE_FOV_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['fov_adapter']['bindings'])

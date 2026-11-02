@@ -4,7 +4,7 @@
 
 Debug and Release render the intro/title and navigate Match Race into Select
 Rider, including the character animation and stats. Both complete the
-3,000-frame `debug/first-menu.txt` replay with exit 0 and no timeout:
+3,000-frame `first-menu.txt` replay with exit 0 and no timeout:
 
 | Build | Duration | Evidence directory |
 | --- | --- | --- |
@@ -110,7 +110,7 @@ Five JSON/RAM snapshot pairs remain in `local/crashes/1080-us/`:
 For example, recheck the complete menu image with the maintained inspector:
 
 ```sh
-.venv/bin/python games/1080-us/debug/inspect_uso.py \
+.venv/bin/python games/1080-us/inspect_uso.py \
   --rom local/1080.ju.z64 \
   --crash local/crashes/1080-us/crash-162862-23124539313485.json \
   --target 0x80264c2c --output build/1080-us-debug/mgrproc-evidence.json

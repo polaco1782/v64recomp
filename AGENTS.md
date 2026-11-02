@@ -13,15 +13,11 @@ games/<game>/
   README.md
   profile.toml
   generate.py
+  main.c                  # single entry point and game lifecycle, both builds
   audio.h                 # when needed
   *.h, *.c, *.cpp, *.py    # headers, shared adapters and generation helpers
   *.json                  # checked inventories and game metadata, when needed
-  debug/
-    app.c
-    ...                   # Debug-only sources, replay inputs and diagnostics
-  release/
-    app.c
-    ...                   # Release-only sources
+  *.txt                   # maintained replay inputs, when needed
 ```
 
 - Keep one complete `profile.toml` per game. Put ROM identity, mappings,
@@ -34,16 +30,35 @@ games/<game>/
   in this same profile; do not split them into JSON configuration sidecars.
   Preparation helpers resolve compressed data from these declarations. JSON
   code/entry inventories remain separate ROM-bound evidence files.
-- Keep all game headers and shared game code in `games/<game>/`. Both modes
-  use the parent folder; neither mode may depend on the other mode's folder.
-  Keep independent `debug/app.c` and `release/app.c` entry points.
+- Keep all game code, headers, generation helpers and maintained replay inputs
+  directly in `games/<game>/`. Do not create `debug/` or `release/` source folders,
+  `app.c`, separate mode entry points, or a `run.c`/`run.h` launcher layer.
+- Put the single `int main(int argc, char **argv)` and game lifecycle in `main.c`.
+  Organize it as includes, game state, static helpers/native hooks, then `main`:
+  parse options, initialize runtime/ROM/services/backends, boot, run the frame
+  loop, and tear down. Share this control flow between both configurations.
+  Use small `#ifdef RECOMP_DEBUG` blocks only for genuinely game-specific
+  diagnostics; do not duplicate a whole main function or loop under `#else`.
+  Keep distinct input, graphics, pager or codec adapters in root-level files
+  only when they have an independent responsibility. Make private helpers static.
+- Use `recomp_game_options`, `recomp_game_rom`, `recomp_game_input`,
+  `recomp_game_present` and `recomp_game_audio_create` from `game.h`.
+  The shared game layer owns Debug options, controller replay, captures and audio
+  recording; core dispatch owns call tracing. Debug input adapters use
+  `recomp_game_replaying()` to disable live mouse overrides during replay. Do not
+  add per-game argument translation, controller replay parsers, report writers
+  or standalone validation harnesses.
+  Release keeps ROM/runtime correctness checks and shared crash reporting.
 - Put `generate.py` and preparation/configuration helpers in the parent folder.
   Export `write_config(profile, metadata, output, startup)` and use the optional
-  hooks supported by `tools/generate_game.py`; keep game-specific generation
-  behavior in the game module rather than adding game-ID branches to the driver.
-- Use `RECOMP_GAME_SOURCES` for shared parent-folder translation units and
-  `RECOMP_GAME_DEBUG_SOURCES` / `RECOMP_GAME_RELEASE_SOURCES` for additional
-  configuration-specific sources. Include `cmake/Game.cmake`; it selects `app.c`.
+  hooks supported by `tools/generate_game.py`. Emit the main boot configuration
+  as `game_config.h` in the generated output directory; keep game-specific
+  generation behavior in the game module rather than adding game-ID branches
+  to the driver.
+- Use `RECOMP_GAME_SOURCES` for additional root-level translation units.
+  Include `cmake/Game.cmake`; it always selects `main.c` and defines
+  `RECOMP_DEBUG` for Debug. Do not add per-mode source lists or list `main.c`
+  again. Build output directories and CMake presets still separate the modes.
 - Keep generated sources in the selected `build/` directory and private ROMs
   and saves in `local/`. Put cross-game services in `runtime/`, `include/`,
   `backends/`, or `tools/` only when their behavior is shared between games.
@@ -58,5 +73,8 @@ games/<game>/
   callbacks, crash-report headers, JSON writers or private assertion handlers.
 
 Before handing off a new game, check that its file layout, CMake source lists,
-tool paths and documentation follow these conventions. Preserve this structure
-even when using an older port or external project as a reference.
+tool paths and documentation follow these conventions. Remove unused scripts,
+temporary checks/tests and superseded helpers after validating the change.
+Run `tools/format.sh`, regenerate the browsable projects with
+`python3 tools/msvc_solution.py`, and verify both build configurations.
+Preserve this structure even when using an older port or external project as a reference.

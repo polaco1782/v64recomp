@@ -37,7 +37,7 @@ void hexen_input_init(void (*poll)(Runtime *, void *)) {
     const char *setting = getenv("RECOMP_HEXEN_MOUSE");
     enabled = !setting || strcmp(setting, "0");
 #ifdef RECOMP_DEBUG
-    if (getenv("RECOMP_HEXEN_INPUT"))
+    if (recomp_game_replaying())
         enabled = false;
 #endif
     sensitivity = 0.10;

@@ -32,8 +32,8 @@ Dependency DLLs and license notices are copied beside the executable.
 
 **Source Files** and **Header Files** show repository code. Game projects also
 show translated C and generated headers under **Generated Code** once generated;
-reload the project to refresh these after a first build. CMake retains the
-independent `debug/app.c` and `release/app.c` entry points. A project's **Build**,
+reload the project to refresh these after a first build. CMake compiles the
+same `main.c` entry point for Debug and Release. A project's **Build**,
 **Rebuild** and **Clean** commands use `tools/build_msvc_project.ps1`.
 
 The solution generator enables Recomp and every game whose profile's ROM file

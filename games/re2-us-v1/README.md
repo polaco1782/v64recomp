@@ -34,9 +34,8 @@ Cartridge saves use 32 KiB SRAM at `local/saves/re2-us-v1.sra` (override with
 `--save`). The previous `.mpk` path was a Controller Pak image and is kept
 separate. The default controller has no Pak attached.
 
-Game-specific diagnostic tools live in `debug/`: `check_musyx.c`,
-`check_video_dsp.c` and `inspect_overlay.py`. The C source headers include their
-standalone sanitizer build commands; keep generated binaries under `build/`.
+The root-level `inspect_overlay.py` supports ROM-bound overlay investigation.
+Standalone audio/video validation harnesses have been removed.
 The overlay inspector verifies cartridge identity and compares complete decoded
 images against private crash snapshots, without changing checked metadata. For an enemy patch variant, pass e.g.
 `--index 39 --source-index 11`; `--ram` then compares its entire reconstructed

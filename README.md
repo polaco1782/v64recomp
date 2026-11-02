@@ -248,17 +248,17 @@ Cleaning a game removes its local library links while retaining the shared cache
 
 ## Release and debug
 
-`games/<game>/` holds `profile.toml`, `generate.py`, headers, audio profiles and
-shared game adapters, such as paging, graphics extensions and overlay loading.
-Both modes use these adapters and the same checked ROM metadata.
-`games/<game>/release/` holds `app.c` and any additional Release-only sources.
-Release retains correctness checks and crash reporting. It writes no routine
-reports, WAVs, screenshots, RAM captures or call traces during normal play.
+`games/<game>/main.c` contains one entry point, bootstrap and frame loop for
+both builds. Game headers, adapters, generation helpers and maintained replay
+inputs live beside it. There are no per-mode source folders or runner wrappers.
+Small `#ifdef RECOMP_DEBUG` blocks contain any game-specific diagnostics;
+shared replay, capture, audio recording and tracing are provided by the runtime.
+See [the game layout and starter pattern](docs/adding-a-rom.md#7-add-the-native-application-and-cmake-integration)
+when adding a title.
 
-`games/<game>/debug/` holds diagnostic applications, replay inputs and inspection
-tools. Debug includes full symbols, unoptimized game code, call tracing, captures,
-gameplay probes, RT64's F1 inspector and F6 wireframe.
-It retains the existing diagnostic startup behavior and checks.
+Release retains correctness checks and shared crash reporting without routine
+reports or captures. Debug adds symbols, unoptimized game code, tracing,
+optional captures, RT64's F1 inspector and F6 wireframe.
 Both modes reuse RT64's optimized `RelWithDebInfo` build by default. Game code,
 the shared runtime and native adapters retain their selected configuration flags.
 
@@ -363,8 +363,7 @@ The technical documentation covers each part:
 ## Layout
 
 - `games/<game>/`: shared headers, adapters, `generate.py` and `profile.toml`.
-- `games/<game>/release/`: playable app and Release-only sources.
-- `games/<game>/debug/`: trace apps, captures/replays and inspection tools.
+- `games/<game>/main.c`: shared Debug/Release application and game lifecycle.
 - `games/<game>/*.json`: checked ROM inventories and game-specific metadata.
 - `runtime/`, `include/`, `backends/`: shared runtime and rendering/audio services.
 - `cmake/`, `CMakePresets.json`: game selection, generation, build and run integration.

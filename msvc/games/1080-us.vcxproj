@@ -24,23 +24,26 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\1080-us\audio.h" />
     <None Include="$(RecompRoot)games\1080-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\1080-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\1080-us\debug\inspect_uso.py" />
+    <ClInclude Include="$(RecompRoot)games\1080-us\audio.h" />
+    <None Include="$(RecompRoot)games\1080-us\discover_symbols.py" />
+    <None Include="$(RecompRoot)games\1080-us\game-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\generate.py" />
+    <None Include="$(RecompRoot)games\1080-us\genproc-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\gui-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\heli-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\inspect_uso.py" />
+    <ClCompile Include="$(RecompRoot)games\1080-us\main.c" />
+    <None Include="$(RecompRoot)games\1080-us\mgrproc-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\n64proc-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\1080-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\1080-us\run.c" />
-    <ClInclude Include="$(RecompRoot)games\1080-us\run.h" />
+    <None Include="$(RecompRoot)games\1080-us\snoweffects-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\startup-entries.json" />
+    <None Include="$(RecompRoot)games\1080-us\titproc-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\uso-entries.json" />
     <None Include="$(RecompRoot)games\1080-us\uso-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\uso.py" />
+    <None Include="$(RecompRoot)games\1080-us\uso_symbols.py" />
     <ClCompile Include="$(RecompBuildDir)\generated\1080-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\1080-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\1080-us\functions.c')" />
     <ClInclude Include="$(RecompBuildDir)\generated\1080-us\*.h" />

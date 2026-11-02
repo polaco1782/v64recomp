@@ -14,7 +14,7 @@ complete decoded image hash after the original inflater returns.
 The opening movie and title menu render. A completed Debug run recorded
 1,800 presentations, 3,006 graphics tasks, 734,208 audio frames and audio peak
 24,273; its WAV contains nonzero stereo PCM. Gameplay and audible quality
-remain unaccepted. The deterministic `debug/options.txt` replay reaches
+remain unaccepted. The deterministic `options.txt` replay reaches
 overlay 5's controller configuration. Before that mapping was added,
 the loader stopped at `0x8017b410` with a complete 0x5200-byte decoded image.
 The captured image matched overlay 5 exactly. Its callback `0x8017b4a4` comes
@@ -31,11 +31,11 @@ Retained private evidence:
 Reproduce the comparison from the repository root:
 
 ```sh
-.venv/bin/python games/re2-us-v1/debug/inspect_overlay.py --index 5 \
+.venv/bin/python games/re2-us-v1/inspect_overlay.py --index 5 \
   --ram local/crashes/re2-us-v1/crash-2779708-886167805170423.json.rdram.bin
 ```
 
-The old long Down hold repeated into Options. `debug/new-game.txt` now uses
+The old long Down hold repeated into Options. `new-game.txt` now uses
 a brief Down pulse to select New Game and confirms difficulty and character.
 The character-selection freeze was a missing native SDK binding: thread 4
 waited at `0x8009bfa4` for queue `0x80132140` after translated `osEPiStartDma`
@@ -59,7 +59,7 @@ The replay now reaches main module-table entries `0x800995fc` (thread 4) and
 use that same verified path. Their bounded switches are pinned in the profile.
 The matrix helpers require signed 64-bit `DADD`; the shared emitter now supports
 it with overflow failure and keeps trapping operations when the destination is
-`$zero`. `tools/check_dadd.py` exercises ordinary results, aliases, overflow,
+`$zero`. Earlier focused validation exercised ordinary results, aliases, overflow,
 zero destinations and delay slots under UBSan at O0/O2 in both configurations.
 
 Gameplay resource inflation next reached the fixed-Huffman allocator callback
@@ -81,7 +81,7 @@ and the pre-fix `gameplay-validation.log` captured the ordering (the replay log
 is overwritten by later runs). The shared scheduler now polls task receipts
 and drains their event FIFO before clock/platform services enqueue elapsed VI.
 The second drain still delivers newly generated device events. The synthetic
-`tools/check_task_event_order.py` uses real task, queue, clock and VI services,
+Earlier task-event validation used real task, queue, clock and VI services,
 including a one-message queue that previously lost SP entirely. It fails with
 the pre-fix scheduler and passes the patched Debug runtime at O0/O2.
 Both Debug's 4,800-presentation replay and a 295-second Release run passed
@@ -95,7 +95,7 @@ and state 3's single handler at `0x8010dd00` have separate consumers. These
 arrays and seven bounded local switches are now checked in the profile.
 Private diagnosis and disassembly are under `build/re2-us-v1-sdk/actor-update/`.
 The later enemy/room coverage builds with 1,579 ready and 62 hooked functions, zero unsupported.
-The current `debug/play-through.txt` replay continues through the complete
+The current `play-through.txt` replay continues through the complete
 new-game intro and applies movement/action inputs after the Start skip to test the street.
 Keep RE2 diagnostics and replay
 inputs in this source directory; private reports, binaries and ROM/RAM data
@@ -116,7 +116,7 @@ The next Release failure at `0x8016e880` came from the enemy dispatcher
 `0x80065304`, not module overlay 7. All 52,112 decoded bytes match record 11
 plus record 39's 1,910 raw byte patches. The patched SHA-256 is
 `3d853615fad8b19f524510d72c6344c340827ed4a0768c45671bd137c5224bc2`.
-`debug/inspect_overlay.py --index 39 --source-index 11 --ram` verifies that
+`inspect_overlay.py --index 39 --source-index 11 --ram` verifies that
 comparison against `crash-2831701-898719169875975.json.rdram.bin`.
 Both fixed-slot images are prepared from declarations in `profile.toml`; the
 original game inflates and patches RAM at runtime. Enemy inflater calls use

@@ -33,7 +33,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.append('static const uint32_t boot_parameters[][2] = {')
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
-    (output / 'quake2_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     lines = ['/* Generated from verified Quake II input operands. */']
     lines.extend(f'#define Q2_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['input_adapter']['bindings'])

@@ -48,7 +48,7 @@ void quake2_input_init(void (*poll)(Runtime *, void *)) {
     const char *setting = getenv("RECOMP_QUAKE2_MOUSE");
     enabled = !setting || strcmp(setting, "0");
 #ifdef RECOMP_DEBUG
-    if (getenv("RECOMP_QUAKE2_INPUT"))
+    if (recomp_game_replaying())
         enabled = false;
 #endif
     sensitivity = 0.08;

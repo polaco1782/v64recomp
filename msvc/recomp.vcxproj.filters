@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
+    <None Include="$(RecompRoot)CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)CMakePresets.json">
+      <Filter>Configuration</Filter>
+    </None>
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -52,6 +58,12 @@
     <None Include="$(RecompRoot)cmake\PackUPX.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
     <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
@@ -63,18 +75,6 @@
     </None>
     <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake">
       <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
-    <None Include="$(RecompRoot)CMakeLists.txt">
-      <Filter>Configuration</Filter>
-    </None>
-    <None Include="$(RecompRoot)CMakePresets.json">
-      <Filter>Configuration</Filter>
     </None>
     <ClInclude Include="$(RecompRoot)include\cheats.h">
       <Filter>Header Files\include</Filter>
@@ -109,6 +109,9 @@
     <ClInclude Include="$(RecompRoot)include\recomp_jpeg.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\recomp_live.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\renderer.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -136,9 +139,6 @@
     <ClCompile Include="$(RecompRoot)runtime\debug.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)runtime\debug_game.c">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\dispatch.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
@@ -155,6 +155,9 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\io.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\live_patch.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\memory.c">
@@ -184,34 +187,16 @@
     <ClCompile Include="$(RecompRoot)runtime\video.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
+    <None Include="$(RecompRoot)tools\auto_live_function.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\build_live_function.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\build_msvc_project.ps1">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\build_steamdeck.sh">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_branch_link.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_function_candidates.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_multiply.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_overflow.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_overlays.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_registered_calls.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_teq.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_timing.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\code_inventory.py">
@@ -298,10 +283,22 @@
     <None Include="$(RecompRoot)tools\package_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\probe_function_roots.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\profile_execution.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\profile_frames.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\promote_live_patches.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\review_candidates.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\review_discovery.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\setup_windows.ps1">

@@ -144,8 +144,14 @@ struct Runtime {
 
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t, const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
+#ifdef RECOMP_DEBUG
+extern bool recomp_debug_trace_calls;
+void recomp_debug_trace_call(uint32_t address);
+#endif
 static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #ifdef RECOMP_DEBUG
+    if (recomp_debug_trace_calls)
+        recomp_debug_trace_call(address);
     rt->recent_calls[rt->recent_call_next] = address;
     rt->recent_call_next = (rt->recent_call_next + 1) % 128;
     if (rt->recent_call_count < 128)

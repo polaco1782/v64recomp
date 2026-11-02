@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\hexen-us\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\hexen-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\hexen-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\hexen-us\fov.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -28,12 +25,6 @@
     <ClInclude Include="$(RecompRoot)games\hexen-us\graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\hexen.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\hexen-us\hexen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="$(RecompRoot)games\hexen-us\hexen_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,12 +34,12 @@
     <None Include="$(RecompRoot)games\hexen-us\lzh.py">
       <Filter>Source Files</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\hexen-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\hexen-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\hexen-us\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -74,12 +65,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{75F77DEA-D12E-5E46-A23C-EC0D16F73D06}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{1FECD803-8DD8-5E30-A336-D03686A0AFB5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{ABF1BDD8-952A-59A6-BD60-43F4C5ADAF49}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

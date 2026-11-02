@@ -15,7 +15,7 @@ weapon zoom may depend on the original FOV.
 ## 1. Establish the existing implementation
 
 Read `AGENTS.md`, `SKILL.md`, the game's README, `profile.toml`, `generate.py`,
-both `app.c` entry points and any existing graphics/input adapters. Preserve the
+the shared `main.c` entry point and any existing graphics/input adapters. Preserve the
 working tree and private ROM/save files. Do not assume two games use the same
 addresses, engine or ABI.
 
@@ -188,7 +188,7 @@ Keep all game-specific work under `games/<game>/`:
    `fov-hooks.json` report under the selected build directory.
 4. Implement game math/wrappers in parent-folder `fov.c`/`fov.h` (or the
    game's combined control adapter, as in OoT). Initialize shared `RecompFov`
-   state with the checked native vertical angle/aspect in both apps. Bind the
+   state with the checked native vertical angle/aspect in `main.c` for both builds. Bind the
    adjustment callback after creating the renderer. Recompute projection,
    zoom, sprite and visibility scalars together; keep exact original behavior
    at the minimum. If CPU tables are cached, rebuild them live too.

@@ -30,16 +30,14 @@ cmake --workflow --preset conker-us-debug
 ```
 
 The 300-presentation replay exits successfully. Longer runs are still being
-brought up through the intro. Debug keeps its
-report/captures under `build/conker-us-debug/debug-output/conker-us/`; crashes include a JSON
+brought up through the intro. Optional Debug captures go under `build/conker-us-debug/debug-output/conker-us/`; crashes include a JSON
 report and RDRAM under ignored `local/crashes/conker-us/`. Release uses the
 `conker-us-release` presets and shares the runtime adapter.
 Both copies of Conker's `osContInit` use the shared native hook. Its optional
 private SI queue configuration creates the queue at `0x80042a78`. This addresses the observed unknown-queue failure
 at `0x80042a78`; reaching that scene again has not yet been verified.
-Debug logs final thread states and PCs. Set `RECOMP_CONKER_RAM` to an output
-filename to retain a word-swapped RDRAM snapshot after a bounded run; this also
-supports diagnosing stalls that do not trigger the crash reporter.
+Use the shared debugger/overlay for live thread state and GDB for stalls.
+The former per-game final report and RAM-dump harness have been removed.
 
 Generate a fresh raw CPU report independently of the explicit runtime boundaries:
 
@@ -56,7 +54,7 @@ profile remains bound to the original cartridge SHA-1. Full code classification
 is incomplete. The normal build emits a `pending-boundaries.json` inventory;
 those failing functions do not implement the missing behavior.
 
-`debug/analyze_switches.py` reports bounded switch candidates for manual review.
+`analyze_switches.py` reports bounded switch candidates for manual review.
 It verifies the prepared image and table destinations and never edits metadata.
 
 The graphics adapter uses RT64's RAM-backed framebuffer copies because the intro

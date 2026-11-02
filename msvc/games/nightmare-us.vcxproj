@@ -24,21 +24,15 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\nightmare-us\audio.h" />
     <None Include="$(RecompRoot)games\nightmare-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\nightmare-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\nightmare-us\debug\gameplay-input.json" />
-    <None Include="$(RecompRoot)games\nightmare-us\debug\new-game-input.json" />
+    <ClInclude Include="$(RecompRoot)games\nightmare-us\audio.h" />
+    <None Include="$(RecompRoot)games\nightmare-us\gameplay-input.json" />
     <None Include="$(RecompRoot)games\nightmare-us\generate.py" />
-    <ClInclude Include="$(RecompRoot)games\nightmare-us\hooks.h" />
     <ClCompile Include="$(RecompRoot)games\nightmare-us\input.c" />
+    <ClCompile Include="$(RecompRoot)games\nightmare-us\main.c" />
+    <None Include="$(RecompRoot)games\nightmare-us\new-game-input.json" />
     <ClInclude Include="$(RecompRoot)games\nightmare-us\nightmare_input.h" />
     <None Include="$(RecompRoot)games\nightmare-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\nightmare-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\nightmare-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\nightmare-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\nightmare-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\nightmare-us\functions.c')" />

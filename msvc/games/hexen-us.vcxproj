@@ -24,26 +24,19 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\hexen-us\audio.h" />
     <None Include="$(RecompRoot)games\hexen-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\hexen-us\audio.h" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\fov.c" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\fov.h" />
     <None Include="$(RecompRoot)games\hexen-us\fov_analysis.py" />
     <None Include="$(RecompRoot)games\hexen-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\graphics.cpp" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\graphics.h" />
-    <ClCompile Include="$(RecompRoot)games\hexen-us\hexen.c" />
-    <ClInclude Include="$(RecompRoot)games\hexen-us\hexen.h" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\hexen_input.h" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\input.c" />
     <None Include="$(RecompRoot)games\hexen-us\lzh.py" />
+    <ClCompile Include="$(RecompRoot)games\hexen-us\main.c" />
     <None Include="$(RecompRoot)games\hexen-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\hexen-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\hexen-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\hexen-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\hexen-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\hexen-us\functions.c')" />

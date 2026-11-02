@@ -66,18 +66,10 @@ add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_GENERATED_HEADERS}
     COMMENT "Checking ${RECOMP_GAME} CPU source generation" USES_TERMINAL VERBATIM)
 set(RECOMP_LOCAL "${CMAKE_SOURCE_DIR}/local")
 configure_file("${CMAKE_SOURCE_DIR}/cmake/game_defaults.h.in" "${RECOMP_GENERATED}/game_defaults.h" @ONLY)
-set(RECOMP_CONFIG_DIR "release")
-set(RECOMP_CONFIG_SOURCES ${RECOMP_GAME_RELEASE_SOURCES})
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(RECOMP_CONFIG_DIR "debug")
-    set(RECOMP_CONFIG_SOURCES ${RECOMP_GAME_DEBUG_SOURCES})
-endif()
-set(RECOMP_APP "${RECOMP_CONFIG_DIR}/app.c")
-add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/${RECOMP_APP}" ${RECOMP_CPU_SOURCES}
-    "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES} ${RECOMP_CONFIG_SOURCES})
+add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES}
+    "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES})
 file(GLOB RECOMP_GAME_BROWSE CONFIGURE_DEPENDS "${RECOMP_GAME_DIR}/*.h"
-    "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.py"
-    "${RECOMP_GAME_DIR}/${RECOMP_CONFIG_DIR}/*.h")
+    "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.py")
 target_sources(${RECOMP_GAME} PRIVATE ${RECOMP_GAME_BROWSE} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/game_defaults.h" "${CMAKE_SOURCE_DIR}/include/game.h")
 set_target_properties(${RECOMP_GAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -88,8 +80,7 @@ if(RECOMP_EMBED_ROM)
         set_source_files_properties("${RECOMP_PACKAGE_DIR}/embedded_rom.c" PROPERTIES COMPILE_OPTIONS "-g0")
     endif()
 endif()
-target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}"
-    "${RECOMP_GAME_DIR}" "${RECOMP_GAME_DIR}/${RECOMP_CONFIG_DIR}")
+target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}" "${RECOMP_GAME_DIR}")
 target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_RT64 RECOMP_WITH_AUDIO)
 if(MSVC)
     # Translated MIPS intentionally narrows register values and retains labels
@@ -134,7 +125,6 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_DEBUG)
-    target_sources(${RECOMP_GAME} PRIVATE "${CMAKE_SOURCE_DIR}/runtime/debug_game.c")
 endif()
 if(RECOMP_GAME STREQUAL "goldeneye-us")
     target_include_directories(${RECOMP_GAME} SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})

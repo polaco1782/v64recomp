@@ -79,7 +79,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'#define BOOT_GAME_SECTION {game_section["id"]}')
     for name,value in profile.get('inspection',{}).items():
         if type(value) is int:lines.append(f'#define GE_INSPECT_{name.upper()} UINT32_C(0x{value:x})')
-    (output / 'goldeneye_boot_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     analysis = profile['input_analysis']
     constants = {'CURRENT_PLAYER': analysis['current_player']['address'],
                  'PROCESS_RETURN': profile['input_adapter']['process_return'],

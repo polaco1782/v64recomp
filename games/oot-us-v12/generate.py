@@ -36,7 +36,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append('static const uint8_t oot_dd_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(dd).digest()) + '};')
         lines.append(f'#define OOT_CODE_SIZE {len(raw)}')
         lines.append('static const uint8_t oot_code_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};')
-    (output / 'oot_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     spec = profile['controls']
     lines = ['/* Verified NTSC 1.2 camera/input operands from profile.toml. */']
     lines.extend(f'#define OOT_CTL_{b["name"].upper()} UINT32_C(0x{b["value"]:x})' for b in spec['bindings'])

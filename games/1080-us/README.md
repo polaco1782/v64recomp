@@ -2,7 +2,7 @@
 
 Partial native port of the shared Japanese/US cartridge. **Debug and Release
 render the intro/title and navigate the first menu into Select Rider.** Both
-completed the 3,000-frame `debug/first-menu.txt` replay with exit 0 and no timeout:
+completed the 3,000-frame `first-menu.txt` replay with exit 0 and no timeout:
 65.7 seconds in Debug and 51.3 seconds in Release. Captures show the rider
 animation and stats. Debug logged 3,491 graphics tasks and 3,000 presentations.
 
@@ -102,7 +102,7 @@ root with either executable:
 RECOMP_LIVE_PATCH_DIR=off RECOMP_LIVE_AUTO=off RECOMP_LIVE_AI=off \
   .venv/bin/python tools/desktop_replay.py \
   --executable build/1080-us-debug/bin/1080-us --frames 3000 \
-  --input games/1080-us/debug/first-menu.txt \
+  --input games/1080-us/first-menu.txt \
   --output build/1080-us-debug/menu-replay --capture-at 48 --timeout 90
 ```
 

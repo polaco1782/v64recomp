@@ -13,10 +13,10 @@ cmake --workflow --preset oot-us-v12-debug
 ./build/oot-us-v12-debug/bin/oot-us-v12 --help
 ```
 
-`release/` contains the playable app and Release-only sources. `debug/` contains
-the original trace/capture harness and inspection tools. Shared headers, adapters,
-`generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
-build directory, and private ROM/save data stays in `local/`.
+`main.c` contains the shared entry point and lifecycle for Debug and Release.
+Headers, adapters, `generate.py`, `profile.toml`, inventories and maintained
+replay inputs live beside it. Generated code stays under the selected build
+directory; private ROMs and saves stay in `local/`.
 
 JPEG tasks decode the game's coefficient buffers into RGBA5551 tiles before
 posting SP completion. The native decoder uses the pinned Mupen64Plus RSP-HLE

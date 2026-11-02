@@ -28,7 +28,7 @@ endif()
 if(NOT CMAKE_BUILD_TYPE MATCHES "^(Release|Debug)$")
     message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Release or Debug")
 endif()
-# Each solution exposes the selected mode: Debug and Release use independent apps.
+# Each solution exposes the selected mode; both compile the same game main.c.
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE STRING "Selected game mode" FORCE)
 endif()

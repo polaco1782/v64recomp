@@ -1,6 +1,6 @@
 #include "codec.h"
 #include "generated.h"
-#include "media_player_config.h"
+#include "game_config.h"
 #include <stdlib.h>
 #ifdef _WIN32
 #include <windows.h>

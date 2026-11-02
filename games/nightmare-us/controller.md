@@ -40,7 +40,7 @@ The adapter is enabled by default in both configurations. Set
 `RECOMP_NIGHTMARE_MOUSE=0` to restore ordinary controller input and keyboard
 bindings. `RECOMP_MOUSE_SENSITIVITY` specifies degrees per mouse count, default
 `0.08`, accepted range `0.001..10`. Vertical inversion has no effect here.
-Debug controller replay through `RECOMP_NIGHTMARE_INPUT` disables the adapter.
+Debug controller replay through `--input` disables the adapter.
 
 Capture releases when gameplay gates fail, the window loses focus or an overlay
 captures input. Esc/F4 can recapture during eligible gameplay. Physical

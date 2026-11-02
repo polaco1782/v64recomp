@@ -17,11 +17,6 @@ $env:RECOMP_TIMING = "build/quake2-debug-$(Get-Date -Format yyyyMMdd-HHmmss).csv
 Remove-Item Env:RECOMP_TIMING
 ```
 
-The ROM-free regression check is `python tools/check_timing.py --cc cl` from a
-Developer PowerShell, or `python3 tools/check_timing.py --cc clang` on Linux. It
-covers exclusive creation, missing/unusable targets, injected header/write
-failures, healthy recording, and shutdown after profiling disables itself.
-
 Spend several seconds in a smooth area and then the slow area before closing
 normally. The CSV is flushed about once per second and receives a final partial
 window on shutdown. Repeat in Release with a different filename for comparison.
@@ -82,9 +77,9 @@ It covers mapping discovery, missing host/guest symbols, GDB, memory corruption
 and the shared diagnostic scripts under `tools/`.
 
 Configure and build with `cmake --workflow --preset <game>-debug`. The binary is
-`build/<game>-debug/bin/<game>`; use `--help` for options. Debug app sources live
-under `games/<game>/debug/`, and generated sources under the build's `generated/`.
-The original positional diagnostic interfaces are also retained for tools.
+`build/<game>-debug/bin/<game>`; use `--help` for options. Both configurations
+compile `games/<game>/main.c`; generated sources live under the build's
+`generated/` directory. Both use the same named command-line options.
 
 RT64 and its bundled dependencies share a build under `build/shared/rt64/` across
 all games and both modes, with separate caches where the Windows CRT differs.
@@ -161,26 +156,31 @@ the compiled guest layout, including for relocated code.
 PC stores; the retained context field holds the scheduler's initial thread entry.
 Release failure boundaries still report their known address directly.
 
-Debug always keeps the game's existing startup checks and final report/capture.
-Artifacts live in `build/<game>-debug/debug-output/<game>/`. Call logging is
-opt-in with `--trace-calls` (or `RECOMP_TRACE_CALLS=1`); it can be very verbose.
+Debug runs the same bootstrap and frame loop as Release. Routine captures are
+opt-in; the old positional launch interface, per-game boot reports and SM64
+scripted validation modes have been removed. Use F12 for the shared cheat menu.
 
-| Option | Availability |
+| Option | Behavior |
 | --- | --- |
-| `--trace-calls` | Guest-call tracing for games other than SM64, plus recent-call crash history. SM64 traces task/game state. |
-| `--input FILE` | All except SM64; whitespace rows: frame, N64 buttons, stick X, stick Y. GoldenEye frames start at 1; others at 0. |
-| `--capture-every N` | Shadow Man, Quake, Duke, Nightmare, OOT; interval in presentations. GoldenEye bounded runs capture every 60 presentations. |
-| `--wav FILE` | All except SM64, whose debug capture writes `audio.wav` automatically. |
-| `--audio-trace FILE` | OOT; host audio queue timing as CSV. |
-| `--mode live/idle/move/jump/interior` | SM64; scripted modes preserve its gameplay diagnostic harness. Bounded checks use 60..600 playable frames. |
-| `--cheat-menu` | SM64 only; session-only original level select. Use F12 for the shared GameShark menu. |
-| `--frames N` | Presentation limit except SM64's scripted modes, which count playable frames. 0 runs until close. |
+| `--trace-calls` | Trace guest calls in core dispatch for every title. Recent-call crash history is always retained in Debug. |
+| `--input FILE` | Controller-zero replay after host input mapping. Decimal rows: frame, N64 buttons, stick X, stick Y. Frames start at 0 for every game; blank lines and `#` comment lines are allowed. |
+| `--capture-every N` | Capture every N presentations to `build/<game>-debug/debug-output/<game>/frame-NNNNNN.ppm`; 0 disables capture. |
+| `--wav FILE` | Record PCM through the shared audio backend; Media Player records its decoded MP3 PCM. |
+| `--audio-trace FILE` | Record shared AI/playback queue timing as CSV. |
+| `--frames N` | Presentation limit; 0 runs until close. Media Player counts decoded MP3 frames. |
 
-The replay JSON files under each game's `debug/` are ROM-bound reference inputs.
-Convert one to the native harness's text input with:
+Replay and screenshots apply to games using the N64 renderer/input helpers.
+Media Player uses its own SDL interface, so `--input`, `--capture-every` and
+`--audio-trace` do not apply to it. Bad Apple has no guest controller input.
+The replay holds the last row until the next specified frame, including after EOF.
+Use a final neutral row when buttons should be released. Malformed values or
+out-of-order frames fail explicitly.
+
+The replay JSON files beside each game's `main.c` are ROM-bound reference inputs.
+Convert one to the shared text input format with:
 
 ```sh
-.venv/bin/python tools/controller_replay.py games/quake-us/debug/gameplay-input.json /tmp/quake-input.txt --game quake-us
+.venv/bin/python tools/controller_replay.py games/quake-us/gameplay-input.json /tmp/quake-input.txt --game quake-us
 ./build/quake-us-debug/bin/quake-us --input /tmp/quake-input.txt --frames 900
 ```
 
@@ -189,8 +189,7 @@ wireframe. Texture dumps are enabled only
 in debug via `RECOMP_TEXTURE_DUMP`. `RECOMP_DUKE_PERFORMANCE=1` and
 `RECOMP_NIGHTMARE_PERFORMANCE=1` retain those games' timing logs.
 
-SM64's inspection scripts inspect task traces, ROM assets, display lists and
-interior captures; OOT's callback analyzer proposes roots for checked inventories.
+OOT's root-level callback analyzer proposes roots for checked inventories.
 The shared crash inspector reads both release and debug reports. Use the
 matching executable and generated sources to resolve addresses accurately.
 
@@ -234,7 +233,7 @@ and the tool explains why host disassembly is unavailable.
 
 Every game uses the same core failure calls: `recomp_fail(message, address)` and
 `recomp_game_require(condition, message, address)`. The shared ROM loader installs
-the reporter in both modes, including positional diagnostic launches. Reports
+the reporter in both modes. Reports
 and RAM dumps go under `local/crashes/<game>/` by default; `--crash-dir` selects
 another directory through the common command-line interface.
 

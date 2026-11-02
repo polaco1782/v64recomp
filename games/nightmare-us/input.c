@@ -42,7 +42,7 @@ void nightmare_input_init(void) {
     const char *setting = getenv("RECOMP_NIGHTMARE_MOUSE");
     enabled = !setting || strcmp(setting, "0");
 #ifdef RECOMP_DEBUG
-    if (getenv("RECOMP_NIGHTMARE_INPUT"))
+    if (recomp_game_replaying())
         enabled = false;
 #endif
     sensitivity = 0.08;

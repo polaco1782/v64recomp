@@ -35,7 +35,7 @@ cmake --workflow --preset quake2-us-release
 
 Controller Pak storage defaults to `local/saves/quake2-us.mpk`. Use `--save FILE`
 for a separate image. Both configurations use the same game adapter and shared
-core crash reporter. Debug has its own entry point, input replay and captures:
+core crash reporter. Debug uses the same `main.c` with shared input replay and captures:
 
 ```sh
 cmake --workflow --preset quake2-us-debug
@@ -63,7 +63,7 @@ stepping, configure the same build directory with
 disabled in optimized Debug because they conflict with `/O2`; project-level
 guest validation and crash diagnostics remain enabled. Changing this option
 rebuilds the game and its local runtime/backends, not the shared RT64 cache.
-`RECOMP_TRACE_CALLS` is read once at startup; enabling it still prints every call
+`--trace-calls` enables the shared core trace and prints every guest call
 and can substantially slow the game.
 
 For the remaining scene-dependent slowdown, use the shared `RECOMP_TIMING` CSV
@@ -80,8 +80,8 @@ The initial load maps ROM `0x1000..0x72940` to guest
 `0x80071d40..0x800a7e10`, sets SP to `0x80095fe8`, and jumps to `0x80000450`.
 That startup creates mainproc at `0x800004ac`, which creates gameproc at
 `0x80000540`. The synthetic IPL thread is retired at mainproc's first PI-manager
-call, before allocation can reuse its storage. Debug checks the BSS clear and
-the instruction return address at this handoff.
+call, before allocation can reuse its storage. Both builds verify the
+instruction return address at this handoff.
 
 Mainproc's final path at `0x80000510` lowers its own priority to zero, then loops
 over `osYieldThread` at `0x80000520`. Generation checks the complete transition
@@ -128,7 +128,7 @@ the selected native VI mode through the shared OS service as well.
 ```sh
 .venv/bin/python tools/generate_game.py --game quake2-us \
   --output build/quake2-us-report --report-only
-.venv/bin/python games/quake2-us/debug/analyze_callbacks.py \
+.venv/bin/python games/quake2-us/analyze_callbacks.py \
   --output build/quake2-us-callback-review.json
 ```
 

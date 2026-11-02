@@ -12,4 +12,4 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
                  for name, value in constants.items())
     lines.append('static const uint8_t boot_sha1[20] = {' +
                  ','.join(f'0x{b:02x}' for b in bytes.fromhex(game['rom_sha1'])) + '};')
-    (output / 'bad_apple_config.h').write_text('\n'.join(lines) + '\n')
+    (output / 'game_config.h').write_text('\n'.join(lines) + '\n')

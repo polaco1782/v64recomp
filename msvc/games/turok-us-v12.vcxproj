@@ -24,21 +24,14 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\turok-us-v12\audio.h" />
     <None Include="$(RecompRoot)games\turok-us-v12\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\turok-us-v12\audio.h" />
     <None Include="$(RecompRoot)games\turok-us-v12\generate.py" />
     <ClCompile Include="$(RecompRoot)games\turok-us-v12\graphics.cpp" />
     <ClInclude Include="$(RecompRoot)games\turok-us-v12\graphics.h" />
+    <ClCompile Include="$(RecompRoot)games\turok-us-v12\main.c" />
     <None Include="$(RecompRoot)games\turok-us-v12\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\turok-us-v12\rnc.py" />
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\run.c" />
-    <ClInclude Include="$(RecompRoot)games\turok-us-v12\run.h" />
     <None Include="$(RecompRoot)games\turok-us-v12\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\turok-us-v12\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\turok-us-v12\functions.c" Condition="Exists('$(RecompBuildDir)\generated\turok-us-v12\functions.c')" />

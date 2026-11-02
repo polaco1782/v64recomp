@@ -49,10 +49,10 @@ test, including corrected billboard sizes at 110 degrees. The keypad/140-degree
 extension has not been rebuilt or tested in game. Tilted views, portal traversal
 and combined F7 expansion require gameplay acceptance.
 
-`release/` contains the playable app and Release-only sources. `debug/` contains
-the original trace/capture harness and inspection tools. Shared headers, adapters,
-`generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
-build directory, and private ROM/save data stays in `local/`.
+`main.c` contains the shared entry point and lifecycle for Debug and Release.
+Headers, adapters, `generate.py`, `profile.toml`, inventories and maintained
+replay inputs live beside it. Generated code stays under the selected build
+directory; private ROMs and saves stay in `local/`.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).

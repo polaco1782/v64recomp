@@ -123,17 +123,17 @@ frame-exact diagnostic runs.
 | Games | Pacing policy, Debug and Release |
 | --- | --- |
 | Quake, Ocarina of Time, Nightmare Creatures | Shared `recomp_game_pace` |
-| Hexen, Duke Nukem: Zero Hour | Shared helper through their parent-folder adapters |
+| Hexen, Duke Nukem: Zero Hour | Shared helper in `main.c` |
 | Perfect Dark, Conker, GoldenEye | Shared helper after the first-graphics wall-clock handoff; synthetic bootstrap retained |
-| Duke Nukem 64 | Retains calibration-aware draining, detection of the game's clock-poll loop, and Debug sleep accounting |
-| Super Mario 64 | Retains queue-aware draining and frame-exact Debug routes; those paths require the existing scheduler return and frame-count behavior |
+| Duke Nukem 64 | Retains calibration-aware draining and detection of the game's clock-poll loop |
+| Super Mario 64 | Uses queue-aware draining and the same presentation loop in both builds |
 | Shadow Man | Retains its existing loop pending verification of an idle-thread object; a default scheduler drain could otherwise spin on its idle thread |
 
 The additional game migrations were checked by compilation/static review;
 gameplay validation is left to the user. They do not establish a measured
 performance gain for those games. Keep game-specific startup calibration,
-input/replay boundaries, captures and presentation deadline policies in the
-game adapter.
+input mapping and presentation deadline policies in `main.c` or its independent
+adapters. Use the shared game layer for replay and optional captures.
 
 GoldenEye configures its ROM-verified priority-zero idle object so the helper
 can wait without dispatching the empty idle loop. Once its clock follows wall

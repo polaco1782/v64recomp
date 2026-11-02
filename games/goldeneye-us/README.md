@@ -13,10 +13,10 @@ cmake --workflow --preset goldeneye-us-debug
 ./build/goldeneye-us-debug/bin/goldeneye-us --help
 ```
 
-`release/` contains the playable app and Release-only sources. `debug/` contains
-the original trace/capture harness and inspection tools. Shared headers, adapters,
-`generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
-build directory, and private ROM/save data stays in `local/`.
+`main.c` contains the shared entry point and lifecycle for Debug and Release.
+Headers, adapters, `generate.py`, `profile.toml`, inventories and maintained
+replay inputs live beside it. Generated code stays under the selected build
+directory; private ROMs and saves stay in `local/`.
 
 `profile.toml` contains the checked `discovery.jump_tables`. `generate.py` resolves
 them from the fingerprinted, decompressed startup data before discovery checks
@@ -27,7 +27,7 @@ Guest pthreads use the profile's entry-based names: `n64-main`, `n64-idle`,
 sound code; `n64-audio` is the separate native DSP worker. See
 [CPU profiling](../../docs/profiling.md) for thread counters and function samples.
 
-After the first graphics task, both apps service VI/AI deadlines and worker
+After the first graphics task, the common frame loop services VI/AI deadlines and worker
 completions between presentations through `recomp_game_pace`. Generation checks
 the empty idle loop and its `osCreateThread` argument setup before registering
 the idle object with the scheduler. Synthetic-clock bootstrap keeps its bounded

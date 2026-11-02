@@ -26,7 +26,7 @@ The reviewed table has no separate crouch, reload, use or status action.
 
 Settings at launch: `RECOMP_QUAKE_MOUSE=0` restores the original mapping;
 `RECOMP_MOUSE_SENSITIVITY` is degrees/count, default `0.08`, range `0.001..10`;
-`RECOMP_MOUSE_INVERT_Y=1` reverses vertical look. Debug `RECOMP_QUAKE_INPUT`
+`RECOMP_MOUSE_INVERT_Y=1` reverses vertical look. Debug `--input`
 replay disables mouse injection. FOV has no environment lookup: keypad presses
 change one degree, holding repeats, and each launch starts at the original view.
 The console prints changes. FOV works independently of mouse capture.

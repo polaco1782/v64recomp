@@ -35,7 +35,7 @@ $env:RECOMP_MOUSE_INVERT_Y = '1'       # optional inverted vertical orbit
 $env:RECOMP_OOT_MOUSE = '0'            # optional original controller mapping
 ```
 
-Debug input replay (`RECOMP_OOT_INPUT`) disables this adapter. FOV works
+Debug input replay (`--input`) disables this adapter. FOV works
 independently of mouse capture; see the [FOV setting](README.md#field-of-view).
 
 ## Evidence and verification

@@ -36,7 +36,7 @@ Keypad `+` / `-` changes FOV independently of mouse capture.
 Capture requires game state 2, no inactive/demo flag, one local player, no pause
 or overhead map, positive player health, no fist/exit sequence and no remote
 camera owner. These state gates prevent capture in menus, demos and death.
-Debug `--input` / `RECOMP_DUKE_INPUT` controller replay disables the adapter.
+Debug `--input` controller replay disables the adapter.
 
 ## Native command boundary
 

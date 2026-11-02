@@ -22,19 +22,19 @@ For crash reports, captures and deterministic controller input:
 
 ```sh
 cmake --workflow --preset perfectdark-us-v11-debug
-./build/perfectdark-us-v11-debug/bin/perfectdark-us-v11 --frames 3700 --save /tmp/perfectdark-bringup.eeprom --input games/perfectdark-us-v11/debug/gameplay-input.txt --capture-every 120
+./build/perfectdark-us-v11-debug/bin/perfectdark-us-v11 --frames 3700 --save /tmp/perfectdark-bringup.eeprom --input games/perfectdark-us-v11/gameplay-input.txt --capture-every 120
 ```
 
 The replay assumes a fresh EEPROM file. Reusing an existing agent changes the
-menu sequence. Debug reports and captures are written under
+menu sequence. Optional Debug captures are written under
 `build/perfectdark-us-v11-debug/debug-output/perfectdark-us-v11/`.
 
 ROM and EEPROM data stay in `local/`. Generated sources stay in the selected
-build directory. The debug executable's `--help` lists report and save options.
+build directory. The debug executable's `--help` lists capture and save options.
 
-CMake selects independent `release/app.c` and `debug/app.c` frontends. Replay,
-captures and reports live in `debug/app.c`; both frontends link the shared
-bootstrap, native services and frame loop in `perfectdark.c`.
+CMake compiles `main.c` for both configurations. It owns the bootstrap, native
+services and frame loop. Debug replay, captures and audio recording use the
+shared game helpers; there is no separate diagnostic frontend.
 
 `generate.py` expands the RareZip library, data and game pages only for
 static translation. The executable retains the original cartridge image and

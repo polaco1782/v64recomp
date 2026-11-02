@@ -24,24 +24,18 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h" />
     <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt" />
+    <None Include="$(RecompRoot)games\oot-us-v12\analyze_callbacks.py" />
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h" />
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\controls.c" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\controls.h" />
     <None Include="$(RecompRoot)games\oot-us-v12\controls_analysis.py" />
-    <None Include="$(RecompRoot)games\oot-us-v12\debug\analyze_callbacks.py" />
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py" />
-    <ClInclude Include="$(RecompRoot)games\oot-us-v12\hooks.h" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\jpeg.h" />
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\main.c" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\overlays.h" />
     <None Include="$(RecompRoot)games\oot-us-v12\prepare.py" />
     <None Include="$(RecompRoot)games\oot-us-v12\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\oot-us-v12\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\oot-us-v12\functions.c" Condition="Exists('$(RecompBuildDir)\generated\oot-us-v12\functions.c')" />

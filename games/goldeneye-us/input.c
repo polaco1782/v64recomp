@@ -135,7 +135,7 @@ void goldeneye_input_init(Runtime *rt) {
     recomp_mouse_clear(&menu_mouse);
 #ifdef RECOMP_DEBUG
     // Legacy controller replays must not inherit physical mouse state.
-    if (getenv("RECOMP_GOLDENEYE_INPUT"))
+    if (recomp_game_replaying())
         enabled = false;
     const char *replay_path = getenv("RECOMP_GOLDENEYE_MOUSE_REPLAY");
     if (replay_path && *replay_path) {

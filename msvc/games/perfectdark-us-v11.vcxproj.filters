@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\perfectdark-us-v11\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\perfectdark-us-v11\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\perfectdark.c">
+    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\perfectdark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\perfectdark-us-v11\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\perfectdark-us-v11\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -50,12 +41,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{AE83E18F-374F-5F5D-B85E-32E77E019518}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{6E4681AE-3CC9-5D3F-9504-5EE6DF23B7BD}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{6BC463CA-CA9C-5725-8E8B-536A5D8169E9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

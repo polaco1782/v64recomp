@@ -92,13 +92,10 @@ existing audio, while interactive playback continues. Set
 
 ```powershell
 .\tools\build_msvc_project.ps1 -Game media-player -Configuration Debug
-.\.venv\Scripts\python.exe games/media-player/debug/validate_audio.py `
-  --exe build/msvc/media-player/debug/bin/Debug/media-player.exe `
-  --ffmpeg PATH/TO/ffmpeg.exe --output build/media-player-validation
+$env:RECOMP_MEDIA_FILE = "C:\Music\example.mp3"
+.\build\msvc\media-player\debug\bin\Debug\media-player.exe --frames 120 --wav capture.wav
 ```
 
-The fixture generates original transient/tonal stereo CBR, mono MPEG-2 and
-stereo VBR MP3s, compares captured PCM against FFmpeg, and checks playback
-underruns. `tools/check_teq.py` separately executes synthetic trap, 64-bit
-comparison, delay-slot and likely-branch annulment cases without a ROM.
-Run the latter from Developer PowerShell for MSVC.
+`main.c` contains the SDL player and its small Debug PCM-capture blocks.
+`codec.c` contains the independent ROM decoder adapter. Both configurations
+compile the same files; standalone audio-validation fixtures have been removed.

@@ -40,7 +40,7 @@ Settings:
 - `RECOMP_MOUSE_SENSITIVITY` is degrees per mouse count, default `0.08`, range
   `0.001..10`; the setting is shared with GoldenEye.
 - `RECOMP_MOUSE_INVERT_Y=1` inverts vertical mouse movement.
-- Debug `RECOMP_QUAKE2_INPUT` controller replay disables the mouse adapter.
+- Debug `--input` controller replay disables the mouse adapter.
 
 The checked action table has no separate crouch, reload or use action. R is
 previous weapon here. Controller configuration and Controller Pak saves are

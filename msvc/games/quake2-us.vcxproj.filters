@@ -1,37 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\quake2-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <None Include="$(RecompRoot)games\quake2-us\debug\analyze_callbacks.py">
-      <Filter>Source Files\debug</Filter>
+    <None Include="$(RecompRoot)games\quake2-us\analyze_callbacks.py">
+      <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\quake2-us\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\quake2-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
     <ClCompile Include="$(RecompRoot)games\quake2-us\input.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\quake2-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\quake2-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
     <ClInclude Include="$(RecompRoot)games\quake2-us\quake2_input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)games\quake2-us\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\quake2-us\run.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\quake2-us\run.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <None Include="$(RecompRoot)games\quake2-us\startup-entries.json">
@@ -59,12 +50,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{E726D08A-4007-5E07-B611-BC72105E40F0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{4409055F-5FB3-5A67-9865-669E8C443B1F}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{E3B31A4D-9E6A-55F9-9A7B-C52BB6B31601}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

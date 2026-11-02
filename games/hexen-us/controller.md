@@ -36,7 +36,7 @@ keyboard map. `RECOMP_MOUSE_SENSITIVITY` defaults to `0.08` and accepts
 `0.001..10`: horizontal degrees per mouse count and vertical native look units
 per count. `RECOMP_MOUSE_INVERT_Y=1` inverts vertical look. Native pitch remains
 clamped to `[-110,90]`; fractional motion is retained between updates.
-Debug `--input` / `RECOMP_HEXEN_INPUT` controller replay disables the adapter.
+Debug `--input` controller replay disables the adapter.
 Inventory selection and automap zoom retain their original controller behavior
 with capture released; the wheel is assigned to weapons while captured.
 

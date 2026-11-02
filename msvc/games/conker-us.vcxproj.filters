@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\conker-us\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\conker-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\conker-us\conker.c">
+    <None Include="$(RecompRoot)games\conker-us\analyze_switches.py">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\conker-us\conker.h">
+    </None>
+    <ClInclude Include="$(RecompRoot)games\conker-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <None Include="$(RecompRoot)games\conker-us\debug\analyze_switches.py">
-      <Filter>Source Files\debug</Filter>
-    </None>
-    <ClCompile Include="$(RecompRoot)games\conker-us\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\conker-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
@@ -28,12 +19,12 @@
     <ClInclude Include="$(RecompRoot)games\conker-us\graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\conker-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\conker-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\conker-us\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\conker-us\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -59,12 +50,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{2DD5E05B-1325-57A8-978F-BA2176211D6B}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{0D923B4D-ED91-547C-BC8E-3DC474DEB0EB}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{9E2F63CB-3356-54A1-A8BC-F787CD85C86E}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
