@@ -219,12 +219,13 @@ int main(int argc, char **argv) {
             }
         }
         RecompPad pad;
-        recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(), goldeneye_input_playable(&rt));
+        recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(),
+                                   goldeneye_input_playable(&rt) || goldeneye_input_menu(&rt));
         if (!recomp_renderer_input(renderer, &pad)) {
             window_closed = true;
             break;
         }
-        goldeneye_input_submit(recomp_renderer_mouse_frame(renderer));
+        goldeneye_input_submit(&rt, recomp_renderer_mouse_frame(renderer), &pad);
         if (input_script) {
             if (has_next_input && next_input_frame == step + 1) {
                 scripted_pad = replay_pad;

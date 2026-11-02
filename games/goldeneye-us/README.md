@@ -74,6 +74,8 @@ the selected style afterwards. Settings and saves retain the selected control st
 | --- | --- |
 | Mouse / WASD | Look / move and strafe |
 | Left / right mouse | Fire / original aim mode |
+| Mouse in the mission menus | Move the target cursor |
+| Left / right mouse in menus | Confirm / back |
 | Scroll up / down | Previous / next weapon |
 | E or R / Q | Use or reload / change weapon |
 | Tab | Start / watch menu |
@@ -81,9 +83,11 @@ the selected style afterwards. Settings and saves retain the selected control st
 | Esc / F4 | Toggle mouse capture / recapture after release or focus loss |
 | F10 | Quit |
 
-Capture releases in menus, during watch transitions and when the window loses
-focus. Tank, multiplayer, death and scripted-camera states fall back to the
-original controller path. A gamepad remains available; release mouse capture to
+Mouse capture stays active in the front-end menus so mouse movement controls the
+original target cursor. Arrows and gamepads remain available alongside the mouse.
+Esc releases the mouse; F4 recaptures it. Capture releases during watch transitions
+and when the window loses focus. Tank, multiplayer, death and scripted-camera
+states fall back to the original controller path. A gamepad remains available; release mouse capture to
 use its original look/movement controls. Original aiming restrictions still apply.
 
 Set `RECOMP_GOLDENEYE_MOUSE=0` to restore the legacy keyboard/controller mapping.
@@ -100,6 +104,14 @@ movement. Wheel detents are queued and mapped to the original A / A+Z weapon
 cycling actions. The shared transport and original-preserving wrappers are
 described in [native hooks](../../docs/native-hooks.md).
 
+The front-end cursor adapter wraps `frontUpdateControlStickPosition` at
+`0x7F009B84`. In the title/menu stage it consumes mouse motion once, moving the
+original cursor by half a menu pixel per mouse count before the original routine
+adds keyboard/gamepad movement and clamps it to the viewport. Menu movement is
+independent of gameplay look sensitivity and pitch inversion. The wrapper's full
+body fingerprint and cursor globals (`0x8002A908`, `0x8002A90C`) are verified during
+generation. Left/right clicks use the original confirm/back button paths.
+
 `input_analysis.py` is a required generation dependency. It verifies function
 fingerprints, call sites, player offsets and state globals declared in
 `profile.toml`, and writes `input-hooks.json` into the selected build directory.
@@ -112,6 +124,10 @@ angle limits, control-style restoration and watch/death fallback. Mouse movement
 was also confirmed through user playtesting. The later recapture and wheel
 changes were built in both configurations; gameplay testing was left to the user.
 Tank, multiplayer and full-game progression remain unverified.
+
+The menu mouse change was confirmed working through user playtesting on
+2026-11-02. Debug and Release builds passed; a bounded Debug desktop smoke run
+also rendered startup and exited successfully.
 
 Debug retains optional `RECOMP_GOLDENEYE_INPUT_TRACE` CSV output and
 `RECOMP_GOLDENEYE_MOUSE_REPLAY` input for future investigations. Replay rows are

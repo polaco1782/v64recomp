@@ -14,6 +14,7 @@ static bool enabled, in_move;
 static double sensitivity = 0.08;
 static double vertical = 1;
 static RecompMouseBuffer mouse;
+static RecompMouseBuffer menu_mouse;
 #ifdef RECOMP_DEBUG
 static FILE *replay;
 static uint64_t next_move, previous_move, replay_updates;
@@ -64,12 +65,41 @@ bool goldeneye_input_playable(Runtime *rt) {
     uint32_t camera = recomp_load32(rt, GE_INPUT_CAMERA);
     return camera == 0 || (camera == 4 && recomp_load32(rt, GE_INPUT_TIMER_ACTIVE));
 }
-void goldeneye_input_submit(RecompMouseFrame frame) {
+bool goldeneye_input_menu(Runtime *rt) {
+    return enabled && recomp_load32(rt, GE_INPUT_STAGE_ADDRESS) == GE_INPUT_TITLE_STAGE;
+}
+void goldeneye_input_submit(Runtime *rt, RecompMouseFrame frame, RecompPad *pad) {
 #ifdef RECOMP_DEBUG
     if (replay)
         return;
 #endif
+    if (goldeneye_input_menu(rt)) {
+        recomp_mouse_clear(&mouse);
+        recomp_mouse_submit(&menu_mouse, frame);
+        if (frame.active) {
+            if (frame.actions & RECOMP_MOUSE_ATTACK)
+                pad->buttons |= 0x8000;
+            if (frame.actions & RECOMP_MOUSE_SECONDARY_ATTACK)
+                pad->buttons |= 0x4000;
+        }
+        return;
+    }
+    recomp_mouse_clear(&menu_mouse);
     recomp_mouse_submit(&mouse, frame);
+}
+void goldeneye_input_menu_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    RecompMouseFrame frame = recomp_mouse_consume(&menu_mouse);
+    if (goldeneye_input_menu(rt) && frame.active && isfinite(frame.dx) && isfinite(frame.dy)) {
+        float x = read_float(rt, GE_INPUT_MENU_X), y = read_float(rt, GE_INPUT_MENU_Y);
+        if (isfinite(x) && isfinite(y)) {
+            // Menu coordinates are pixels. Consume motion once, without the
+            // gameplay pitch inversion or frame-time scaling. The original
+            // still adds keyboard/gamepad movement and clamps to its viewport.
+            write_float(rt, GE_INPUT_MENU_X, (float)(x + frame.dx * 0.5));
+            write_float(rt, GE_INPUT_MENU_Y, (float)(y + frame.dy * 0.5));
+        }
+    }
+    original(rt, ctx);
 }
 static void observe(Runtime *rt, MipsContext *ctx, const char *event) {
     if (!trace || rows++ >= 30000)
@@ -102,6 +132,7 @@ void goldeneye_input_init(Runtime *rt) {
     }
     vertical = getenv("RECOMP_MOUSE_INVERT_Y") && !strcmp(getenv("RECOMP_MOUSE_INVERT_Y"), "1") ? -1 : 1;
     recomp_mouse_clear(&mouse);
+    recomp_mouse_clear(&menu_mouse);
 #ifdef RECOMP_DEBUG
     // Legacy controller replays must not inherit physical mouse state.
     if (getenv("RECOMP_GOLDENEYE_INPUT"))

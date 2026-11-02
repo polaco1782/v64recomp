@@ -117,7 +117,7 @@ def verify_input_analysis(rom: bytes, profile: dict, metadata: dict | None = Non
             hi, low = code[0], code[-1]
             signed_low = (low & 65535) - (65536 if low & 0x8000 else 0)
             require((len(code) == 2 or (len(code) == 3 and code[1] == 0x03e00008))
-                    and hi >> 26 == 15 and low >> 26 == 35 and (low >> 21) & 31 == (hi >> 16) & 31
+                    and hi >> 26 == 15 and low >> 26 in (35, 49) and (low >> 21) & 31 == (hi >> 16) & 31
                     and ((hi & 65535) << 16) + signed_low == state['address'],
                     f"{state['name']} address does not match the decoded global")
 

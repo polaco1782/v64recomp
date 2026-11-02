@@ -6,6 +6,7 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".game", vram = 0x7f009b84, size = 0x384, sha256 = "9b94e88ebd4ef9db72ebc433464d4dbd18ef9acc9a0b0cc9716e364162dd6dcc", handler = "goldeneye_input_menu_hook"},
   {section = ".lib", vram = 0x70004544, size = 0x4c, sha256 = "af46a44737c33db1923e0beba3107cdb818b54d9a1ace9b9eb6c1931553ca2e3", handler = "goldeneye_fov_hook"},
   {section = ".lib", vram = 0x70002424, size = 0x1b4, sha256 = "537587229e186714f1cfa141395889bad59b066ed36367c0087abf26ee27590d", handler = "goldeneye_audio_dma_hook"},
   {section = ".lib", vram = 0x7000bd0c, size = 0x7c, sha256 = "c0e8344bbcadd3894686f4403c1162896985863ba6cb6256d543f7e045a1bc47", handler = "goldeneye_input_samples_hook"},
@@ -299,6 +300,7 @@ title_stage = 0x5a
 reference = "https://github.com/n64decomp/007"
 reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
 functions = [
+  {name = "frontUpdateControlStickPosition", section = ".game", vram = 0x7f009b84, size = 0x384, sha256 = "9b94e88ebd4ef9db72ebc433464d4dbd18ef9acc9a0b0cc9716e364162dd6dcc"},
   {name = "getPlayerCount", section = ".game", vram = 0x7f09a464, size = 0x58, sha256 = "2d45ab256c1f08e0f2899accd7aca7bceef8a658812c7f80b292d4cde90bfa90"},
   {name = "getControlStyle", section = ".game", vram = 0x7f0a4dc0, size = 0x10, sha256 = "5d7c6ab0dafc90ff3b968b1dca99f36f2cb146f6d8a4a1b6ae18f7cdc64e6166"},
   {name = "getControlsLocked", section = ".game", vram = 0x7f0bfc04, size = 0xc, sha256 = "e4752f5ccf5bd97a87df8a6e3fccc544c32604340c13b0e2300e709b0c68e429"},
@@ -347,6 +349,8 @@ expected_words = [0x3c108008, 0x2610a0b0, 0x8e020000]
 [input_adapter]
 process_return = 0x7f084788
 globals = [
+  {name = "menu_x", address = 0x8002a908, owner = "frontUpdateControlStickPosition", pc = 0x7f009d10, expected_words = [0x3c018003, 0xc432a908]},
+  {name = "menu_y", address = 0x8002a90c, owner = "frontUpdateControlStickPosition", pc = 0x7f009e60, expected_words = [0x3c018003, 0xc42aa90c]},
   {name = "players", address = 0x80079ee0, owner = "getPlayerCount", pc = 0x7f09a464, expected_words = [0x3c0e8008, 0x8dce9ee0]},
   {name = "controls_locked", address = 0x80048370, owner = "getControlsLocked", pc = 0x7f0bfc04, expected_words = [0x3c028005, 0x03e00008, 0x8c428370]},
   {name = "tank", address = 0x80036448, owner = "bondviewProcessInput", pc = 0x7f081cd8, expected_words = [0x3c198003, 0x8f396448]},

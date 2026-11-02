@@ -82,7 +82,9 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     (output / 'goldeneye_boot_config.h').write_text('\n'.join(lines))
     analysis = profile['input_analysis']
     constants = {'CURRENT_PLAYER': analysis['current_player']['address'],
-                 'PROCESS_RETURN': profile['input_adapter']['process_return']}
+                 'PROCESS_RETURN': profile['input_adapter']['process_return'],
+                 'STAGE_ADDRESS': profile['inspection']['stage_address'],
+                 'TITLE_STAGE': profile['inspection']['title_stage']}
     constants.update({f['name'].upper(): f['offset'] for f in analysis['player_fields']})
     constants.update({g['name'].upper(): g['address'] for g in profile['input_adapter']['globals']})
     angle = next(f for f in analysis['functions'] if f['name'] == 'bondviewApplyVertaTheta')

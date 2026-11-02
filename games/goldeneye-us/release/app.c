@@ -111,10 +111,11 @@ int main(int argc, char **argv) {
             }
         }
         RecompPad pad;
-        recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(), goldeneye_input_playable(&rt));
+        recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(),
+                                   goldeneye_input_playable(&rt) || goldeneye_input_menu(&rt));
         if (!recomp_renderer_input(renderer, &pad))
             break;
-        goldeneye_input_submit(recomp_renderer_mouse_frame(renderer));
+        goldeneye_input_submit(&rt, recomp_renderer_mouse_frame(renderer), &pad);
         require(recomp_input_set(&rt, 0, &pad), "GoldenEye controller update failed", 0);
         require(recomp_renderer_present(renderer), "GoldenEye presentation failed", 0);
         next_present += 16666667;
