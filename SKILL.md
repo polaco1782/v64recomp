@@ -121,8 +121,9 @@ rather than adding game-ID branches to the shared driver.
 Register the ID in root `CMakeLists.txt`'s `RECOMP_GAMES` and
 `tools/generate_game.py`'s `GAMES`. Add Release/Debug configure, build and workflow
 presets in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
-entries. Each workflow runs its matching configure and build presets; build
-presets default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
+entries. Each workflow runs its matching configure preset, its
+`promote-live-patches` build preset, then its normal build preset; normal builds
+default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
 additional sources, generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
 Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
@@ -205,6 +206,18 @@ Use the maintained command-line tools before writing investigation snippets:
   interpretation and scanner regression checks. For already registered targets, use
   `tools/inspect_function_candidates.py --game <game> --metadata PATH
   --include-registered --output build/<game>-function-candidates.json`.
+- A table with an unproved selector range cannot become a checked
+  `function_tables` declaration. Its exact ROM pointer slots may still support
+  individual roots after the consumer, distinct entry boundaries, closed bodies,
+  and full discovery and translation are checked. Leave ambiguous slots out.
+- When likely candidates form a disconnected call tree, run
+  `tools/probe_function_roots.py --game <game> --build-dir build/<game>-debug`
+  to see what a temporary root would discover. Use
+  `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+  --roots-only --codex` for bounded Codex review; accepted entries are written
+  to the checked profile after ROM and generation validation. The CMake
+  `candidate-review-roots` target runs this review explicitly. A dry-run
+  discovery result alone is not proof of a real entry.
 - Shared discovery automatically follows constant callback arguments when a
   translated callee's owned control flow proves that argument reaches `jalr`.
   It also follows constant indirect-call targets and repeats to a fixed point.

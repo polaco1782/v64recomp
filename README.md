@@ -177,8 +177,12 @@ cmake --build --preset sm64-us-release --target run
 ```
 
 Every game has Release and Debug workflows, such as `quake2-us-release` and
-`quake2-us-debug`. A workflow configures the selected build tree, then builds it
-with four compiler jobs. List them with `cmake --workflow --list-presets`.
+`quake2-us-debug`. A workflow configures the selected build tree, promotes any
+published live functions from `local/live-patches/<game>/` into its checked
+profile, then builds it with four compiler jobs. Promotion validates every
+function through normal generation before clearing temporary patch files; a
+failed promotion stops the workflow and keeps those files. List workflows with
+`cmake --workflow --list-presets`.
 For an incremental build with a different job count, use
 `cmake --build --preset quake2-us-release -j 8`. Configure custom `-D` options
 separately with `cmake --preset quake2-us-release -DOPTION=VALUE`; subsequent
@@ -256,6 +260,9 @@ gameplay probes, RT64's F1 inspector and F6 wireframe.
 It retains the existing diagnostic startup behavior and checks.
 Both modes reuse RT64's optimized `RelWithDebInfo` build by default. Game code,
 the shared runtime and native adapters retain their selected configuration flags.
+
+For a pause and in-process repair of missing compiled code or checked
+indirect targets, see [live code repair](docs/live-repair.md).
 
 For thread CPU usage and sampled function call stacks, see
 [CPU profiling](docs/profiling.md). `tools/profile_execution.py` attaches to a

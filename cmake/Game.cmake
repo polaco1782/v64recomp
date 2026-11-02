@@ -158,3 +158,34 @@ add_custom_target(pack
 add_custom_target(report COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/generate_game.py"
     --game "${RECOMP_GAME}" --output "${CMAKE_BINARY_DIR}/reports/${RECOMP_GAME}" --report-only
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" USES_TERMINAL)
+add_custom_target(candidate-review
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/review_candidates.py"
+        --game "${RECOMP_GAME}" --build-dir "${CMAKE_BINARY_DIR}"
+    DEPENDS "${RECOMP_GENERATED}/function-candidates.json"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    COMMENT "Ranking ${RECOMP_GAME} missing-function candidates"
+    USES_TERMINAL VERBATIM)
+add_custom_target(candidate-review-roots
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/review_candidates.py"
+        --game "${RECOMP_GAME}" --build-dir "${CMAKE_BINARY_DIR}"
+        --roots-only --codex --max-groups 3
+    DEPENDS "${RECOMP_GENERATED}/function-candidates.json"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    COMMENT "Reviewing ${RECOMP_GAME} candidate call trees and saving checked roots"
+    USES_TERMINAL VERBATIM)
+add_custom_target(candidate-review-tables
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/review_candidates.py"
+        --game "${RECOMP_GAME}" --build-dir "${CMAKE_BINARY_DIR}"
+        --codex --max-groups 3
+    DEPENDS "${RECOMP_GENERATED}/function-candidates.json"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    COMMENT "Reviewing ${RECOMP_GAME} indirect-call tables and saving checked entries"
+    USES_TERMINAL VERBATIM)
+add_custom_target(promote-live-patches
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/promote_live_patches.py"
+        --game "${RECOMP_GAME}" --build-dir "${CMAKE_BINARY_DIR}"
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/review_discovery.py"
+        --game "${RECOMP_GAME}" --build-dir "${CMAKE_BINARY_DIR}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    COMMENT "Promoting live functions and reviewing candidate roots for ${RECOMP_GAME}"
+    USES_TERMINAL VERBATIM)

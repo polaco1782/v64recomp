@@ -266,6 +266,20 @@ the CPU load mappings. A bounded body probe checks instruction validity, control
 flow and overlap with owned code; clean candidate bodies expose further direct
 callees. Checked switch-table words and already owned interiors are excluded.
 Stack frames supply additional candidates for routines without pointer references.
+`tools/probe_function_roots.py` follows a proposed root through normal discovery
+without changing checked inputs. `tools/review_candidates.py --roots-only --codex`
+uses that probe, asks Codex to verify the entry and its pointer source, and
+keeps an accepted root in `profile.toml` only after ROM and generation checks.
+Subsequent builds reuse the saved root without another AI review. The
+`candidate-review-roots` CMake target runs a bounded batch of this review.
+`candidate-review-tables` checks indirect-call groups. Games opting into
+`auto_candidate_review` run both bounded reviews when their checked profile or
+runtime missing-call requests change; the saved profile and marker keep routine
+builds from repeating Codex review.
+If an indirect caller has no proven selector bound, review its individual
+ROM pointer slots as possible roots instead of declaring an unbounded
+`function_tables` entry. Keep only distinct closed bodies that pass normal
+discovery and translation.
 
 Discovery also follows proven constant callback flows automatically for partial
 profiles with checked registered-call policy. It traces entry arguments through
@@ -434,9 +448,10 @@ cmake --build build/newgame-us-debug -j 4
 ```
 
 Add Release/Debug configure, build and workflow presets to `CMakePresets.json`.
-Each workflow runs the matching configure and build presets, and build presets
-default to four jobs. Use `cmake --workflow --preset newgame-us-debug` to configure
-and build together (CMake 3.25+). Add optional VS Code entries in `.vscode/tasks.json` and
+Each workflow runs the matching configure preset, a build preset targeting
+`promote-live-patches`, then its normal build preset. Normal builds default to
+four jobs. Use `cmake --workflow --preset newgame-us-debug` to configure,
+promote checked live functions, and build together (CMake 3.25+). Add optional VS Code entries in `.vscode/tasks.json` and
 `.vscode/launch.json`. Update the root import/game lists and `docs/status.md` with
 the actual milestone. `cmake/Game.cmake` handles generated-source caching/splitting,
 mode-specific app selection, debug flags, and `run`/`report` targets. Configuration
