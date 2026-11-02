@@ -16,18 +16,12 @@
     <None Include="$(RecompRoot)games\quake-us\controls_analysis.py">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="$(RecompRoot)games\quake-us\gameplay-input.json">
-      <Filter>Configuration</Filter>
-    </None>
     <None Include="$(RecompRoot)games\quake-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
     <ClCompile Include="$(RecompRoot)games\quake-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <None Include="$(RecompRoot)games\quake-us\new-game-input.json">
-      <Filter>Configuration</Filter>
-    </None>
     <None Include="$(RecompRoot)games\quake-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>

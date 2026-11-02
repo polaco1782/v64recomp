@@ -28,13 +28,6 @@ Retained private evidence:
   `.rdram.bin` contain the decoded overlay 5 trigger before mapping it.
 - `build/re2-us-v1-sdk/overlay5.json` records the full ROM/RAM comparison.
 
-Reproduce the comparison from the repository root:
-
-```sh
-.venv/bin/python games/re2-us-v1/inspect_overlay.py --index 5 \
-  --ram local/crashes/re2-us-v1/crash-2779708-886167805170423.json.rdram.bin
-```
-
 The old long Down hold repeated into Options. `new-game.txt` now uses
 a brief Down pulse to select New Game and confirms difficulty and character.
 The character-selection freeze was a missing native SDK binding: thread 4
@@ -116,8 +109,7 @@ The next Release failure at `0x8016e880` came from the enemy dispatcher
 `0x80065304`, not module overlay 7. All 52,112 decoded bytes match record 11
 plus record 39's 1,910 raw byte patches. The patched SHA-256 is
 `3d853615fad8b19f524510d72c6344c340827ed4a0768c45671bd137c5224bc2`.
-`inspect_overlay.py --index 39 --source-index 11 --ram` verifies that
-comparison against `crash-2831701-898719169875975.json.rdram.bin`.
+The comparison used `crash-2831701-898719169875975.json.rdram.bin`.
 Both fixed-slot images are prepared from declarations in `profile.toml`; the
 original game inflates and patches RAM at runtime. Enemy inflater calls use
 RA `0x80032840` / cleanup RA `0x80032850`. The adapter checks the complete

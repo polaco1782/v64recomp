@@ -25,7 +25,6 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\quake2-us\CMakeLists.txt" />
-    <None Include="$(RecompRoot)games\quake2-us\analyze_callbacks.py" />
     <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h" />
     <None Include="$(RecompRoot)games\quake2-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\quake2-us\input.c" />

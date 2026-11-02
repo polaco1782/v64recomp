@@ -25,7 +25,6 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\conker-us\CMakeLists.txt" />
-    <None Include="$(RecompRoot)games\conker-us\analyze_switches.py" />
     <ClInclude Include="$(RecompRoot)games\conker-us\audio.h" />
     <None Include="$(RecompRoot)games\conker-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\conker-us\graphics.cpp" />

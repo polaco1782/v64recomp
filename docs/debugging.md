@@ -176,11 +176,15 @@ The replay holds the last row until the next specified frame, including after EO
 Use a final neutral row when buttons should be released. Malformed values or
 out-of-order frames fail explicitly.
 
-The replay JSON files beside each game's `main.c` are ROM-bound reference inputs.
-Convert one to the shared text input format with:
+Write replay rows directly in a text file. This short example presses Start for
+one presentation; choose timings that match the title and scene being reproduced:
 
 ```sh
-.venv/bin/python tools/controller_replay.py games/quake-us/gameplay-input.json /tmp/quake-input.txt --game quake-us
+cat > /tmp/quake-input.txt <<'EOF'
+0 0 0 0
+300 4096 0 0
+301 0 0 0
+EOF
 ./build/quake-us-debug/bin/quake-us --input /tmp/quake-input.txt --frames 900
 ```
 
@@ -189,7 +193,7 @@ wireframe. Texture dumps are enabled only
 in debug via `RECOMP_TEXTURE_DUMP`. `RECOMP_DUKE_PERFORMANCE=1` and
 `RECOMP_NIGHTMARE_PERFORMANCE=1` retain those games' timing logs.
 
-OOT's root-level callback analyzer proposes roots for checked inventories.
+The shared callback and function-candidate inspectors propose roots for review.
 The shared crash inspector reads both release and debug reports. Use the
 matching executable and generated sources to resolve addresses accurately.
 

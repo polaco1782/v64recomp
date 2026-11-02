@@ -19,9 +19,6 @@
     <None Include="$(RecompRoot)games\duke-us\fov_analysis.py">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="$(RecompRoot)games\duke-us\gameplay-input.json">
-      <Filter>Configuration</Filter>
-    </None>
     <None Include="$(RecompRoot)games\duke-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
@@ -31,9 +28,6 @@
     <ClCompile Include="$(RecompRoot)games\duke-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <None Include="$(RecompRoot)games\duke-us\new-game-input.json">
-      <Filter>Configuration</Filter>
-    </None>
     <None Include="$(RecompRoot)games\duke-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>

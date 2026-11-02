@@ -93,7 +93,6 @@
     <None Include="$(RecompRoot)tools\code_inventory.py" />
     <None Include="$(RecompRoot)tools\common.py" />
     <None Include="$(RecompRoot)tools\compare_native_hooks.py" />
-    <None Include="$(RecompRoot)tools\controller_replay.py" />
     <None Include="$(RecompRoot)tools\desktop_replay.py" />
     <None Include="$(RecompRoot)tools\diagnose_rom.py" />
     <None Include="$(RecompRoot)tools\disassemble_function.py" />
@@ -112,7 +111,6 @@
     <None Include="$(RecompRoot)tools\inspect_rom.py" />
     <None Include="$(RecompRoot)tools\inspect_rsp_task.py" />
     <None Include="$(RecompRoot)tools\inspect_sdk_symbols.py" />
-    <None Include="$(RecompRoot)tools\inspect_switch_tables.py" />
     <None Include="$(RecompRoot)tools\merge_symbol_database.py" />
     <None Include="$(RecompRoot)tools\metadata_candidates.py" />
     <None Include="$(RecompRoot)tools\msvc_solution.py" />

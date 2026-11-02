@@ -27,7 +27,6 @@
     <None Include="$(RecompRoot)games\re2-us-v1\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\re2-us-v1\audio.h" />
     <None Include="$(RecompRoot)games\re2-us-v1\generate.py" />
-    <None Include="$(RecompRoot)games\re2-us-v1\inspect_overlay.py" />
     <ClCompile Include="$(RecompRoot)games\re2-us-v1\main.c" />
     <None Include="$(RecompRoot)games\re2-us-v1\profile.toml" />
     <None Include="$(RecompRoot)games\re2-us-v1\startup-entries.json" />

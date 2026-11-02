@@ -208,9 +208,6 @@
     <None Include="$(RecompRoot)tools\compare_native_hooks.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\controller_replay.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\desktop_replay.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -263,9 +260,6 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\inspect_sdk_symbols.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_switch_tables.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\merge_symbol_database.py">

@@ -10,9 +10,6 @@
     <None Include="$(RecompRoot)games\banjo-kazooie-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="$(RecompRoot)games\banjo-kazooie-us\import_reference.py">
-      <Filter>Source Files</Filter>
-    </None>
     <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

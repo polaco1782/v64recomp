@@ -128,13 +128,11 @@ the selected native VI mode through the shared OS service as well.
 ```sh
 .venv/bin/python tools/generate_game.py --game quake2-us \
   --output build/quake2-us-report --report-only
-.venv/bin/python games/quake2-us/analyze_callbacks.py \
-  --output build/quake2-us-callback-review.json
 ```
 
-The callback analyzer only reports candidates and animation structure evidence;
-it never modifies the inventory. Review pointer producers, consumers and complete
-function boundaries before adding entries.
+Use the shared callback and function-candidate inspectors for further discovery.
+Review pointer producers, consumers and complete function boundaries before
+adding entries.
 
 Public research did not identify a matching N64 Quake II decompilation. The
 [Q2N64 PC project](https://github.com/Joca64/Q2N64---PC) ports maps to the PC

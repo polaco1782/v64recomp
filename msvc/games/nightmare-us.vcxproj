@@ -26,11 +26,9 @@
   <ItemGroup>
     <None Include="$(RecompRoot)games\nightmare-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\nightmare-us\audio.h" />
-    <None Include="$(RecompRoot)games\nightmare-us\gameplay-input.json" />
     <None Include="$(RecompRoot)games\nightmare-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\nightmare-us\input.c" />
     <ClCompile Include="$(RecompRoot)games\nightmare-us\main.c" />
-    <None Include="$(RecompRoot)games\nightmare-us\new-game-input.json" />
     <ClInclude Include="$(RecompRoot)games\nightmare-us\nightmare_input.h" />
     <None Include="$(RecompRoot)games\nightmare-us\profile.toml" />
     <None Include="$(RecompRoot)games\nightmare-us\startup-entries.json" />

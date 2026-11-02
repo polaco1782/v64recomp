@@ -107,21 +107,10 @@ Five JSON/RAM snapshot pairs remain in `local/crashes/1080-us/`:
 - `crash-162862-23124539313485.json`: mgrproc menu mapping.
 - `crash-165311-23543119497698.json`: genproc menu mapping.
 
-For example, recheck the complete menu image with the maintained inspector:
-
-```sh
-.venv/bin/python games/1080-us/inspect_uso.py \
-  --rom local/1080.ju.z64 \
-  --crash local/crashes/1080-us/crash-162862-23124539313485.json \
-  --target 0x80264c2c --output build/1080-us-debug/mgrproc-evidence.json
-```
-
 The SDK caller `osVirtualToPhysical` at `0x80116840` has a catalog-authorized
 124-byte body. Its shared hook returns signed `-1` for probe misses/invalid page
 halves; actual invalid RAM accesses and overlapping mappings still fail. Focused
 translation checks passed; their temporary standalone harness was removed.
-The maintained shared registered-call fixture covers late JAL binding, rebasing
-and delay-slot ordering.
 
 ## Next work
 

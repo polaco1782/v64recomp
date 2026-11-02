@@ -4,9 +4,6 @@
     <None Include="$(RecompRoot)games\conker-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <None Include="$(RecompRoot)games\conker-us\analyze_switches.py">
-      <Filter>Source Files</Filter>
-    </None>
     <ClInclude Include="$(RecompRoot)games\conker-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>

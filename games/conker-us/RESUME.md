@@ -310,7 +310,6 @@ The shared VI mode service clears its initial BLACK state as the SDK does;
 framebuffer swaps retain explicit blanking. Cartridge bus reads preserve the
 low virtual boot/pager mappings.
 
-`analyze_switches.py` reports candidates for review and never edits profiles.
 Keep runtime artifacts ignored and preserve the matching evidence for any new
 failure. Remove task-created scratch artifacts only after recording findings.
 

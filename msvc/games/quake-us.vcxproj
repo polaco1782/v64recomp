@@ -29,10 +29,8 @@
     <ClCompile Include="$(RecompRoot)games\quake-us\controls.c" />
     <ClInclude Include="$(RecompRoot)games\quake-us\controls.h" />
     <None Include="$(RecompRoot)games\quake-us\controls_analysis.py" />
-    <None Include="$(RecompRoot)games\quake-us\gameplay-input.json" />
     <None Include="$(RecompRoot)games\quake-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\quake-us\main.c" />
-    <None Include="$(RecompRoot)games\quake-us\new-game-input.json" />
     <None Include="$(RecompRoot)games\quake-us\profile.toml" />
     <None Include="$(RecompRoot)games\quake-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\quake-us\cpu-*.c" />

@@ -34,13 +34,6 @@ Cartridge saves use 32 KiB SRAM at `local/saves/re2-us-v1.sra` (override with
 `--save`). The previous `.mpk` path was a Controller Pak image and is kept
 separate. The default controller has no Pak attached.
 
-The root-level `inspect_overlay.py` supports ROM-bound overlay investigation.
-Standalone audio/video validation harnesses have been removed.
-The overlay inspector verifies cartridge identity and compares complete decoded
-images against private crash snapshots, without changing checked metadata. For an enemy patch variant, pass e.g.
-`--index 39 --source-index 11`; `--ram` then compares its entire reconstructed
-second-slot image.
-
 ## Loading model
 
 IPL maps cartridge `0x1000..0x14420` to `0x80000480..0x800138a0`.

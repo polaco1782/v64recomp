@@ -25,9 +25,6 @@
     <None Include="$(RecompRoot)games\1080-us\heli-symbols.json">
       <Filter>Configuration</Filter>
     </None>
-    <None Include="$(RecompRoot)games\1080-us\inspect_uso.py">
-      <Filter>Source Files</Filter>
-    </None>
     <ClCompile Include="$(RecompRoot)games\1080-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -4,9 +4,6 @@
     <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <None Include="$(RecompRoot)games\oot-us-v12\analyze_callbacks.py">
-      <Filter>Source Files</Filter>
-    </None>
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>

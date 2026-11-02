@@ -4,9 +4,6 @@
     <None Include="$(RecompRoot)games\quake2-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <None Include="$(RecompRoot)games\quake2-us\analyze_callbacks.py">
-      <Filter>Source Files</Filter>
-    </None>
     <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>

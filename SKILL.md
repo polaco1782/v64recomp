@@ -189,9 +189,10 @@ offset, instruction bytes, and evidence for the proposed classification.
 | Overlapping functions or nonsense instructions | Revisit code/data classification, function ownership, shared tails, delay slots, section overlap, decompression, and relocations. Do not grow a code region merely to absorb the error. |
 | Privileged instruction, hardware access, or unknown SDK routine | Determine whether this is an OS/device boundary, a game-specific pager, or real CPU code. Use the shared native catalog/runtime or a checked game adapter as appropriate. |
 
-For callback discovery, use `pointer_entries` and `materialized_entries` from
-`tools/metadata_candidates.py`; OOT's `analyze_callbacks.py` demonstrates
-their use. Adapt ranges to the new game and exclude known switch tables/data.
+For callback discovery, use `tools/inspect_callbacks.py` and
+`tools/inspect_function_candidates.py`, which share the scans in
+`tools/metadata_candidates.py`. Adapt ranges to the new game and exclude known
+switch tables/data.
 Treat pointer scans, stack-prologue scans, and valid-looking MIPS as candidates.
 Review call sites, instruction flow, alignment, section identity, and code/data
 ownership before adding entries. Do not blindly apply another game's analyzer.
@@ -461,8 +462,9 @@ unavailable, continue independent work and report that acceptance gap explicitly
 Verify title/menu navigation, starting play, visible scene updates, movement and
 game-specific actions, working controller input, and audible audio. Check a
 meaningful transition and save/reload when available in the tested path. Retain a
-small deterministic replay in `games/<game>/` when it supports reproduction;
-use `tools/controller_replay.py` for the supported JSON-to-text input conversion.
+small deterministic replay in `games/<game>/` when it supports reproduction.
+Write the runtime's text format directly: zero-based frame, button mask, stick X
+and stick Y. Do not add JSON copies or conversion scripts.
 Inspect captures visually. Separate presentation counts from actual game progress.
 
 Build and run Release through the same exercised path; Debug success alone is
@@ -520,6 +522,11 @@ diff against the starting status and identify files created by this work.
   inventories, fingerprints, adapters, licenses, user ROMs, saves, texture packs,
   and unrelated existing files. Use targeted deletions; do not blanket-clean the
   worktree or shared `local/` and `build/` trees.
+- Trace each retained Python helper to a generation import or maintained command,
+  and each JSON file to a reader or profile declaration. A cache glob or editor
+  project entry is not a consumer. Delete one-off analysis/import scripts once
+  their reviewed results are recorded, plus unused replay fixtures and reports.
+  Remove their documentation and project references in the same change.
 - After cleanup, regenerate/build in a fresh directory when needed to show the
   port does not depend on deleted scratch artifacts. Rerun the affected acceptance
   path if executable inputs changed. Run `git diff --check` and review status for

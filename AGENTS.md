@@ -55,6 +55,12 @@ games/<game>/
   as `game_config.h` in the generated output directory; keep game-specific
   generation behavior in the game module rather than adding game-ID branches
   to the driver.
+- Keep Python helpers only when generation imports them or a documented,
+  maintained command needs them. A project-file listing or cache glob does not
+  establish use. Remove one-off analyzers/importers after their reviewed results
+  are recorded in the profile or inventory. Keep JSON only when a generator,
+  profile or maintained tool reads it; do not retain scratch reports or obsolete
+  replay JSON. Maintained replays use the runtime's text format directly.
 - Use `RECOMP_GAME_SOURCES` for additional root-level translation units.
   Include `cmake/Game.cmake`; it always selects `main.c` and defines
   `RECOMP_DEBUG` for Debug. Do not add per-mode source lists or list `main.c`

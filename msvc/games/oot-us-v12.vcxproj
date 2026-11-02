@@ -25,7 +25,6 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt" />
-    <None Include="$(RecompRoot)games\oot-us-v12\analyze_callbacks.py" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h" />
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\controls.c" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\controls.h" />

@@ -54,9 +54,6 @@ profile remains bound to the original cartridge SHA-1. Full code classification
 is incomplete. The normal build emits a `pending-boundaries.json` inventory;
 those failing functions do not implement the missing behavior.
 
-`analyze_switches.py` reports bounded switch candidates for manual review.
-It verifies the prepared image and table destinations and never edits metadata.
-
 The graphics adapter uses RT64's RAM-backed framebuffer copies because the intro
 reinterprets a CI8 render target as RGBA16 without a TLUT, a conversion absent
 from RT64's GPU reinterpretation shader. This preserves packed texture bytes;

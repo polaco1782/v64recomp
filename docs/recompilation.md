@@ -125,8 +125,9 @@ code, function pointers, computed addresses and data that decodes as valid MIPS
 instructions can leave ambiguities. Discovery reports unresolved transfers,
 conflicting instruction ownership and unvisited ranges for review.
 
-[Ocarina of Time's callback analyzer](../games/oot-us-v12/analyze_callbacks.py)
-uses shared pointer and address-materialization scans to propose missing roots.
+[The shared callback inspector](../tools/inspect_callbacks.py) and
+[function candidate inspector](../tools/inspect_function_candidates.py)
+use pointer and address-materialization scans to propose missing roots.
 Proposals retain their source sites and fingerprints for review, followed by
 another discovery pass to validate ownership and indirect transfers.
 

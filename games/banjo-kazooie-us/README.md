@@ -13,7 +13,7 @@ cmake --build --preset banjo-kazooie-us-debug
 
 Use the matching `banjo-kazooie-us-release` presets for Release. Both compile
 `main.c`, which owns boot, runtime services and the frame loop. `generate.py`
-emits `game_config.h` under the selected build directory. Audio profiles,
-checked inventories and the maintained reference importer live beside the code.
+emits `game_config.h` under the selected build directory. Audio profiles and
+checked inventories live beside the code.
 See [the common layout](../../docs/adding-a-rom.md#7-add-the-native-application-and-cmake-integration)
 and [Debug options](../../docs/debugging.md).

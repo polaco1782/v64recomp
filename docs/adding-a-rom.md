@@ -44,7 +44,6 @@ These are the investigation tools and when to use them:
 | `tools/inspect_function_candidates.py` | Find potentially missing entries from owned address-producing code, image-wide pointers, stack frames and direct calls in candidate bodies; report bounded control-flow and ownership checks. |
 | `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
 | `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |
-| `tools/controller_replay.py` | Convert existing ROM-bound replay JSON to the debug app's text input format. |
 | `tools/desktop_replay.py` | Replay text inputs as keyboard actions in a launched app's own X11 window; capture Release scenes and record the bounded process result. |
 | Optional MIPS disassembler/decompiler, such as Ghidra | Investigate loaders, BSS bounds, callbacks and data structures. Configure big-endian VR4300/MIPS III semantics and the verified address mapping. |
 
@@ -377,6 +376,11 @@ or `release/` source folders, separate entry points, or thin runner wrappers.
 Keep the common startup and frame loop together, with small
 `#ifdef RECOMP_DEBUG` blocks for game-specific diagnostics. Independent input,
 graphics, paging or codec adapters may remain separate root-level files.
+Every Python helper must serve generation or a documented, maintained command;
+every JSON file must have a reader or profile declaration. Editor entries and
+cache globs do not establish use. Remove one-off scanners/importers after their
+reviewed findings are recorded, and keep replay inputs in the runtime's text
+format without JSON duplicates.
 
 Read an existing app for structure, then replace its ROM-specific assumptions.
 [Duke's main.c](../games/duke-us/main.c) is a compact example, but its

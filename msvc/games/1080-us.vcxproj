@@ -32,7 +32,6 @@
     <None Include="$(RecompRoot)games\1080-us\genproc-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\gui-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\heli-symbols.json" />
-    <None Include="$(RecompRoot)games\1080-us\inspect_uso.py" />
     <ClCompile Include="$(RecompRoot)games\1080-us\main.c" />
     <None Include="$(RecompRoot)games\1080-us\mgrproc-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\n64proc-symbols.json" />

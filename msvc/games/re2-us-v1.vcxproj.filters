@@ -10,9 +10,6 @@
     <None Include="$(RecompRoot)games\re2-us-v1\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="$(RecompRoot)games\re2-us-v1\inspect_overlay.py">
-      <Filter>Source Files</Filter>
-    </None>
     <ClCompile Include="$(RecompRoot)games\re2-us-v1\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

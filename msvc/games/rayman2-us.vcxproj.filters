@@ -7,9 +7,6 @@
     <ClInclude Include="$(RecompRoot)games\rayman2-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <None Include="$(RecompRoot)games\rayman2-us\gameplay-input.json">
-      <Filter>Configuration</Filter>
-    </None>
     <None Include="$(RecompRoot)games\rayman2-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
