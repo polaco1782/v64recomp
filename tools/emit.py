@@ -736,6 +736,15 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if i.opcode in ('jr', 'jalr'):
             # Read the target before the delay slot can change the source register.
             lines.append(f"        uint32_t destination = (uint32_t){reg(i.rs)};")
+        relocated_jal = i.opcode == 'jal' and i.pc in function.get('relocation_pcs', [])
+        if relocated_jal:
+            # A loader may bind this J26 import after generation. Fetch the
+            # relocated instruction before executing its original delay slot.
+            lines.extend([f'        uint32_t call_pc = recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc:08x}));',
+                          '        uint32_t call_word = recomp_load32(runtime, call_pc);',
+                          '        if ((call_word >> 26) != 3)',
+                          '            recomp_fail("relocated call opcode mismatch", call_pc);',
+                          '        uint32_t destination = ((call_pc + 4) & UINT32_C(0xf0000000)) | ((call_word & UINT32_C(0x03ffffff)) << 2);'])
         if i.opcode in ('jal', 'jalr'):
             ra = (f'mips_s32(recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc+8:08x})))'
                   if function.get('relocatable') else signed_constant(i.pc + 8, 32))
@@ -792,7 +801,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 lines.extend([f'            recomp_live_checked_call(runtime, ctx, destination, UINT32_C(0x{i.pc:08x}), {function["section"]});',
                               *reload('            '), '            break;', '        }'])
             else:
-                if i.opcode == 'jalr':
+                if i.opcode == 'jalr' or relocated_jal:
                     log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                                  function['name'], function['section'], i.pc, i.assembly, verbose=True)
                     call = around(["        recomp_lookup(runtime, destination)(runtime, ctx);"], '        ')

@@ -55,28 +55,66 @@ def main() -> None:
         else:
             raise AssertionError('mismatched direct-call evidence accepted')
     emitted = emit_function(function, instructions, FunctionRegistry(metadata['functions']))
+    # Model a loader-bound J26 call in a rebased section. Its delay slot
+    # overwrites the call word, so fetching the destination after it is wrong.
+    relocated = deepcopy(function)
+    relocated.update(section=2, relocatable=True, relocation_pcs=[site['pc']])
+    relocated_rom = bytearray(rom)
+    struct.pack_into('>I', relocated_rom, 0x40 + 4 * 4, 0xaca80000)  # sw t0,0(a1)
+    relocated_instructions = decode_function(bytes(relocated_rom), relocated)
+    emitted += emit_function(relocated, relocated_instructions, FunctionRegistry([relocated]))
     source = '#include "runtime.h"\n#include <assert.h>\n#include <stdlib.h>\n#include <string.h>\n' + emitted
     source += r'''
-static void callback(Runtime *rt, MipsContext *ctx) { (void)rt; ctx->gpr[2] = 42; }
+static bool relocated_call;
+static const char *expected_failure = "unregistered or unloaded function";
+static uint32_t expected_address = 0x80001000;
+static void callback(Runtime *rt, MipsContext *ctx) {
+    (void)rt;
+    if (relocated_call) assert(ctx->gpr[31] == mips_s32(0x80010414));
+    ctx->gpr[2] = 42;
+}
+static void second_callback(Runtime *rt, MipsContext *ctx) {
+    (void)rt; assert(ctx->gpr[31] == mips_s32(0x80010414)); ctx->gpr[2] = 84;
+}
+static uint32_t relocate(Runtime *rt, uint32_t section, uint32_t address) {
+    (void)rt; return section == 2 ? address + 0x10000 : address;
+}
 static void failure(const RecompFailureInfo *info, void *unused) {
     (void)unused;
-    _Exit(!strcmp(info->message, "unregistered or unloaded function") && info->address == 0x80001000 ? 77 : 78);
+    _Exit(!strcmp(info->message, expected_failure) && info->address == expected_address ? 77 : 78);
 }
 int main(int argc, char **argv) {
     (void)argv;
     RecompFunctionEntry entries[] = {
         {.address=0x80000400,.size=32,.section=0,.function=recomp_s0_80000400,.name="caller"},
-        {.address=0x80001000,.size=4,.section=1,.function=callback,.name="callback"}};
-    bool loaded[] = {true, false}; Runtime rt;
-    assert(recomp_runtime_init(&rt,0x400000,entries,2,loaded,2));
+        {.address=0x80001000,.size=4,.section=1,.function=callback,.name="callback"},
+        {.address=0x80002000,.size=4,.section=1,.function=second_callback,.name="second"}};
+    bool loaded[] = {true, false, true}; Runtime rt;
+    assert(recomp_runtime_init(&rt,0x400000,entries,3,loaded,3));
     recomp_set_failure_handler(failure,NULL);
     MipsContext ctx={0};ctx.gpr[2]=7;ctx.gpr[31]=mips_s32(0xf0000000);
     recomp_s0_80000400(&rt,&ctx);
     assert(ctx.gpr[2]==7 && ctx.gpr[6]==9 && ctx.gpr[31]==mips_s32(0xf0000000));
     ctx.gpr[4]=1;
-    if(argc==1)rt.section_loaded[1]=true;
+    if(argc==1 || strcmp(argv[1],"unloaded"))rt.section_loaded[1]=true;
     recomp_s0_80000400(&rt,&ctx);
     assert(ctx.gpr[2]==42 && ctx.gpr[31]==mips_s32(0xf0000000));
+    rt.relocated_address=relocate; relocated_call=true;
+    memset(&ctx,0,sizeof(ctx)); ctx.gpr[31]=mips_s32(0xf0000000);
+    ctx.gpr[4]=1; ctx.gpr[5]=mips_s32(0x8001040c); ctx.gpr[8]=0x0c000800;
+    recomp_store32(&rt,0x8001040c,0x0c000400);
+    if(argc>1 && !strcmp(argv[1],"relocated-unloaded"))rt.section_loaded[1]=false;
+    if(argc>1 && !strcmp(argv[1],"opcode")) {
+        expected_failure="relocated call opcode mismatch"; expected_address=0x8001040c;
+        recomp_store32(&rt,0x8001040c,0);
+    }
+    recomp_s2_80000400(&rt,&ctx);
+    assert(ctx.gpr[2]==42 && ctx.gpr[31]==mips_s32(0xf0000000));
+    assert(recomp_load32(&rt,0x8001040c)==0x0c000800);
+    ctx.gpr[8]=0x0c000400;
+    recomp_s2_80000400(&rt,&ctx);
+    assert(ctx.gpr[2]==84 && ctx.gpr[31]==mips_s32(0xf0000000));
+    assert(recomp_load32(&rt,0x8001040c)==0x0c000400);
     recomp_runtime_destroy(&rt);
 }
 '''
@@ -110,9 +148,10 @@ int main(int argc, char **argv) {
             if compilation.returncode:
                 raise RuntimeError(compilation.stdout.decode(errors='replace') + compilation.stderr.decode(errors='replace'))
             subprocess.run([str(executable)], check=True, env=environment, capture_output=True)
-            missing = subprocess.run([str(executable), 'unloaded'], env=environment, capture_output=True)
-            assert missing.returncode == 77, missing.stderr.decode(errors='replace')
-    print('Conditional registered calls, delay slots, runtime section selection and evidence rejection passed at O0/O2')
+            for mode in ('unloaded', 'relocated-unloaded', 'opcode'):
+                missing = subprocess.run([str(executable), mode], env=environment, capture_output=True)
+                assert missing.returncode == 77, missing.stderr.decode(errors='replace')
+    print('Registered and relocated J26 calls, delay slots, rebased RA, section/opcode checks and evidence rejection passed at O0/O2')
 
 
 if __name__ == '__main__':
