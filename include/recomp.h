@@ -120,8 +120,8 @@ struct Runtime {
     /* Optional game loader: map relocated entries to their compiled addresses. */
     uint32_t (*canonical_function_address)(Runtime *, uint32_t);
     uint32_t (*relocated_address)(Runtime *, uint32_t section, uint32_t address);
-    bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
-    uint32_t interrupt_mask;  /* Logical SDK CPU/RCP interrupt mask. */
+    bool interrupts_disabled;               /* Native OS critical section; serialized guest scheduling. */
+    uint32_t interrupt_mask;                /* Logical SDK CPU/RCP interrupt mask. */
     uint32_t interrupt_global_mask_address; /* Optional guest __OSGlobalIntMask for SDK variants. */
     RecompPageMapping page_mappings[32];
 #ifdef RECOMP_DEBUG
@@ -380,8 +380,7 @@ static inline uint64_t mips_sra32(uint64_t x, unsigned count) {
     uint32_t value = (uint32_t)x;
     count &= 31;
 #if USE_INTRISICS && (defined(__SSE2__) || defined(_M_X64))
-    return mips_s32(_mm_cvtsi128_si32(_mm_sra_epi32(_mm_cvtsi32_si128((int32_t)value),
-                                                  _mm_cvtsi32_si128((int)count))));
+    return mips_s32(_mm_cvtsi128_si32(_mm_sra_epi32(_mm_cvtsi32_si128((int32_t)value), _mm_cvtsi32_si128((int)count))));
 #else
     /* Shift the magnitude below the sign bit, then subtract its weight.
      * MSVC /O2 can miscompile conditional sign-fill after a truncating SLL,
@@ -451,8 +450,7 @@ static inline int64_t mips_i32(uint64_t x) {
 }
 static inline void mips_mult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
 #if USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)
-    uint64_t result = is_signed ? (uint64_t)__emul((int32_t)x, (int32_t)y)
-                                : __emulu((uint32_t)x, (uint32_t)y);
+    uint64_t result = is_signed ? (uint64_t)__emul((int32_t)x, (int32_t)y) : __emulu((uint32_t)x, (uint32_t)y);
 #else
     uint64_t result = is_signed ? (uint64_t)(mips_i32(x) * mips_i32(y)) : (uint64_t)(uint32_t)x * (uint32_t)y;
 #endif
@@ -476,8 +474,8 @@ static inline void mips_div(MipsContext *ctx, uint64_t x, uint64_t y, bool is_si
 
 static inline void mips_dmult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
 #if USE_INTRISICS && defined(__SIZEOF_INT128__)
-    unsigned __int128 product = is_signed ? (unsigned __int128)((__int128)(int64_t)x * (__int128)(int64_t)y)
-                                         : (unsigned __int128)x * y;
+    unsigned __int128 product =
+        is_signed ? (unsigned __int128)((__int128)(int64_t)x * (__int128)(int64_t)y) : (unsigned __int128)x * y;
     ctx->lo = (uint64_t)product;
     ctx->hi = (uint64_t)(product >> 64);
 #elif USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)

@@ -57,8 +57,8 @@ static void prepare_call(Runtime *rt, uint32_t address) {
             image[i] = (uint8_t)recomp_load(rt, BOOT_BOOTUP_ADDRESS + i, 1);
         SHA256(image, BOOT_BOOTUP_SIZE, digest);
         free(image);
-        require(!memcmp(digest, bootup_sha256, sizeof(digest)),
-                "1080 guest bootup USO differs from compiled image", BOOT_BOOTUP_ADDRESS);
+        require(!memcmp(digest, bootup_sha256, sizeof(digest)), "1080 guest bootup USO differs from compiled image",
+                BOOT_BOOTUP_ADDRESS);
         rt->section_loaded[BOOT_BOOTUP_SECTION] = true;
         rt->interrupt_global_mask_address = BOOT_GLOBAL_INTERRUPT_MASK;
         bootup_verified = true;
@@ -68,8 +68,7 @@ static void prepare_call(Runtime *rt, uint32_t address) {
         return;
     for (uint32_t a = BOOT_BSS_START; a < BOOT_BSS_END; a += 4)
         require(recomp_load(rt, a, 4) == 0, "1080 kernel BSS clear mismatch", a);
-    require(recomp_load(rt, BOOT_BSS_END, 4) == 0xa5a5a5a5,
-            "1080 kernel BSS overrun", BOOT_BSS_END);
+    require(recomp_load(rt, BOOT_BSS_END, 4) == 0xa5a5a5a5, "1080 kernel BSS overrun", BOOT_BSS_END);
     bss_verified = true;
 #endif
 }
@@ -86,8 +85,8 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
 /* Run the original kernel, checked USO modules, and shared device services. */
 int snowboarding_run(const RecompGameOptions *options) {
     Runtime rt;
-    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count,
-                                recomp_boot_sections, recomp_section_count),
+    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
+                                recomp_section_count),
             "1080 runtime initialization failed", 0);
     bootup_verified = false;
     wall_origin = 0;
@@ -101,9 +100,12 @@ int snowboarding_run(const RecompGameOptions *options) {
     RecompClockConfig clock = {.ticks_per_second = BOOT_COUNTER_HZ, .now_ns = guest_time};
     RecompSchedulerConfig scheduler = {.thread_tail = BOOT_DIAGNOSTIC_THREAD_TAIL};
     RecompPlatformConfig platform = {.vi_period_ticks = BOOT_VI_PERIOD_TICKS,
-                                     .clock_rate = BOOT_CLOCK_RATE, .vi_clock = BOOT_VI_CLOCK,
-                                     .final_rom = BOOT_FINAL_ROM, .app_nmi_buffer = 0x8000031c,
-                                     .sram_size = BOOT_SRAM_SIZE, .sram_path = options->save};
+                                     .clock_rate = BOOT_CLOCK_RATE,
+                                     .vi_clock = BOOT_VI_CLOCK,
+                                     .final_rom = BOOT_FINAL_ROM,
+                                     .app_nmi_buffer = 0x8000031c,
+                                     .sram_size = BOOT_SRAM_SIZE,
+                                     .sram_path = options->save};
     require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler) &&
                 recomp_platform_init(&rt, &platform),
             "1080 native services initialization failed", 0);
@@ -117,8 +119,10 @@ int snowboarding_run(const RecompGameOptions *options) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "1080 IO/task initialization failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "1080 Snowboarding");
     require(renderer != NULL, "1080 renderer initialization failed", 0);
-    RecompAudioConfig ac = {.output_enabled = true, .playback = !options->mute,
-                            .microcode = RECOMP_AUDIO_NEAD_1080, .task_profile = &snowboarding_audio_profile};
+    RecompAudioConfig ac = {.output_enabled = true,
+                            .playback = !options->mute,
+                            .microcode = RECOMP_AUDIO_NEAD_1080,
+                            .task_profile = &snowboarding_audio_profile};
     audio = recomp_audio_create(&rt, &ac);
     require(audio != NULL, "1080 audio initialization failed", 0);
     rt.prepare_call = prepare_call;
@@ -145,8 +149,8 @@ int snowboarding_run(const RecompGameOptions *options) {
     }
 #ifdef RECOMP_DEBUG
     RecompRendererStats stats = recomp_renderer_stats(renderer);
-    fprintf(stderr, "1080: graphics tasks=%llu presentations=%llu\n",
-            (unsigned long long)stats.graphics_tasks, (unsigned long long)stats.presentations);
+    fprintf(stderr, "1080: graphics tasks=%llu presentations=%llu\n", (unsigned long long)stats.graphics_tasks,
+            (unsigned long long)stats.presentations);
 #endif
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);

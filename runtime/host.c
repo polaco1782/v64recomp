@@ -63,8 +63,8 @@ int nanosleep(const struct timespec *duration, struct timespec *remaining) {
 }
 
 int clock_nanosleep(int clock, int flags, const struct timespec *value, struct timespec *remaining) {
-    if (clock != CLOCK_MONOTONIC || (flags != 0 && flags != TIMER_ABSTIME) || !value ||
-        value->tv_sec < 0 || value->tv_nsec < 0 || value->tv_nsec >= 1000000000)
+    if (clock != CLOCK_MONOTONIC || (flags != 0 && flags != TIMER_ABSTIME) || !value || value->tv_sec < 0 ||
+        value->tv_nsec < 0 || value->tv_nsec >= 1000000000)
         return EINVAL;
     struct timespec delay = *value;
     if (flags == TIMER_ABSTIME) {

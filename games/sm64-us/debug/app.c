@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
             "{\"type\":\"%s\",\"mode\":\"%s\",\"graphics_tasks\":%u,\"audio_tasks\":%u,\"world_frames\":%u,\"play_"
             "frames\":%u,\"target_frames\":%u,\"vblanks\":%u,\"controller_reads\":%" PRIu64 ",\"sp_events\":%" PRIu64
             ",\"dp_events\":%" PRIu64 ",\"start_position\":[%.9g,%.9g,%.9g],\"last_position\":[%.9g,%.9g,%.9g],"
-                                      "\"distance\":%.9g,\"max_height\":%.9g,\"min_height\":%.9g}\n",
+            "\"distance\":%.9g,\"max_height\":%.9g,\"min_height\":%.9g}\n",
             route_mode() ? "interior_summary" : "castle_summary", mode, graphics, audio, world_frames, play_frames,
             route_target_frames, vi_count, is.reads_completed, ts.sp_events, ts.dp_events, start_pos[0], start_pos[1],
             start_pos[2], last_pos[0], last_pos[1], last_pos[2], distance, max_height, min_height);

@@ -28,16 +28,17 @@ static void duke_fov_set(double horizontal) {
     enabled = recomp_fov_enabled(&fov);
     horizontal = fov.horizontal;
     const double radians = 3.14159265358979323846 / 180.0;
-    vertical_bits = to_bits((float)(2 * atan(tan(horizontal * radians / 2) /
-                                           from_bits(DUKE_FOV_ASPECT_BITS)) / radians));
-    sprite_scale = (float)(tan(from_bits(DUKE_FOV_VERTICAL_BITS) * radians / 2) /
-                           tan(from_bits(vertical_bits) * radians / 2));
+    vertical_bits =
+        to_bits((float)(2 * atan(tan(horizontal * radians / 2) / from_bits(DUKE_FOV_ASPECT_BITS)) / radians));
+    sprite_scale =
+        (float)(tan(from_bits(DUKE_FOV_VERTICAL_BITS) * radians / 2) / tan(from_bits(vertical_bits) * radians / 2));
     // Preserve the native pitch-dependent overscan and never narrow the scan.
     // Add one degree beyond the requested half-angle to its stock 35 degrees.
     scan_padding = (float)fmax(0, horizontal / 2 + 1 - from_bits(DUKE_FOV_SCAN_HALF_BITS));
 }
 void duke_fov_adjust(int steps) {
-    if (recomp_fov_adjust(&fov, steps)) duke_fov_set(fov.horizontal);
+    if (recomp_fov_adjust(&fov, steps))
+        duke_fov_set(fov.horizontal);
 }
 void duke_fov_projection_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     if (!enabled) {
@@ -52,8 +53,7 @@ void duke_fov_projection_hook(Runtime *rt, MipsContext *ctx, RecompFunction orig
             (sp & 0x1fffffff) + DUKE_FOV_SAVED_RA_OFFSET + 4 <= rt->rdram_size)
             world = recomp_load32(rt, sp + DUKE_FOV_SAVED_RA_OFFSET) == DUKE_FOV_GPU_RETURN;
     }
-    if (world && recomp_load16(rt, DUKE_FOV_PLAYERS) == 1 &&
-        (uint32_t)ctx->gpr[6] == DUKE_FOV_VERTICAL_BITS &&
+    if (world && recomp_load16(rt, DUKE_FOV_PLAYERS) == 1 && (uint32_t)ctx->gpr[6] == DUKE_FOV_VERTICAL_BITS &&
         (uint32_t)ctx->gpr[7] == DUKE_FOV_ASPECT_BITS)
         ctx->gpr[6] = mips_s32(vertical_bits);
     // The original F routine supplies both the CPU float matrix (later combined

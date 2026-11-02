@@ -15,9 +15,11 @@ void recomp_fov_set(RecompFov *fov, double horizontal) {
 bool recomp_fov_adjust(RecompFov *fov, int steps) {
     double previous = fov->horizontal;
     recomp_fov_set(fov, previous + steps);
-    if (previous == fov->horizontal) return false;
-    fprintf(stderr, "FOV: %.1f degrees%s\n", fov->horizontal,
-            recomp_fov_enabled(fov) ? "" : " (original)");
+    if (previous == fov->horizontal)
+        return false;
+    fprintf(stderr, "FOV: %.1f degrees%s\n", fov->horizontal, recomp_fov_enabled(fov) ? "" : " (original)");
     return true;
 }
-bool recomp_fov_enabled(const RecompFov *fov) { return fov->horizontal > fov->original; }
+bool recomp_fov_enabled(const RecompFov *fov) {
+    return fov->horizontal > fov->original;
+}

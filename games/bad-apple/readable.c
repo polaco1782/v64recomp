@@ -20,26 +20,22 @@
  */
 #include "recomp.h"
 
-#define VI_BASE          UINT32_C(0xa4400000)
-#define AI_BASE          UINT32_C(0xa4500000)
-#define PI_BASE          UINT32_C(0xa4600000)
-#define DPC_BASE         UINT32_C(0xa4100000)
+#define VI_BASE UINT32_C(0xa4400000)
+#define AI_BASE UINT32_C(0xa4500000)
+#define PI_BASE UINT32_C(0xa4600000)
+#define DPC_BASE UINT32_C(0xa4100000)
 #define PIF_BOOT_COMMAND UINT32_C(0xbfc007fc)
 
-#define FRAMEBUFFER      UINT32_C(0xa0100000)
-#define RLE_BUFFER       UINT32_C(0x80300000)
+#define FRAMEBUFFER UINT32_C(0xa0100000)
+#define RLE_BUFFER UINT32_C(0x80300000)
 #define GRAYSCALE_BUFFER UINT32_C(0x80380000)
-#define AUDIO_BUFFER     UINT32_C(0x800016d8)
+#define AUDIO_BUFFER UINT32_C(0x800016d8)
 #define AUDIO_CART_START UINT32_C(0x100016d8)
-#define VIDEO_ROM_START  UINT32_C(0xb126eed8)
-#define RDP_LIST_START   UINT32_C(0x800012f0)
-#define RDP_LIST_END     UINT32_C(0x800016d8)
+#define VIDEO_ROM_START UINT32_C(0xb126eed8)
+#define RDP_LIST_START UINT32_C(0x800012f0)
+#define RDP_LIST_END UINT32_C(0x800016d8)
 
-enum {
-    FRAME_PIXELS = 320 * 240,
-    MOVIE_FRAMES = 6572,
-    AUDIO_BYTES_PER_FRAME = 2940
-};
+enum { FRAME_PIXELS = 320 * 240, MOVIE_FRAMES = 6572, AUDIO_BYTES_PER_FRAME = 2940 };
 
 /* 0x80001000..0x800010b8: one-time hardware setup. */
 static void configure_video_and_audio(Runtime *runtime) {
@@ -73,10 +69,9 @@ static void configure_video_and_audio(Runtime *runtime) {
  * The returned guest ROM address is the next block's four-byte boundary.
  */
 static uint32_t decompress_lzss_frame(Runtime *runtime, uint32_t source) {
-    uint32_t output_size =
-        (uint32_t)recomp_load8(runtime, source + 1) |
-        ((uint32_t)recomp_load8(runtime, source + 2) << 8) |
-        ((uint32_t)recomp_load8(runtime, source + 3) << 16);
+    uint32_t output_size = (uint32_t)recomp_load8(runtime, source + 1) |
+                           ((uint32_t)recomp_load8(runtime, source + 2) << 8) |
+                           ((uint32_t)recomp_load8(runtime, source + 3) << 16);
     source += 4;
 
     uint32_t output = RLE_BUFFER;

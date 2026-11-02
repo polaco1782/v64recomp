@@ -372,8 +372,7 @@ uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
 #endif
     uint32_t device_bus = recomp_direct_address(address) ? address & UINT32_C(0x1fffffff) : address;
     uint64_t device_value;
-    if (device_bus >= rt->rdram_size && rt->device_read &&
-        rt->device_read(rt, device_bus, bytes, &device_value))
+    if (device_bus >= rt->rdram_size && rt->device_read && rt->device_read(rt, device_bus, bytes, &device_value))
         return device_value;
     /* Some audio managers inline osAiGetLength. Use the same native DMA
      * state as the SDK hook for this read-only register, including polling
@@ -479,8 +478,7 @@ void recomp_store(Runtime *rt, uint32_t address, uint64_t value, unsigned bytes)
         fail_ram("unaligned store", address, bytes);
 #endif
     uint32_t device_bus = recomp_direct_address(address) ? address & UINT32_C(0x1fffffff) : address;
-    if (device_bus >= rt->rdram_size && rt->device_write &&
-        rt->device_write(rt, device_bus, bytes, value))
+    if (device_bus >= rt->rdram_size && rt->device_write && rt->device_write(rt, device_bus, bytes, value))
         return;
     uint32_t p = recomp_ram_address_write_slow(rt, address, bytes);
 #if RECOMP_LITTLE_ENDIAN_HOST

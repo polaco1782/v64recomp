@@ -15,7 +15,7 @@ static Hexen *game;
 
 bool hexen_poll_input(Hexen *g, RecompPad *pad) {
     recomp_renderer_mouse_mode(g->renderer, hexen_input_enabled(),
-                              g->program_verified && hexen_input_playable(&g->runtime));
+                               g->program_verified && hexen_input_playable(&g->runtime));
     if (!g->running || !recomp_renderer_input(g->renderer, pad)) {
         g->running = false;
         hexen_input_submit((RecompMouseFrame){0}, pad);

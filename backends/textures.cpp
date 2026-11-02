@@ -226,7 +226,8 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
             continue;
         }
         auto temporary = dumpDirectory / (base + ".png.tmp");
-        if (!stbi_write_png(temporary.u8string().c_str(), texture.width, texture.height, 4, pixels.data(), texture.width * 4))
+        if (!stbi_write_png(temporary.u8string().c_str(), texture.width, texture.height, 4, pixels.data(),
+                            texture.width * 4))
             throw std::runtime_error("could not write texture PNG");
         // Publish the complete PNG before its metadata so a complete pair
         // always contains a fully written image.

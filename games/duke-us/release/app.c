@@ -16,8 +16,10 @@ static RecompRenderer *renderer;
 static void poll_command_input(Runtime *rt, void *opaque) {
     (void)opaque;
     RecompPad pad = {.connected = true};
-    if (!duke_input_poll(rt, renderer, &pad)) window_closed = true;
-    else recomp_game_require(recomp_input_set(rt, 0, &pad), "Duke controller update failed", 0);
+    if (!duke_input_poll(rt, renderer, &pad))
+        window_closed = true;
+    else
+        recomp_game_require(recomp_input_set(rt, 0, &pad), "Duke controller update failed", 0);
 }
 static RecompAudio *audio;
 static uint64_t now_ns, wall_origin;

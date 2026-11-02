@@ -17,11 +17,9 @@ struct RecompTiming {
     bool cpu_valid;
 };
 
-static const char *phase_names[RECOMP_TIMING_PHASES] = {
-    "dispatch", "checkpoint", "context_sync", "guest_wait", "host_callback",
-    "graphics", "present", "audio", "sleep", "display",
-    "graphics_cpu"
-};
+static const char *phase_names[RECOMP_TIMING_PHASES] = {"dispatch",      "checkpoint", "context_sync", "guest_wait",
+                                                        "host_callback", "graphics",   "present",      "audio",
+                                                        "sleep",         "display",    "graphics_cpu"};
 
 uint64_t recomp_timing_clock(void) {
     struct timespec now;
@@ -75,8 +73,10 @@ bool recomp_timing_init(Runtime *rt) {
     /* Existing reports are never replaced. Choose a fresh path per run. */
     t->file = fopen(path, "wx");
     if (!t->file) {
-        fprintf(stderr, "Timing: warning: cannot create %s; profiling disabled "
-                        "(use a new file in an existing directory)\n", path);
+        fprintf(stderr,
+                "Timing: warning: cannot create %s; profiling disabled "
+                "(use a new file in an existing directory)\n",
+                path);
         free(t);
         return true;
     }
@@ -117,10 +117,9 @@ void recomp_timing_report(Runtime *rt, bool final) {
         return;
     uint64_t cpu = 0;
     bool valid = process_cpu(&cpu);
-    double cores = valid && t->cpu_valid && cpu >= t->previous_cpu
-                       ? (double)(cpu - t->previous_cpu) / (double)elapsed : -1;
-    fprintf(t->file, "%.6f,%.3f,%u,%.4f", (now - t->origin) / 1e9, elapsed / 1e6,
-            t->logical_cpus, cores);
+    double cores =
+        valid && t->cpu_valid && cpu >= t->previous_cpu ? (double)(cpu - t->previous_cpu) / (double)elapsed : -1;
+    fprintf(t->file, "%.6f,%.3f,%u,%.4f", (now - t->origin) / 1e9, elapsed / 1e6, t->logical_cpus, cores);
     for (unsigned i = 0; i < RECOMP_TIMING_PHASES; i++) {
         fprintf(t->file, ",%" PRIu64 ",%.3f", t->count[i], t->ns[i] / 1e6);
         t->ns[i] = t->count[i] = 0;

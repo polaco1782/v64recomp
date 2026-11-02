@@ -20,8 +20,8 @@ typedef struct LiveModule {
     const RecompLiveManifest *manifest;
 } LiveModule;
 
-static const RecompFunctionEntry *find_entry(Runtime *rt, uint32_t address, uint32_t site,
-                                              uint32_t section, bool checked) {
+static const RecompFunctionEntry *find_entry(Runtime *rt, uint32_t address, uint32_t site, uint32_t section,
+                                             bool checked) {
     const RecompFunctionEntry *found = NULL;
     bool unloaded = false;
     for (LiveModule *module = rt->live_modules; module; module = module->next) {
@@ -85,14 +85,13 @@ static bool valid_manifest(Runtime *rt, const RecompLiveManifest *m) {
         m->context_size != sizeof(MipsContext) || m->entry_size != sizeof(RecompFunctionEntry) ||
         m->debug_build !=
 #ifdef RECOMP_DEBUG
-        1u ||
+            1u ||
 #else
-        0u ||
+            0u ||
 #endif
-        memcmp(m->rom_sha1, rt->rom_sha1, 20) ||
-        !m->functions || !m->function_count || m->function_count > 1000000 ||
-        (m->call_count && !m->calls) || m->call_count > 1000000 ||
-        (m->jump_count && !m->jumps) || m->jump_count > 1000000)
+        memcmp(m->rom_sha1, rt->rom_sha1, 20) || !m->functions || !m->function_count || m->function_count > 1000000 ||
+        (m->call_count && !m->calls) || m->call_count > 1000000 || (m->jump_count && !m->jumps) ||
+        m->jump_count > 1000000)
         return false;
     for (size_t i = 0; i < m->function_count; i++)
         if (!m->functions[i].function || !m->functions[i].size || m->functions[i].address % 4 ||
@@ -126,8 +125,7 @@ static bool load_module(Runtime *rt, const char *path) {
 
 /* Guest execution owns the scheduler token here. The owner is asleep in its
  * normal scheduler wait; no device polling or guest thread dispatch occurs. */
-static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32_t section,
-                            bool checked, bool jump) {
+static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32_t section, bool checked, bool jump) {
     const char *dir = getenv("RECOMP_LIVE_PATCH_DIR");
     if (!dir)
         dir = rt->live_patch_dir;
@@ -137,17 +135,24 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
     if (snprintf(control, sizeof(control), "%s/function-%08x.path", dir, address) >= (int)sizeof(control))
         return false;
     fprintf(stderr, "live repair: paused at %s target 0x%08x, site 0x%08x, section %u; waiting for %s\n",
-            jump ? "checked jump" : checked ? "checked call" : "missing function", address, site, section, control);
+            jump      ? "checked jump"
+            : checked ? "checked call"
+                      : "missing function",
+            address, site, section, control);
     char request[4096], temporary[4096];
     bool request_ready = false;
     if (snprintf(request, sizeof(request), "%s/request-%08x.json", dir, address) < (int)sizeof(request) &&
-        snprintf(temporary, sizeof(temporary), "%s/.request-%08x-%ld.tmp", dir, address,
-                 (long)getpid()) < (int)sizeof(temporary)) {
+        snprintf(temporary, sizeof(temporary), "%s/.request-%08x-%ld.tmp", dir, address, (long)getpid()) <
+            (int)sizeof(temporary)) {
         FILE *file = fopen(temporary, "w");
         if (file) {
-            fprintf(file, "{\"format_version\":1,\"address\":\"0x%08x\",\"site\":\"0x%08x\","
-                          "\"section\":%u,\"kind\":\"%s\",\"rom_sha1\":\"",
-                    address, site, section, jump ? "jump" : checked ? "call" : "missing_function");
+            fprintf(file,
+                    "{\"format_version\":1,\"address\":\"0x%08x\",\"site\":\"0x%08x\","
+                    "\"section\":%u,\"kind\":\"%s\",\"rom_sha1\":\"",
+                    address, site, section,
+                    jump      ? "jump"
+                    : checked ? "call"
+                              : "missing_function");
             for (size_t i = 0; i < sizeof(rt->rom_sha1); i++)
                 fprintf(file, "%02x", rt->rom_sha1[i]);
             fprintf(file, "\"}\n");
@@ -166,13 +171,25 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
         snprintf(target_text, sizeof(target_text), "0x%08x", address);
         snprintf(site_text, sizeof(site_text), "0x%08x", site);
         snprintf(section_text, sizeof(section_text), "%u", section);
-        char *const args[] = {(char *)rt->live_patch_python, (char *)rt->live_patch_script,
-                              "--game", (char *)rt->live_patch_game,
-                              "--address", target_text, "--site", site_text,
-                              "--section", section_text,
-                              "--kind", jump ? "jump" : checked ? "call" : "missing_function",
-                              "--build-dir", (char *)rt->live_patch_build_dir,
-                              "--patch-dir", (char *)dir, NULL};
+        char *const args[] = {(char *)rt->live_patch_python,
+                              (char *)rt->live_patch_script,
+                              "--game",
+                              (char *)rt->live_patch_game,
+                              "--address",
+                              target_text,
+                              "--site",
+                              site_text,
+                              "--section",
+                              section_text,
+                              "--kind",
+                              jump      ? "jump"
+                              : checked ? "call"
+                                        : "missing_function",
+                              "--build-dir",
+                              (char *)rt->live_patch_build_dir,
+                              "--patch-dir",
+                              (char *)dir,
+                              NULL};
         int error = posix_spawn(&helper, rt->live_patch_python, NULL, NULL, args, environ);
         if (error) {
             fprintf(stderr, "live repair: cannot start helper: %s\n", strerror(error));

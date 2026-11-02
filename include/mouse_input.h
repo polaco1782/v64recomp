@@ -22,10 +22,12 @@ typedef struct RecompMouseFrame {
     double dx, dy;
     int8_t move_x, move_y;
     bool active;
-    int32_t wheel; /* Positive = up. Queued detents, not held input. */
+    int32_t wheel;    /* Positive = up. Queued detents, not held input. */
     uint32_t actions; /* Held host actions; each game selects its own semantics. */
 } RecompMouseFrame;
-typedef struct RecompMouseBuffer { RecompMouseFrame pending; } RecompMouseBuffer;
+typedef struct RecompMouseBuffer {
+    RecompMouseFrame pending;
+} RecompMouseBuffer;
 static inline int32_t recomp_mouse_wheel_sum(int32_t pending, int64_t delta) {
     int64_t total = pending + delta;
     return (int32_t)(total < -32 ? -32 : total > 32 ? 32 : total);
@@ -36,7 +38,10 @@ static inline void recomp_mouse_submit(RecompMouseBuffer *buffer, RecompMouseFra
         frame.dy += buffer->pending.dy;
         frame.wheel = recomp_mouse_wheel_sum(buffer->pending.wheel, frame.wheel);
     }
-    if (!frame.active) { RecompMouseFrame empty = {0, 0, 0, 0, false, 0, 0}; frame = empty; }
+    if (!frame.active) {
+        RecompMouseFrame empty = {0, 0, 0, 0, false, 0, 0};
+        frame = empty;
+    }
     buffer->pending = frame;
 }
 static inline RecompMouseFrame recomp_mouse_consume(RecompMouseBuffer *buffer) {

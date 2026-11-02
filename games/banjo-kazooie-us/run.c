@@ -18,13 +18,11 @@ static uint64_t wall_origin;
 void hook_banjo_get_sr(Runtime *rt, MipsContext *ctx) {
     /* CPU interrupt-mask bits come from the current native scheduler thread.
      * The guest executes with CU1 enabled, outside EXL/ERL. */
-    ctx->gpr[2] = UINT32_C(0x20000000) | (rt->interrupt_mask & 0xff00u) |
-                  (rt->interrupts_disabled ? 0u : 1u);
+    ctx->gpr[2] = UINT32_C(0x20000000) | (rt->interrupt_mask & 0xff00u) | (rt->interrupts_disabled ? 0u : 1u);
 }
 
 void hook_banjo_ucode_load(Runtime *rt, MipsContext *ctx) {
-    require(recomp_task_stats(rt).submissions == 0,
-            "Banjo IPL3 RSP state requested after task execution", 0x80255c30);
+    require(recomp_task_stats(rt).submissions == 0, "Banjo IPL3 RSP state requested after task execution", 0x80255c30);
     /* IPL3 leaves DMEM[0] = 0xffffffff and IMEM[0] = 0x000017d7.
      * Preserve the game's xor results and normal PI DMA/queue path rather
      * than bypassing the cartridge's boot microcode load. */
@@ -54,26 +52,25 @@ static bool matches_image(Runtime *rt, size_t n) {
 }
 
 static void services(Runtime *rt, bool core) {
-    RecompClockConfig clock = {.ticks_per_second = BOOT_COUNTER_HZ, .now_ns = guest_time,
-                              .timer_sentinel = core ? 0x80285d00 : 0};
-    RecompSchedulerConfig scheduler = {
-        .thread_tail = core ? 0x80277370 : 0x80005120,
-        .run_queue = core ? 0x80277378 : 0x80005128,
-        .active_queue = core ? 0x8027737c : 0x8000512c,
-        .running_thread = core ? 0x80277380 : 0x80005130};
-    RecompPlatformConfig platform = {
-        .vi_period_ticks = BOOT_VI_PERIOD_TICKS,
-        .clock_rate = core ? 0x80277120 : 0x800050e0,
-        .vi_clock = core ? 0x80277128 : 0x800050e8,
-        .final_rom = core ? 0x80283440 : 0x800072b0,
-        .cart_handle = core ? 0x80285be0 : 0x80009740,
-        .timer_list = core ? 0x80277410 : 0,
-        .current_time = core ? 0x80285d20 : 0,
-        .base_counter = core ? 0x80285d28 : 0,
-        .vi_intr_count = core ? 0x80285d2c : 0,
-        .app_nmi_buffer = 0x8000031c};
+    RecompClockConfig clock = {
+        .ticks_per_second = BOOT_COUNTER_HZ, .now_ns = guest_time, .timer_sentinel = core ? 0x80285d00 : 0};
+    RecompSchedulerConfig scheduler = {.thread_tail = core ? 0x80277370 : 0x80005120,
+                                       .run_queue = core ? 0x80277378 : 0x80005128,
+                                       .active_queue = core ? 0x8027737c : 0x8000512c,
+                                       .running_thread = core ? 0x80277380 : 0x80005130};
+    RecompPlatformConfig platform = {.vi_period_ticks = BOOT_VI_PERIOD_TICKS,
+                                     .clock_rate = core ? 0x80277120 : 0x800050e0,
+                                     .vi_clock = core ? 0x80277128 : 0x800050e8,
+                                     .final_rom = core ? 0x80283440 : 0x800072b0,
+                                     .cart_handle = core ? 0x80285be0 : 0x80009740,
+                                     .timer_list = core ? 0x80277410 : 0,
+                                     .current_time = core ? 0x80285d20 : 0,
+                                     .base_counter = core ? 0x80285d28 : 0,
+                                     .vi_intr_count = core ? 0x80285d2c : 0,
+                                     .app_nmi_buffer = 0x8000031c};
     require(recomp_clock_init(rt, &clock) && recomp_scheduler_init(rt, &scheduler) &&
-                recomp_platform_init(rt, &platform), "Banjo native services initialization failed", 0);
+                recomp_platform_init(rt, &platform),
+            "Banjo native services initialization failed", 0);
     rt->interrupt_global_mask_address = core ? 0x80277130 : 0x800050f0;
 }
 
@@ -123,8 +120,9 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
 
 int banjo_run(const RecompGameOptions *options) {
     Runtime rt;
-    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count,
-                                recomp_boot_sections, recomp_section_count), "Banjo runtime initialization failed", 0);
+    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
+                                recomp_section_count),
+            "Banjo runtime initialization failed", 0);
     wall_origin = 0;
     core_services = false;
     uint8_t *rom = recomp_game_rom(&rt, options, BOOT_ROM_SIZE, boot_sha1);
@@ -137,8 +135,10 @@ int banjo_run(const RecompGameOptions *options) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Banjo IO/task initialization failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "Banjo-Kazooie");
     require(renderer != NULL, "Banjo renderer initialization failed", 0);
-    RecompAudioConfig ac = {.output_enabled = true, .playback = !options->mute,
-                            .microcode = RECOMP_AUDIO_NAUDIO, .task_profile = &banjo_audio_profile};
+    RecompAudioConfig ac = {.output_enabled = true,
+                            .playback = !options->mute,
+                            .microcode = RECOMP_AUDIO_NAUDIO,
+                            .task_profile = &banjo_audio_profile};
     audio = recomp_audio_create(&rt, &ac);
     require(audio != NULL, "Banjo audio initialization failed", 0);
     rt.prepare_call = prepare_call;
@@ -163,8 +163,8 @@ int banjo_run(const RecompGameOptions *options) {
     }
 #ifdef RECOMP_DEBUG
     RecompRendererStats stats = recomp_renderer_stats(renderer);
-    fprintf(stderr, "Banjo: graphics tasks=%llu presentations=%llu\n",
-            (unsigned long long)stats.graphics_tasks, (unsigned long long)stats.presentations);
+    fprintf(stderr, "Banjo: graphics tasks=%llu presentations=%llu\n", (unsigned long long)stats.graphics_tasks,
+            (unsigned long long)stats.presentations);
 #endif
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);

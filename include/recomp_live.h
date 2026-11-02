@@ -8,8 +8,8 @@
 typedef struct RecompLiveTransfer {
     uint32_t site, target, section;
 } RecompLiveTransfer;
-typedef void (*RecompLiveResume)(Runtime *, MipsContext *, uint32_t start_pc,
-                                 uint32_t return_address, uint32_t entry_stack_pointer);
+typedef void (*RecompLiveResume)(Runtime *, MipsContext *, uint32_t start_pc, uint32_t return_address,
+                                 uint32_t entry_stack_pointer);
 
 /* Export exactly one symbol named recomp_live_manifest from a repair module.
  * The module and all of its code must remain loaded while guest stacks exist. */

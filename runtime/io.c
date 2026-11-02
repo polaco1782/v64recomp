@@ -147,10 +147,8 @@ bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
     if (rt->io || !rt->scheduler || !config || config->connected_mask > 15 || config->pak_mask > 15 ||
         (config->eeprom_size != 0 && config->eeprom_size != 512 && config->eeprom_size != 2048) ||
         (config->eeprom_path && (!config->eeprom_size || !*config->eeprom_path)) ||
-        (config->cont_init_queue == 0 &&
-         (config->cont_init_messages || config->cont_init_queue_capacity)) ||
-        (config->cont_init_queue != 0 &&
-         (!config->cont_init_messages || config->cont_init_queue_capacity <= 0)))
+        (config->cont_init_queue == 0 && (config->cont_init_messages || config->cont_init_queue_capacity)) ||
+        (config->cont_init_queue != 0 && (!config->cont_init_messages || config->cont_init_queue_capacity <= 0)))
         return false;
     for (unsigned n = 0; n < 4; n++) {
         if (!config->pak_paths[n])

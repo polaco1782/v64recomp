@@ -15,8 +15,10 @@ static bool window_closed;
 static void poll_controls(Runtime *rt, void *opaque) {
     (void)opaque;
     RecompPad pad = {.connected = true};
-    if (!quake_controls_poll(rt, renderer, &pad)) window_closed = true;
-    else require(recomp_input_set(rt, 0, &pad), "Quake controller update failed", 0);
+    if (!quake_controls_poll(rt, renderer, &pad))
+        window_closed = true;
+    else
+        require(recomp_input_set(rt, 0, &pad), "Quake controller update failed", 0);
 }
 static RecompAudio *audio;
 static uint64_t now_ns, wall_origin;

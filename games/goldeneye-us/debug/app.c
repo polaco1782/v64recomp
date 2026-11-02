@@ -294,20 +294,20 @@ int main(int argc, char **argv) {
     fprintf(
         f,
         ",\"rendered\":true,\"window_closed\":%s,\"graphics_tasks\":%u,\"presentations\":%u,\"sp_callbacks\":%" PRIu64
-        ",\"dp_callbacks\":%" PRIu64
-        ",\"controller_reads\":%" PRIu64 ",\"eeprom_reads\":%" PRIu64 ",\"eeprom_writes\":%" PRIu64
-        ",\"save_failures\":%" PRIu64 ",\"audio_tasks\":%" PRIu64 ",\"pcm_frames\":%" PRIu64
-        ",\"nonzero_samples\":%" PRIu64 ",\"playback_frames\":%" PRIu64 ",\"audio_underruns\":%" PRIu64
-        ",\"audio_queue_resets\":%" PRIu64 ",\"audio_underruns_before_mission\":%" PRIu64
+        ",\"dp_callbacks\":%" PRIu64 ",\"controller_reads\":%" PRIu64 ",\"eeprom_reads\":%" PRIu64
+        ",\"eeprom_writes\":%" PRIu64 ",\"save_failures\":%" PRIu64 ",\"audio_tasks\":%" PRIu64
+        ",\"pcm_frames\":%" PRIu64 ",\"nonzero_samples\":%" PRIu64 ",\"playback_frames\":%" PRIu64
+        ",\"audio_underruns\":%" PRIu64 ",\"audio_queue_resets\":%" PRIu64
+        ",\"audio_underruns_before_mission\":%" PRIu64
         ",\"audio_frequency\":%u,\"audio_prebuffer_frames\":%u,\"audio_min_queued_bytes\":%u,\"max_drain_ns\":%" PRIu64
         ",\"mission_frames\":%u,\"first_mission_vi\":%u,\"mission_difficulty\":%u,\"current_stage\":%u,\"rdp_"
         "triangles\":%" PRIu64 ",\"renderer_submit_ns\":%" PRIu64 ",\"renderer_present_ns\":%" PRIu64,
         window_closed ? "true" : "false", rendered_tasks, presentations, rs.sp_callbacks, rs.dp_callbacks,
-        io.reads_completed, io.eeprom_reads,
-        io.eeprom_writes, io.persistence_failures, as.tasks, as.frames, as.nonzero_samples, as.playback_frames,
-        as.queue_underruns, as.queue_resets, mission_audio_underruns, as.frequency, as.prebuffer_frames,
-        as.min_queued_bytes, max_drain_ns, mission_frames, first_mission_vi, mission_difficulty,
-        (unsigned)recomp_load(&rt, GE_INSPECT_STAGE_ADDRESS, 4), rs.rdp_triangles, rs.submit_ns, rs.present_ns);
+        io.reads_completed, io.eeprom_reads, io.eeprom_writes, io.persistence_failures, as.tasks, as.frames,
+        as.nonzero_samples, as.playback_frames, as.queue_underruns, as.queue_resets, mission_audio_underruns,
+        as.frequency, as.prebuffer_frames, as.min_queued_bytes, max_drain_ns, mission_frames, first_mission_vi,
+        mission_difficulty, (unsigned)recomp_load(&rt, GE_INSPECT_STAGE_ADDRESS, 4), rs.rdp_triangles, rs.submit_ns,
+        rs.present_ns);
     fputs("}\n", f);
     require(fclose(f) == 0, "cannot close GoldenEye startup report", 0);
     goldeneye_input_destroy();

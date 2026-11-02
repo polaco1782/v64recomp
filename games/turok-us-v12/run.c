@@ -99,8 +99,7 @@ static void prepare_call(Runtime *rt, uint32_t address) {
 void hook_turok_rom_read(Runtime *rt, MipsContext *ctx) {
     uint32_t offset = (uint32_t)ctx->gpr[4], destination = (uint32_t)ctx->gpr[5];
     uint32_t size = (uint32_t)ctx->gpr[6] & ~3u;
-    require(offset <= BOOT_ROM_SIZE && size <= BOOT_ROM_SIZE - offset,
-            "Turok boot cartridge read outside ROM", offset);
+    require(offset <= BOOT_ROM_SIZE && size <= BOOT_ROM_SIZE - offset, "Turok boot cartridge read outside ROM", offset);
     if (size)
         recomp_copy_to_ram(rt, destination, cartridge + offset, size);
     mips_set(ctx, 2, mips_s32((0xb0000000u | offset) + size));
@@ -214,7 +213,8 @@ int turok_run(const RecompGameOptions *options, const char *report) {
         drain(&rt);
         require(recomp_renderer_present(renderer), "presentation failed", 0);
 #ifdef RECOMP_DEBUG
-        if (capture_every && frame + 1 >= capture_from && (frame + 1) % capture_every == 0 && graphics_tasks && report) {
+        if (capture_every && frame + 1 >= capture_from && (frame + 1) % capture_every == 0 && graphics_tasks &&
+            report) {
             char path[4096];
             require(snprintf(path, sizeof(path), "%s.frame-%06u.ppm", report, frame + 1) < (int)sizeof(path),
                     "capture path too long", 0);

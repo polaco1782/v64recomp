@@ -255,8 +255,11 @@ static void initialize_services(Runtime *rt) {
     game->audio = recomp_audio_create(rt, &audio);
     require(game->audio != NULL, "Conker audio initialization failed", 0);
     /* Save setup at 0x1501c5d4 requires the probe's 16 Kbit device result (2). */
-    RecompIOConfig io = {.connected_mask = 1, .eeprom_size = 2048, .eeprom_path = game->options.save,
-                         .cont_init_queue = 0x80042a78, .cont_init_messages = 0x80042a90,
+    RecompIOConfig io = {.connected_mask = 1,
+                         .eeprom_size = 2048,
+                         .eeprom_path = game->options.save,
+                         .cont_init_queue = 0x80042a78,
+                         .cont_init_messages = 0x80042a90,
                          .cont_init_queue_capacity = 1};
     RecompTaskBackend backend = {.userdata = game, .submit = submit};
     require(recomp_io_init(rt, &io) && recomp_tasks_init(rt, &backend), "Conker IO/tasks initialization failed", 0);

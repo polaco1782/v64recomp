@@ -93,9 +93,8 @@ void HleWarnMessage(void *opaque, const char *message, ...) {
     vsnprintf(detail, sizeof(detail), message, args);
     va_end(args);
     snprintf(warning, sizeof(warning), "audio HLE: %s", detail);
-    uint32_t pc = a->debug.command_index
-                      ? a->debug.history[(a->debug.command_index - 1) % RECOMP_AUDIO_HISTORY].address
-                      : a->debug.list;
+    uint32_t pc = a->debug.command_index ? a->debug.history[(a->debug.command_index - 1) % RECOMP_AUDIO_HISTORY].address
+                                         : a->debug.list;
     skip_audio_task(a, warning, pc);
 }
 int HleForwardTask(void *opaque) {

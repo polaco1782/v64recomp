@@ -159,11 +159,10 @@ std::string download(const std::string& url, const std::filesystem::path& destin
         }
     } scratch;
     static std::atomic<unsigned> serial{0};
-    for (unsigned attempt = 0; ; attempt++) {
+    for (unsigned attempt = 0;; attempt++) {
         auto candidate = destination;
-        candidate += ".download." +
-            std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + "." +
-            std::to_string(serial++);
+        candidate += ".download." + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + "." +
+                     std::to_string(serial++);
         std::error_code ec;
         if (std::filesystem::create_directory(candidate, ec)) {
             scratch.directory = std::move(candidate);

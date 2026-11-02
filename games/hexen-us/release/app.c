@@ -12,7 +12,8 @@ int main(int argc, char **argv) {
         if (!hexen_poll_input(&game, &pad))
             break;
         hexen_step(&game, &pad);
-        if (!game.running) break;
+        if (!game.running)
+            break;
         recomp_game_require(recomp_renderer_present(game.renderer), "Hexen presentation failed", 0);
         deadline += 16666667;
         hexen_pace(&game, deadline);

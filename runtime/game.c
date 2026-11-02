@@ -212,9 +212,8 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
     char path[4096], ram_path[4096], executable[4096];
     /* Keep earlier failures, including failures from simultaneous sessions. */
     uint64_t stamp = recomp_game_monotonic();
-    if (snprintf(path, sizeof(path), "%s/%s-%ld-%" PRIu64 ".json", crash_dir,
-                 info->warning ? "warning" : "crash", (long)getpid(), stamp) >=
-            (int)sizeof(path) ||
+    if (snprintf(path, sizeof(path), "%s/%s-%ld-%" PRIu64 ".json", crash_dir, info->warning ? "warning" : "crash",
+                 (long)getpid(), stamp) >= (int)sizeof(path) ||
         snprintf(ram_path, sizeof(ram_path), "%s.rdram.bin", path) >= (int)sizeof(ram_path))
         return;
     FILE *f = fopen(ram_path, "wb");
@@ -291,7 +290,10 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         uintptr_t base = (uintptr_t)handle;
         if (handle)
             GetModuleFileNameA(handle, module, sizeof(module));
-        union { SYMBOL_INFO info; char bytes[sizeof(SYMBOL_INFO) + MAX_SYM_NAME]; } symbol = {0};
+        union {
+            SYMBOL_INFO info;
+            char bytes[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
+        } symbol = {0};
         symbol.info.SizeOfStruct = sizeof(SYMBOL_INFO);
         symbol.info.MaxNameLen = MAX_SYM_NAME;
         bool named = symbols && SymFromAddr(process, address, NULL, &symbol.info);
@@ -326,8 +328,7 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
     fputs("}}\n", f);
     bool okay = !ferror(f);
     okay = fclose(f) == 0 && okay;
-    fprintf(stderr, "%s report %s: %s\n", info->warning ? "Warning" : "Crash",
-            okay ? "written" : "incomplete", path);
+    fprintf(stderr, "%s report %s: %s\n", info->warning ? "Warning" : "Crash", okay ? "written" : "incomplete", path);
 }
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, const uint8_t sha1[20]) {
     /* Positional diagnostic entry points may bypass recomp_game_options(). */

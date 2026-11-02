@@ -26,7 +26,8 @@ static uint32_t to_bits(float value) {
  * guest code. Widening past atan(2) requires removing its fixed +/-2 cutoff. */
 static void update_visibility(void) {
     Runtime *rt = visibility_rt;
-    if (!rt) return;
+    if (!rt)
+        return;
     if (!enabled || cull_bits == HEXEN_FOV_CULL_BITS) {
         for (unsigned i = 0; i < 4096; i++)
             recomp_store32(rt, HEXEN_FOV_VISIBILITY_TABLE + i * 4, native_table[i]);
@@ -40,13 +41,13 @@ static void update_visibility(void) {
     float focal = center / (sinf(half) / cosf(half));
     unsigned first_negative = 4096;
     for (unsigned i = 0; i < 4096; i++) {
-        float angle = (float)(((double)i - 2048 + 0.5) * (2 * 3.14159265358979323846) /
-                              HEXEN_FOV_FINE_ANGLES);
+        float angle = (float)(((double)i - 2048 + 0.5) * (2 * 3.14159265358979323846) / HEXEN_FOV_FINE_ANGLES);
         float tangent = sinf(angle) / cosf(angle);
         float projected = center - tangent * focal;
         int32_t x = (int32_t)fmaxf(-1, fminf(maximum, ceilf(projected)));
         recomp_store32(rt, HEXEN_FOV_VISIBILITY_TABLE + i * 4, (uint32_t)x);
-        if (x < 0 && first_negative == 4096) first_negative = i;
+        if (x < 0 && first_negative == 4096)
+            first_negative = i;
     }
     recomp_store32(rt, HEXEN_FOV_CLIP_ANGLE, (first_negative << 19) - UINT32_C(0x40000000));
 }
@@ -68,7 +69,8 @@ static void hexen_fov_set(double horizontal) {
     update_visibility();
 }
 void hexen_fov_adjust(int steps) {
-    if (recomp_fov_adjust(&fov, steps)) hexen_fov_set(fov.horizontal);
+    if (recomp_fov_adjust(&fov, steps))
+        hexen_fov_set(fov.horizontal);
 }
 void hexen_fov_projection_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     // The support-code intro has its own 45-degree perspective call. Only the
@@ -76,7 +78,7 @@ void hexen_fov_projection_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
     if (enabled && (uint32_t)ctx->gpr[31] == HEXEN_FOV_PROJECTION_RETURN &&
         (uint32_t)ctx->gpr[4] == HEXEN_FOV_PROJECTION_MATRIX) {
         recomp_game_require((uint32_t)ctx->gpr[6] == HEXEN_FOV_VERTICAL_BITS &&
-                            (uint32_t)ctx->gpr[7] == HEXEN_FOV_ASPECT_BITS,
+                                (uint32_t)ctx->gpr[7] == HEXEN_FOV_ASPECT_BITS,
                             "Hexen FOV projection ABI mismatch", HEXEN_FOV_PROJECTION_RETURN);
         // guPerspective's o32 ABI carries fovy as float bits in a2, not f12.
         ctx->gpr[6] = mips_s32(vertical_bits);
@@ -85,8 +87,7 @@ void hexen_fov_projection_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
 }
 void hexen_fov_culling_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     recomp_game_require(recomp_load32(rt, HEXEN_FOV_CULL_ANGLE) == HEXEN_FOV_CULL_BITS,
-                        "Hexen FOV visibility constant mismatch",
-                        HEXEN_FOV_CULL_ANGLE);
+                        "Hexen FOV visibility constant mismatch", HEXEN_FOV_CULL_ANGLE);
     original(rt, ctx);
     for (unsigned i = 0; i < 4096; i++)
         native_table[i] = recomp_load32(rt, HEXEN_FOV_VISIBILITY_TABLE + i * 4);

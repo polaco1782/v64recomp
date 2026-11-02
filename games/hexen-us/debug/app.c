@@ -47,7 +47,8 @@ int main(int argc, char **argv) {
         if (replay)
             pad = replay_pad;
         hexen_step(&game, &pad);
-        if (!game.running) break;
+        if (!game.running)
+            break;
         require(recomp_renderer_present(game.renderer), "Hexen presentation failed", 0);
         if (interval && (frame + 1) % interval == 0) {
             char path[4096];

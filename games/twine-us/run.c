@@ -23,10 +23,10 @@ static void read_input(void) {
     int x, y;
     next_input = fscanf(input, "%u %u %d %d", &input_frame, &buttons, &x, &y) == 4;
     if (next_input) {
-        require(buttons <= UINT16_MAX && x >= -128 && x <= 127 && y >= -128 && y <= 127,
-                "invalid TWINE replay input", input_frame);
-        pending = (RecompPad){.connected = true, .buttons = (uint16_t)buttons,
-                             .stick_x = (int8_t)x, .stick_y = (int8_t)y};
+        require(buttons <= UINT16_MAX && x >= -128 && x <= 127 && y >= -128 && y <= 127, "invalid TWINE replay input",
+                input_frame);
+        pending =
+            (RecompPad){.connected = true, .buttons = (uint16_t)buttons, .stick_x = (int8_t)x, .stick_y = (int8_t)y};
     }
 }
 #endif
@@ -71,8 +71,9 @@ int twine_run(const RecompGameOptions *options, const char *report) {
 #endif
     Runtime rt;
     boot_retired = false;
-    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count,
-                                recomp_boot_sections, recomp_section_count), "runtime init failed", 0);
+    require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
+                                recomp_section_count),
+            "runtime init failed", 0);
     uint8_t *rom = recomp_game_rom(&rt, options, BOOT_ROM_SIZE, boot_sha1);
     rt.prepare_call = prepare_call;
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
@@ -80,25 +81,34 @@ int twine_run(const RecompGameOptions *options, const char *report) {
         recomp_store(&rt, boot_parameters[i][0], boot_parameters[i][1], 4);
     RecompClockConfig clock = {.ticks_per_second = BOOT_COUNTER_HZ, .now_ns = guest_time};
     RecompSchedulerConfig scheduler = {.thread_tail = BOOT_THREAD_TAIL,
-        .run_queue = BOOT_RUN_QUEUE, .active_queue = BOOT_ACTIVE_QUEUE,
-        .running_thread = BOOT_RUNNING_THREAD, .event_table = BOOT_EVENT_TABLE,
-        .idle_thread = BOOT_MAIN_OBJECT};
-    RecompPlatformConfig platform = {.vi_period_ticks = 781250, .vi_clock = BOOT_VI_CLOCK,
-        .clock_rate = BOOT_CLOCK_RATE, .final_rom = BOOT_FINAL_ROM, .app_nmi_buffer = 0x8000031c};
+                                       .run_queue = BOOT_RUN_QUEUE,
+                                       .active_queue = BOOT_ACTIVE_QUEUE,
+                                       .running_thread = BOOT_RUNNING_THREAD,
+                                       .event_table = BOOT_EVENT_TABLE,
+                                       .idle_thread = BOOT_MAIN_OBJECT};
+    RecompPlatformConfig platform = {.vi_period_ticks = 781250,
+                                     .vi_clock = BOOT_VI_CLOCK,
+                                     .clock_rate = BOOT_CLOCK_RATE,
+                                     .final_rom = BOOT_FINAL_ROM,
+                                     .app_nmi_buffer = 0x8000031c};
     wall_origin = recomp_game_monotonic();
     require(recomp_clock_init(&rt, &clock) && recomp_scheduler_init(&rt, &scheduler) &&
-            recomp_platform_init(&rt, &platform), "TWINE services init failed", 0);
+                recomp_platform_init(&rt, &platform),
+            "TWINE services init failed", 0);
     char pak_path[4096];
     require(snprintf(pak_path, sizeof(pak_path), "%s.pak", options->save) < (int)sizeof(pak_path),
             "TWINE Controller Pak path too long", 0);
-    RecompIOConfig io = {.connected_mask = 1, .eeprom_size = 512, .eeprom_path = options->save,
-                        .pak_mask = 1, .pak_paths = {pak_path}};
+    RecompIOConfig io = {
+        .connected_mask = 1, .eeprom_size = 512, .eeprom_path = options->save, .pak_mask = 1, .pak_paths = {pak_path}};
     RecompTaskBackend backend = {.submit = submit};
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "TWINE IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options->data, "007: The World Is Not Enough");
     require(renderer != NULL, "renderer initialization failed", 0);
-    RecompAudioConfig ac = {.output_enabled = true, .playback = !options->mute,
-        .prebuffer_ms = 160, .microcode = RECOMP_AUDIO_MUSYX_V1, .task_profile = &twine_audio_profile};
+    RecompAudioConfig ac = {.output_enabled = true,
+                            .playback = !options->mute,
+                            .prebuffer_ms = 160,
+                            .microcode = RECOMP_AUDIO_MUSYX_V1,
+                            .task_profile = &twine_audio_profile};
 #ifdef RECOMP_DEBUG
     ac.wav_path = getenv("RECOMP_TWINE_WAV");
 #endif
@@ -120,16 +130,21 @@ int twine_run(const RecompGameOptions *options, const char *report) {
     uint32_t frame = 0;
     for (; !options->frames || frame < options->frames; frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad)) break;
+        if (!recomp_renderer_input(renderer, &pad))
+            break;
 #ifdef RECOMP_DEBUG
         if (input) {
-            while (next_input && input_frame <= frame) { replay = pending; read_input(); }
+            while (next_input && input_frame <= frame) {
+                replay = pending;
+                read_input();
+            }
             pad = replay;
         }
 #endif
         require(recomp_input_set(&rt, 0, &pad), "controller update failed", 0);
         for (unsigned batch = 0; batch < 32; batch++)
-            if (recomp_scheduler_run(&rt, 32) != RECOMP_RUN_BUDGET) break;
+            if (recomp_scheduler_run(&rt, 32) != RECOMP_RUN_BUDGET)
+                break;
         require(recomp_renderer_present(renderer), "presentation failed", 0);
 #ifdef RECOMP_DEBUG
         if (capture_every && report && (frame + 1) % capture_every == 0 &&
@@ -152,19 +167,23 @@ int twine_run(const RecompGameOptions *options, const char *report) {
         RecompIOStats io_stats = recomp_io_stats(&rt);
         RecompThreadSnapshot threads[32];
         size_t count = recomp_thread_snapshots(&rt, threads, 32);
-        fprintf(file, "{\"presentations\":%u,\"bss_verified\":%s,\"boot_retired\":%s,"
+        fprintf(file,
+                "{\"presentations\":%u,\"bss_verified\":%s,\"boot_retired\":%s,"
                 "\"graphics_tasks\":%" PRIu64 ",\"audio_tasks\":%" PRIu64 ",\"audio_frames\":%" PRIu64
                 ",\"audio_peak\":%u,\"controller_reads\":%" PRIu64 ",\"threads\":[",
-                frame, bss_verified ? "true" : "false", boot_retired ? "true" : "false",
-                graphics.graphics_tasks, sound.tasks, sound.frames, sound.peak, io_stats.reads_completed);
+                frame, bss_verified ? "true" : "false", boot_retired ? "true" : "false", graphics.graphics_tasks,
+                sound.tasks, sound.frames, sound.peak, io_stats.reads_completed);
         for (size_t i = 0; i < count && i < 32; i++)
-            fprintf(file, "%s{\"id\":%d,\"state\":%d,\"pc\":%u,\"ra\":%u,\"queue\":%u}",
-                    i ? "," : "", threads[i].id, threads[i].state, threads[i].context.pc,
-                    (uint32_t)threads[i].context.gpr[31], (uint32_t)recomp_load(&rt, threads[i].object + 8, 4));
+            fprintf(file, "%s{\"id\":%d,\"state\":%d,\"pc\":%u,\"ra\":%u,\"queue\":%u}", i ? "," : "", threads[i].id,
+                    threads[i].state, threads[i].context.pc, (uint32_t)threads[i].context.gpr[31],
+                    (uint32_t)recomp_load(&rt, threads[i].object + 8, 4));
         fputs("]}\n", file);
         require(fclose(file) == 0, "cannot write TWINE report", 0);
     }
-    if (input) { fclose(input); input = NULL; }
+    if (input) {
+        fclose(input);
+        input = NULL;
+    }
 #endif
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);

@@ -28,9 +28,10 @@ static void read_replay(void) {
         next_move = 0;
         return;
     }
-    recomp_game_require(n == 6 && step > previous_move && isfinite(dx) && isfinite(dy) &&
-                            fabs(dx) <= 100000 && fabs(dy) <= 100000 && x >= -1 && x <= 1 && y >= -1 && y <= 1 &&
-                            (active == 0 || active == 1), "invalid GoldenEye mouse replay", 0);
+    recomp_game_require(n == 6 && step > previous_move && isfinite(dx) && isfinite(dy) && fabs(dx) <= 100000 &&
+                            fabs(dy) <= 100000 && x >= -1 && x <= 1 && y >= -1 && y <= 1 &&
+                            (active == 0 || active == 1),
+                        "invalid GoldenEye mouse replay", 0);
     next_move = previous_move = step;
     replay_frame = (RecompMouseFrame){dx, dy, (int8_t)x, (int8_t)y, active != 0, 0, 0};
 }
@@ -48,23 +49,25 @@ static float read_float(Runtime *rt, uint32_t address) {
 }
 static uint32_t player(Runtime *rt) {
     uint32_t p = recomp_load32(rt, GE_INPUT_CURRENT_PLAYER);
-    return p >= 0x80000000 && p < 0x80400000 && (p & 3) == 0 &&
-                   (p & 0x1fffffff) + 0x2a5c <= rt->rdram_size ? p : 0;
+    return p >= 0x80000000 && p < 0x80400000 && (p & 3) == 0 && (p & 0x1fffffff) + 0x2a5c <= rt->rdram_size ? p : 0;
 }
-bool goldeneye_input_enabled(void) { return enabled; }
+bool goldeneye_input_enabled(void) {
+    return enabled;
+}
 bool goldeneye_input_playable(Runtime *rt) {
     uint32_t p = player(rt);
-    if (!enabled || !p || recomp_load32(rt, GE_INPUT_PLAYERS) != p ||
-        recomp_load32(rt, GE_INPUT_PLAYERS + 4) || recomp_load32(rt, GE_INPUT_PLAYERS + 8) ||
-        recomp_load32(rt, GE_INPUT_PLAYERS + 12) || recomp_load32(rt, GE_INPUT_CONTROLS_LOCKED) ||
-        recomp_load32(rt, GE_INPUT_TANK) || recomp_load32(rt, p + GE_INPUT_DEAD) ||
-        recomp_load32(rt, p + GE_INPUT_WATCH_STATE)) return false;
+    if (!enabled || !p || recomp_load32(rt, GE_INPUT_PLAYERS) != p || recomp_load32(rt, GE_INPUT_PLAYERS + 4) ||
+        recomp_load32(rt, GE_INPUT_PLAYERS + 8) || recomp_load32(rt, GE_INPUT_PLAYERS + 12) ||
+        recomp_load32(rt, GE_INPUT_CONTROLS_LOCKED) || recomp_load32(rt, GE_INPUT_TANK) ||
+        recomp_load32(rt, p + GE_INPUT_DEAD) || recomp_load32(rt, p + GE_INPUT_WATCH_STATE))
+        return false;
     uint32_t camera = recomp_load32(rt, GE_INPUT_CAMERA);
     return camera == 0 || (camera == 4 && recomp_load32(rt, GE_INPUT_TIMER_ACTIVE));
 }
 void goldeneye_input_submit(RecompMouseFrame frame) {
 #ifdef RECOMP_DEBUG
-    if (replay) return;
+    if (replay)
+        return;
 #endif
     recomp_mouse_submit(&mouse, frame);
 }
@@ -72,15 +75,16 @@ static void observe(Runtime *rt, MipsContext *ctx, const char *event) {
     if (!trace || rows++ >= 30000)
         return;
     uint32_t p = player(rt);
-    fprintf(trace, "%s,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%08x,%08x,%u,%u,%u,%.6f,%.6f,%u,%u,%u,%u,%u,%u,%u,%.6f,%.6f,%u\n",
+    fprintf(trace,
+            "%s,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64
+            ",%08x,%08x,%u,%u,%u,%.6f,%.6f,%u,%u,%u,%u,%u,%u,%u,%.6f,%.6f,%u\n",
             event, recomp_count64(rt), moves, polls, samples, (uint32_t)ctx->gpr[31], p,
             p ? recomp_load32(rt, p + GE_INPUT_DEAD) : 0, p ? recomp_load32(rt, p + GE_INPUT_WATCH_STATE) : 0,
             p ? recomp_load32(rt, p + GE_INPUT_AIM_MODE) : 0, p ? read_float(rt, p + GE_INPUT_YAW) : 0,
             p ? read_float(rt, p + GE_INPUT_PITCH) : 0, (uint32_t)ctx->gpr[4], (uint32_t)ctx->gpr[5],
             (uint32_t)ctx->gpr[6], (uint32_t)ctx->gpr[7], recomp_load32(rt, GE_INPUT_CAMERA),
             recomp_load32(rt, GE_INPUT_CONTROLS_LOCKED), recomp_load32(rt, GE_INPUT_TANK),
-            p ? read_float(rt, p + GE_INPUT_SIDE_SPEED) : 0,
-            p ? read_float(rt, p + GE_INPUT_FORWARD_SPEED) : 0,
+            p ? read_float(rt, p + GE_INPUT_SIDE_SPEED) : 0, p ? read_float(rt, p + GE_INPUT_FORWARD_SPEED) : 0,
             p ? recomp_load32(rt, p + GE_INPUT_CONTROL_STYLE) : 0);
 }
 void goldeneye_input_init(Runtime *rt) {
@@ -100,7 +104,8 @@ void goldeneye_input_init(Runtime *rt) {
     recomp_mouse_clear(&mouse);
 #ifdef RECOMP_DEBUG
     // Legacy controller replays must not inherit physical mouse state.
-    if (getenv("RECOMP_GOLDENEYE_INPUT")) enabled = false;
+    if (getenv("RECOMP_GOLDENEYE_INPUT"))
+        enabled = false;
     const char *replay_path = getenv("RECOMP_GOLDENEYE_MOUSE_REPLAY");
     if (replay_path && *replay_path) {
         replay = fopen(replay_path, "r");
@@ -113,15 +118,19 @@ void goldeneye_input_init(Runtime *rt) {
     if (path && *path) {
         trace = fopen(path, "w");
         recomp_game_require(trace != NULL, "cannot open GoldenEye input trace", 0);
-        fputs("event,ticks,moves,polls,samples,return_pc,player,dead,watch,aim,yaw,pitch,a0,a1,a2,a3,camera,locked,tank,side_speed,forward_speed,style\n", trace);
+        fputs("event,ticks,moves,polls,samples,return_pc,player,dead,watch,aim,yaw,pitch,a0,a1,a2,a3,camera,locked,"
+              "tank,side_speed,forward_speed,style\n",
+              trace);
     }
 #endif
 }
 void goldeneye_input_destroy(void) {
-    if (trace) fclose(trace);
+    if (trace)
+        fclose(trace);
     trace = NULL;
 #ifdef RECOMP_DEBUG
-    if (replay) fclose(replay);
+    if (replay)
+        fclose(replay);
     replay = NULL;
 #endif
 }
@@ -159,7 +168,10 @@ void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction 
         return;
     }
     RecompMouseFrame frame = recomp_mouse_consume(&mouse);
-    if (!frame.active) { original(rt, ctx); return; }
+    if (!frame.active) {
+        original(rt, ctx);
+        return;
+    }
     uint32_t p = player(rt);
     float yaw = read_float(rt, p + GE_INPUT_YAW);
     float pitch = read_float(rt, p + GE_INPUT_PITCH);
@@ -169,7 +181,8 @@ void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction 
         return;
     }
     yaw = (float)fmod(yaw + frame.dx * sensitivity, 360.0);
-    if (yaw < 0) yaw += 360;
+    if (yaw < 0)
+        yaw += 360;
     pitch = (float)fmax(-90, fmin(90, pitch - frame.dy * sensitivity * vertical));
     write_float(rt, p + GE_INPUT_YAW, yaw);
     write_float(rt, p + GE_INPUT_PITCH, pitch);
@@ -182,15 +195,20 @@ void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction 
     recomp_store32(rt, p + GE_INPUT_CONTROL_STYLE, 1); // 1.2 Solitaire, session-only during this call.
     ctx->gpr[4] = ctx->gpr[5] = 0;
     uint16_t buttons = (uint16_t)ctx->gpr[6];
-    if (frame.move_x < 0) buttons |= 0x0002;
-    if (frame.move_x > 0) buttons |= 0x0001;
-    if (frame.move_y > 0) buttons |= 0x0008;
-    if (frame.move_y < 0) buttons |= 0x0004;
+    if (frame.move_x < 0)
+        buttons |= 0x0002;
+    if (frame.move_x > 0)
+        buttons |= 0x0001;
+    if (frame.move_y > 0)
+        buttons |= 0x0008;
+    if (frame.move_y < 0)
+        buttons |= 0x0004;
     if (frame.wheel) {
         // Style 1.2: fresh A advances; A + fresh Z goes backwards. A suppresses
         // firing. Suppress B for this update to avoid the A+B remote-mine chord.
         buttons = (buttons & ~(0x8000 | 0x2000 | 0x4000)) | 0x8000;
-        if (frame.wheel > 0) buttons |= 0x2000;
+        if (frame.wheel > 0)
+            buttons |= 0x2000;
         ctx->gpr[7] = (uint16_t)ctx->gpr[7] & ~(0x8000 | 0x2000);
     }
     ctx->gpr[6] = buttons;
@@ -203,7 +221,8 @@ void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction 
         write_float(rt, p + GE_INPUT_PITCH, pitch);
         write_float(rt, p + GE_INPUT_YAW_SPEED, 0);
         write_float(rt, p + GE_INPUT_PITCH_SPEED, 0);
-    } else recomp_mouse_clear(&mouse);
+    } else
+        recomp_mouse_clear(&mouse);
     observe(rt, ctx, "mouse");
 }
 void goldeneye_input_angles_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
