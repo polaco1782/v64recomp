@@ -373,6 +373,16 @@
       "sha256": "434862c0227fea8ed937e43da8a01df26ba3014daf577073aa0c90b3560bc881"
     },
     {
+      "vram": 2148188192,
+      "origin": "checked-root",
+      "sha256": "f10e5e336e5fb76e6def91eb6fe9dbb0a6adb09eaa07aced495e21d6525df078"
+    },
+    {
+      "vram": 2148188200,
+      "origin": "checked-root",
+      "sha256": "16db87df9904f4af8db6d5b82bc541d98103eea20b42fe5e7af43cc1eabcdcc5"
+    },
+    {
       "vram": 2148193460,
       "origin": "checked-root",
       "sha256": "10195d20b3a6429ec768bacaffc26ada2edc691652b39c229236d9df3d2ef4f0"
@@ -491,6 +501,36 @@
       "vram": 2148217880,
       "origin": "checked-root",
       "sha256": "319fac6a9a4a1682125ba1c2c2e356021381d83ac1e157c38ee8997c7d249735"
+    },
+    {
+      "vram": 2148220012,
+      "origin": "checked-root",
+      "sha256": "104ffd4248ac0140fbd995ab66e1d93a1c4f38c2ee3f21a2b3eee42d85f86e0e",
+      "body_size": 68,
+      "body_sha256": "f6dc1422756c0468b4b13861d3bf82cda5a535a4239d4012793a8e3e2d854baf",
+      "entry_sources": [
+        {
+          "kind": "published-direct-call",
+          "function": 2148238832,
+          "pc": 2148238840,
+          "expected_word": 201510683
+        }
+      ]
+    },
+    {
+      "vram": 2148220080,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "body_size": 96,
+      "body_sha256": "c40e59023a02302bff0aa621d4486e3aa97f8a63d06533540551e84034e50e22",
+      "entry_sources": [
+        {
+          "kind": "published-direct-call",
+          "function": 2148238860,
+          "pc": 2148238868,
+          "expected_word": 201510700
+        }
+      ]
     },
     {
       "vram": 2148506092,
