@@ -19,9 +19,6 @@
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\app.c">
       <Filter>Source Files\debug</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\fov_check.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\fov.c">
       <Filter>Source Files</Filter>
     </ClCompile>

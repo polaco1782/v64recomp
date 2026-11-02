@@ -29,12 +29,6 @@
     <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\fov_check.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\input_check.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)games\hexen-us\fov.c" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\fov.h" />
     <None Include="$(RecompRoot)games\hexen-us\fov_analysis.py" />

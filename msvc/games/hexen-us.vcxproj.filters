@@ -10,12 +10,6 @@
     <ClCompile Include="$(RecompRoot)games\hexen-us\debug\app.c">
       <Filter>Source Files\debug</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\fov_check.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\debug\input_check.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)games\hexen-us\fov.c">
       <Filter>Source Files</Filter>
     </ClCompile>

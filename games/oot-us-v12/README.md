@@ -36,18 +36,16 @@ the original mapping.
 
 ## Field of view
 
-Set `RECOMP_FOV` to horizontal degrees at the original 4:3 reference aspect,
-from `60` through `120`. Unset, empty or `0` preserves the original camera. Its
-usual native vertical FOV is 60 degrees (about 75.2 degrees horizontal at 4:3).
-The override preserves native zoom ratios and applies to normal-family 3D
-gameplay cameras. Fixed/prerendered backgrounds, dialog, pause and scripted
-cameras keep their original framing. RT64 F7 aspect expansion is separate.
+Use keypad `+` / `-` to adjust FOV live, one horizontal degree per keydown;
+holding a key repeats. The minimum is the exact original view (usually 60
+degrees vertically, about 75.2 horizontally at 4:3), and the maximum is 140
+degrees. Each launch starts at the original FOV; lowering to the minimum restores
+its original path. No FOV environment variable is read. Changes print the current
+angle to the console. This works independently of mouse capture.
 
-```powershell
-.\tools\build_msvc_project.ps1 -Game oot-us-v12 -Configuration Release
-$env:RECOMP_FOV = '110'
-.\build\msvc\oot-us-v12\release\bin\Release\oot-us-v12.exe
-```
+Native zoom ratios are preserved. The override applies to normal-family 3D
+gameplay cameras; fixed/prerendered backgrounds, dialog, pause and scripted
+cameras keep their original framing. RT64 F7 aspect expansion is separate.
 
 The adapter adjusts the view FOV after the original camera update, before the
 shared CPU/GPU view-projection matrices are built. It leaves the native camera
@@ -55,20 +53,9 @@ FOV unchanged to avoid compounding zoom. See the
 [investigation guide](../../docs/field-of-view.md#ocarina-of-time-investigation-record)
 for addresses, ABI details and the pinned public reference.
 
-## Focused control check
-
-```powershell
-.\tools\build_msvc_project.ps1 -Game oot-us-v12 -Configuration Debug
-$env:RECOMP_OOT_CHECK_CONTROLS = '1'
-.\build\msvc\oot-us-v12\debug\bin\Debug\oot-us-v12.exe --frames 1
-Remove-Item Env:RECOMP_OOT_CHECK_CONTROLS
-```
-
-MSVC Debug and Release builds and the focused Debug check passed. The check
-covers synthetic action mapping, camera/collision ABI, targeting,
-state exclusions, FOV conversion and native zoom ratios. In-game movement,
-collision, aiming, camera transitions, edge visibility and combined F7 behavior
-still require gameplay testing.
+The keypad/140-degree extension has not been rebuilt or tested in game. In-game
+movement, collision, aiming, camera transitions, edge visibility and combined F7
+behavior still require gameplay acceptance.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).

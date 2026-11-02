@@ -22,9 +22,6 @@
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
       <Filter>Source Files\debug</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\controls_check.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py">
       <Filter>Source Files</Filter>
     </None>

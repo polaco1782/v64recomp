@@ -135,17 +135,22 @@ The existing implementations illustrate different boundaries:
 
 | Game | Projection boundary | CPU visibility handling |
 | --- | --- | --- |
-| Hexen US | `guPerspective`, restricted to the world return PC and matrix | Temporarily supplies a wider conservative scalar to the original angle-to-screen initializer, then restores it |
+| Hexen US | `guPerspective`, restricted to the world return PC and matrix | Saves native CPU angle-to-screen/clip tables, rebuilds them for wider live views, restores saved bytes at the minimum |
 | GoldenEye US | Gameplay calls to `viSetFovY` | Original setter updates VI projection and player perspective/scale together |
 | Duke Nukem 64 US | World calls reaching `guPerspectiveF`, both directly and through `guPerspective` | Both CPU float and GPU fixed matrices change; widen the initial sector window and correct depth-derived world billboard sizes |
 | Ocarina of Time US V1.2 | Gameplay view FOV after `Camera_Update`, before view matrices are built | Shared CPU/GPU view-projection path; preserve native camera FOV/zoom and exclude fixed backgrounds |
 
 ## 5. Choose conversion and scope
 
-Use the shared environment variable `RECOMP_FOV` in both Debug and Release.
-State the setting's convention explicitly. These ports use horizontal degrees
-at a documented reference aspect, accept `60..120`, and keep the exact original
-path when the environment variable is unset, empty or `0`.
+Use the shared keypad `+` / `-` controls in both Debug and Release. Bind the
+game's adjustment callback with `recomp_renderer_set_fov_hook`. The renderer
+delivers one-degree keydown steps (including repeat) on the owner thread, with
+guest execution parked. It ignores these shortcuts when keyboard input is
+captured by the shared menu or Debug inspector, or the window lacks focus.
+The shared `fov_control` service clamps horizontal degrees at a documented
+reference aspect between the exact original angle and 140. Start at the original
+each launch and preserve its exact guest path when lowering to the minimum.
+There is no FOV environment lookup or startup parser.
 
 For a fixed horizontal setting `h` and aspect `a`, the vertical angle is:
 
@@ -180,12 +185,13 @@ Keep all game-specific work under `games/<game>/`:
    Check full bodies, decoded operands, metadata ownership/boundaries and
    translated coverage. Emit constants into a generated header and a
    `fov-hooks.json` report under the selected build directory.
-4. Implement parsing/math/wrappers in parent-folder `fov.c`/`fov.h` (or the
-   game's combined control adapter, as in OoT). Parse once
-   at startup in both apps. Reject malformed, nonfinite and out-of-range values.
-   With the setting disabled, pass straight through to the original.
-5. Add the adapter to `RECOMP_GAME_SOURCES`; use `RECOMP_GAME_DEBUG_SOURCES` for any
-   maintained focused check. Regenerate the game's MSVC browse project using
+4. Implement game math/wrappers in parent-folder `fov.c`/`fov.h` (or the
+   game's combined control adapter, as in OoT). Initialize shared `RecompFov`
+   state with the checked native vertical angle/aspect in both apps. Bind the
+   adjustment callback after creating the renderer. Recompute projection,
+   zoom, sprite and visibility scalars together; keep exact original behavior
+   at the minimum. If CPU tables are cached, rebuild them live too.
+5. Add the adapter to `RECOMP_GAME_SOURCES`. Regenerate the game's MSVC browse project using
    `tools/msvc_solution.py`'s `write_project` interface. Do not edit generated C.
 
 A hash binds reviewed semantics to bytes; it does not establish those semantics
@@ -194,20 +200,17 @@ evidence. Look at the existing game modules for the current schemas and APIs.
 
 ## 7. Validate and hand off
 
-Build Debug and Release. Verify unset/empty/zero preserves original projection
-bytes. Exercise range endpoints, scope exclusions, repeated updates and zoom
-ratios where applicable. Prefer actual translated projection math when it can
-run in isolation. Clearly label observer-based visibility checks as synthetic;
-they cannot establish portal traversal or edge visibility in a live level.
+Build Debug and Release unless the user requests source-only work. Verify launch
+and lowering to the minimum preserve original projection bytes. Exercise keypad
+clamping through 140 degrees, scope exclusions, repeated updates and zoom
+ratios where applicable. ROM evidence alone cannot establish portal traversal
+or edge visibility in a live level.
 
 For Duke on Windows:
 
 ```powershell
 .\tools\build_msvc_project.ps1 -Game duke-us -Configuration Debug
 .\tools\build_msvc_project.ps1 -Game duke-us -Configuration Release
-$env:RECOMP_DUKE_CHECK_FOV = '1'
-.\build\msvc\duke-us\debug\bin\Debug\duke-us.exe --frames 1
-Remove-Item Env:RECOMP_DUKE_CHECK_FOV
 git -c diff.ignoreSubmodules=all diff --check
 ```
 
@@ -256,9 +259,9 @@ gameplay acceptance. Follow the README for current build/test results.
 The first FOV change omitted the separate billboard size path. The user reported
 larger-looking aliens at FOV 110. Disassembly showed the depth-derived sizes
 above; the correction now applies the same focal ratio as the actual translated
-projection matrix, about 0.54 at 110 degrees. Debug checks cover that angle,
-both world callers, unchanged anchors and HUD exclusion. They establish the
-argument scaling; the user subsequently confirmed the corrected FOV and input
+projection matrix, about 0.54 at 110 degrees. Earlier isolated runs verified
+argument scaling for both world callers, unchanged anchors and HUD exclusion.
+The user subsequently confirmed the corrected FOV and input
 work well in game. Broader camera and portal cases remain unverified.
 
 ## Ocarina of Time investigation record
@@ -299,9 +302,35 @@ normal mode dispatched to `Camera_Normal1`, yielding to native Z-targeting.
 Check the exact RAM offsets in the profile; for example `PauseContext.state` is
 at `PlayState + 0x10934`, not the pause-context base `+0x10760`.
 
-The maintained Debug check uses synthetic camera/play state and a collision
-observer. It verifies parsing, original-return preservation, horizontal FOV
-conversion, native zoom ratios, action mapping, delta consumption and state
-gates. It does not execute the original projection or collision geometry and
-cannot establish movement, aiming or camera-transition acceptance. Follow the
+ROM fingerprints establish the reviewed boundaries; movement, aiming, collision
+geometry and complete camera transitions require gameplay acceptance. Follow the
 game's README for the build command and current validation limits.
+
+## Hexen live visibility update
+
+The original visibility initializer at `0x803bba90` allocates a temporary
+4096-entry tangent table, builds fixed-point screen positions and a clip angle,
+then frees the temporary buffer. Its fixed +/-2 tangent branches at
+`0x803bbbf4`/`0x803bbc00` truncate coverage beyond `atan(2)`, about 63.4 degrees
+on each side. Merely raising the FOV setting to 140 would leave missing edges.
+
+The live adapter lets the original initializer run normally and saves its
+finished 4096 words at `0x80144bf8` plus clip angle at `0x80144bdc`. The profile
+checks the table-address LUI/ADDIU, clip-address LUI/SW, fixed-point screen center
+(`0x47200000`, 40960) and upper bound (`0x47a00080`, 81921), as well as the full
+initializer body. No additional ROM entry or instruction patch is needed.
+
+Above the native conservative span, compute a focal scale from the selected
+half-angle plus one degree, sample angles `(i - 2048 + 0.5) * 2*pi / 8192`, and
+rebuild `ceil(center - tan(angle) * focal)` clamped to `[-1, 81921]`. The first
+negative entry defines the original binary-angle clip formula
+`(index << 19) - 0x40000000`. The screen bounds replace the fixed +/-2 branches,
+so 140-degree views retain coverage. Host math can differ slightly from the
+guest's trigonometric approximations; angular overscan keeps clipping
+conservative. Returning to the minimum copies the exact saved native words back.
+
+Key changes update only these CPU tables and projection scalars, with the guest
+parked. They never re-enter the guest allocator. The ROM operands and an
+analytical table model were reviewed during implementation. This extension was
+not rebuilt at the user's request; live
+geometry/edge visibility and combined F7 behavior still need acceptance.

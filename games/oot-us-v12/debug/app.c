@@ -14,7 +14,6 @@
 #include "audio.h"
 #include "jpeg.h"
 #include "controls.h"
-int oot_check_controls(void);
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
 #define LOG_OOT_CALLS (getenv("RECOMP_TRACE_CALLS") != NULL)
@@ -128,9 +127,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: %s NORMALIZED_ROM REPORT FRAMES RENDERER_DATA\n", argv[0]);
         return 2;
     }
-    if (getenv("RECOMP_OOT_CHECK_CONTROLS")) return oot_check_controls();
-    require(oot_fov_configure(getenv("RECOMP_FOV")),
-            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
+    oot_fov_init();
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Ocarina of Time invalid frame count", 0);
@@ -183,6 +180,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Ocarina of Time IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "The Legend of Zelda: Ocarina of Time");
     require(renderer != NULL, "Ocarina of Time renderer initialization failed", 0);
+    recomp_renderer_set_fov_hook(renderer, oot_fov_adjust);
     oot_controls_init(poll_controls);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = getenv("RECOMP_AUDIO_MUTE") == NULL,

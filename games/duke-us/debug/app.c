@@ -13,8 +13,6 @@
 #include "audio.h"
 #include "fov.h"
 #include "duke_input.h"
-int duke_check_fov(const RecompGameOptions *);
-int duke_check_input(const RecompGameOptions *);
 
 /* Set to 1 to trace registered guest calls during ROM bring-up. */
 #define LOG_DUKE_CALLS (getenv("RECOMP_TRACE_CALLS") != NULL)
@@ -207,16 +205,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: %s NORMALIZED_ROM REPORT FRAMES RENDERER_DATA\n", argv[0]);
         return 2;
     }
-    if (getenv("RECOMP_DUKE_CHECK_FOV")) {
-        RecompGameOptions options = {.rom = argv[1]};
-        return duke_check_fov(&options);
-    }
-    if (getenv("RECOMP_DUKE_CHECK_INPUT")) {
-        RecompGameOptions options = {.rom = argv[1]};
-        return duke_check_input(&options);
-    }
-    require(duke_fov_configure(getenv("RECOMP_FOV")),
-            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
+    duke_fov_init();
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Duke Nukem 64 invalid frame count", 0);
@@ -262,6 +251,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Duke Nukem 64 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, argv[4], "Duke Nukem 64");
     require(renderer != NULL, "Duke Nukem 64 renderer initialization failed", 0);
+    recomp_renderer_set_fov_hook(renderer, duke_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = getenv("RECOMP_AUDIO_MUTE") == NULL,
                             .prebuffer_ms = 160,

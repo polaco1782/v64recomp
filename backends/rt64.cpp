@@ -31,6 +31,7 @@ struct RecompRenderer {
     uint32_t code = 0, data = 0, list = 0;
     RecompGraphicsHook graphics_hook = nullptr;
     RecompMicrocodeHook microcode_hook = nullptr;
+    void (*fov_hook)(int) = nullptr;
     bool custom_gbi = false;
     bool raw_rdp = false, raw_vi = false;
     std::thread::id owner = std::this_thread::get_id();
@@ -551,6 +552,10 @@ RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     s->mouse_frame.wheel = 0;
     return frame;
 }
+void recomp_renderer_set_fov_hook(RecompRenderer *s, void (*adjust)(int)) {
+    s->check_owner();
+    s->fov_hook = adjust;
+}
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     s->check_owner();
     s->mouse_frame = {};
@@ -586,6 +591,20 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         }
         if (s->cheat_menu->captures_input())
             continue;
+        if (event.type == SDL_KEYDOWN && s->fov_hook &&
+            (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS) &&
+            (event.key.keysym.scancode == SDL_SCANCODE_KP_PLUS ||
+             event.key.keysym.scancode == SDL_SCANCODE_KP_MINUS)) {
+            bool keyboard_captured = false;
+#ifdef RECOMP_DEBUG
+            {
+                const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+                keyboard_captured = s->app->presentQueue->inspector && ImGui::GetIO().WantCaptureKeyboard;
+            }
+#endif
+            if (!keyboard_captured)
+                s->fov_hook(event.key.keysym.scancode == SDL_SCANCODE_KP_PLUS ? 1 : -1);
+        }
         if (event.type == SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode == SDL_SCANCODE_F5) {
             s->wait_texture_reload();
             s->textureFiles.refreshAndToggle(*s->app->textureCache);

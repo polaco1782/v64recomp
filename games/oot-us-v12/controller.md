@@ -17,6 +17,7 @@ Use the normal controller/keyboard bindings outside gameplay (Enter is A).
 | Q / R / F | C-left / C-down / C-right item |
 | Shift + F | C-up |
 | Tab | Start |
+| Keypad + / - | Increase / decrease horizontal FOV; original minimum, 140 maximum |
 
 The original camera solver chooses the target and distance. Mouse orbit keeps
 its heading until capture ends or the camera changes mode, and calls the game's
@@ -53,7 +54,5 @@ calls `Camera_Normal1` at `0x80039054`; only that normal-mode path receives orbi
 The adapter calls `Camera_BGCheck` at `0x800362fc` with a scratch register context
 so collision cannot clobber the original handler's return registers.
 
-The maintained Debug check uses synthetic play/camera state and a collision
-observer to exercise action mapping, input consumption, targeting, focus release,
-camera ABI, state exclusions and FOV/zoom math. It does not test collision
-geometry, actual movement or complete camera transitions in game.
+In-game movement, collision geometry, aiming and complete camera transitions
+remain for gameplay acceptance.

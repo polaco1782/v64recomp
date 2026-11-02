@@ -82,6 +82,9 @@
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\fov_control.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\game.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -137,6 +140,9 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\dispatch.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\fov_control.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\fpu.c">

@@ -112,8 +112,7 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
 void hexen_init(Hexen *g, const RecompGameOptions *options, const char *wav) {
     memset(g, 0, sizeof(*g));
     game = g;
-    require(hexen_fov_configure(getenv("RECOMP_FOV")),
-            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees", 0);
+    hexen_fov_init();
     Runtime *rt = &g->runtime;
     require(recomp_runtime_init(rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
                                 recomp_section_count),
@@ -141,6 +140,7 @@ void hexen_init(Hexen *g, const RecompGameOptions *options, const char *wav) {
     require(recomp_io_init(rt, &io) && recomp_tasks_init(rt, &backend), "Hexen IO/tasks initialization failed", 0);
     g->renderer = recomp_renderer_create_named(rt, options->data, "Hexen");
     require(g->renderer != NULL, "Hexen renderer initialization failed", 0);
+    recomp_renderer_set_fov_hook(g->renderer, hexen_fov_adjust);
     g->running = true;
     hexen_input_init(poll_command_input);
     recomp_renderer_set_microcode_hook(g->renderer, hexen_bind_microcode);

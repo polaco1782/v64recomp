@@ -215,4 +215,8 @@ bindings = [
   {name = "cull_angle", value = 0x803d1a48, kind = "address", pcs = [0x803bbb5c, 0x803bbb60], words = [0x3c01803d, 0xc4261a48]},
   {name = "cull_bits", value = 0x449c81c7, kind = "data_word", pcs = [0x803d1a48], words = [0x449c81c7]},
   {name = "fine_angles", value = 8192, kind = "double_high", pcs = [0x803bbad0], words = [0x3c0140c0]},
+  {name = "visibility_table", value = 0x80144bf8, kind = "address", pcs = [0x803bbbc8, 0x803bbbdc], words = [0x3c028014, 0x24424bf8]},
+  {name = "clip_angle", value = 0x80144bdc, kind = "address", pcs = [0x803bbce0, 0x803bbce8], words = [0x3c018014, 0xac2c4bdc]},
+  {name = "screen_center_bits", value = 0x47200000, kind = "upper_bits", pcs = [0x803bbb94], words = [0x3c014720]},
+  {name = "screen_max_bits", value = 0x47a00080, kind = "data_word", pcs = [0x803d1a50], words = [0x47a00080]},
 ]

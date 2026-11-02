@@ -122,8 +122,7 @@ int main(int argc, char **argv) {
     int parsed = recomp_game_options(argc, argv, &options);
     if (parsed)
         return parsed < 0 ? 2 : 0;
-    require(duke_fov_configure(getenv("RECOMP_FOV")),
-            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
+    duke_fov_init();
     Runtime rt;
     require(recomp_runtime_init(&rt, BOOT_RAM_SIZE, recomp_functions, recomp_function_count, recomp_boot_sections,
                                 recomp_section_count),
@@ -155,6 +154,7 @@ int main(int argc, char **argv) {
     require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Duke Nukem 64 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Duke Nukem 64");
     require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_fov_hook(renderer, duke_fov_adjust);
     duke_input_init(poll_command_input);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,

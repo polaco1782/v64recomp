@@ -136,9 +136,11 @@ Duke Nukem 64 includes default [WASD/mouse controls](games/duke-us/controller.md
 
 Ocarina of Time US V1.2 includes default [WASD/third-person mouse controls](games/oot-us-v12/controller.md) and an optional [FOV setting](games/oot-us-v12/README.md#field-of-view), preserving the original FOV by default.
 
-These games share `RECOMP_FOV=60..120` for horizontal FOV in degrees. Unset,
-empty or `0` preserves each game's original view. Set it before launching;
-for example, `$env:RECOMP_FOV = '110'` in PowerShell.
+These games share keypad `+` / `-` for live FOV adjustment, one degree per
+keydown with hold-to-repeat. Each starts at its original FOV; the range is that
+original horizontal angle through 140 degrees. No FOV environment variable is
+needed. Lowering to the minimum restores the original view.
+
 007: The World Is Not Enough USA revision 0 is registered as experimental
 `twine-us`; native startup and MusyX audio bring-up are in progress. See its
 [port notes](games/twine-us/README.md).

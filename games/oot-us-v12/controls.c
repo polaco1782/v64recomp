@@ -1,13 +1,14 @@
 #include "controls.h"
 #include "oot_controls_config.h"
 #include "game.h"
-#include <errno.h>
+#include "fov_control.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 static bool mouse_enabled, fov_enabled, orbit_active;
 static bool orbit_seen;
+static RecompFov fov;
 static uint32_t play, orbit_camera, updating_camera;
 static double sensitivity, invert_y, orbit_yaw, orbit_pitch, fov_scale;
 static RecompMouseBuffer mouse;
@@ -43,7 +44,7 @@ static uint32_t main_camera(Runtime *rt) {
     return valid(rt, camera, 0x16c) && recomp_load32(rt, camera + OOT_CTL_CAMERA_PLAY) == play &&
         recomp_load16(rt, camera + OOT_CTL_STATUS) == 7 ? camera : 0;
 }
-bool oot_controls_playable(Runtime *rt) { return mouse_enabled && main_camera(rt); }
+static bool oot_controls_playable(Runtime *rt) { return mouse_enabled && main_camera(rt); }
 void oot_controls_init(void (*poll)(Runtime *, void *)) {
     poll_live_input = poll;
     play = updating_camera = 0;
@@ -65,20 +66,20 @@ void oot_controls_init(void (*poll)(Runtime *, void *)) {
     setting = getenv("RECOMP_MOUSE_INVERT_Y");
     invert_y = setting && !strcmp(setting, "1") ? -1 : 1;
 }
-bool oot_fov_configure(const char *setting) {
+void oot_fov_init(void) {
+    recomp_fov_init(&fov, OOT_CTL_NATIVE_FOV, 4.0 / 3.0);
     fov_enabled = false;
-    if (!setting || !*setting) return true;
-    char *end; errno = 0;
-    double horizontal = strtod(setting, &end);
-    if (end == setting || *end || errno == ERANGE || !isfinite(horizontal) ||
-        (horizontal != 0 && (horizontal < 60 || horizontal > 120))) return false;
-    if (!horizontal) return true;
-    const double radians = 3.14159265358979323846 / 180;
-    fov_scale = tan(horizontal * radians / 2) / ((4.0 / 3.0) * tan(OOT_CTL_NATIVE_FOV * radians / 2));
-    fov_enabled = true;
-    return true;
 }
-void oot_controls_submit(RecompMouseFrame frame, RecompPad *pad) {
+static void oot_fov_set(double horizontal) {
+    recomp_fov_set(&fov, horizontal);
+    fov_enabled = recomp_fov_enabled(&fov);
+    const double radians = 3.14159265358979323846 / 180;
+    fov_scale = tan(fov.horizontal * radians / 2) / ((4.0 / 3.0) * tan(OOT_CTL_NATIVE_FOV * radians / 2));
+}
+void oot_fov_adjust(int steps) {
+    if (recomp_fov_adjust(&fov, steps)) oot_fov_set(fov.horizontal);
+}
+static void oot_controls_submit(RecompMouseFrame frame, RecompPad *pad) {
     if (!frame.active) clear();
     recomp_mouse_submit(&mouse, frame);
     if (!frame.active) return;

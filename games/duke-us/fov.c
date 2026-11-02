@@ -1,11 +1,11 @@
 #include "fov.h"
 #include "duke_fov_config.h"
-#include <errno.h>
+#include "fov_control.h"
 #include <math.h>
-#include <stdlib.h>
 #include <string.h>
 
 static bool enabled;
+static RecompFov fov;
 static uint32_t vertical_bits;
 static float scan_padding;
 static float sprite_scale;
@@ -19,15 +19,14 @@ static uint32_t to_bits(float value) {
     memcpy(&bits, &value, sizeof(bits));
     return bits;
 }
-bool duke_fov_configure(const char *setting) {
+void duke_fov_init(void) {
+    recomp_fov_init(&fov, from_bits(DUKE_FOV_VERTICAL_BITS), from_bits(DUKE_FOV_ASPECT_BITS));
     enabled = false;
-    if (!setting || !*setting) return true;
-    char *end;
-    errno = 0;
-    double horizontal = strtod(setting, &end);
-    if (end == setting || *end || errno == ERANGE || !isfinite(horizontal) ||
-        (horizontal != 0 && (horizontal < 60 || horizontal > 120))) return false;
-    if (horizontal == 0) return true;
+}
+static void duke_fov_set(double horizontal) {
+    recomp_fov_set(&fov, horizontal);
+    enabled = recomp_fov_enabled(&fov);
+    horizontal = fov.horizontal;
     const double radians = 3.14159265358979323846 / 180.0;
     vertical_bits = to_bits((float)(2 * atan(tan(horizontal * radians / 2) /
                                            from_bits(DUKE_FOV_ASPECT_BITS)) / radians));
@@ -36,8 +35,9 @@ bool duke_fov_configure(const char *setting) {
     // Preserve the native pitch-dependent overscan and never narrow the scan.
     // Add one degree beyond the requested half-angle to its stock 35 degrees.
     scan_padding = (float)fmax(0, horizontal / 2 + 1 - from_bits(DUKE_FOV_SCAN_HALF_BITS));
-    enabled = true;
-    return true;
+}
+void duke_fov_adjust(int steps) {
+    if (recomp_fov_adjust(&fov, steps)) duke_fov_set(fov.horizontal);
 }
 void duke_fov_projection_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     if (!enabled) {

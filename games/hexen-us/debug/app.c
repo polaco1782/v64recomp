@@ -6,14 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #define require recomp_game_require
-int hexen_check_input(void);
-int hexen_check_fov(const RecompGameOptions *options);
 int main(int argc, char **argv) {
     if (argc != 5) {
         fprintf(stderr, "usage: %s ROM REPORT FRAMES RENDERER_DATA\n", argv[0]);
         return 2;
     }
-    if (getenv("RECOMP_HEXEN_CHECK_INPUT")) return hexen_check_input();
     char *end;
     unsigned long frames = strtoul(argv[3], &end, 10);
     require(*argv[3] && !*end && frames <= UINT32_MAX, "Hexen invalid frame count", 0);
@@ -24,7 +21,6 @@ int main(int argc, char **argv) {
                                  .data = argv[4],
                                  .save = getenv("RECOMP_HEXEN_SAVE"),
                                  .mute = getenv("RECOMP_AUDIO_MUTE") != NULL};
-    if (getenv("RECOMP_HEXEN_CHECK_FOV")) return hexen_check_fov(&options);
     Hexen game;
     hexen_init(&game, &options, getenv("RECOMP_HEXEN_WAV"));
     const char *input = getenv("RECOMP_HEXEN_INPUT");

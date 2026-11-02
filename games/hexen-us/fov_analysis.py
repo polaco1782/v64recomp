@@ -44,7 +44,7 @@ def verify_fov(rom, profile, metadata=None, coverage=None):
         require(kind == 'data_word' or all(pc in owned for pc in pcs), name + ' unowned instructions')
         if kind == 'address':
             hi, low = words
-            require(hi >> 26 == 15 and low >> 26 in (9, 49) and
+            require(hi >> 26 == 15 and low >> 26 in (9, 43, 49) and
                     (hi >> 16) & 31 == (low >> 21) & 31, name + ' invalid address')
             value = ((hi & 0xffff) << 16) + ((low & 0x7fff) - (low & 0x8000))
         elif kind == 'return':

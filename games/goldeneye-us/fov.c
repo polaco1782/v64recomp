@@ -1,30 +1,32 @@
 #include "fov.h"
 #include "goldeneye_fov_config.h"
 #include "goldeneye_input_config.h"
-#include <errno.h>
+#include "fov_control.h"
 #include <math.h>
-#include <stdlib.h>
 #include <string.h>
 
 static bool enabled;
+static RecompFov fov;
 static double tangent_scale;
 
-bool goldeneye_fov_configure(const char *setting) {
+void goldeneye_fov_init(void) {
+    float native;
+    uint32_t bits = GE_FOV_NATIVE_BITS;
+    memcpy(&native, &bits, sizeof(native));
+    recomp_fov_init(&fov, native, 4.0 / 3.0);
     enabled = false;
-    if (!setting || !*setting) return true;
-    char *end;
-    errno = 0;
-    double horizontal = strtod(setting, &end);
-    if (end == setting || *end || errno == ERANGE || !isfinite(horizontal) ||
-        (horizontal != 0 && (horizontal < 60 || horizontal > 120))) return false;
-    if (horizontal == 0) return true;
+}
+static void goldeneye_fov_set(double horizontal) {
+    recomp_fov_set(&fov, horizontal);
+    enabled = recomp_fov_enabled(&fov);
     const double radians = 3.14159265358979323846 / 180.0;
     float native;
     uint32_t bits = GE_FOV_NATIVE_BITS;
     memcpy(&native, &bits, sizeof(native));
-    tangent_scale = tan(horizontal * radians / 2) / ((4.0 / 3.0) * tan(native * radians / 2));
-    enabled = true;
-    return true;
+    tangent_scale = tan(fov.horizontal * radians / 2) / ((4.0 / 3.0) * tan(native * radians / 2));
+}
+void goldeneye_fov_adjust(int steps) {
+    if (recomp_fov_adjust(&fov, steps)) goldeneye_fov_set(fov.horizontal);
 }
 static bool eligible(Runtime *rt) {
     uint32_t p = recomp_load32(rt, GE_INPUT_CURRENT_PLAYER);

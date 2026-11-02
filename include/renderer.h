@@ -38,6 +38,9 @@ bool recomp_renderer_submit_rdp(RecompRenderer *, uint32_t start, uint32_t end,
                                 const RecompViRegisters *, uint32_t framebuffer);
 bool recomp_renderer_present(RecompRenderer *);
 bool recomp_renderer_input(RecompRenderer *, RecompPad *);
+/* Opt into keypad +/- FOV changes, one degree per keydown (including repeat).
+ * Callback runs on the host owner with guest execution parked. */
+void recomp_renderer_set_fov_hook(RecompRenderer *, void (*adjust)(int steps));
 /* Opt-in PC controls. Gameplay false releases capture and clears motion.
  * Escape toggles capture; F4 recaptures; F10 quits. Other games are unchanged. */
 void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);

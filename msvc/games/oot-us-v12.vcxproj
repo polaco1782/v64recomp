@@ -33,9 +33,6 @@
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\controls_check.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\hooks.h" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\jpeg.h" />

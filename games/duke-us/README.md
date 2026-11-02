@@ -19,58 +19,35 @@ cmake --workflow --preset duke-us-debug
 
 ## Field of view
 
-`RECOMP_FOV` optionally sets the single-player world camera's horizontal
-FOV at the native 4:3 aspect. The range is `60..120` degrees, including fractional
-values. Unset, empty or `0` retains the exact original projections (60 degrees
-vertically, approximately 75.2 horizontally) and visibility window.
+Use keypad `+` / `-` to adjust the single-player world-camera FOV live,
+one horizontal degree per keydown; holding a key repeats. The minimum is the
+exact original view (60 degrees vertically, about 75.2 horizontally at 4:3),
+and the maximum is 140 degrees. Each launch starts at the original FOV. Lowering
+to the minimum restores the original projection and visibility window. No FOV
+environment variable is read. Changes print the current value to the console.
 
-```powershell
-$env:RECOMP_FOV = '100'
-.\build\msvc\duke-us\release\bin\Release\duke-us.exe
-```
+This works in Debug and Release independently of mouse capture. Multiplayer,
+orthographic HUD/menu calls retain native behavior. RT64 F7 aspect expansion
+is separate and can widen the displayed view further.
 
-The setting applies at launch in both Debug and Release. Restore the original
-with `$env:RECOMP_FOV = '0'`. Multiplayer keeps its original camera;
-orthographic HUD/menu calls retain their original behavior. RT64 F7 aspect
-expansion is separate and can widen the displayed view further.
+The verified `guPerspectiveF` wrapper updates both CPU float and GPU fixed
+projection paths. World billboards receive the same focal-length ratio as the
+projection, with anchors and HUD/weapon scaling preserved. The initial sector
+window widens by `max(0, horizontal/2 + 1 - 35)` degrees on each side, retaining
+native pitch overscan and recursive portal clipping. ROM bodies, operands and
+call scope remain checked by generation; see the
+[repeatable investigation guide](../../docs/field-of-view.md).
 
-The world setup at `0x80063bb8` builds both a float CPU projection and a fixed
-GPU projection. `fov.c` wraps the original `guPerspectiveF` at `0x800c3130` for
-the direct world call and the world call through `guPerspective`. The latter
-checks the saved parent return address to avoid changing unrelated SDK calls.
-The original routines still build the matrices and perspective normalization.
+The world setup is at `0x80063bb8`; the original `guPerspectiveF` is at
+`0x800c3130`. Its fixed-matrix path checks the saved parent return address so
+unrelated SDK callers remain unchanged. The `scansector` wrapper at `0x8005962c`
+widens only the first call from `drawrooms_`. The originals retain matrix
+normalization, recursive portal clipping, visited lists and sorting.
 
-Duke also scans visible sectors using an angular window. The wrapper at
-`scansector` (`0x8005962c`) widens only its initial call from `drawrooms_`, keeping
-the native pitch allowance. The scan window is never narrowed; recursive
-portal clipping, visited lists and sorting remain guest code.
-Full bodies, calls, delay slots and decoded operands are checked against this
-exact ROM by `fov_analysis.py`; generation writes `fov-hooks.json`.
-
-World billboard sprites/effects also receive the projection's focal-length
-ratio. Their native depth-based size calculation bypasses the projection matrix;
-without this correction, enemies retain their stock screen size while the world
-widens. The fix is scoped to the world calls to `rendertileworld`, preserving
-weapon/HUD/menu tile calls. It is covered at FOV 110 by focused checks, and the
-user subsequently confirmed that the corrected FOV and input work well in game.
-
-See [the repeatable FOV investigation guide](../../docs/field-of-view.md) for
-the tools, commands, pinned public reference and step-by-step Duke findings.
-
-On 2026-10-31, Debug/Release builds and focused Debug checks passed. Those checks
-execute the actual translated float/fixed projection math, comparing native
-matrix bytes, requested horizontal angles, repeated updates and scope exclusions.
-Visibility-window checks use a synthetic observer. To rerun without opening a
-game window:
-
-```powershell
-$env:RECOMP_DUKE_CHECK_FOV = '1'
-.\build\msvc\duke-us\debug\bin\Debug\duke-us.exe --frames 1
-Remove-Item Env:RECOMP_DUKE_CHECK_FOV
-```
-
-Broader edge visibility, extreme pitched views, portal transitions and combined
-widescreen behavior remain unverified beyond the user's gameplay test.
+Earlier FOV/input versions passed Debug/Release checks and the user's gameplay
+test, including corrected billboard sizes at 110 degrees. The keypad/140-degree
+extension has not been rebuilt or tested in game. Tilted views, portal traversal
+and combined F7 expansion require gameplay acceptance.
 
 `release/` contains the playable app and Release-only sources. `debug/` contains
 the original trace/capture harness and inspection tools. Shared headers, adapters,

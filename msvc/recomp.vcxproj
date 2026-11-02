@@ -51,6 +51,7 @@
     <None Include="$(RecompRoot)CMakePresets.json" />
     <ClInclude Include="$(RecompRoot)include\cheats.h" />
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h" />
+    <ClInclude Include="$(RecompRoot)include\fov_control.h" />
     <ClInclude Include="$(RecompRoot)include\game.h" />
     <ClInclude Include="$(RecompRoot)include\host.h" />
     <ClInclude Include="$(RecompRoot)include\input.h" />
@@ -70,6 +71,7 @@
     <ClCompile Include="$(RecompRoot)runtime\debug.c" />
     <ClCompile Include="$(RecompRoot)runtime\debug_game.c" />
     <ClCompile Include="$(RecompRoot)runtime\dispatch.c" />
+    <ClCompile Include="$(RecompRoot)runtime\fov_control.c" />
     <ClCompile Include="$(RecompRoot)runtime\fpu.c" />
     <ClCompile Include="$(RecompRoot)runtime\game.c" />
     <ClCompile Include="$(RecompRoot)runtime\host.c" />

@@ -11,7 +11,6 @@
 #include "graphics.h"
 #include "goldeneye_input.h"
 #include "fov.h"
-int goldeneye_check_fov(void);
 #include <time.h>
 #include <errno.h>
 static RecompRenderer *renderer;
@@ -151,9 +150,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: %s ROM DATA_CAPTURE STARTUP_REPORT FRAMES\n", argv[0]);
         return 2;
     }
-    if (getenv("RECOMP_GOLDENEYE_CHECK_FOV")) return goldeneye_check_fov();
-    require(goldeneye_fov_configure(getenv("RECOMP_FOV")),
-            "RECOMP_FOV must be 0 (original) or 60..120 horizontal degrees at 4:3", 0);
+    goldeneye_fov_init();
     char *end;
     unsigned long frames = strtoul(argv[4], &end, 10);
     if (*end || frames > 36000)
@@ -171,6 +168,7 @@ int main(int argc, char **argv) {
             "GoldenEye render path too long", 0);
     renderer = recomp_renderer_create_named(&rt, renderer_data, "GoldenEye 007");
     require(renderer != NULL, "GoldenEye renderer initialization failed", 0);
+    recomp_renderer_set_fov_hook(renderer, goldeneye_fov_adjust);
     recomp_renderer_set_graphics_hook(renderer, goldeneye_configure_graphics);
     const char *script = getenv("RECOMP_GOLDENEYE_INPUT");
     if (script && *script) {

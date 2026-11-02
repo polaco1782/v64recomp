@@ -85,17 +85,7 @@ were checked independently against this cartridge's MIPS.
 
 ## Validation
 
-MSVC Debug and Release builds pass. The maintained synthetic Debug check covers
-all four class movement tables, run/walk, attack/use/jump, look direction and
-clamps, single consumption of deltas, queued wheel detents, key/artifact edges,
-original-call preservation, gameplay gates and stale-input clearing. Run it
-from the repository root with default sensitivity/inversion and replay disabled:
-
-```powershell
-$env:RECOMP_HEXEN_CHECK_INPUT = '1'
-.\build\msvc\hexen-us\debug\bin\Debug\hexen-us.exe --frames 1
-Remove-Item Env:RECOMP_HEXEN_CHECK_INPUT
-```
+Earlier MSVC Debug and Release builds passed.
 
 Release boot and rendered attract mode were observed. Live adapter gameplay,
 camera feel, pause/focus recapture, class selection, and artifact/weapon behavior

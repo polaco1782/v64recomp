@@ -32,9 +32,6 @@
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\app.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\fov_check.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\fov.c" />
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\fov.h" />
     <None Include="$(RecompRoot)games\goldeneye-us\generate.py" />
