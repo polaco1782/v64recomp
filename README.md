@@ -312,6 +312,8 @@ for all games, with original gameplay and audio timing. Rendering uses 4x resolu
 the game's original aspect ratio and texture LOD scaling. The window starts at
 1280×960 (4:3). F7 toggles between the original aspect ratio and expansion to fit
 a wider window in both Debug and Release. Original is the startup default.
+Steam Deck packages start at 1280×800 with expansion enabled automatically;
+see [Deck display settings](docs/steamdeck.md).
 This RT64 revision has no game ray-tracing renderer.
 
 Use `--texture-pack /path/to/pack.zip` to let RT64 match Rice/GLideN64 filenames

@@ -79,13 +79,18 @@ def package(game, build):
     (destination / "GLIBC-REQUIREMENTS.txt").write_text("".join(report))
     (destination / "local").mkdir()
     launcher = destination / "launch.sh"
+    # OoT's gameplay mouse adapter replaces the native pad, including its stick.
+    # Deck launches use the Steam Input gamepad throughout gameplay and menus.
+    gamepad_defaults = 'export RECOMP_OOT_MOUSE="${RECOMP_OOT_MOUSE-0}"\n' if game == "oot-us-v12" else ""
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
 here=$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")" && pwd)
 export LD_LIBRARY_PATH="$here/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
 export SDL_VIDEODRIVER=x11
+export RECOMP_STEAM_DECK="${{RECOMP_STEAM_DECK-1}}"
+export RECOMP_LIVE_PATCH_DIR="${{RECOMP_LIVE_PATCH_DIR-off}}"
 export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"
-cd -- "$here"
+{gamepad_defaults}cd -- "$here"
 exec "$here/{game}" --rom "$here/local/{rom}" \\
     --data "$here/local/rt64/{game}" --save "$here/local/{save}" \\
     --crash-dir "$here/local/crashes/{game}" "$@"

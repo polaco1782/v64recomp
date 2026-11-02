@@ -137,6 +137,11 @@ Mode. Leave forced compatibility tools disabled for this native build; Proton
 is for Windows executables. This package does not target the older Sniper runtime.
 The launcher selects X11/Xwayland, as used by the current RT64 adapter.
 
+The launcher defaults `RECOMP_STEAM_DECK=1`, which starts RT64 in expanded
+aspect-ratio mode with a 1280×800 window for the Deck's 16:10 screen. F7 still
+toggles expansion during play. Set `RECOMP_STEAM_DECK=0` to restore the standard
+1280×960 window and original aspect ratio at startup.
+
 The shared SDL gamepad backend reads the left stick as **analog input**, with a
 12% radial deadzone and continuous travel from gentle movement to full speed.
 Keep Steam Input enabled and select its built-in **Gamepad** template for the
@@ -181,6 +186,10 @@ to avoid flicker near their activation point. Controllers can be connected or
 removed while running; keyboard controls remain available, and losing window
 focus releases game input. The first recognized gamepad controls port 1.
 See the shipped `steam-input/README.md` for layout details and customization.
+
+The OOT package defaults `RECOMP_OOT_MOUSE=0` so its gameplay mouse adapter
+does not replace Steam Input's buttons and analog stick with WASD/mouse input.
+This setting takes effect when the game starts.
 
 The VDF format is checked against Steam's installed Deck Gamepad template;
 installation follows [EmuDeck's template workflow](https://emudeck.github.io/community-creations/steamos/community-creations/#how-to-download-steam-input-profiles).

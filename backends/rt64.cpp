@@ -249,8 +249,10 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         return nullptr;
     }
     auto s = std::make_unique<RecompRenderer>(rt);
+    const char *deck_setting = std::getenv("RECOMP_STEAM_DECK");
+    const bool steam_deck = deck_setting && !std::strcmp(deck_setting, "1");
     s->window = SDL_CreateWindow(window_title ? window_title : "Native N64 recompilation", SDL_WINDOWPOS_CENTERED,
-                                 SDL_WINDOWPOS_CENTERED, 1280, 960, SDL_WINDOW_RESIZABLE);
+                                 SDL_WINDOWPOS_CENTERED, 1280, steam_deck ? 800 : 960, SDL_WINDOW_RESIZABLE);
     SDL_SysWMinfo wm{};
     SDL_VERSION(&wm.version);
 #ifdef _WIN32
@@ -321,9 +323,10 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         s->app->userConfig.resolutionMultiplier = 4.0;
         s->app->userConfig.antialiasing = RT64::UserConfiguration::Antialiasing::MSAA4X;
         s->app->userConfig.threePointFiltering = false;
-        // Start with the game's original view; F7 can enable expansion.
-        s->app->userConfig.aspectRatio = RT64::UserConfiguration::AspectRatio::Original;
-        s->app->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Original;
+        // Deck packages expand to the built-in 16:10 screen; F7 still toggles it.
+        using AspectRatio = RT64::UserConfiguration::AspectRatio;
+        s->app->userConfig.aspectRatio = steam_deck ? AspectRatio::Expand : AspectRatio::Original;
+        s->app->userConfig.extAspectRatio = s->app->userConfig.aspectRatio;
         s->app->userConfig.refreshRate = RT64::UserConfiguration::RefreshRate::Manual;
         s->app->userConfig.refreshRateTarget = 60;
         s->app->enhancementConfig.presentation.mode = RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;
@@ -343,6 +346,8 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
             return nullptr;
         }
         s->ready = true;
+        if (steam_deck)
+            std::fprintf(stderr, "Steam Deck display: 1280x800, expanded aspect ratio\n");
         if (const char *path = std::getenv("RECOMP_FRAME_TRACE"); path && *path) {
             s->frame_trace = std::fopen(path, "wx");
             if (!s->frame_trace)
