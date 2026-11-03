@@ -29,15 +29,45 @@ handler: first-person aiming, special follow handlers, fixed backgrounds and
 scripted cameras retain native behavior. WASD supplies native stick input in
 first-person views; mouse aiming in those modes is not implemented.
 
+## Steam Deck and gamepad camera
+
+The Steam Deck package enables native dual-stick controls. Use Steam Input's
+Gamepad template or the bundled v64recomp - N64 template; keep both sticks as
+gamepad axes. On a desktop, enable this mode with `RECOMP_OOT_GAMEPAD_CAMERA=1`.
+
+| Input | Game action |
+| --- | --- |
+| Left stick | Analog movement and menu navigation |
+| Right stick | Position the standard third-person follow camera |
+| Top-left D-pad | C-up / C-down / C-left / C-right, including ocarina notes |
+| A / X | A: contextual action / B: sword |
+| Left trigger | Z: target / recenter |
+| Right trigger or bumper | R: shield |
+| Menu | Start |
+
+Both sticks use a 12% radial deadzone with continuous travel. Full right-stick
+deflection turns at 120 degrees/second horizontally or 90 vertically. Camera
+speed follows elapsed time, independently of input polling and interpolation.
+The existing follow-camera limits, collision handling and Z-targeting takeover
+also apply to the stick. Dialog, pause, cutscenes and special cameras keep their
+native behavior; first-person aiming still uses the left stick.
+
+This mode disables mouse capture and mouse action remapping so the gamepad's
+movement and buttons reach the game intact. Set `RECOMP_OOT_GAMEPAD_CAMERA=0`
+to restore the original gamepad mapping. Keyboard controls in gamepad mode use
+the original layout (arrows move, I/K/J/L are C-buttons). Desktop WASD/mouse
+controls remain the default when this mode is not enabled.
+
 Settings are read at startup:
 
 ```powershell
 $env:RECOMP_MOUSE_SENSITIVITY = '0.08' # degrees per mouse count; 0.001..10
 $env:RECOMP_MOUSE_INVERT_Y = '1'       # optional inverted vertical orbit
 $env:RECOMP_OOT_MOUSE = '0'            # optional original controller mapping
+$env:RECOMP_OOT_GAMEPAD_CAMERA = '1'  # dual-stick/D-pad mode, default in Deck packages
 ```
 
-Debug input replay (`--input`) disables this adapter. FOV works
+Debug input replay (`--input`) disables mouse and gamepad camera overrides. FOV works
 independently of mouse capture; see the [FOV setting](README.md#field-of-view).
 
 ## Evidence and verification
@@ -56,5 +86,12 @@ calls `Camera_Normal1` at `0x80039054`; only that normal-mode path receives orbi
 The adapter calls `Camera_BGCheck` at `0x800362fc` with a scratch register context
 so collision cannot clobber the original handler's return registers.
 
-In-game movement, collision geometry, aiming and complete camera transitions
-remain for gameplay acceptance.
+Debug and Release builds pass. SDL virtual-controller checks cover analog
+movement/camera separation, all four D-pad C-buttons, deadzones, action buttons,
+legacy mapping and disconnects. Native camera-hook checks cover elapsed-time
+rotation, centering, stall limits, collision-call register preservation,
+Z-targeting, dialog, special modes and replay isolation.
+
+These checks do not establish physical Steam Deck gameplay acceptance. In-game
+movement, collision geometry, aiming and complete camera transitions remain
+for gameplay acceptance.

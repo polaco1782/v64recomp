@@ -219,6 +219,11 @@ external ROM. `--rom PATH` still loads and verifies an original ROM for comparis
 See [ROM content packaging](docs/rom-packaging.md) for supported layouts,
 removal reports and the limits of code stripping.
 
+To bundle a texture ZIP, configure with
+`-DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip`. The ZIP is appended to the executable
+and loaded automatically in Debug or Release, independently of ROM embedding.
+`--texture-pack ZIP` overrides it. See [texture packs](docs/textures.md#embed-a-zip-in-the-executable).
+
 Replace `sm64-us` with `goldeneye-us`, `shadowman-us`, `quake-us`, `quake2-us`, `duke-us`,
 `duke-zero-hour-us`, `hexen-us`, `nightmare-us`, `oot-us-v12`, `perfectdark-us-v11`, or experimental `conker-us` / `rayman2-us` / `re2-us-v1` / `turok-us-v12`. ROMs, saves, texture packs and crash dumps stay
 in ignored `local/`.
@@ -296,7 +301,9 @@ generator or checked metadata.
 
 Gamepads use an analog left stick, right stick for C-buttons, A/X for N64 A/B,
 left trigger for Z, right trigger/bumper for R, and Menu/Start for Start. The
-D-pad remains the N64 D-pad. See [Steam Deck support](docs/steamdeck.md) for the
+D-pad remains the N64 D-pad by default. OOT's Steam Deck mode uses the right
+stick for camera positioning and the D-pad for C-buttons instead.
+See [Steam Deck support](docs/steamdeck.md) for the
 selectable Steam Input template and installation instructions.
 
 Arrow keys move the stick; A/X/Z are N64 A/B/Z; S is Start; C/V are L/R;

@@ -85,9 +85,11 @@ or GLIBCXX 3.4.30.
 checks library resolution and runs the launcher's `--help` inside Debian.
 This verifies loader/startup compatibility, without exercising Vulkan or gameplay.
 
-The package excludes ROMs, existing saves, texture packs and generated CPU
-sources. Supply your own matching ROM separately. Packaging rejects builds with
-ROM embedding enabled.
+By default the package excludes ROMs, existing saves, texture packs and generated
+CPU sources. Supply your own matching ROM separately. If the build explicitly
+enables ROM embedding, packaging preserves it and the launcher uses the embedded
+content. Embedded texture packs are preserved as well. These private packages
+contain the supplied assets; existing saves are still excluded.
 Keep the build tree for crash investigation. To package again, move the previous
 `package/` directory aside first: the tool refuses to overwrite a directory that
 may contain your saves.
@@ -167,14 +169,15 @@ activates that layout for the Deck controls.
 | Deck control | N64 control |
 | --- | --- |
 | Left stick | Analog stick |
-| D-pad | N64 D-pad |
+| D-pad | C-buttons in OOT; N64 D-pad in other games |
 | A / X | A / B |
 | B / Y | C-down / C-left |
 | Left trigger | Z (OOT targeting) |
 | Right trigger / bumper | R (OOT shield) |
 | Left bumper | L |
 | Menu | Start |
-| Right stick / right trackpad directions | C-buttons |
+| Right stick | Third-person camera in OOT; C-buttons in other games |
+| Right trackpad directions | C-buttons |
 | Right stick click | C-up |
 | L4 / R4 | C-up / C-down |
 | L5 / R5 | C-left / C-right |
@@ -187,9 +190,14 @@ removed while running; keyboard controls remain available, and losing window
 focus releases game input. The first recognized gamepad controls port 1.
 See the shipped `steam-input/README.md` for layout details and customization.
 
-The OOT package defaults `RECOMP_OOT_MOUSE=0` so its gameplay mouse adapter
-does not replace Steam Input's buttons and analog stick with WASD/mouse input.
-This setting takes effect when the game starts.
+The OOT package defaults `RECOMP_OOT_GAMEPAD_CAMERA=1` and `RECOMP_OOT_MOUSE=0`.
+The left stick moves Link and navigates menus, the right stick orbits the
+standard third-person follow camera, and the top-left D-pad supplies all four
+C-buttons, including ocarina notes. The right stick has a 12% radial deadzone
+and proportional camera speed; it operates independently of mouse capture.
+Z-targeting, dialog, pause and special camera modes retain native behavior.
+Set `RECOMP_OOT_GAMEPAD_CAMERA=0` before launching to restore the original
+gamepad mapping. These settings take effect when the game starts.
 
 The VDF format is checked against Steam's installed Deck Gamepad template;
 installation follows [EmuDeck's template workflow](https://emudeck.github.io/community-creations/steamos/community-creations/#how-to-download-steam-input-profiles).

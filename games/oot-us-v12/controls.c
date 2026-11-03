@@ -6,12 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool mouse_enabled, fov_enabled, orbit_active;
+static bool mouse_enabled, gamepad_camera_enabled, fov_enabled, orbit_active;
 static bool orbit_seen;
 static RecompFov fov;
 static uint32_t play, orbit_camera, updating_camera;
 static double sensitivity, invert_y, orbit_yaw, orbit_pitch, fov_scale;
 static RecompMouseBuffer mouse;
+static RecompCameraStick camera_stick;
+static uint64_t camera_time;
 static void (*poll_live_input)(Runtime *, void *);
 static float load_float(Runtime *rt, uint32_t address) {
     uint32_t bits = recomp_load32(rt, address);
@@ -30,6 +32,8 @@ static bool valid(Runtime *rt, uint32_t address, uint32_t size) {
 }
 static void clear(void) {
     recomp_mouse_clear(&mouse);
+    camera_stick = (RecompCameraStick){0};
+    camera_time = 0;
     orbit_active = false;
     orbit_camera = 0;
 }
@@ -51,7 +55,7 @@ static uint32_t main_camera(Runtime *rt) {
                : 0;
 }
 static bool oot_controls_playable(Runtime *rt) {
-    return mouse_enabled && main_camera(rt);
+    return (mouse_enabled || gamepad_camera_enabled) && main_camera(rt);
 }
 void oot_controls_init(void (*poll)(Runtime *, void *)) {
     poll_live_input = poll;
@@ -59,9 +63,13 @@ void oot_controls_init(void (*poll)(Runtime *, void *)) {
     clear();
     const char *setting = getenv("RECOMP_OOT_MOUSE");
     mouse_enabled = !setting || strcmp(setting, "0");
+    setting = getenv("RECOMP_OOT_GAMEPAD_CAMERA");
+    gamepad_camera_enabled = setting && !strcmp(setting, "1");
+    if (gamepad_camera_enabled)
+        mouse_enabled = false;
 #ifdef RECOMP_DEBUG
     if (recomp_game_replaying())
-        mouse_enabled = false;
+        mouse_enabled = gamepad_camera_enabled = false;
 #endif
     sensitivity = 0.08;
     setting = getenv("RECOMP_MOUSE_SENSITIVITY");
@@ -115,19 +123,27 @@ static void oot_controls_submit(RecompMouseFrame frame, RecompPad *pad) {
     pad->stick_y = (int8_t)(frame.move_y * speed);
 }
 bool oot_controls_poll(Runtime *rt, RecompRenderer *renderer, RecompPad *pad) {
+    bool playable = oot_controls_playable(rt);
     recomp_renderer_keyboard_c_buttons(renderer, mouse_enabled);
-    recomp_renderer_mouse_mode(renderer, mouse_enabled, oot_controls_playable(rt));
+    recomp_renderer_mouse_mode(renderer, mouse_enabled, playable);
+    recomp_renderer_gamepad_camera_mode(renderer, gamepad_camera_enabled);
     if (!recomp_renderer_input(renderer, pad)) {
-        oot_controls_submit((RecompMouseFrame){0}, pad);
+        clear();
         return false;
     }
-    oot_controls_submit(recomp_renderer_mouse_frame(renderer), pad);
+    if (gamepad_camera_enabled) {
+        camera_stick = recomp_renderer_camera_stick(renderer);
+        if (!playable || !camera_stick.active)
+            clear();
+    } else {
+        oot_controls_submit(recomp_renderer_mouse_frame(renderer), pad);
+    }
     return true;
 }
 void oot_play_update_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     if ((uint32_t)ctx->gpr[31] == OOT_CTL_PLAY_RETURN) {
         play = (uint32_t)ctx->gpr[4];
-        if (mouse_enabled && poll_live_input)
+        if ((mouse_enabled || gamepad_camera_enabled) && poll_live_input)
             recomp_on_host(rt, poll_live_input, NULL);
     }
     original(rt, ctx);
@@ -163,17 +179,28 @@ void oot_normal_camera_hook(Runtime *rt, MipsContext *ctx, RecompFunction origin
     if (camera == updating_camera)
         orbit_seen = true;
     original(rt, ctx);
-    if (!mouse_enabled || camera != updating_camera || camera != main_camera(rt) || caller != OOT_CTL_DISPATCH_RETURN)
+    if ((!mouse_enabled && !gamepad_camera_enabled) || camera != updating_camera || camera != main_camera(rt) ||
+        caller != OOT_CTL_DISPATCH_RETURN)
         return;
     if (recomp_load16(rt, camera + OOT_CTL_MODE)) {
         clear();
         return;
     }
     RecompMouseFrame frame = recomp_mouse_consume(&mouse);
-    if (!frame.active || (frame.actions & RECOMP_MOUSE_SECONDARY_ATTACK) || (recomp_load16(rt, play + 0x14) & 0x2000) ||
-        !isfinite(frame.dx) || !isfinite(frame.dy)) {
+    if ((!frame.active && !camera_stick.active) || (frame.actions & RECOMP_MOUSE_SECONDARY_ATTACK) ||
+        (recomp_load16(rt, play + 0x14) & 0x2000) || !isfinite(frame.dx) || !isfinite(frame.dy)) {
         clear();
         return;
+    }
+    double yaw_delta = frame.dx * sensitivity, pitch_delta = frame.dy * sensitivity * invert_y;
+    if (camera_stick.active) {
+        uint64_t now = recomp_game_monotonic();
+        // A held stick is angular velocity, independent of host polling and
+        // RT64 interpolation. Do not accumulate a jump across pauses or stalls.
+        double seconds = camera_time ? fmin((now - camera_time) * 1e-9, 0.1) : 0;
+        camera_time = now;
+        yaw_delta += camera_stick.x * 120 * seconds;
+        pitch_delta += camera_stick.y * 90 * seconds;
     }
     double at[3], next[3];
     for (unsigned i = 0; i < 3; i++) {
@@ -190,16 +217,16 @@ void oot_normal_camera_hook(Runtime *rt, MipsContext *ctx, RecompFunction origin
         return;
     }
     if (!orbit_active || orbit_camera != camera) {
-        if (!frame.dx && !frame.dy)
-            return; // Leave native follow intact until mouse motion.
+        if (!yaw_delta && !pitch_delta)
+            return; // Leave native follow intact until camera input.
         orbit_yaw = atan2(next[0], next[2]);
         orbit_pitch = atan2(next[1], hypot(next[0], next[2]));
         orbit_active = true;
         orbit_camera = camera;
     }
     const double radians = 3.14159265358979323846 / 180;
-    orbit_yaw = remainder(orbit_yaw - frame.dx * sensitivity * radians, 2 * 3.14159265358979323846);
-    orbit_pitch = fmax(-60 * radians, fmin(70 * radians, orbit_pitch + frame.dy * sensitivity * invert_y * radians));
+    orbit_yaw = remainder(orbit_yaw - yaw_delta * radians, 2 * 3.14159265358979323846);
+    orbit_pitch = fmax(-60 * radians, fmin(70 * radians, orbit_pitch + pitch_delta * radians));
     double xz = radius * cos(orbit_pitch);
     double eye[] = {at[0] + xz * sin(orbit_yaw), at[1] + radius * sin(orbit_pitch), at[2] + xz * cos(orbit_yaw)};
     for (unsigned i = 0; i < 3; i++) {

@@ -2,6 +2,7 @@
 #define RECOMP_RENDERER_H
 #include "runtime.h"
 #include "mouse_input.h"
+#include "input.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,6 +48,10 @@ void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);
 /* Opt into arrow keys as C-buttons and WASD as the analog stick. This mapping
  * remains available when mouse capture ends, including dialog/instrument modes. */
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *, bool enabled);
+/* Native right-stick camera and D-pad C-buttons, independent of mouse capture.
+ * The held camera state is neutral while unfocused or a UI captures input. */
+void recomp_renderer_gamepad_camera_mode(RecompRenderer *, bool enabled);
+RecompCameraStick recomp_renderer_camera_stick(RecompRenderer *);
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *);
 bool recomp_renderer_capture(RecompRenderer *, const char *ppm_path);
 RecompRendererStats recomp_renderer_stats(RecompRenderer *);

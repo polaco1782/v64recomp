@@ -98,6 +98,7 @@
     <None Include="$(RecompRoot)tools\disassemble_function.py" />
     <None Include="$(RecompRoot)tools\discover.py" />
     <None Include="$(RecompRoot)tools\dump_cpu_code.py" />
+    <None Include="$(RecompRoot)tools\embed_texture_pack.py" />
     <None Include="$(RecompRoot)tools\emit.py" />
     <None Include="$(RecompRoot)tools\export_analysis_rom.py" />
     <None Include="$(RecompRoot)tools\format.sh" />

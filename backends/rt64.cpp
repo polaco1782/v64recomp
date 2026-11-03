@@ -61,6 +61,8 @@ struct RecompRenderer {
     std::unique_ptr<RecompInput, decltype(&recomp_input_destroy)> input{nullptr, recomp_input_destroy};
     bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
     bool keyboard_c_buttons = false;
+    bool gamepad_camera = false;
+    RecompCameraStick camera_stick{};
     RecompMouseFrame mouse_frame{};
     explicit RecompRenderer(Runtime *runtime) : rt(runtime) {}
     void check_owner() {
@@ -554,6 +556,14 @@ void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
     s->check_owner();
     s->keyboard_c_buttons = enabled;
 }
+void recomp_renderer_gamepad_camera_mode(RecompRenderer *s, bool enabled) {
+    s->check_owner();
+    s->gamepad_camera = enabled;
+}
+RecompCameraStick recomp_renderer_camera_stick(RecompRenderer *s) {
+    s->check_owner();
+    return s->camera_stick;
+}
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     s->check_owner();
     RecompMouseFrame frame = s->mouse_frame;
@@ -568,6 +578,7 @@ void recomp_renderer_set_fov_hook(RecompRenderer *s, void (*adjust)(int)) {
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     s->check_owner();
     s->mouse_frame = {};
+    s->camera_stick = {};
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT)
@@ -742,7 +753,7 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
             if (keys[SDL_SCANCODE_F])
                 s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
         }
-        recomp_input_poll(s->input.get(), pad);
+        recomp_input_poll(s->input.get(), pad, s->gamepad_camera ? &s->camera_stick : nullptr);
         return true;
     }
     const struct {
@@ -760,7 +771,7 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         pad->stick_x = pad->stick_x * 7 / 10;
         pad->stick_y = pad->stick_y * 7 / 10;
     }
-    recomp_input_poll(s->input.get(), pad);
+    recomp_input_poll(s->input.get(), pad, s->gamepad_camera ? &s->camera_stick : nullptr);
     return true;
 }
 #ifdef RECOMP_DEBUG

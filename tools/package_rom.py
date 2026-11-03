@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Embed an offset-preserving ROM image with verified CPU instructions erased."""
+"""Embed a verified ROM, optionally erasing its checked CPU instructions."""
 from __future__ import annotations
 
 import argparse
@@ -112,12 +112,21 @@ def write_if_changed(path: Path, content: bytes) -> None:
         path.write_bytes(content)
 
 
-def package(game: str, metadata_path: Path, output: Path) -> None:
+def package(game: str, metadata_path: Path, output: Path, keep_cpu_code: bool = False) -> None:
     profile = load_profile(PROJECT/'games'/game/'profile.toml')
     identity = profile['game']
     rom, _ = load_rom(identity['rom'], identity['rom_sha1'], identity['rom_size'])
-    analysis, metadata = load_analysis_rom(game, metadata_path)
-    payload, report = strip_rom(rom, analysis, metadata, profile)
+    if profile.get('packaging', {}).get('allow_embedding', True) is False:
+        raise RecompError('this demo uses an external ROM; embedding is disabled by its profile')
+    if keep_cpu_code:
+        payload = rom
+        report = dict(format_version=1, original_sha1=identity['rom_sha1'],
+                      payload_sha1=hashlib.sha1(payload).hexdigest(), rom_size=len(rom),
+                      removed_bytes=0, removed_ranges=[], preserved_ranges=[], discarded_ranges=[],
+                      complete_mapped_inventory=False, scope='Original verified ROM retained unchanged, including CPU code')
+    else:
+        analysis, metadata = load_analysis_rom(game, metadata_path)
+        payload, report = strip_rom(rom, analysis, metadata, profile)
     output.mkdir(parents=True, exist_ok=True)
     write_if_changed(output/'rom-assets.bin', payload)
     # Octal C string literals avoid target-specific assembler/linker formats.
@@ -141,9 +150,10 @@ def main() -> int:
     parser.add_argument('--game', required=True, choices=GAMES)
     parser.add_argument('--metadata', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--keep-cpu-code', action='store_true', help='embed the original verified ROM unchanged')
     args = parser.parse_args()
     try:
-        package(args.game, args.metadata, args.output)
+        package(args.game, args.metadata, args.output, args.keep_cpu_code)
     except (RecompError, OSError, ValueError, KeyError) as error:
         print(f'ROM packaging failed: {error}', file=sys.stderr)
         return 1

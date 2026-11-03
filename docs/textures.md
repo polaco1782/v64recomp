@@ -35,6 +35,28 @@ mask as `RT64 ZIP loaded: ...`.
 `RECOMP_TEXTURE_PACK=/path/to/pack.zip` is equivalent to the command-line option;
 it takes precedence over `RECOMP_TEXTURE_REPLACEMENTS`.
 
+## Embed a ZIP in the executable
+
+Set the optional CMake path when configuring either Debug or Release:
+
+```sh
+cmake --preset sm64-us-release -DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip
+cmake --build --preset sm64-us-release
+```
+
+The build appends the ZIP to the final executable and adjusts its archive offsets.
+The game automatically streams textures from its own executable, without extracting
+the pack or needing the source ZIP at launch. Changing the ZIP rebuilds the executable.
+This works with or without `RECOMP_EMBED_ROM=ON`; the `pack` target also preserves
+the embedded ZIP when producing a UPX executable.
+
+`--texture-pack ZIP` or `RECOMP_TEXTURE_PACK=/path/to/other.zip` overrides the
+embedded pack. Set `RECOMP_TEXTURE_PACK=` to disable it for a launch.
+F5 works as usual. The matching cache is saved beside the executable as
+`<executable>.rt64.json`; read-only installations still match in memory.
+Configure with `-DRECOMP_EMBED_TEXTURE_PACK=` to return to an executable without
+an embedded pack.
+
 The native RT64 runner can export the original textures as they enter the decoded
 texture cache. Enable it while playing:
 

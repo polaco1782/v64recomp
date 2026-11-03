@@ -34,8 +34,8 @@ def glibc_requirement(path):
 
 def package(game, build):
     cache = (build / "CMakeCache.txt").read_text()
-    if not re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:OFF|FALSE|0|NO|N)$", cache, re.M | re.I):
-        raise SystemExit("Distributable packages require RECOMP_EMBED_ROM=OFF; ROMs must be supplied separately.")
+    embedded_rom = bool(re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:ON|TRUE|1|YES|Y)$", cache, re.M | re.I))
+    embedded_textures = bool(re.search(r"^RECOMP_EMBED_TEXTURE_PACK:FILEPATH=.+$", cache, re.M))
     defaults = (build / "generated" / game / "game_defaults.h").read_text()
     paths = dict(re.findall(r'^#define RECOMP_DEFAULT_(ROM|SAVE) "([^"]+)"', defaults, re.M))
     rom = Path(paths["ROM"]).relative_to("/src/local")
@@ -79,9 +79,12 @@ def package(game, build):
     (destination / "GLIBC-REQUIREMENTS.txt").write_text("".join(report))
     (destination / "local").mkdir()
     launcher = destination / "launch.sh"
-    # OoT's gameplay mouse adapter replaces the native pad, including its stick.
-    # Deck launches use the Steam Input gamepad throughout gameplay and menus.
-    gamepad_defaults = 'export RECOMP_OOT_MOUSE="${RECOMP_OOT_MOUSE-0}"\n' if game == "oot-us-v12" else ""
+    # OoT uses native analog movement/camera and D-pad C-buttons on the Deck.
+    gamepad_defaults = (
+        'export RECOMP_OOT_MOUSE="${RECOMP_OOT_MOUSE-0}"\n'
+        'export RECOMP_OOT_GAMEPAD_CAMERA="${RECOMP_OOT_GAMEPAD_CAMERA-1}"\n'
+    ) if game == "oot-us-v12" else ""
+    rom_argument = "" if embedded_rom else f' --rom "$here/local/{rom}"'
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
 here=$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")" && pwd)
@@ -91,7 +94,7 @@ export RECOMP_STEAM_DECK="${{RECOMP_STEAM_DECK-1}}"
 export RECOMP_LIVE_PATCH_DIR="${{RECOMP_LIVE_PATCH_DIR-off}}"
 export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"
 {gamepad_defaults}cd -- "$here"
-exec "$here/{game}" --rom "$here/local/{rom}" \\
+exec "$here/{game}"{rom_argument} \\
     --data "$here/local/rt64/{game}" --save "$here/local/{save}" \\
     --crash-dir "$here/local/crashes/{game}" "$@"
 ''')
@@ -107,8 +110,19 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
         target = destination / "library-notices" / notice.parent.name
         target.mkdir(parents=True, exist_ok=True)
         shutil.copy2(notice, target / "copyright")
+    controls = (
+        "Left stick = movement/menu navigation; right stick = third-person camera.\n"
+        "D-pad = C-buttons, including ocarina notes; A/X = N64 A/B.\n"
+        "Left trigger = Z; right trigger = R; Menu = Start.\n"
+        "RECOMP_OOT_GAMEPAD_CAMERA=0 restores the original N64 gamepad layout.\n"
+    ) if game == "oot-us-v12" else (
+        "A/X = N64 A/B; left trigger = Z; right trigger = R; right stick = C-buttons.\n"
+        "Menu = Start; D-pad = N64 D-pad.\n"
+    )
     (destination / "README.txt").write_text(
-        f"No ROM is included. Supply your own verified ROM at local/{rom}, then run ./launch.sh.\n"
+        ("Private build: ROM content is embedded. Run ./launch.sh; no external ROM is needed.\n"
+         if embedded_rom else f"No ROM is included. Supply your own verified ROM at local/{rom}, then run ./launch.sh.\n") +
+        ("The texture ZIP is embedded and loads automatically.\n" if embedded_textures else "") +
         "Keep the entire directory together. local/ holds private saves and caches.\n"
         "Requires x86_64 Linux with glibc 2.36+, GCC 12+ runtime (GLIBCXX_3.4.30),\n"
         "X11/Xwayland and a Vulkan driver.\n"
@@ -116,8 +130,8 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
         "Native analog input: select the Gamepad template in Steam Input.\n"
         "For the v64recomp - N64 template, run ./install-controls.sh and restart Steam.\n"
         "Then select Controller settings > current layout > Templates > v64recomp - N64.\n"
-        "A/X = N64 A/B; left trigger = Z; right trigger = R; right stick = C-buttons.\n"
-        "Menu = Start; D-pad = N64 D-pad; see steam-input/README.md for all controls.\n"
+        f"{controls}"
+        "See steam-input/README.md for all controls.\n"
         "Keyboard remains available: arrows = stick, A/X/Z = N64 A/B/Z, Escape = exit.\n"
         "The GLIBC-REQUIREMENTS.txt file records every bundled ELF's requirement.\n"
         "CPU profiling: ./launch.sh --profile deck-profile --profile-delay 20 --profile-seconds 30\n"
@@ -128,9 +142,10 @@ exec "$here/{game}" --rom "$here/local/{rom}" \\
     )
     # Verify loader resolution and startup without initializing Vulkan or a ROM.
     subprocess.run([str(launcher), "--help"], check=True)
-    archive = build / f"{game}-steamdeck.tar.gz"
+    package_name = f"{game}-steamdeck" + ("-embedded" if embedded_rom else "")
+    archive = build / f"{package_name}.tar.gz"
     with tarfile.open(archive, "w:gz") as tar:
-        tar.add(destination, arcname=f"{game}-steamdeck")
+        tar.add(destination, arcname=package_name)
     print(f"Steam Deck package: {archive}", flush=True)
 
 

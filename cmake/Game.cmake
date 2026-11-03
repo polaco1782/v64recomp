@@ -5,7 +5,9 @@ if(NOT DEFINED RECOMP_OPTIMIZE_DEBUG_DEFAULT)
 endif()
 option(RECOMP_OPTIMIZE_DEBUG "Optimize Debug game/runtime code while retaining diagnostics and symbols"
     ${RECOMP_OPTIMIZE_DEBUG_DEFAULT})
-option(RECOMP_EMBED_ROM "Embed ROM content with verified CPU instructions erased" OFF)
+option(RECOMP_EMBED_ROM "Embed verified ROM content in the game executable" OFF)
+option(RECOMP_STRIP_EMBEDDED_ROM "Erase verified CPU instructions from embedded ROM content" ON)
+set(RECOMP_EMBED_TEXTURE_PACK "" CACHE FILEPATH "Texture ZIP to append to the game executable (empty disables embedding)")
 set(RECOMP_OPT_LEVEL "2" CACHE STRING "Optimization level for release game code")
 if(NOT RECOMP_OPT_LEVEL MATCHES "^(2|3)$")
     message(FATAL_ERROR "RECOMP_OPT_LEVEL must be 2 or 3")
@@ -16,6 +18,14 @@ elseif(EXISTS "${CMAKE_SOURCE_DIR}/.venv/bin/python")
     set(Python3_EXECUTABLE "${CMAKE_SOURCE_DIR}/.venv/bin/python" CACHE FILEPATH "Python with rabbitizer")
 endif()
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
+if(RECOMP_EMBED_TEXTURE_PACK)
+    get_filename_component(RECOMP_EMBED_TEXTURE_PACK "${RECOMP_EMBED_TEXTURE_PACK}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+    execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
+        --pack "${RECOMP_EMBED_TEXTURE_PACK}" RESULT_VARIABLE RECOMP_TEXTURE_PACK_RESULT)
+    if(NOT RECOMP_TEXTURE_PACK_RESULT EQUAL 0)
+        message(FATAL_ERROR "Invalid RECOMP_EMBED_TEXTURE_PACK; supply a supported texture ZIP.")
+    endif()
+endif()
 set(RECOMP_GENERATED "${CMAKE_BINARY_DIR}/generated/${RECOMP_GAME}")
 file(GLOB_RECURSE RECOMP_GENERATOR_INPUTS CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/tools/*.py" "${CMAKE_SOURCE_DIR}/tools/*.toml" "${CMAKE_SOURCE_DIR}/tools/symbols.json"
@@ -43,6 +53,9 @@ if(RECOMP_EMBED_ROM)
     set(RECOMP_PACKAGE_COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/package_rom.py"
         --game "${RECOMP_GAME}" --metadata "${RECOMP_GENERATED}/symbols.json"
         --output "${RECOMP_PACKAGE_DIR}")
+    if(NOT RECOMP_STRIP_EMBEDDED_ROM)
+        list(APPEND RECOMP_PACKAGE_COMMAND --keep-cpu-code)
+    endif()
     execute_process(COMMAND ${RECOMP_PACKAGE_COMMAND} RESULT_VARIABLE RECOMP_PACKAGE_RESULT)
     if(NOT RECOMP_PACKAGE_RESULT EQUAL 0)
         message(FATAL_ERROR "ROM content packaging failed; see the diagnostic above.")
@@ -52,7 +65,7 @@ if(RECOMP_EMBED_ROM)
         COMMAND ${RECOMP_PACKAGE_COMMAND}
         DEPENDS ${RECOMP_GENERATOR_INPUTS} "${RECOMP_ROM}" "${RECOMP_GENERATED}/generation.key"
             "${RECOMP_GENERATED}/symbols.json"
-        COMMENT "Embedding ${RECOMP_GAME} ROM content without verified CPU instructions" VERBATIM)
+        COMMENT "Embedding ${RECOMP_GAME} ROM content" VERBATIM)
 endif()
 file(GLOB RECOMP_GENERATED_HEADERS "${RECOMP_GENERATED}/*.h")
 list(FILTER RECOMP_GENERATED_HEADERS EXCLUDE REGEX "/game_defaults\\.h$")
@@ -73,6 +86,22 @@ file(GLOB RECOMP_GAME_BROWSE CONFIGURE_DEPENDS "${RECOMP_GAME_DIR}/*.h"
 target_sources(${RECOMP_GAME} PRIVATE ${RECOMP_GAME_BROWSE} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/game_defaults.h" "${CMAKE_SOURCE_DIR}/include/game.h")
 set_target_properties(${RECOMP_GAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+if(RECOMP_EMBED_TEXTURE_PACK)
+    target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_EMBED_TEXTURE_PACK)
+    # A changed ZIP must relink before appending, avoiding accumulated overlays.
+    # A generated source also tracks this dependency with Visual Studio generators.
+    set(RECOMP_TEXTURE_PACK_SOURCE "${RECOMP_GENERATED}/assets/embedded_texture_pack.c")
+    add_custom_command(OUTPUT "${RECOMP_TEXTURE_PACK_SOURCE}"
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
+            --pack "${RECOMP_EMBED_TEXTURE_PACK}" --build-source "${RECOMP_TEXTURE_PACK_SOURCE}"
+        DEPENDS "${RECOMP_EMBED_TEXTURE_PACK}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
+        COMMENT "Checking embedded texture ZIP" VERBATIM)
+    target_sources(${RECOMP_GAME} PRIVATE "${RECOMP_TEXTURE_PACK_SOURCE}")
+    add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
+            --binary "$<TARGET_FILE:${RECOMP_GAME}>" --pack "${RECOMP_EMBED_TEXTURE_PACK}"
+        COMMENT "Appending ${RECOMP_GAME} texture ZIP" VERBATIM)
+endif()
 if(RECOMP_EMBED_ROM)
     target_sources(${RECOMP_GAME} PRIVATE "${RECOMP_PACKAGE_DIR}/embedded_rom.c")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_EMBED_ROM)
@@ -141,6 +170,8 @@ add_custom_target(pack
         "-DINPUT=$<TARGET_FILE:${RECOMP_GAME}>"
         "-DOUTPUT=$<TARGET_FILE_DIR:${RECOMP_GAME}>/packed/$<TARGET_FILE_NAME:${RECOMP_GAME}>"
         "-DUPX_EXECUTABLE=${RECOMP_UPX_EXECUTABLE}"
+        "-DTEXTURE_PACK=${RECOMP_EMBED_TEXTURE_PACK}"
+        "-DPYTHON_EXECUTABLE=${Python3_EXECUTABLE}"
         -P "${CMAKE_SOURCE_DIR}/cmake/PackUPX.cmake"
     DEPENDS ${RECOMP_GAME}
     COMMENT "Packing ${RECOMP_GAME} with maximum UPX compression"

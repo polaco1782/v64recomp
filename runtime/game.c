@@ -268,6 +268,20 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
     if (texture_pack)
         setenv("RECOMP_TEXTURE_PACK", texture_pack, 1);
+#ifdef RECOMP_EMBED_TEXTURE_PACK
+    else if (!getenv("RECOMP_TEXTURE_PACK")) {
+        char executable[4096];
+#ifdef _WIN32
+        DWORD n = GetModuleFileNameA(NULL, executable, sizeof(executable));
+        recomp_game_require(n > 0 && n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
+#else
+        ssize_t n = readlink("/proc/self/exe", executable, sizeof(executable));
+        recomp_game_require(n > 0 && (size_t)n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
+#endif
+        executable[n] = 0;
+        recomp_game_require(!setenv("RECOMP_TEXTURE_PACK", executable, 1), "cannot select embedded texture ZIP", 0);
+    }
+#endif
     if (profile_directory && !recomp_profile_start(profile_directory, profile_hz, profile_delay, profile_seconds))
         return -1;
 #ifdef RECOMP_DEBUG
@@ -495,7 +509,7 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
         uint8_t *rom = malloc(bytes);
         recomp_game_require(rom != NULL, "cannot allocate embedded ROM", 0);
         memcpy(rom, recomp_embedded_rom, bytes);
-        /* Verify the sanitized payload against its own digest. The original
+        /* Verify the embedded payload against its own digest. The original
          * identity above still binds it to this game's generated native code. */
         recomp_game_require(recomp_rom_attach(rt, rom, bytes, recomp_embedded_sha1), "embedded ROM content mismatch",
                             0);

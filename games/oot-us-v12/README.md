@@ -36,6 +36,12 @@ Mouse orbit currently covers the standard follow camera; first-person aiming
 and special camera modes retain native behavior. Set `RECOMP_OOT_MOUSE=0` to use
 the original mapping.
 
+Steam Deck packages use [dual-stick controls](controller.md#steam-deck-and-gamepad-camera):
+left stick for movement, right stick for third-person camera positioning, and
+the top-left D-pad for C-buttons and ocarina notes. This mode uses native
+gamepad axes and works without mouse capture. Set `RECOMP_OOT_GAMEPAD_CAMERA=1`
+to enable it on a desktop gamepad.
+
 ## Field of view
 
 Use keypad `+` / `-` to adjust FOV live, one horizontal degree per keydown;
