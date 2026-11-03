@@ -3,7 +3,8 @@
 WASD/mouse controls capture automatically during live gameplay. Escape releases
 the mouse; F4 recaptures it after release or focus loss. Dialog, pause,
 transitions, death and cutscenes release capture and discard pending motion.
-Use the normal controller/keyboard bindings outside gameplay (Enter is A).
+Outside gameplay, WASD navigates menus and Enter is A. Arrow keys remain
+C-buttons when mouse capture is released, including while playing the ocarina.
 
 | Input | Game action |
 | --- | --- |
@@ -14,6 +15,7 @@ Use the normal controller/keyboard bindings outside gameplay (Enter is A).
 | E or Space | A: contextual action |
 | Right mouse | Z: target / recenter |
 | Ctrl | R: shield |
+| Up / Down / Left / Right arrows | C-up / C-down / C-left / C-right, including ocarina notes |
 | Q / R / F | C-left / C-down / C-right item |
 | Shift + F | C-up |
 | Tab | Start |

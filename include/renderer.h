@@ -44,6 +44,9 @@ void recomp_renderer_set_fov_hook(RecompRenderer *, void (*adjust)(int steps));
 /* Opt-in PC controls. Gameplay false releases capture and clears motion.
  * Escape toggles capture; F4 recaptures; F10 quits. Other games are unchanged. */
 void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);
+/* Opt into arrow keys as C-buttons and WASD as the analog stick. This mapping
+ * remains available when mouse capture ends, including dialog/instrument modes. */
+void recomp_renderer_keyboard_c_buttons(RecompRenderer *, bool enabled);
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *);
 bool recomp_renderer_capture(RecompRenderer *, const char *ppm_path);
 RecompRendererStats recomp_renderer_stats(RecompRenderer *);

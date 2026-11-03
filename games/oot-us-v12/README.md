@@ -30,6 +30,8 @@ count completed tasks as `jpeg_tasks`.
 Default [WASD/mouse controls](controller.md) provide native camera-relative
 movement, third-person mouse orbit and adventure action bindings. Right mouse
 is Z-targeting, left mouse is the sword, E/Space is A and Ctrl is the shield.
+Arrow keys map to the matching C-buttons, including while playing the ocarina;
+WASD navigates menus and Enter supplies A when mouse capture is released.
 Mouse orbit currently covers the standard follow camera; first-person aiming
 and special camera modes retain native behavior. Set `RECOMP_OOT_MOUSE=0` to use
 the original mapping.

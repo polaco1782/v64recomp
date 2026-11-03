@@ -95,7 +95,7 @@ static void oot_controls_submit(RecompMouseFrame frame, RecompPad *pad) {
     recomp_mouse_submit(&mouse, frame);
     if (!frame.active)
         return;
-    pad->buttons &= 0x1000; // Keep Start; map adventure actions explicitly.
+    pad->buttons &= 0x100f; // Keep Start and C-buttons; map adventure actions explicitly.
     if (frame.actions & RECOMP_MOUSE_ATTACK)
         pad->buttons |= 0x4000; // B: sword.
     if (frame.actions & (RECOMP_MOUSE_USE | RECOMP_MOUSE_JUMP))
@@ -115,6 +115,7 @@ static void oot_controls_submit(RecompMouseFrame frame, RecompPad *pad) {
     pad->stick_y = (int8_t)(frame.move_y * speed);
 }
 bool oot_controls_poll(Runtime *rt, RecompRenderer *renderer, RecompPad *pad) {
+    recomp_renderer_keyboard_c_buttons(renderer, mouse_enabled);
     recomp_renderer_mouse_mode(renderer, mouse_enabled, oot_controls_playable(rt));
     if (!recomp_renderer_input(renderer, pad)) {
         oot_controls_submit((RecompMouseFrame){0}, pad);

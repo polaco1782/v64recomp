@@ -60,6 +60,7 @@ struct RecompRenderer {
     SDL_Window *window = nullptr;
     std::unique_ptr<RecompInput, decltype(&recomp_input_destroy)> input{nullptr, recomp_input_destroy};
     bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
+    bool keyboard_c_buttons = false;
     RecompMouseFrame mouse_frame{};
     explicit RecompRenderer(Runtime *runtime) : rt(runtime) {}
     void check_owner() {
@@ -549,6 +550,10 @@ void recomp_renderer_mouse_mode(RecompRenderer *s, bool enabled, bool gameplay) 
     s->mouse_enabled = enabled;
     s->mouse_gameplay = gameplay;
 }
+void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
+    s->check_owner();
+    s->keyboard_c_buttons = enabled;
+}
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     s->check_owner();
     RecompMouseFrame frame = s->mouse_frame;
@@ -681,6 +686,22 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     const Uint8 *keys = SDL_GetKeyboardState(nullptr);
     if (!s->mouse_enabled && keys[SDL_SCANCODE_ESCAPE])
         return false;
+    if (s->keyboard_c_buttons) {
+        if (keys[SDL_SCANCODE_UP])
+            pad->buttons |= 0x0008;
+        if (keys[SDL_SCANCODE_DOWN])
+            pad->buttons |= 0x0004;
+        if (keys[SDL_SCANCODE_LEFT])
+            pad->buttons |= 0x0002;
+        if (keys[SDL_SCANCODE_RIGHT])
+            pad->buttons |= 0x0001;
+    }
+    pad->stick_x = (keys[s->keyboard_c_buttons ? SDL_SCANCODE_D : SDL_SCANCODE_RIGHT] -
+                    keys[s->keyboard_c_buttons ? SDL_SCANCODE_A : SDL_SCANCODE_LEFT]) *
+                   80;
+    pad->stick_y = (keys[s->keyboard_c_buttons ? SDL_SCANCODE_W : SDL_SCANCODE_UP] -
+                    keys[s->keyboard_c_buttons ? SDL_SCANCODE_S : SDL_SCANCODE_DOWN]) *
+                   80;
     if (s->mouse_enabled) {
         // Menus retain directional navigation; WASD in gameplay travels through
         // the game's adapter rather than becoming a second analog stick.
@@ -721,8 +742,6 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
             if (keys[SDL_SCANCODE_F])
                 s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
         }
-        pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;
-        pad->stick_y = (keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * 80;
         recomp_input_poll(s->input.get(), pad);
         return true;
     }
@@ -737,8 +756,6 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     for (const auto& binding : bindings)
         if (keys[binding.key])
             pad->buttons |= binding.button;
-    pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;
-    pad->stick_y = (keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * 80;
     if (pad->stick_x && pad->stick_y) {
         pad->stick_x = pad->stick_x * 7 / 10;
         pad->stick_y = pad->stick_y * 7 / 10;
