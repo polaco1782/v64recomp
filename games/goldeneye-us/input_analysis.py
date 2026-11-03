@@ -109,6 +109,10 @@ def verify_input_analysis(rom: bytes, profile: dict, metadata: dict | None = Non
 
     adapter = profile.get(adapter_key) if adapter_key else None
     if adapter:
+        gate = adapter['dual_gate']
+        code = words(gate['owner'], gate['pc'], gate['expected_words'])
+        require(code == [0x24010000 | adapter['dual_style'], 0x50410007, 0x97af01ce]
+                and adapter['dual_style'] == 5, 'native 2.2 control-style gate mismatch')
         require(any(c['owner'] == 'MoveBond' and c['target'] == functions['bondviewProcessInput']['vram']
                     and c['pc'] + 8 == adapter['process_return'] for c in spec['calls']),
                 'input adapter return is not the verified MoveBond call')

@@ -11,6 +11,10 @@
 static FILE *trace;
 static uint64_t moves, polls, samples, rows;
 static bool enabled, in_move;
+static bool gamepad_enabled, in_dual_input;
+static RecompCameraStick aim_stick;
+static int8_t move_x, move_y;
+static uint16_t aim_buttons;
 static double sensitivity = 0.08;
 static double vertical = 1;
 static RecompMouseBuffer mouse;
@@ -57,7 +61,8 @@ bool goldeneye_input_enabled(void) {
 }
 bool goldeneye_input_playable(Runtime *rt) {
     uint32_t p = player(rt);
-    if (!enabled || !p || recomp_load32(rt, GE_INPUT_PLAYERS) != p || recomp_load32(rt, GE_INPUT_PLAYERS + 4) ||
+    if (!p || recomp_load32(rt, GE_INPUT_STAGE_ADDRESS) == GE_INPUT_TITLE_STAGE ||
+        recomp_load32(rt, GE_INPUT_PLAYERS) != p || recomp_load32(rt, GE_INPUT_PLAYERS + 4) ||
         recomp_load32(rt, GE_INPUT_PLAYERS + 8) || recomp_load32(rt, GE_INPUT_PLAYERS + 12) ||
         recomp_load32(rt, GE_INPUT_CONTROLS_LOCKED) || recomp_load32(rt, GE_INPUT_TANK) ||
         recomp_load32(rt, p + GE_INPUT_DEAD) || recomp_load32(rt, p + GE_INPUT_WATCH_STATE))
@@ -68,7 +73,11 @@ bool goldeneye_input_playable(Runtime *rt) {
 bool goldeneye_input_menu(Runtime *rt) {
     return enabled && recomp_load32(rt, GE_INPUT_STAGE_ADDRESS) == GE_INPUT_TITLE_STAGE;
 }
-void goldeneye_input_submit(Runtime *rt, RecompMouseFrame frame, RecompPad *pad) {
+bool goldeneye_input_gamepad_mode(Runtime *rt) {
+    return gamepad_enabled && goldeneye_input_playable(rt);
+}
+void goldeneye_input_submit(Runtime *rt, RecompMouseFrame frame, RecompCameraStick aim, RecompPad *pad) {
+    aim_stick = goldeneye_input_gamepad_mode(rt) ? aim : (RecompCameraStick){0};
 #ifdef RECOMP_DEBUG
     if (replay)
         return;
@@ -123,6 +132,9 @@ void goldeneye_input_init(Runtime *rt) {
     sensitivity = 0.08;
     in_move = false;
     enabled = !getenv("RECOMP_GOLDENEYE_MOUSE") || strcmp(getenv("RECOMP_GOLDENEYE_MOUSE"), "0");
+    gamepad_enabled = !getenv("RECOMP_GOLDENEYE_GAMEPAD") || strcmp(getenv("RECOMP_GOLDENEYE_GAMEPAD"), "0");
+    in_dual_input = false;
+    aim_stick = (RecompCameraStick){0};
     const char *setting = getenv("RECOMP_MOUSE_SENSITIVITY");
     if (setting && *setting) {
         char *end;
@@ -136,13 +148,14 @@ void goldeneye_input_init(Runtime *rt) {
 #ifdef RECOMP_DEBUG
     // Legacy controller replays must not inherit physical mouse state.
     if (recomp_game_replaying())
-        enabled = false;
+        enabled = gamepad_enabled = false;
     const char *replay_path = getenv("RECOMP_GOLDENEYE_MOUSE_REPLAY");
     if (replay_path && *replay_path) {
         replay = fopen(replay_path, "r");
         recomp_game_require(replay != NULL, "cannot open GoldenEye mouse replay", 0);
         previous_move = replay_updates = 0;
         enabled = true;
+        gamepad_enabled = false;
         read_replay();
     }
     const char *path = getenv("RECOMP_GOLDENEYE_INPUT_TRACE");
@@ -184,6 +197,27 @@ void goldeneye_input_move_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
 void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     observe(rt, ctx, "input");
     bool active = in_move && (uint32_t)ctx->gpr[31] == GE_INPUT_PROCESS_RETURN && goldeneye_input_playable(rt);
+    if (active && gamepad_enabled && aim_stick.active && (!enabled || !mouse.pending.active)) {
+        uint32_t p = player(rt), style = recomp_load32(rt, p + GE_INPUT_CONTROL_STYLE);
+        // Native 2.2 Galore: primary stick looks; secondary stick walks/strafes.
+        // Supply the second stick only at its checked joy calls, without making
+        // a second player/controller visible to the menus or save system.
+        move_x = (int8_t)ctx->gpr[4];
+        move_y = (int8_t)ctx->gpr[5];
+        aim_buttons = ((uint16_t)ctx->gpr[6] & 0x0010) ? 0x2000 : 0;
+        recomp_store32(rt, p + GE_INPUT_CONTROL_STYLE, GE_INPUT_DUAL_STYLE);
+        ctx->gpr[4] = mips_s32((uint32_t)(int32_t)lroundf(aim_stick.x * 80));
+        // Native 2.2's positive Y looks down, matching SDL's downward Y.
+        ctx->gpr[5] = mips_s32((uint32_t)(int32_t)lroundf(aim_stick.y * 80));
+        bool previous = in_dual_input;
+        in_dual_input = true;
+        original(rt, ctx);
+        in_dual_input = previous;
+        recomp_store32(rt, p + GE_INPUT_CONTROL_STYLE, style);
+        recomp_mouse_clear(&mouse);
+        observe(rt, ctx, "gamepad_input");
+        return;
+    }
 #ifdef RECOMP_DEBUG
     if (active && replay) {
         replay_updates++;
@@ -193,7 +227,7 @@ void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction 
         }
     }
 #endif
-    if (!active) {
+    if (!active || !enabled) {
         recomp_mouse_clear(&mouse);
         original(rt, ctx);
         return;
@@ -255,6 +289,25 @@ void goldeneye_input_process_hook(Runtime *rt, MipsContext *ctx, RecompFunction 
     } else
         recomp_mouse_clear(&mouse);
     observe(rt, ctx, "mouse");
+}
+void goldeneye_input_stick_x_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    bool supply = in_dual_input && (uint32_t)ctx->gpr[31] == GE_INPUT_SECONDARY_X_RETURN;
+    original(rt, ctx);
+    if (supply)
+        mips_set(ctx, 2, mips_s32((uint32_t)(int32_t)move_x));
+}
+void goldeneye_input_stick_y_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    bool supply = in_dual_input && (uint32_t)ctx->gpr[31] == GE_INPUT_SECONDARY_Y_RETURN;
+    original(rt, ctx);
+    if (supply)
+        mips_set(ctx, 2, mips_s32((uint32_t)(int32_t)move_y));
+}
+void goldeneye_input_buttons_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    bool supply = in_dual_input && (uint32_t)ctx->gpr[31] == GE_INPUT_SECONDARY_BUTTONS_RETURN;
+    uint16_t mask = (uint16_t)ctx->gpr[5];
+    original(rt, ctx);
+    if (supply)
+        mips_set(ctx, 2, aim_buttons & mask);
 }
 void goldeneye_input_angles_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     observe(rt, ctx, "angles");

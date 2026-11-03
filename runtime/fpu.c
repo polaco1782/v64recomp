@@ -8,6 +8,11 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#if defined(RECOMP_FPU_SPECIALIZE) && defined(__clang__)
+#define RECOMP_FPU_INLINE __attribute__((always_inline))
+#else
+#define RECOMP_FPU_INLINE
+#endif
 #if !(defined(__x86_64__) && defined(__SSE2__)) && !defined(_M_X64)
 #error "This floating-point backend requires x86-64 SSE2"
 #endif
@@ -176,8 +181,8 @@ static uint64_t result(MipsContext *ctx, uint64_t bits, enum MipsFpFormat fmt, u
     return bits;
 }
 
-void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enum MipsFpFormat fmt,
-                    enum MipsFpOperation op) {
+RECOMP_FPU_INLINE void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enum MipsFpFormat fmt,
+                                      enum MipsFpOperation op) {
     uint64_t a = read_bits(ctx, fs, fmt), b = read_bits(ctx, ft, fmt), bits;
     unsigned flags = operand_flags(a, fmt) | operand_flags(b, fmt);
     if (flags) {

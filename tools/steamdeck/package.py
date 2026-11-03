@@ -83,7 +83,10 @@ def package(game, build):
     gamepad_defaults = (
         'export RECOMP_OOT_MOUSE="${RECOMP_OOT_MOUSE-0}"\n'
         'export RECOMP_OOT_GAMEPAD_CAMERA="${RECOMP_OOT_GAMEPAD_CAMERA-1}"\n'
-    ) if game == "oot-us-v12" else ""
+    ) if game == "oot-us-v12" else (
+        'export RECOMP_GOLDENEYE_MOUSE="${RECOMP_GOLDENEYE_MOUSE-0}"\n'
+        'export RECOMP_GOLDENEYE_GAMEPAD="${RECOMP_GOLDENEYE_GAMEPAD-1}"\n'
+    ) if game == "goldeneye-us" else ""
     rom_argument = "" if embedded_rom else f' --rom "$here/local/{rom}"'
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
@@ -116,6 +119,10 @@ exec "$here/{game}"{rom_argument} \\
         "Left trigger = Z; right trigger = R; Menu = Start.\n"
         "RECOMP_OOT_GAMEPAD_CAMERA=0 restores the original N64 gamepad layout.\n"
     ) if game == "oot-us-v12" else (
+        "Left stick = movement/strafe; right stick = look/aim.\n"
+        "LT = fire; RT/RB = aim; A = change weapon; X = use/reload; Menu = watch.\n"
+        "RECOMP_GOLDENEYE_GAMEPAD=0 restores the saved N64 control style.\n"
+    ) if game == "goldeneye-us" else (
         "A/X = N64 A/B; left trigger = Z; right trigger = R; right stick = C-buttons.\n"
         "Menu = Start; D-pad = N64 D-pad.\n"
     )

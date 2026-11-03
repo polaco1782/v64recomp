@@ -17,6 +17,7 @@
 #undef Status
 #endif
 #include <array>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdio>
@@ -26,12 +27,17 @@
 #include <thread>
 #include <stdexcept>
 
+extern "C" void recomp_rt64_set_anamorphic_present(bool enabled);
+
 struct RecompRenderer {
     Runtime *rt;
     uint32_t code = 0, data = 0, list = 0;
     RecompGraphicsHook graphics_hook = nullptr;
     RecompMicrocodeHook microcode_hook = nullptr;
     void (*fov_hook)(int) = nullptr;
+    bool (*aspect_hook)(void *, float) = nullptr;
+    void *aspect_opaque = nullptr;
+    bool expanded_aspect = false;
     bool custom_gbi = false;
     bool raw_rdp = false, raw_vi = false;
     std::thread::id owner = std::this_thread::get_id();
@@ -326,6 +332,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         s->app->userConfig.threePointFiltering = false;
         // Deck packages expand to the built-in 16:10 screen; F7 still toggles it.
         using AspectRatio = RT64::UserConfiguration::AspectRatio;
+        s->expanded_aspect = steam_deck;
         s->app->userConfig.aspectRatio = steam_deck ? AspectRatio::Expand : AspectRatio::Original;
         s->app->userConfig.extAspectRatio = s->app->userConfig.aspectRatio;
         s->app->userConfig.refreshRate = RT64::UserConfiguration::RefreshRate::Manual;
@@ -452,6 +459,7 @@ void recomp_renderer_destroy(RecompRenderer *s) {
 #endif
     SDL_Window *window = s->window;
     s->app.reset();
+    recomp_rt64_set_anamorphic_present(false);
     RT64::SetRenderHooks(nullptr, nullptr, nullptr);
     active_renderer = nullptr;
     if (s->frame_trace && std::fclose(s->frame_trace))
@@ -575,6 +583,29 @@ void recomp_renderer_set_fov_hook(RecompRenderer *s, void (*adjust)(int)) {
     s->check_owner();
     s->fov_hook = adjust;
 }
+static void update_native_aspect(RecompRenderer *s) {
+    if (!s->aspect_hook)
+        return;
+    int width, height;
+    SDL_GetWindowSize(s->window, &width, &height);
+    float aspect = s->expanded_aspect && height > 0 ? std::max(4.0f / 3.0f, float(width) / height) : 4.0f / 3.0f;
+    recomp_rt64_set_anamorphic_present(s->aspect_hook(s->aspect_opaque, aspect));
+}
+void recomp_renderer_set_aspect_hook(RecompRenderer *s, bool (*update)(void *, float), void *opaque) {
+    s->check_owner();
+    s->aspect_hook = update;
+    s->aspect_opaque = opaque;
+    {
+        const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+        using AspectRatio = RT64::UserConfiguration::AspectRatio;
+        s->app->userConfig.aspectRatio =
+            update ? AspectRatio::Original : (s->expanded_aspect ? AspectRatio::Expand : AspectRatio::Original);
+        s->app->userConfig.extAspectRatio = s->app->userConfig.aspectRatio;
+    }
+    s->app->updateUserConfig(true);
+    recomp_rt64_set_anamorphic_present(false);
+    update_native_aspect(s);
+}
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     s->check_owner();
     s->mouse_frame = {};
@@ -636,8 +667,8 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
                 const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
                 using AspectRatio = RT64::UserConfiguration::AspectRatio;
                 auto& config = s->app->userConfig;
-                const bool expand = config.aspectRatio != AspectRatio::Expand;
-                config.aspectRatio = expand ? AspectRatio::Expand : AspectRatio::Original;
+                const bool expand = s->expanded_aspect = !s->expanded_aspect;
+                config.aspectRatio = expand && !s->aspect_hook ? AspectRatio::Expand : AspectRatio::Original;
                 config.extAspectRatio = config.aspectRatio;
                 std::fprintf(stderr, "Aspect ratio: %s\n", expand ? "expanded" : "original");
             }
@@ -659,6 +690,7 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         }
 #endif
     }
+    update_native_aspect(s);
     s->cheat_menu->update();
     bool capture = s->mouse_enabled && s->mouse_gameplay && !s->mouse_released && !s->cheat_menu->captures_input() &&
                    (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS);

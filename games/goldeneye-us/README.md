@@ -87,10 +87,11 @@ Mouse capture stays active in the front-end menus so mouse movement controls the
 original target cursor. Arrows and gamepads remain available alongside the mouse.
 Esc releases the mouse; F4 recaptures it. Capture releases during watch transitions
 and when the window loses focus. Tank, multiplayer, death and scripted-camera
-states fall back to the original controller path. A gamepad remains available; release mouse capture to
-use its original look/movement controls. Original aiming restrictions still apply.
+states fall back to the original controller path. Release mouse capture to use
+the dual-stick gamepad controls below. Original aiming restrictions still apply.
 
-Set `RECOMP_GOLDENEYE_MOUSE=0` to restore the legacy keyboard/controller mapping.
+Set `RECOMP_GOLDENEYE_MOUSE=0` to disable mouse controls and retain the shared
+keyboard mapping. `RECOMP_GOLDENEYE_GAMEPAD=0` also restores legacy stick mapping.
 `RECOMP_MOUSE_SENSITIVITY` sets degrees per mouse count (default `0.08`, range
 `0.001..10`); `RECOMP_MOUSE_INVERT_Y=1` inverts vertical movement. These environment
 settings apply at launch in Debug and Release.
@@ -147,7 +148,7 @@ the console when it changes.
 This works in Debug and Release independently of mouse capture. Native weapon
 zoom retains its optical magnification ratio. The override applies to active
 single-player gameplay; menus, watch, death, locked controls, scripted cameras
-and multiplayer retain original behavior. RT64 F7 aspect expansion is separate.
+and multiplayer retain original behavior. F7 widescreen is independent of FOV.
 
 The original `viSetFovY` body remains translated and updates VI projection and
 player camera scaling together. Full bodies, caller/delay pairs, player offsets
@@ -162,7 +163,102 @@ unchanged, preventing compounding across updates. The
 guided identification; all runtime addresses and operands were checked against
 this ROM independently.
 
-Earlier FOV versions passed ROM/translation checks, Debug/Release builds and the
-user's gameplay test. The keypad/140-degree extension has not been rebuilt or
-tested in game. Broader aiming/zoom transitions and combined F7 behavior remain
-unverified.
+Earlier FOV versions passed ROM/translation checks and the user's gameplay test.
+Linux Debug/Release builds also passed on 2026-11-03. Full-range keypad adjustment
+and broader aiming/zoom transitions remain unverified.
+
+## Dual-stick gamepad and widescreen
+
+Single-player on-foot controls use the left stick for movement/strafe and the
+right stick for horizontal/vertical look. LT fires; RT or RB aims; A changes
+weapons, X uses/reloads and Start opens the watch. Menus retain native navigation.
+Steam Deck packages enable these controls and disable mouse capture by default.
+On PC, release mouse capture with Escape before using the gamepad. Set
+`RECOMP_GOLDENEYE_GAMEPAD=0` to use the saved native controller style instead.
+
+The adapter temporarily selects native 2.2 Galore (index 5) inside the verified
+`MoveBond` input call, routing primary axes to look and the checked secondary
+`joyGetStickX/Y` reads to movement. The original functions still execute once.
+Primary R becomes secondary Z for native aiming. The selected control style is
+restored after the call, without changing the save or exposing another player.
+Watch, death, tank, scripted cameras and multiplayer retain the native path;
+controller/mouse replays do not inherit physical gamepad look.
+
+GoldenEye's backgrounds are CPU-projected RDP triangles. Independent RT64
+projection expansion left these clipped to the old central region. F7 now uses
+the native player/VI aspect setters (`0x7f09b224`, `0x70004590`) at the four
+ROM-checked viewport call sites. Both CPU visibility/scale and GPU projection
+receive the same native aspect, scaled for the window and the watch's existing
+4:3/16:9 choice. Native top/bottom letterboxing and zoom are retained. RT64 then
+stretches the completed anamorphic framebuffer at scanout, with projection
+expansion disabled. Other games retain their existing RT64 aspect behavior.
+Menus, watch and excluded cameras retain original presentation. The HUD follows
+the native framebuffer layout, so it stretches horizontally in wide gameplay.
+
+ROM fingerprints, call/delay words and field operands pass generation checks.
+Linux Debug/Release and the Debian 12 Steam Deck build pass. A live Dam virtual
+gamepad test verified right-stick turning/pitch without movement and left-stick
+strafing/walking without turning, with control-style restoration. Widescreen
+screenshots at 16:10 and 16:9 show background coverage at both edges, and F7
+reset/watch return were exercised. Broader level/portal transitions,
+weapon zoom and physical Deck control acceptance remain to be tested.
+
+## Performance investigation
+
+A confirmed 25-second slow-Dam capture on 2026-11-03 measured 45.7% of one
+logical CPU in `n64-main` and 37.8% in the owner, with about 19,000 voluntary
+switches/second on each. GPU busy samples averaged 38.2%, with median 8% and
+brief 100% spikes. The workload is serialized between guest and owner, so low
+average utilization does not establish spare execution time. The earlier
+33.9% total-CPU capture had an unconfirmed scene and is not the comparison.
+
+`runtime.checkpoint_interval = 512` batches ordinary guest backedges instead of
+using the shared default 64. Explicit polling-loop yields and priority
+preemption retain their immediate paths; the VI clock and 60 Hz presentation
+deadline stay unchanged. This reduces repeated context serialization and
+device polling in GoldenEye's CPU render/visibility work.
+
+Equivalent desktop Release title-sequence runs at seconds 25..40 measured
+CPU consumption of 0.193 versus 0.149 logical cores (about 23% lower), and
+6,538 versus 1,055 scheduler dispatches/second (about 84% fewer). Display
+callbacks remained about 60/second. These are callback/CPU measurements, not
+unique game-frame or compositor FPS. Debug/Release and Deck builds pass;
+the user still observed drops below 40 FPS on Deck after this change.
+
+A second confirmed 25-second Dam capture measured 46.7% of one logical CPU in
+`n64-main`, 26.8% in the owner, and roughly 4,500/5,100 voluntary switches/second
+respectively. GPU busy averaged 28.4% (median 5%). The Deck's gamescope FPS limit,
+dynamic refresh and reported display refresh were all 60. The two captures did
+not lock the camera to identical coordinates, so they establish reduced
+scheduler overhead and a remaining bottleneck, not a gameplay FPS gain.
+
+In the second CPU sample, `mips_fp_binary` accounted for 17.63% of user CPU
+samples directly. The background portal routine at `0x7f0b7f84` accounted for
+13.12% including its callees; those costs overlap. The exact-US-address
+[background reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/bg.c)
+identifies portal traversal. The
+[collision reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/stan.c)
+identifies other sampled routines `0x7f0b0e24` (`stanTestLineUnobstructed`) and
+`0x7f0b18b8` (`stanTestVolume`). These observations support a CPU geometry and
+visibility bottleneck; low aggregate CPU/GPU utilization does not rule it out.
+The checked ROM remains the US image declared in `profile.toml`.
+
+Release enables link-time optimization for GoldenEye and its runtime when the
+toolchain supports it. Clang also specializes the binary FP helper at translated
+call sites, where the operation, format and register indices are constants.
+Strict floating-point flags, rounding, exceptions and host-state restoration
+remain enabled. Debug and other games retain the ordinary helper. This targets
+arithmetic overhead without changing portal visibility or collision behavior.
+A temporary differential check matched 1,520,000 arithmetic/conversion/compare
+cases and 647,970 traps with Clang 22 and the Debian Clang 14 Deck compiler,
+including all rounding modes and MXCSR/x87/errno restoration. A 40-million-call
+normal-operand arithmetic microbenchmark with Clang 14 took 1.053 seconds before
+and 0.729 seconds after specialization on the desktop CPU. This is not a Deck
+FPS measurement; the title sequence changed little. The Deck itself passed
+600 frames with its embedded pack and the same 1,520,000-case differential check,
+preserving the player's save byte-for-byte. Its single arithmetic benchmark
+used 1.459 versus 1.306 seconds of CPU time (about 10% lower). The specialized
+build is installed, but the remaining slow Dam view still requires gameplay
+comparison.
+
+See [frame timing capture](../../docs/profiling.md#frame-pacing-and-stutter).

@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "GoldenEye 007");
     recomp_game_require(renderer != NULL, "GoldenEye renderer init failed", 0);
     recomp_renderer_set_fov_hook(renderer, goldeneye_fov_adjust);
+    recomp_renderer_set_aspect_hook(renderer, goldeneye_aspect_update, &rt);
     recomp_renderer_set_graphics_hook(renderer, goldeneye_configure_graphics);
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
@@ -221,11 +222,13 @@ int main(int argc, char **argv) {
             }
         }
         RecompPad pad;
+        recomp_renderer_gamepad_camera_mode(renderer, goldeneye_input_gamepad_mode(&rt));
         recomp_renderer_mouse_mode(renderer, goldeneye_input_enabled(),
                                    goldeneye_input_playable(&rt) || goldeneye_input_menu(&rt));
         if (!recomp_renderer_input(renderer, &pad))
             break;
-        goldeneye_input_submit(&rt, recomp_renderer_mouse_frame(renderer), &pad);
+        goldeneye_input_submit(&rt, recomp_renderer_mouse_frame(renderer), recomp_renderer_camera_stick(renderer),
+                               &pad);
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "GoldenEye controller update failed", 0);
         recomp_game_require(recomp_game_present(renderer), "GoldenEye presentation failed", 0);
         next_present += 16666667;

@@ -42,6 +42,11 @@ bool recomp_renderer_input(RecompRenderer *, RecompPad *);
 /* Opt into keypad +/- FOV changes, one degree per keydown (including repeat).
  * Callback runs on the host owner with guest execution parked. */
 void recomp_renderer_set_fov_hook(RecompRenderer *, void (*adjust)(int steps));
+/* Opt into a game's native anamorphic projection instead of RT64 expansion.
+ * Called with the window aspect (4:3 when F7 is off) on the parked owner.
+ * Return true when the native world camera supports that aspect; presentation
+ * then stretches the completed native framebuffer to the window. */
+void recomp_renderer_set_aspect_hook(RecompRenderer *, bool (*update)(void *, float), void *opaque);
 /* Opt-in PC controls. Gameplay false releases capture and clears motion.
  * Escape toggles capture; F4 recaptures; F10 quits. Other games are unchanged. */
 void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);

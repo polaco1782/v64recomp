@@ -141,6 +141,13 @@ time, the app runs a small scheduler batch before presentation and services
 the remaining guest work within the pacing deadline. Synthetic-clock startup
 uses a separate drain capped at 4096 scheduler resumes.
 
+GoldenEye batches 512 ordinary backedges per checkpoint instead of the shared
+default 64. This reduces guest/owner handoffs in its CPU render loops; explicit
+polling loops and priority preemption still yield immediately. A desktop A/B
+run measured fewer dispatches and lower CPU use at the same display-callback
+rate. The Deck's reported slow Dam view still requires gameplay comparison;
+see the [game's investigation notes](../games/goldeneye-us/README.md#performance-investigation).
+
 ## External capture with perf
 
 Use `tools/profile_execution.py` on Linux to attach to a running game without

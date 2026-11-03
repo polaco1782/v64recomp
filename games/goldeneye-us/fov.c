@@ -8,6 +8,7 @@
 static bool enabled;
 static RecompFov fov;
 static double tangent_scale;
+static float world_aspect = 4.0f / 3.0f;
 
 void goldeneye_fov_init(void) {
     float native;
@@ -15,6 +16,7 @@ void goldeneye_fov_init(void) {
     memcpy(&native, &bits, sizeof(native));
     recomp_fov_init(&fov, native, 4.0 / 3.0);
     enabled = false;
+    world_aspect = 4.0f / 3.0f;
 }
 static void goldeneye_fov_set(double horizontal) {
     recomp_fov_set(&fov, horizontal);
@@ -39,6 +41,30 @@ static bool eligible(Runtime *rt) {
         return false;
     uint32_t camera = recomp_load32(rt, GE_INPUT_CAMERA);
     return camera == 0 || (camera == 4 && recomp_load32(rt, GE_INPUT_TIMER_ACTIVE));
+}
+bool goldeneye_aspect_update(void *runtime, float aspect) {
+    world_aspect = aspect;
+    return aspect > 4.0f / 3.0f && eligible(runtime);
+}
+void goldeneye_aspect_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    uint32_t caller = (uint32_t)ctx->gpr[31];
+    if (world_aspect > 4.0f / 3.0f && eligible(rt) &&
+        (caller == GE_FOV_PLAYER_ASPECT_WIDE_RETURN || caller == GE_FOV_PLAYER_ASPECT_NORMAL_RETURN ||
+         caller == GE_FOV_VI_ASPECT_WIDE_RETURN || caller == GE_FOV_VI_ASPECT_NORMAL_RETURN)) {
+        float native;
+        memcpy(&native, &ctx->fpr[12], sizeof(native));
+        if (isfinite(native) && native > 0) {
+            // Preserve the native viewport's top/bottom letterboxing. The
+            // watch's 16:9 branch already applies its own anamorphic factor.
+            bool wide = caller == GE_FOV_PLAYER_ASPECT_WIDE_RETURN || caller == GE_FOV_VI_ASPECT_WIDE_RETURN;
+            float adjusted = native * world_aspect / (wide ? 16.0f / 9.0f : 4.0f / 3.0f);
+            memcpy(&ctx->fpr[12], &adjusted, sizeof(adjusted));
+        }
+    }
+    // Keep the native player aspect, VI projection and CPU screen-space
+    // visibility scale in agreement. Raw background triangles and RSP models
+    // remain in the same framebuffer; only final scanout is anamorphic.
+    original(rt, ctx);
 }
 void goldeneye_fov_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     uint32_t caller = (uint32_t)ctx->gpr[31];

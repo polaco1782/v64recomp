@@ -64,6 +64,9 @@
     <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\rt64\AnamorphicPresentation.cmake">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
     <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
