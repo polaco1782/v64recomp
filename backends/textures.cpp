@@ -7,6 +7,7 @@
 #define STBIW_WINDOWS_UTF8
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <regex>
@@ -43,16 +44,15 @@ struct PausedUploads {
 };
 }
 
-void RecompTextureFiles::configure(RT64::TextureCache& cache, const std::string& title, size_t rdramSize) {
+void RecompTextureFiles::configure(RT64::TextureCache& cache, const std::string& title, size_t rdramSize,
+                                   const std::string& dumpPath) {
     romTitle = title;
     rdramByteCount = rdramSize;
-#ifdef RECOMP_DEBUG
-    if (const char *path = std::getenv("RECOMP_TEXTURE_DUMP"); path && *path) {
-        dumpDirectory = path;
+    dumpDirectory = dumpPath;
+    if (!dumpDirectory.empty()) {
         std::filesystem::create_directories(dumpDirectory);
         std::fprintf(stderr, "Texture PNG dump: %s\n", dumpDirectory.u8string().c_str());
     }
-#endif
     if (const char *path = std::getenv("RECOMP_TEXTURE_REPLACEMENTS"); path && *path)
         replacementDirectory = path;
     if (const char *path = std::getenv("RECOMP_TEXTURE_PACK"); path && *path) {
@@ -176,6 +176,11 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
 #ifdef RECOMP_DEBUG
     if (dumpDirectory.empty() && !replacementFiles && !zipPack)
         return;
+#else
+    // Normal Release play does not need to scan the cache for statistics.
+    if (dumpDirectory.empty())
+        return;
+#endif
     struct Pending {
         uint64_t hash;
         RT64::Texture texture;
@@ -196,6 +201,10 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
             const auto *source = cache.textureMap.textures[index];
             if (!source || !source->decodeTMEM || source->bytesTMEM.size() != 4096)
                 continue;
+            if (uint64_t(source->width) * source->height < 64) {
+                dumped.insert(hash);
+                continue;
+            }
             Pending item{};
             item.hash = hash;
             item.texture.width = source->width;
@@ -222,6 +231,11 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
                                             tile.tmem, tile.line, tile.palette, texture.tlut);
         } catch (const std::invalid_argument& e) {
             std::fprintf(stderr, "Skipping texture %s: %s\n", base.c_str(), e.what());
+            dumped.insert(item.hash);
+            continue;
+        }
+        // Compare all four channels so alpha masks with constant RGB survive.
+        if (std::equal(pixels.begin() + 4, pixels.end(), pixels.begin())) {
             dumped.insert(item.hash);
             continue;
         }
@@ -255,7 +269,4 @@ void RecompTextureFiles::collect(RT64::TextureCache& cache) {
         std::fprintf(stderr, "Dumped texture %s: %ux%u, TLUT %u, %s\n", base.c_str(), texture.width, texture.height,
                      texture.tlut, transparent ? "transparent" : "opaque");
     }
-#else
-    (void)cache;
-#endif
 }

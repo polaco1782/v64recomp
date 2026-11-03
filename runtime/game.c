@@ -141,6 +141,7 @@ static void directory(const char *path) {
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
     const char *texture_pack = NULL;
+    const char *texture_dump = NULL;
     const char *profile_directory = NULL;
     unsigned profile_hz = 99, profile_delay = 0, profile_seconds = 0;
     *o = (RecompGameOptions){.rom = RECOMP_DEFAULT_ROM,
@@ -151,7 +152,9 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
             printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
-                   "[--texture-pack ZIP]\n"
+                   "[--texture-pack ZIP] [--texture-dump DIR]\n"
+                   "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
+                   "                        Skip textures below 64 pixels or with a single RGBA color\n"
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
                    "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
                    "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
@@ -216,7 +219,9 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                 return -1;
             }
             texture_pack = value;
-        } else if (!strcmp(arg, "--profile"))
+        } else if (!strcmp(arg, "--texture-dump"))
+            texture_dump = value;
+        else if (!strcmp(arg, "--profile"))
             profile_directory = value;
         else if (!strcmp(arg, "--profile-hz") || !strcmp(arg, "--profile-delay") || !strcmp(arg, "--profile-seconds")) {
             char *end;
@@ -264,6 +269,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         directory(parent);
     }
     crash_dir = o->crash_dir;
+    recomp_renderer_configure_texture_dump(texture_dump);
     if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
         setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
     if (texture_pack)

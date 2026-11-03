@@ -63,6 +63,8 @@ You can still choose another pack with `--texture-pack`.
 
 Press **F5** to switch between the original and replacement textures and reload
 pack changes. Textures without a matching replacement keep their original look.
+To export original textures as PNGs with JSON metadata, pass `--texture-dump DIR`
+to any game in Debug or Release. The directory is created automatically as needed.
 See the [texture guide](docs/textures.md) for supported filenames, loose folders,
 texture dumps and matching caches.
 

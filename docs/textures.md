@@ -57,15 +57,23 @@ F5 works as usual. The matching cache is saved beside the executable as
 Configure with `-DRECOMP_EMBED_TEXTURE_PACK=` to return to an executable without
 an embedded pack.
 
-The native RT64 runner can export the original textures as they enter the decoded
-texture cache. Enable it while playing:
+## Dump original textures
+
+Every game can export original textures from RT64's decoded texture cache in
+both Debug and Release. Enable dumping at launch:
 
 ```sh
-RECOMP_TEXTURE_DUMP="$PWD/local/textures/sm64-us/dump" ./build/sm64-us-debug/bin/sm64-us
+./build/sm64-us-release/bin/sm64-us --texture-dump local/textures/sm64-us/dump
 ```
 
-The default game directory is `local/textures/sm64-us/`. `dump/` receives
-RGBA PNGs and JSON metadata, once per texture. A filename such as
+The selected directory is created automatically and receives RGBA PNGs and JSON
+metadata, once per texture. Use a separate directory for each game.
+Dumping is disabled unless `--texture-dump DIR` is supplied.
+Textures with fewer than 64 pixels (`width * height < 64`) and textures whose
+decoded RGBA pixels are all identical are skipped. Exactly 64 pixels is allowed;
+varying alpha counts as a color difference. These filters affect only new dumps,
+not rendering or replacement loading, and do not delete existing files.
+A filename such as
 `0123456789abcdef.v5.png` uses RT64's 64-bit content hash and hash algorithm version.
 The hash covers the texture bytes, referenced palette entries, dimensions and
 decoding parameters. It stays the same when the same asset moves in RAM. Changes
@@ -97,9 +105,9 @@ load on the next launch.
 
 ```sh
 ./build/sm64-us-release/bin/sm64-us
-# Custom dump and replacement directories (debug only for dumping).
-RECOMP_TEXTURE_DUMP=/path/to/originals RECOMP_TEXTURE_REPLACEMENTS=/path/to/replacements \
-  ./build/sm64-us-debug/bin/sm64-us
+# Custom dump and replacement directories (Debug or Release).
+RECOMP_TEXTURE_REPLACEMENTS=/path/to/replacements \
+  ./build/sm64-us-release/bin/sm64-us --texture-dump /path/to/originals
 # Compare with the originals.
 RECOMP_TEXTURE_REPLACEMENTS= ./build/sm64-us-release/bin/sm64-us
 ```

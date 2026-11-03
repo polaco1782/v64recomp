@@ -189,8 +189,8 @@ EOF
 ```
 
 With `RECOMP_RT64_BUILD_TYPE=Debug`, F1 toggles RT64's inspector and F6 toggles
-wireframe. Texture dumps are enabled only
-in debug via `RECOMP_TEXTURE_DUMP`. `RECOMP_DUKE_PERFORMANCE=1` and
+wireframe. All games support `--texture-dump DIR`
+in both Debug and Release; see [texture dumps](textures.md). `RECOMP_DUKE_PERFORMANCE=1` and
 `RECOMP_NIGHTMARE_PERFORMANCE=1` retain those games' timing logs.
 
 The shared callback and function-candidate inspectors propose roots for review.

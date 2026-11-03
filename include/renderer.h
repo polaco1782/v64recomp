@@ -22,6 +22,9 @@ typedef struct RecompRendererStats {
  * guest execution parked. Display-list parsing, readbacks and presentation
  * preparation use live RAM; RT64's render/present queues remain asynchronous. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
+/* Select PNG/JSON texture dumping for subsequently created renderers.
+ * Call before renderer creation; NULL disables dumping (the default). */
+void recomp_renderer_configure_texture_dump(const char *directory);
 /* Defaults to 60 FPS interpolation. 0 preserves the game's original rate;
  * 10..1000 enables RT64 interpolation at the requested rate.
  * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */

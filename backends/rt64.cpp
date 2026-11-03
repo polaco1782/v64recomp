@@ -29,6 +29,12 @@
 
 extern "C" void recomp_rt64_set_anamorphic_present(bool enabled);
 
+static std::string texture_dump_directory;
+
+void recomp_renderer_configure_texture_dump(const char *directory) {
+    texture_dump_directory = directory ? directory : "";
+}
+
 struct RecompRenderer {
     Runtime *rt;
     uint32_t code = 0, data = 0, list = 0;
@@ -377,7 +383,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         std::string romTitle(reinterpret_cast<const char *>(rt->rom + 32), 20);
         while (!romTitle.empty() && (romTitle.back() == ' ' || romTitle.back() == '\0'))
             romTitle.pop_back();
-        s->textureFiles.configure(*s->app->textureCache, romTitle, rt->rdram_size);
+        s->textureFiles.configure(*s->app->textureCache, romTitle, rt->rdram_size, texture_dump_directory);
 #ifdef RECOMP_DEBUG
         if (const char *path = std::getenv("RECOMP_TEXTURE_RAW_DUMP"); path && *path) {
             std::filesystem::create_directories(path);
@@ -531,6 +537,7 @@ bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
     const uint64_t begin = monotonic_ns();
     const uint64_t cpu_begin = s->rt->timing ? recomp_timing_thread_clock() : 0;
     s->app->processDisplayLists(s->rt->rdram, physical, physical + (end - start), false);
+    s->textureFiles.collect(*s->app->textureCache);
     uint64_t elapsed = monotonic_ns() - begin;
     s->stats.submit_ns += elapsed;
     recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
