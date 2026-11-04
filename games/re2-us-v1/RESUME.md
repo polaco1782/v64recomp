@@ -35,7 +35,7 @@ waited at `0x8009bfa4` for queue `0x80132140` after translated `osEPiStartDma`
 at `0x80006f60` returned -1 because guest `__osPiDevMgr.active` remained zero.
 The caller ignored that result. Its message requests 0x8000 bytes from SRAM
 device `0x08000000` with handle base `0xa8000000`. The complete reviewed
-0x94-byte SDK body is now bound to `hook_os_epi_start_dma`, and both modes
+0x94-byte SDK body is now bound to `recomp_os_epi_start_dma`, and both modes
 configure the existing 32 KiB SRAM backend with a separate `.sra` save path.
 The old `.mpk` file must not be reused as SRAM.
 

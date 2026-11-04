@@ -15,7 +15,7 @@ import re
 import sys
 import zlib
 
-from common import RecompError, load_metadata, load_profile, validate_hook_prefix
+from common import RecompError, load_metadata, load_profile, validate_recomp_prefix
 from export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT
 from symbol_database import DATABASE, load_database
@@ -216,7 +216,7 @@ def inspect(rom: bytes, metadata: dict, database: dict, profile: dict | None, de
             custom = next((h for h in profile.get('hooks', []) if h.get('vram') == item['vram']), None)
             if custom and custom.get('kind') == 'replace_function':
                 region = next(s for s in sections if s['id'] == item['section'])
-                validate_hook_prefix(rom, item['rom_offset'], item['vram'],
+                validate_recomp_prefix(rom, item['rom_offset'], item['vram'],
                                      region['rom_offset'] + region['size'] - item['rom_offset'], custom)
         item['native'] = native_coverage(entry, exact, function, profile, definitions)
         item['body_sizes'].sort()

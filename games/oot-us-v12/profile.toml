@@ -15,9 +15,9 @@ boundaries = [
   {symbol = "func_80005c70", vram = 0x80005c70, kind = "unsupported_function", reason = "Privileged libultra internal; public OS services use native handlers", expected_words = [0x40026800, 0x3e00008]},
 ]
 hooks = [
-  {symbol = "CIC6105_RunBootTask", vram = 0x80001640, kind = "replace_function", handler = "hook_oot_cic_boot_task", expected_words = [0x27bdff60, 0xafbf0014]},
-  {symbol = "Overlay_Relocate", vram = 0x800cd130, kind = "replace_function", handler = "hook_oot_overlay_relocate", expected_words = [0x27bdfe70]},
-  {symbol = "osStartThread", vram = 0x80006240, kind = "replace_function", handler = "hook_oot_start_thread", expected_words = [0x27bdffd8]},
+  {symbol = "CIC6105_RunBootTask", vram = 0x80001640, kind = "replace_function", handler = "recomp_oot_cic_boot_task", expected_words = [0x27bdff60, 0xafbf0014]},
+  {symbol = "Overlay_Relocate", vram = 0x800cd130, kind = "replace_function", handler = "recomp_oot_overlay_relocate", expected_words = [0x27bdfe70]},
+  {symbol = "osStartThread", vram = 0x80006240, kind = "replace_function", handler = "recomp_oot_start_thread", expected_words = [0x27bdffd8]},
 ]
 
 [game]

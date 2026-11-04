@@ -177,6 +177,24 @@ buffer, handles supported address aliases and game-specific mappings, and checks
 memory access ranges. Floating-point helpers preserve the required guest
 rounding and register behavior. See [floating point](fpu.md) for details.
 
+On little-endian Release builds, the emitter shares direct-RAM checks across
+consecutive loads/stores with stable base registers. It checks the complete
+access span for each base before using physical RDRAM offsets, retaining the
+original access order, word-swapped layout and overlapping-buffer behavior.
+If any span leaves the first 8 MiB of KSEG0/KSEG1, the whole group uses its
+original helpers, including mapped-address and device callbacks. This retains
+the existing Release assumption of aligned, valid guest RAM accesses; Debug
+keeps the checked helpers and instruction tracking for every access.
+
+Groups contain 4–16 consecutive memory instructions, with at least two accesses
+per base on average and a maximum 256-byte span per base. Calls, arithmetic,
+branches, delay slots, relocated operands, checked continuations, instruction
+gaps and interior entry points split groups. A group cannot modify any of its
+base registers. Live-resume bodies keep their original helpers because every
+instruction can be an entry point. These limits bound duplicated fallback code
+and avoid carrying an address proof across changes to registers or mappings.
+See [GoldenEye timing results](profiling.md#goldeneye-address-specialization-timing-2026-11-04).
+
 ### 4. Connect the compiled game to native services
 
 Generated functions are registered by their original guest addresses.

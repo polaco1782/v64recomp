@@ -398,6 +398,102 @@ Release and Debug runtime builds passed. Evidence is under
 startup run with the intro visibly rendered and no runtime failure; full
 gameplay performance remains unmeasured.
 
+### GoldenEye address specialization timing, 2026-11-04
+
+A focused experiment compared complete generated GoldenEye routines against
+copies with direct 32-bit RAM accesses. On an AMD Ryzen 7 5700X with Clang
+22.1.8, the fixed-address routines `0x7000aedc` (two global loads and stores)
+and `0x7f0009e0` (three global stores) compiled to byte-identical machine code
+in both versions. Both measured approximately 1.35 ns/call. The existing inline
+helpers already let the compiler resolve those addresses and remove dispatch.
+
+The four-word copy at `0x7f0b5d58` takes source/destination pointers at runtime:
+
+| Extracted routine variant | Median CPU ns/call | Function bytes |
+| --- | --- | --- |
+| Current generated helpers | 4.492 | 405 |
+| Direct RAM, assuming both pointers are valid | 2.062 | 158 |
+| Check both 16-byte spans once, otherwise use original routine | 2.481 | 220 |
+
+The hand-written guarded variant reduced this routine's time by 44.8%. Its checks admit
+only complete spans in the first 8 MiB of KSEG0/KSEG1; other addresses retain
+the original routine. This experiment motivated the emitter implementation
+below; its timings are not measurements of that implementation. The unchecked
+variant is only a comparison for known RAM inputs.
+
+Timings are medians of nine 20-million-call runs after warmup, rotating variant
+order, pinned to logical CPU 0, using thread CPU time and warm buffers. The
+extracted functions use Release `-O3`, frame pointers and strict FP flags in a
+separate translation unit, without LTO; the harness cannot inline the calls.
+Fallback stubs abort if reached, so these timings cover direct RAM only.
+The production executable uses ThinLTO; its disassembly also retains repeated
+address checks in this copy routine. These extracted-function sizes and timings
+are not whole-executable size or performance measurements.
+
+There were 1,024 matching context/RAM comparisons across the fixed-address
+functions and both copy variants, including KSEG0/KSEG1 aliases and overlapping
+copies. They validate the exercised RAM inputs, not arbitrary mappings or an
+emitter transformation. Temporary sources, binaries and captures were removed
+after recording these results.
+
+A separate, unmodified Release run completed 2,700 presentations with title
+sequence captures visually checked. Sampling seconds 20..40 measured 32.7% of
+one logical CPU for the process and 1.94% for `n64-main`, with 2,925 samples,
+zero ring drops and 240 timer overruns at 499 Hz. This light title workload and
+sampling overhead do not establish Dam gameplay performance. No full-game A/B
+or FPS gain was measured. The run used a temporary save copy; its final hash
+matched the original save.
+
+The shared emitter now groups consecutive accesses with stable bases, within
+the [documented control-flow and size limits](recompilation.md#3-translate-mips-semantics-into-c).
+GoldenEye contains 2,896 groups covering 17,591 accesses. Summing the ELF sizes
+of its 2,908 translated functions gives 22,156,053 bytes before and 22,478,553
+after, an increase of 1.46%. This counts translated-function code, not the
+whole executable or embedded texture pack.
+
+For the same extracted `0x7f0b5d58` copy, the actual emitted implementation
+measured **4.515 ns/call before and 3.375 ns/call after (25.3% less CPU time)**.
+It groups the seven accesses before the return, leaving the delay-slot store
+on its original helper. Unlike the earlier hand-written experiment, this
+preserves the emitter's conservative delay-slot boundary. The measurement uses
+the same host/compiler and nine rotating 20-million-call runs after warmup,
+with separately compiled functions and no LTO.
+
+Validation compared 61 pairs of old/new generated functions over 12,200 cases
+per configuration, checking context, touched RAM, callback order and counts.
+Release and Debug passed AddressSanitizer/UndefinedBehaviorSanitizer; forced
+portable-fallback compilation also passed. Cases include every ordinary
+integer/FP load/store width, negative offsets, KSEG aliases, overlapping copies,
+segment/wrap edges, observable mock pager/device callbacks, changed RAM backing,
+forward branches, branch-likely annulment and base-register updates. One million
+span checks per configuration matched an independent interval calculation.
+Emitter checks also cover relocated operands, interior labels, group limits,
+delay slots and live-resume bodies. The mock fallback checks do not constitute
+hardware or full-game acceptance. GoldenEye Debug/Release and SM64 Release
+builds passed.
+
+A before/after/after/before desktop comparison completed 2,700 presentations
+per run, using temporary saves, the embedded texture pack, 1x resolution,
+1x MSAA, 60 Hz presentation, and shared timing/frame traces without CPU sampling.
+The seconds 25..40 title-sequence windows measured:
+
+| Run | Process CPU, logical cores | Display callbacks/s | Display interval p99 |
+| --- | --- | --- | --- |
+| Before 1 | 0.2680 | 59.93 | 17.59 ms |
+| After 1 | 0.3983 | 59.87 | 17.65 ms |
+| After 2 | 0.2640 | 59.94 | 17.37 ms |
+| Before 2 | 0.2654 | 59.94 | 17.38 ms |
+
+Captures confirmed the same sequence; no measured display interval exceeded
+50 ms. The elevated CPU usage in the first optimized run did not recur in the
+second, and these runs do not demonstrate a consistent whole-game CPU saving.
+Display callbacks are not unique game-frame or compositor FPS. Dam gameplay
+performance remains unmeasured. Separate unprofiled 600-presentation GoldenEye
+and SM64 runs exited normally with their intros/title screens visually checked.
+All runs used disposable saves, and GoldenEye save copies matched the original
+after the comparison. Temporary test programs, baseline binary, traces and
+captures were removed after recording the results.
+
 References: [perf record](https://man7.org/linux/man-pages/man1/perf-record.1.html),
 [perf report](https://man7.org/linux/man-pages/man1/perf-report.1.html),
 [Linux thread CPU counters](https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html).

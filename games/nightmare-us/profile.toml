@@ -7,7 +7,7 @@ function_wrappers = [
 
 # Retire the synthetic IPL thread after transferring to the first OS thread.
 hooks = [
-  {symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "hook_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc020458, 0xafb10014, 0x96030010]},
+  {symbol = "osStartThread", vram = 0x80081e70, kind = "replace_function", handler = "recomp_nightmare_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc020458, 0xafb10014, 0x96030010]},
 ]
 boundaries = [
   {symbol = "func_800903b8", vram = 0x800903b8, kind = "unsupported_function", reason = "Unused internal RSP hardware restart helper", expected_words = [0x3c04a404, 0x34840010]},

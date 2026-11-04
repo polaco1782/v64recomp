@@ -9,7 +9,7 @@ The shared runtime implements the OS and device behavior that the translated
 game uses, including blocking, completion messages and guest-visible state.
 
 This is **high-level emulation** at verified OS/library boundaries. A recognized
-guest function is bound to a native C handler such as `hook_os_recv_mesg`.
+guest function is bound to a native C handler such as `recomp_os_recv_mesg`.
 The handler receives `Runtime *` and `MipsContext *`, reads arguments from the
 guest registers and stack, accesses guest RAM through checked helpers, and
 writes results back using the MIPS calling convention. Guest addresses and

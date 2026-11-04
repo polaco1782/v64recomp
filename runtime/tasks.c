@@ -247,7 +247,7 @@ static void wait_sp_load_on_host(Runtime *rt, void *opaque) {
     if (tasks(rt)->active)
         recomp_fail("SP task did not halt before load", object);
 }
-void hook_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
+void recomp_os_sp_task_load(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t = tasks(rt);
     uint32_t object = (uint32_t)ctx->gpr[4];
@@ -323,7 +323,7 @@ static void submit_on_host(Runtime *rt, void *opaque) {
     if (!t->backend.submit(rt, t->backend.userdata, &r->task))
         recomp_fail("backend rejected SP task", r->task.guest_address);
 }
-void hook_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
+void recomp_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t = tasks(rt);
     uint32_t object = (uint32_t)ctx->gpr[4];
@@ -380,11 +380,11 @@ static void yield_on_host(Runtime *rt, void *opaque) {
     if (!t->backend.yield(rt, t->backend.userdata, r->task.token))
         recomp_fail("backend rejected SP yield", ctx->pc);
 }
-void hook_os_sp_task_yield(Runtime *rt, MipsContext *ctx) {
+void recomp_os_sp_task_yield(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     recomp_on_host(rt, yield_on_host, ctx);
 }
-void hook_os_sp_task_yielded(Runtime *rt, MipsContext *ctx) {
+void recomp_os_sp_task_yielded(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t = tasks(rt);
     uint32_t object = (uint32_t)ctx->gpr[4];

@@ -36,21 +36,21 @@ static void verify_main(Runtime *rt) {
 /* The complete ROM helper writes WatchLo=a0, WatchHi=0. All three enable
  * bits must be clear: native execution has no enabled guest memory watchpoint.
  * Refuse enabled requests instead of silently discarding a debug exception. */
-void hook_re2_disable_watch(Runtime *rt, MipsContext *ctx) {
+void recomp_re2_disable_watch(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     recomp_game_require(((uint32_t)ctx->gpr[4] & 7) == 0, "RE2 enabled CPU watchpoints require native support",
                         ctx->pc);
 }
-void hook_re2_start_thread(Runtime *rt, MipsContext *ctx) {
+void recomp_re2_start_thread(Runtime *rt, MipsContext *ctx) {
     bool handoff = recomp_thread_id(rt, 0) == -1;
     if (handoff)
         recomp_game_require((uint32_t)ctx->gpr[4] == 0x8010b700 && (uint32_t)ctx->gpr[31] == 0x8004d388,
                             "unexpected RE2 IPL thread start", ctx->pc);
-    hook_os_start_thread(rt, ctx);
+    recomp_os_start_thread(rt, ctx);
     if (handoff)
         recomp_thread_stop(rt, BOOT_BOOT_OBJECT);
 }
-void hook_re2_cache_allocate(Runtime *rt, MipsContext *ctx) {
+void recomp_re2_cache_allocate(Runtime *rt, MipsContext *ctx) {
     uint32_t start = (uint32_t)ctx->gpr[4], end = (uint32_t)ctx->gpr[5];
     /* Its unsigned comparison happens after the first increment/CACHE. The
      * audio allocator also calls it with end < start; that still touches just

@@ -13,13 +13,13 @@ static RecompAudio *audio;
 static bool core_services;
 static uint64_t wall_origin;
 
-void hook_banjo_get_sr(Runtime *rt, MipsContext *ctx) {
+void recomp_banjo_get_sr(Runtime *rt, MipsContext *ctx) {
     /* CPU interrupt-mask bits come from the current native scheduler thread.
      * The guest executes with CU1 enabled, outside EXL/ERL. */
     ctx->gpr[2] = UINT32_C(0x20000000) | (rt->interrupt_mask & 0xff00u) | (rt->interrupts_disabled ? 0u : 1u);
 }
 
-void hook_banjo_ucode_load(Runtime *rt, MipsContext *ctx) {
+void recomp_banjo_ucode_load(Runtime *rt, MipsContext *ctx) {
     recomp_game_require(recomp_task_stats(rt).submissions == 0, "Banjo IPL3 RSP state requested after task execution",
                         0x80255c30);
     /* IPL3 leaves DMEM[0] = 0xffffffff and IMEM[0] = 0x000017d7.

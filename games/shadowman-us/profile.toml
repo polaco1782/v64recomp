@@ -1,20 +1,20 @@
 # Exact US ROM; native SDK boundaries are bound to instruction fingerprints.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 hooks = [
-  {symbol = "osInitialize", vram = 0x116920, kind = "replace_function", handler = "hook_shadowman_initialize", expected_words = [0x27bdffe0, 0x24020001, 0xafbf0018, 0xafa00014, 0x3c018005, 0xac2203a8, 0xc0460c8, 0x0]},
-  {symbol = "osStartThread", vram = 0x1171a0, kind = "replace_function", handler = "hook_shadowman_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc0460cc, 0xafb10014, 0x409021]},
-  {symbol = "__osGetSR", vram = 0x118320, kind = "replace_function", handler = "hook_shadowman_get_sr", expected_words = [0x40026000, 0x3e00008, 0x0]},
-  {symbol = "boot_tlb", vram = 0x80000434, kind = "replace_function", handler = "hook_shadowman_boot_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x40801800, 0x0, 0x42000002, 0x0, 0x0, 0x0, 0x0, 0x40885000, 0x0, 0x1480fff1, 0x2084ffff, 0x2404001f, 0x3c05001f, 0x34a5e000, 0x24060000, 0x2407ffff, 0x24090000, 0xafa90010, 0x24080007, 0xc00012d, 0xafa80014, 0x3c040010, 0x24843060, 0x80f809, 0x0]},
-  {symbol = "osInvalDCache", vram = 0x118370, kind = "replace_function", handler = "hook_shadowman_cache", expected_words = [0x18a0001a, 0x0, 0x240b2000, 0xab082b, 0x10200018, 0x804021, 0x854821, 0x109082b]},
-  {symbol = "osInvalICache", vram = 0x118410, kind = "replace_function", handler = "hook_shadowman_cache", expected_words = [0x18a0000e, 0x240b4000, 0xab082b, 0x1020000d, 0x804021, 0x854821, 0x109082b, 0x10200007]},
-  {symbol = "osMapTLB", vram = 0x1079e0, kind = "replace_function", handler = "hook_shadowman_map_tlb", expected_words = [0x8fb80010, 0x20080007, 0x8fb90014, 0x200fffff, 0x328c824, 0xf84824, 0x112f0019, 0x37390018]},
-  {symbol = "osSetIntMask", vram = 0x118570, kind = "replace_function", handler = "hook_shadowman_int_mask", expected_words = [0x400c6000, 0x3c088003, 0x250885c8, 0x3182ff01, 0x8d0b0000, 0x0, 0x2401ffff, 0x1614026]},
-  {symbol = "osWritebackDCache", vram = 0x118630, kind = "replace_function", handler = "hook_shadowman_cache", expected_words = [0x18a0000e, 0x240b2000, 0xab082b, 0x1020000d, 0x804021, 0x854821, 0x109082b, 0x10200007]},
-  {symbol = "osPiRawStartDma", vram = 0x115590, kind = "replace_function", handler = "hook_shadowman_pi_raw_dma", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafb10014, 0xa08821, 0xc02021, 0x3c02a460, 0x34420010]},
-  {symbol = "osUnmapTLB", vram = 0x107a60, kind = "replace_function", handler = "hook_shadowman_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x40801800, 0x0, 0x42000002]},
-  {symbol = "osMotorInit", vram = 0x114878, kind = "replace_function", handler = "hook_shadowman_motor_init", expected_words = [0x27bdff80, 0xafb00060, 0x808021, 0xafb50074, 0xc0a821, 0x240600fe, 0x2404001f, 0x27a30037]},
-  {symbol = "osMotorStop", vram = 0x1144f0, kind = "replace_function", handler = "hook_shadowman_motor_stop", expected_words = [0x27bdffb8, 0xafb1003c, 0x808821, 0xafbf0040, 0xafb00038, 0x8e220008, 0x21080, 0x3c018002]},
-  {symbol = "osAiDeviceBusy", vram = 0x113f30, kind = "replace_function", handler = "hook_shadowman_ai_busy", expected_words = [0x3c02a450, 0x3442000c, 0x8c420000, 0x3e00008, 0x28420000]},
+  {symbol = "osInitialize", vram = 0x116920, kind = "replace_function", handler = "recomp_shadowman_initialize", expected_words = [0x27bdffe0, 0x24020001, 0xafbf0018, 0xafa00014, 0x3c018005, 0xac2203a8, 0xc0460c8, 0x0]},
+  {symbol = "osStartThread", vram = 0x1171a0, kind = "replace_function", handler = "recomp_shadowman_start_thread", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc0460cc, 0xafb10014, 0x409021]},
+  {symbol = "__osGetSR", vram = 0x118320, kind = "replace_function", handler = "recomp_shadowman_get_sr", expected_words = [0x40026000, 0x3e00008, 0x0]},
+  {symbol = "boot_tlb", vram = 0x80000434, kind = "replace_function", handler = "recomp_shadowman_boot_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x40801800, 0x0, 0x42000002, 0x0, 0x0, 0x0, 0x0, 0x40885000, 0x0, 0x1480fff1, 0x2084ffff, 0x2404001f, 0x3c05001f, 0x34a5e000, 0x24060000, 0x2407ffff, 0x24090000, 0xafa90010, 0x24080007, 0xc00012d, 0xafa80014, 0x3c040010, 0x24843060, 0x80f809, 0x0]},
+  {symbol = "osInvalDCache", vram = 0x118370, kind = "replace_function", handler = "recomp_shadowman_cache", expected_words = [0x18a0001a, 0x0, 0x240b2000, 0xab082b, 0x10200018, 0x804021, 0x854821, 0x109082b]},
+  {symbol = "osInvalICache", vram = 0x118410, kind = "replace_function", handler = "recomp_shadowman_cache", expected_words = [0x18a0000e, 0x240b4000, 0xab082b, 0x1020000d, 0x804021, 0x854821, 0x109082b, 0x10200007]},
+  {symbol = "osMapTLB", vram = 0x1079e0, kind = "replace_function", handler = "recomp_shadowman_map_tlb", expected_words = [0x8fb80010, 0x20080007, 0x8fb90014, 0x200fffff, 0x328c824, 0xf84824, 0x112f0019, 0x37390018]},
+  {symbol = "osSetIntMask", vram = 0x118570, kind = "replace_function", handler = "recomp_shadowman_int_mask", expected_words = [0x400c6000, 0x3c088003, 0x250885c8, 0x3182ff01, 0x8d0b0000, 0x0, 0x2401ffff, 0x1614026]},
+  {symbol = "osWritebackDCache", vram = 0x118630, kind = "replace_function", handler = "recomp_shadowman_cache", expected_words = [0x18a0000e, 0x240b2000, 0xab082b, 0x1020000d, 0x804021, 0x854821, 0x109082b, 0x10200007]},
+  {symbol = "osPiRawStartDma", vram = 0x115590, kind = "replace_function", handler = "recomp_shadowman_pi_raw_dma", expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafb10014, 0xa08821, 0xc02021, 0x3c02a460, 0x34420010]},
+  {symbol = "osUnmapTLB", vram = 0x107a60, kind = "replace_function", handler = "recomp_shadowman_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x40801800, 0x0, 0x42000002]},
+  {symbol = "osMotorInit", vram = 0x114878, kind = "replace_function", handler = "recomp_shadowman_motor_init", expected_words = [0x27bdff80, 0xafb00060, 0x808021, 0xafb50074, 0xc0a821, 0x240600fe, 0x2404001f, 0x27a30037]},
+  {symbol = "osMotorStop", vram = 0x1144f0, kind = "replace_function", handler = "recomp_shadowman_motor_stop", expected_words = [0x27bdffb8, 0xafb1003c, 0x808821, 0xafbf0040, 0xafb00038, 0x8e220008, 0x21080, 0x3c018002]},
+  {symbol = "osAiDeviceBusy", vram = 0x113f30, kind = "replace_function", handler = "recomp_shadowman_ai_busy", expected_words = [0x3c02a450, 0x3442000c, 0x8c420000, 0x3e00008, 0x28420000]},
 ]
 
 [game]

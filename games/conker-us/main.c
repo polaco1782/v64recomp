@@ -137,31 +137,31 @@ static void prepare_call(Runtime *rt, uint32_t address) {
         resolve(rt, address, 4, false, &physical);
     }
 }
-void hook_conker_start_thread(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_start_thread(Runtime *rt, MipsContext *ctx) {
     Game *game = (Game *)rt;
     if (game->booting)
         recomp_game_require((uint32_t)ctx->gpr[4] == 0x800318b0, "Conker unexpected boot thread",
                             (uint32_t)ctx->gpr[4]);
-    hook_os_start_thread(rt, ctx);
+    recomp_os_start_thread(rt, ctx);
     if (game->booting)
         longjmp(game->boot_return, 1);
 }
-void hook_conker_boot_tlb(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_boot_tlb(Runtime *rt, MipsContext *ctx) {
     /* The cartridge's 4 MiB odd half is absent with the base 4 MiB memory model. */
     recomp_map_pages(rt, 0, 0x7fe000, 0x10000000, 0, UINT32_MAX);
     recomp_lookup(rt, 0x10001050)(rt, ctx);
 }
-void hook_conker_unmap_range(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_unmap_range(Runtime *rt, MipsContext *ctx) {
     unsigned first = (uint32_t)ctx->gpr[4], last = (uint32_t)ctx->gpr[5];
     recomp_game_require(first <= last && last < 32, "Conker invalid unmap range", first);
     for (unsigned i = first; i <= last; i++)
         rt->page_mappings[i] = (RecompPageMapping){0};
 }
-void hook_conker_get_status(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_get_status(Runtime *rt, MipsContext *ctx) {
     Game *game = (Game *)rt;
     mips_set(ctx, 2, mips_s32(game->boot_status));
 }
-void hook_conker_set_status(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_set_status(Runtime *rt, MipsContext *ctx) {
     Game *game = (Game *)rt;
     uint32_t status = (uint32_t)ctx->gpr[4];
     recomp_game_require((status & 0x24000000) == 0x24000000, "Conker requires CU1 and independent FPRs", status);
@@ -169,7 +169,7 @@ void hook_conker_set_status(Runtime *rt, MipsContext *ctx) {
     ctx->fpu_fr1 = true;
     rt->interrupts_disabled = !(status & 1);
 }
-void hook_conker_rom_read(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_rom_read(Runtime *rt, MipsContext *ctx) {
     uint32_t offset = (uint32_t)ctx->gpr[4];
     uint32_t destination = (uint32_t)ctx->gpr[5];
     uint32_t bytes = ((uint32_t)ctx->gpr[6] + 1) & ~1u;
@@ -183,7 +183,7 @@ void hook_conker_rom_read(Runtime *rt, MipsContext *ctx) {
     if (recomp_load(rt, 0x8003a575, 1))
         recomp_thread_start(rt, 0x80035910);
 }
-void hook_conker_cache_init(Runtime *rt, MipsContext *ctx) {
+void recomp_conker_cache_init(Runtime *rt, MipsContext *ctx) {
     /* Replace privileged Context/Wired setup; preserve the original game allocator,
      * argument layout and allocation failure retry, rather than reserving guessed RAM. */
     unsigned count = (unsigned)ctx->gpr[4];

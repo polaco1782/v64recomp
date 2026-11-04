@@ -111,7 +111,7 @@ static bool device_write(Runtime *rt, uint32_t bus, unsigned bytes, uint64_t val
         case 0x04500004: {
             call.gpr[4] = demo->ai_ram;
             call.gpr[5] = word & 0x3fff8;
-            hook_os_ai_set_next_buffer(rt, &call);
+            recomp_os_ai_set_next_buffer(rt, &call);
             recomp_game_require(call.gpr[2] == 0, "Bad Apple AI FIFO full", bus);
             RecompAiState ai = recomp_ai_state(rt);
             uint64_t duration = (uint64_t)(call.gpr[5] / 4) * ai.dac_rate * UINT64_C(1000000000);
@@ -126,7 +126,7 @@ static bool device_write(Runtime *rt, uint32_t bus, unsigned bytes, uint64_t val
         case 0x04500010:
             demo->dac_rate = (word & 0x3fff) + 1;
             call.gpr[4] = 48681812 / demo->dac_rate;
-            hook_os_ai_set_frequency(rt, &call);
+            recomp_os_ai_set_frequency(rt, &call);
             recomp_game_require(recomp_ai_state(rt).dac_rate == demo->dac_rate, "Bad Apple AI divisor mismatch", bus);
             return true;
         case 0x04500014:
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
      * AI service with NTSC timing before forwarding the verified AI accesses. */
     recomp_store(&rt, 0x80000300, 1, 4);
     MipsContext init = {0};
-    hook_os_initialize(&rt, &init);
+    recomp_os_initialize(&rt, &init);
     rt.device_userdata = &demo;
     rt.device_read = device_read;
     rt.device_write = device_write;

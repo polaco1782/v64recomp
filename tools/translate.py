@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from textwrap import indent
 
-from common import RecompError, load_metadata, load_profile, load_rom, validate_hook_prefix, write_json
+from common import RecompError, load_metadata, load_profile, load_rom, validate_recomp_prefix, write_json
 from emit import FunctionRegistry, analyze, cname, decode_function, direct_call_targets, emit_function, instruction_addresses, log_emission, resolve_function, target
 from native_hooks import resolve_native_hooks
 
@@ -46,7 +46,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         if len(matches) != 1:
             raise RecompError(f"hook symbol missing or ambiguous: {hook['symbol']}")
         f = matches[0]
-        validate_hook_prefix(rom, f['rom_offset'], f['vram'], f['size'], hook)
+        validate_recomp_prefix(rom, f['rom_offset'], f['vram'], f['size'], hook)
         key = (f['section'], f['vram'])
         if key in hooks:
             raise RecompError(f"duplicate hook: {hook['symbol']}")
@@ -62,7 +62,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         if len(matches) != 1:
             raise RecompError(f"boundary symbol missing or ambiguous: {boundary['symbol']}")
         f = matches[0]; key = (f['section'], f['vram'])
-        validate_hook_prefix(rom, f['rom_offset'], f['vram'], f['size'], boundary)
+        validate_recomp_prefix(rom, f['rom_offset'], f['vram'], f['size'], boundary)
         if key in hooks or key in boundaries:
             raise RecompError(f"duplicate hook/boundary: {boundary['symbol']}")
         boundaries[key] = boundary['reason']

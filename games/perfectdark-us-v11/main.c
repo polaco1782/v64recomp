@@ -44,17 +44,17 @@ static void verify(Runtime *rt, uint32_t address, size_t size, const uint8_t exp
     free(raw);
     recomp_game_require(valid, "Perfect Dark loaded image fingerprint mismatch", address);
 }
-void hook_pd_boot_tlb(Runtime *rt, MipsContext *ctx) {
+void recomp_pd_boot_tlb(Runtime *rt, MipsContext *ctx) {
     recomp_map_pages(rt, 0, 0x7fe000, 0x70000000, 0, 0x400000);
     recomp_lookup(rt, 0x700016cc)(rt, ctx);
 }
-void hook_pd_unmap_range(Runtime *rt, MipsContext *ctx) {
+void recomp_pd_unmap_range(Runtime *rt, MipsContext *ctx) {
     unsigned first = (uint32_t)ctx->gpr[4], last = (uint32_t)ctx->gpr[5];
     recomp_game_require(first <= last && last < 32, "Perfect Dark invalid TLB range", first);
     for (unsigned i = first; i <= last; i++)
         rt->page_mappings[i] = (RecompPageMapping){0};
 }
-void hook_pd_boot_rom_read(Runtime *rt, MipsContext *ctx) {
+void recomp_pd_boot_rom_read(Runtime *rt, MipsContext *ctx) {
     /* mtx_get_obfuscated_rom_base serializes a raw PI read of the immutable
      * boot ROM word. Native DMA is already serialized by the runtime. */
     uint32_t base = (uint32_t)recomp_load(rt, 0x80000308, 4);
@@ -65,7 +65,7 @@ void hook_pd_boot_rom_read(Runtime *rt, MipsContext *ctx) {
     uint32_t value = (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3];
     mips_set(ctx, 2, mips_s32(value));
 }
-void hook_pd_enter_inflate(Runtime *rt, MipsContext *ctx) {
+void recomp_pd_enter_inflate(Runtime *rt, MipsContext *ctx) {
     if (!rt->section_loaded[2]) {
         verify(rt, PD_INFLATE_ADDRESS, PD_INFLATE_SIZE, pd_inflate_sha256);
         rt->section_loaded[2] = true;

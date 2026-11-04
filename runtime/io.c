@@ -274,7 +274,7 @@ RecompIOStats recomp_io_stats(Runtime *rt) {
     return io(rt)->stats;
 }
 
-void hook_os_pfs_init_pak(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pfs_init_pak(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     uint32_t pfs = arg(ctx, 1), port = arg(ctx, 2);
@@ -325,7 +325,7 @@ void hook_os_pfs_init_pak(Runtime *rt, MipsContext *ctx) {
                pak->path ? pak->path : "memory");
     result(ctx, 0);
 }
-void hook_os_pfs_is_plug(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pfs_is_plug(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     uint8_t mask = 0;
@@ -335,7 +335,7 @@ void hook_os_pfs_is_plug(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, arg(ctx, 1), mask, 1);
     result(ctx, 0);
 }
-void hook_os_pfs_get_status(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pfs_get_status(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     unsigned port = arg(ctx, 1);
     result(ctx, port >= 4 ? PFS_ERR_INVALID : pak_present(io(rt), port) ? 0 : PFS_ERR_NOPACK);
@@ -396,21 +396,21 @@ static void transfer_pak(Runtime *rt, MipsContext *ctx, bool write_data) {
     }
     result(ctx, 0);
 }
-void hook_os_cont_ram_read(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_ram_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     transfer_pak(rt, ctx, false);
 }
-void hook_os_cont_ram_write(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_ram_write(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     transfer_pak(rt, ctx, true);
 }
-void hook_os_cont_set_ch(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_set_ch(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     unsigned channels = (uint8_t)arg(ctx, 0);
     io(rt)->max_channels = channels > 4 ? 4 : (uint8_t)channels;
     result(ctx, 0);
 }
-void hook_os_motor_init(Runtime *rt, MipsContext *ctx) {
+void recomp_os_motor_init(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     (void)io(rt);
     uint32_t pfs = arg(ctx, 1), channel = arg(ctx, 2);
@@ -425,17 +425,17 @@ void hook_os_motor_init(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, pfs + 0x65, 0x80, 1);
     result(ctx, pak_present(io(rt), channel) ? PFS_ERR_DEVICE : PFS_ERR_NOPACK);
 }
-void hook_os_motor_start(Runtime *rt, MipsContext *ctx) {
+void recomp_os_motor_start(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     (void)io(rt);
     result(ctx, 5); /* PFS_ERR_INVALID: osMotorInit could not initialize a Pak. */
 }
-void hook_os_motor_stop(Runtime *rt, MipsContext *ctx) {
+void recomp_os_motor_stop(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
-    hook_os_motor_start(rt, ctx);
+    recomp_os_motor_start(rt, ctx);
 }
 
-void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_init(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (s->initialized) {
@@ -462,7 +462,7 @@ void hook_os_cont_init(Runtime *rt, MipsContext *ctx) {
     /* SDK initialization consumes its own SI notifications; none are left for the caller. */
     result(ctx, 0);
 }
-void hook_os_cont_reset(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_reset(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized)
@@ -486,7 +486,7 @@ void hook_os_cont_reset(Runtime *rt, MipsContext *ctx) {
     /* osContReset waits for and consumes all of its own SI notifications. */
     result(ctx, 0);
 }
-void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized)
@@ -508,7 +508,7 @@ void hook_os_cont_start_read(Runtime *rt, MipsContext *ctx) {
     s->stats.reads_started++;
     result(ctx, 0);
 }
-void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized)
@@ -526,7 +526,7 @@ void hook_os_cont_get_read(Runtime *rt, MipsContext *ctx) {
         }
     }
 }
-void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized)
@@ -548,7 +548,7 @@ void hook_os_cont_start_query(Runtime *rt, MipsContext *ctx) {
     s->stats.queries_started++;
     result(ctx, 0);
 }
-void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     if (!s->initialized)
@@ -563,7 +563,7 @@ void hook_os_cont_get_query(Runtime *rt, MipsContext *ctx) {
         recomp_store(rt, status + n * 4 + 3, pads[n].connected ? 0 : 8, 1);
     }
 }
-void hook_os_eeprom_probe(Runtime *rt, MipsContext *ctx) {
+void recomp_os_eeprom_probe(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompIO *s = io(rt);
     recomp_ram_address(rt, arg(ctx, 0), RECOMP_QUEUE_BYTES);
@@ -683,19 +683,19 @@ static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data, uint
     result(ctx, 0);
     RECOMP_LOG("save", "EEPROM %s complete result=0", write_data ? "write" : "read");
 }
-void hook_os_eeprom_long_read(Runtime *rt, MipsContext *ctx) {
+void recomp_os_eeprom_long_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     transfer_eeprom(rt, ctx, false, arg(ctx, 3));
 }
-void hook_os_eeprom_long_write(Runtime *rt, MipsContext *ctx) {
+void recomp_os_eeprom_long_write(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     transfer_eeprom(rt, ctx, true, arg(ctx, 3));
 }
-void hook_os_eeprom_read(Runtime *rt, MipsContext *ctx) {
+void recomp_os_eeprom_read(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     transfer_eeprom(rt, ctx, false, 8);
 }
-void hook_os_eeprom_write(Runtime *rt, MipsContext *ctx) {
+void recomp_os_eeprom_write(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     transfer_eeprom(rt, ctx, true, 8);
 }

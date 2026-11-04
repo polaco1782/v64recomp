@@ -252,6 +252,50 @@ static inline bool recomp_direct_ram_read(uint32_t address) {
     return (address & UINT32_C(0xdf800000)) == UINT32_C(0x80000000);
 }
 
+/* A group may bypass per-access dispatch only when its complete span stays in
+ * one direct RAM alias. Subtraction keeps the test safe at segment/wrap edges.
+ * Like the individual Release fast paths, this assumes valid guest RAM access. */
+static inline bool recomp_direct_ram_span(uint32_t address, uint32_t bytes) {
+    uint32_t start = (address & UINT32_C(0xdfffffff)) - UINT32_C(0x80000000);
+    return bytes <= UINT32_C(0x800000) && start <= UINT32_C(0x800000) - bytes;
+}
+
+/* Physical RDRAM offsets, already checked by a direct-RAM guard. Keep the
+ * word-swapped layout and memcpy aliasing rules shared with individual accesses. */
+static inline uint8_t recomp_ram_load8(Runtime *rt, uint32_t p) {
+    return rt->rdram[p ^ 3];
+}
+static inline void recomp_ram_store8(Runtime *rt, uint32_t p, uint8_t value) {
+    rt->rdram[p ^ 3] = value;
+}
+#if RECOMP_LITTLE_ENDIAN_HOST
+static inline uint16_t recomp_ram_load16(Runtime *rt, uint32_t p) {
+    uint16_t value;
+    memcpy(&value, rt->rdram + (p ^ 2), 2);
+    return value;
+}
+static inline uint32_t recomp_ram_load32(Runtime *rt, uint32_t p) {
+    uint32_t value;
+    memcpy(&value, rt->rdram + p, 4);
+    return value;
+}
+static inline uint64_t recomp_ram_load64(Runtime *rt, uint32_t p) {
+    uint64_t value;
+    memcpy(&value, rt->rdram + p, 8);
+    return (value << 32) | (value >> 32);
+}
+static inline void recomp_ram_store16(Runtime *rt, uint32_t p, uint16_t value) {
+    memcpy(rt->rdram + (p ^ 2), &value, 2);
+}
+static inline void recomp_ram_store32(Runtime *rt, uint32_t p, uint32_t value) {
+    memcpy(rt->rdram + p, &value, 4);
+}
+static inline void recomp_ram_store64(Runtime *rt, uint32_t p, uint64_t value) {
+    uint64_t swapped = (value << 32) | (value >> 32);
+    memcpy(rt->rdram + p, &swapped, 8);
+}
+#endif
+
 uint8_t recomp_load8_shared(Runtime *, uint32_t);
 uint16_t recomp_load16_shared(Runtime *, uint32_t);
 uint32_t recomp_load32_shared(Runtime *, uint32_t);
@@ -263,40 +307,31 @@ uint64_t recomp_load64_shared(Runtime *, uint32_t);
 static inline uint8_t recomp_load8(Runtime *rt, uint32_t address) {
 #ifndef RECOMP_DEBUG
     if (recomp_direct_ram_read(address))
-        return rt->rdram[(address & UINT32_C(0x1fffffff)) ^ 3];
+        return recomp_ram_load8(rt, address & UINT32_C(0x1fffffff));
 #endif
     return recomp_load8_shared(rt, address);
 }
 
 static inline uint16_t recomp_load16(Runtime *rt, uint32_t address) {
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
-    if (recomp_direct_ram_read(address)) {
-        uint16_t value;
-        memcpy(&value, rt->rdram + ((address & UINT32_C(0x1fffffff)) ^ 2), 2);
-        return value;
-    }
+    if (recomp_direct_ram_read(address))
+        return recomp_ram_load16(rt, address & UINT32_C(0x1fffffff));
 #endif
     return recomp_load16_shared(rt, address);
 }
 
 static inline uint32_t recomp_load32(Runtime *rt, uint32_t address) {
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
-    if (recomp_direct_ram_read(address)) {
-        uint32_t value;
-        memcpy(&value, rt->rdram + (address & UINT32_C(0x1fffffff)), 4);
-        return value;
-    }
+    if (recomp_direct_ram_read(address))
+        return recomp_ram_load32(rt, address & UINT32_C(0x1fffffff));
 #endif
     return recomp_load32_shared(rt, address);
 }
 
 static inline uint64_t recomp_load64(Runtime *rt, uint32_t address) {
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
-    if (recomp_direct_ram_read(address)) {
-        uint64_t value;
-        memcpy(&value, rt->rdram + (address & UINT32_C(0x1fffffff)), 8);
-        return (value << 32) | (value >> 32);
-    }
+    if (recomp_direct_ram_read(address))
+        return recomp_ram_load64(rt, address & UINT32_C(0x1fffffff));
 #endif
     return recomp_load64_shared(rt, address);
 }
@@ -319,7 +354,7 @@ static inline void recomp_store8(Runtime *rt, uint32_t address, uint8_t value) {
 #ifndef RECOMP_DEBUG
     if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 1);
-        rt->rdram[p ^ 3] = value;
+        recomp_ram_store8(rt, p, value);
         return;
     }
 #endif
@@ -330,7 +365,7 @@ static inline void recomp_store16(Runtime *rt, uint32_t address, uint16_t value)
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
     if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 2);
-        memcpy(rt->rdram + (p ^ 2), &value, 2);
+        recomp_ram_store16(rt, p, value);
         return;
     }
 #endif
@@ -341,7 +376,7 @@ static inline void recomp_store32(Runtime *rt, uint32_t address, uint32_t value)
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
     if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 4);
-        memcpy(rt->rdram + p, &value, 4);
+        recomp_ram_store32(rt, p, value);
         return;
     }
 #endif
@@ -352,8 +387,7 @@ static inline void recomp_store64(Runtime *rt, uint32_t address, uint64_t value)
 #if RECOMP_LITTLE_ENDIAN_HOST && !defined(RECOMP_DEBUG)
     if (recomp_direct_ram_read(address)) {
         uint32_t p = recomp_ram_address_write(rt, address, 8);
-        uint64_t swapped = (value << 32) | (value >> 32);
-        memcpy(rt->rdram + p, &swapped, 8);
+        recomp_ram_store64(rt, p, value);
         return;
     }
 #endif

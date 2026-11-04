@@ -65,7 +65,7 @@ static void prepare_call(Runtime *rt, uint32_t address) {
     }
 }
 /* Original 0x80000450 waits for PI, then copies size/4 cartridge words. */
-void hook_turok_rom_read(Runtime *rt, MipsContext *ctx) {
+void recomp_turok_rom_read(Runtime *rt, MipsContext *ctx) {
     uint32_t offset = (uint32_t)ctx->gpr[4], destination = (uint32_t)ctx->gpr[5];
     uint32_t size = (uint32_t)ctx->gpr[6] & ~3u;
     recomp_game_require(offset <= BOOT_ROM_SIZE && size <= BOOT_ROM_SIZE - offset,

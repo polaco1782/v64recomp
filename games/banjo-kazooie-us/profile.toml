@@ -1,10 +1,10 @@
 # Banjo-Kazooie US revision 0. All offsets below are original cartridge offsets.
 hooks = [
   # Handwritten bkGetSR: used by the VI worker to test the pre-NMI mask.
-  {symbol = "bkGetSR", vram = 0x8025afe0, kind = "replace_function", handler = "hook_banjo_get_sr", expected_words = [0x40026000, 0x03e00008, 0x00000000]},
+  {symbol = "bkGetSR", vram = 0x8025afe0, kind = "replace_function", handler = "recomp_banjo_get_sr", expected_words = [0x40026000, 0x03e00008, 0x00000000]},
   # The native boot does not execute IPL3 on an RSP. Model its two retained
   # memory words at this game-specific hardware boundary, then use guest DMA.
-  {symbol = "banjo_ucode_load", vram = 0x80255c30, kind = "replace_function", handler = "hook_banjo_ucode_load", expected_words = [0x27bdffe8, 0xafbf0014, 0x3c0ea400, 0x8dcf0000, 0x3c028028, 0x2401ffff, 0x24423384, 0x01e1c026, 0x13000006, 0xac580000, 0x3c038028, 0x24633388, 0x24080001, 0x10000004, 0xac680000, 0x3c038028, 0x24633388, 0xac600000, 0x3c09a400, 0x8d2a1000, 0x3c028028, 0x24423380, 0x394b17d7, 0x11600003, 0xac4b0000, 0x10000002, 0x24020002, 0x00001025, 0x8c6d0000, 0x3c048028, 0x24843280, 0x01a27025, 0x15c00005, 0xac6e0000, 0x3c05b000, 0x34a50b70, 0x0c09017c, 0x24060100, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]},
+  {symbol = "banjo_ucode_load", vram = 0x80255c30, kind = "replace_function", handler = "recomp_banjo_ucode_load", expected_words = [0x27bdffe8, 0xafbf0014, 0x3c0ea400, 0x8dcf0000, 0x3c028028, 0x2401ffff, 0x24423384, 0x01e1c026, 0x13000006, 0xac580000, 0x3c038028, 0x24633388, 0x24080001, 0x10000004, 0xac680000, 0x3c038028, 0x24633388, 0xac600000, 0x3c09a400, 0x8d2a1000, 0x3c028028, 0x24423380, 0x394b17d7, 0x11600003, 0xac4b0000, 0x10000002, 0x24020002, 0x00001025, 0x8c6d0000, 0x3c048028, 0x24843280, 0x01a27025, 0x15c00005, 0xac6e0000, 0x3c05b000, 0x34a50b70, 0x0c09017c, 0x24060100, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]},
 ]
 [game]
 name = "Banjo-Kazooie (US, revision 0)"

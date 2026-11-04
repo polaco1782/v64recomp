@@ -31,7 +31,7 @@ static uint32_t oot_relocated(Runtime *rt, uint32_t section, uint32_t address) {
     return address;
 }
 
-void hook_oot_overlay_relocate(Runtime *rt, MipsContext *ctx) {
+void recomp_oot_overlay_relocate(Runtime *rt, MipsContext *ctx) {
     uint32_t base = (uint32_t)ctx->gpr[4], table = (uint32_t)ctx->gpr[5], vram = (uint32_t)ctx->gpr[6];
     OotOverlay *o = NULL;
     for (size_t i = 0; i < sizeof(oot_overlays) / sizeof(oot_overlays[0]); i++)

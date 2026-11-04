@@ -132,7 +132,7 @@ void rayman2_pad_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     if (look) {
         // C-up uses the original analog look path, including its pitch limits.
         // Each delta is consumed at the guest input update, not presentation rate.
-        double x = fmax(-80, fmin(80, frame.dx * sensitivity * 50 * -1));
+        double x = fmax(-80, fmin(80, frame.dx * sensitivity * 50 * 1));
         double y = fmax(-80, fmin(80, -frame.dy * sensitivity * 50));
         recomp_store8(rt, pad + 2, (uint8_t)(int8_t)lround(x));
         recomp_store8(rt, pad + 3, (uint8_t)(int8_t)lround(y));

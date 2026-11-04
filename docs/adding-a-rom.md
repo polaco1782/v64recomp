@@ -513,7 +513,7 @@ First classify the failure:
 | Message or symptom | Where to investigate |
 | --- | --- |
 | Compiler says an identifier is undeclared | Missing C declaration/header, or wrong generated config. |
-| Linker says `undefined reference to hook_...` | Native handler absent, wrong linkage, or source/library omitted from CMake. |
+| Linker says `undefined reference to recomp_...` | Native handler absent, wrong linkage, or source/library omitted from CMake. |
 | Generator says symbol/root missing or ambiguous | Names/aliases, mappings, checked roots and profile inheritance. |
 | Runtime says `unregistered or unloaded function` | Guest target lacks an entry, or its section/overlay is not active. |
 | Runtime says `ambiguous loaded function` | More than one active registry entry for the canonical guest address. |
@@ -521,10 +521,10 @@ First classify the failure:
 For a missing host symbol, search declaration, implementation and build wiring:
 
 ```sh
-rg -n 'hook_example' include runtime backends games tools
+rg -n 'recomp_example' include runtime backends games tools
 cmake --build build/newgame-us-debug --verbose
 # Replace this archive with the library expected to supply the symbol:
-nm -A --defined-only build/newgame-us-debug/librecomp_runtime.a | rg 'hook_example'
+nm -A --defined-only build/newgame-us-debug/librecomp_runtime.a | rg 'recomp_example'
 ```
 
 If the declaration and implementation exist, verify the defining `.c` is compiled

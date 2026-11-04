@@ -25,7 +25,7 @@ static uint32_t interrupt_mask = 0x3fff01;
 static bool initialized;
 static void (*ge_initialize_services)(Runtime *);
 
-void hook_ge_boot_tlb(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_boot_tlb(Runtime *rt, MipsContext *ctx) {
     /* Original startup installs index 1, 4 MiB even page, invalid odd page. */
     recomp_map_pages(rt, 1, 0x7fe000, 0x70000000, 0, UINT32_MAX);
     mips_set(ctx, 2, 1);
@@ -39,7 +39,7 @@ void hook_ge_boot_tlb(Runtime *rt, MipsContext *ctx) {
     recomp_lookup(rt, 0x70000510)(rt, ctx);
 }
 
-void hook_ge_enter_inflate(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_enter_inflate(Runtime *rt, MipsContext *ctx) {
     /* The translated init() already copied this code to 0x70200000. Bind the
      * compiled section only after checking every relocated byte against ROM. */
     for (uint32_t i = 0; i < BOOT_INFLATE_SIZE; i += 4) {
@@ -53,15 +53,15 @@ void hook_ge_enter_inflate(Runtime *rt, MipsContext *ctx) {
     recomp_lookup(rt, 0x7020141c)(rt, ctx);
 }
 
-void hook_ge_os_initialize(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_os_initialize(Runtime *rt, MipsContext *ctx) {
     recomp_game_require(!initialized, "GoldenEye repeated startup", ctx->pc);
     initialized = true;
     if (ge_initialize_services)
         ge_initialize_services(rt);
-    hook_os_initialize(rt, ctx);
+    recomp_os_initialize(rt, ctx);
 }
 
-void hook_ge_prepare_context(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_prepare_context(Runtime *rt, MipsContext *ctx) {
     /* CPU Context/Wired registers select the original exception handler.
      * No CPU exceptions execute in the native runtime. The startup driver
      * installs a native resolver for the 0x7f... game page cache. */
@@ -69,13 +69,13 @@ void hook_ge_prepare_context(Runtime *rt, MipsContext *ctx) {
     (void)ctx;
 }
 
-void hook_ge_unmap_tlb(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_unmap_tlb(Runtime *rt, MipsContext *ctx) {
     uint32_t index = (uint32_t)ctx->gpr[4];
     recomp_game_require(index < 32, "GoldenEye invalid unmap index", index);
     rt->page_mappings[index] = (RecompPageMapping){0};
 }
 
-void hook_ge_pi_raw_dma(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_pi_raw_dma(Runtime *rt, MipsContext *ctx) {
     uint32_t direction = (uint32_t)ctx->gpr[4], offset = (uint32_t)ctx->gpr[5];
     uint32_t address = (uint32_t)ctx->gpr[6], bytes = (uint32_t)ctx->gpr[7];
     if (offset >= 0x10000000 && offset < 0x20000000)
@@ -86,49 +86,49 @@ void hook_ge_pi_raw_dma(Runtime *rt, MipsContext *ctx) {
     mips_set(ctx, 2, 0);
 }
 
-void hook_ge_pi_status(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_pi_status(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     mips_set(ctx, 2, 0); /* Raw ROM copy above completes synchronously. */
 }
 
-void hook_ge_cache(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_cache(Runtime *rt, MipsContext *ctx) {
     /* SDK cache invalidation accepts entire virtual address ranges as well
      * as loaded pointers. Native RAM/backends share coherent host storage. */
     (void)rt;
     (void)ctx;
 }
-void hook_ge_tlb_hi(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_tlb_hi(Runtime *rt, MipsContext *ctx) {
     unsigned index = (unsigned)ctx->gpr[4];
     recomp_game_require(index < 32, "GoldenEye TLB index invalid", index);
     RecompPageMapping *m = &rt->page_mappings[index];
     mips_set(ctx, 2, mips_s32(m->installed ? m->virtual_base : 0x80000000));
 }
-void hook_ge_int_mask(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_int_mask(Runtime *rt, MipsContext *ctx) {
     uint32_t previous = interrupt_mask;
     interrupt_mask = (uint32_t)ctx->gpr[4];
     rt->interrupts_disabled = !(interrupt_mask & 1);
     mips_set(ctx, 2, mips_s32(previous));
 }
-void hook_ge_dp_counters(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_dp_counters(Runtime *rt, MipsContext *ctx) {
     /* No RDP work precedes the startup graphics boundary. */
     uint32_t address = (uint32_t)ctx->gpr[4];
     for (unsigned i = 0; i < 4; i++)
         recomp_store(rt, address + i * 4, 0, 4);
 }
-void hook_ge_dp_status(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_dp_status(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     (void)ctx;
     /* RT64 executes RDP tasks synchronously; counter reset, freeze and flush
      * requests do not leave an asynchronous hardware operation outstanding. */
 }
-void hook_ge_vi_framebuffer(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_vi_framebuffer(Runtime *rt, MipsContext *ctx) {
     mips_set(ctx, 2, mips_s32(recomp_vi_state(rt).framebuffer));
 }
-void hook_ge_vi_repeat_line(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_vi_repeat_line(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     recomp_game_require((uint8_t)ctx->gpr[4] == 0, "GoldenEye repeated VI line requires native support", ctx->pc);
 }
-void hook_ge_set_compare(Runtime *rt, MipsContext *ctx) {
+void recomp_ge_set_compare(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     (void)ctx;
     /* Native osSetTimer owns deadlines; CPU Compare is never scheduled. */

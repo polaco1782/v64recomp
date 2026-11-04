@@ -65,13 +65,13 @@ static void oot_prepare_call(Runtime *rt, uint32_t address) {
     }
 #endif
 }
-void hook_oot_cic_boot_task(Runtime *rt, MipsContext *ctx) {
+void recomp_oot_cic_boot_task(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, 0x80008ef8, 0, 4);
     recomp_store(rt, 0x80008efc, 0, 4);
     mips_set(ctx, 2, 0);
 }
-void hook_oot_start_thread(Runtime *rt, MipsContext *ctx) {
-    hook_os_start_thread(rt, ctx);
+void recomp_oot_start_thread(Runtime *rt, MipsContext *ctx) {
+    recomp_os_start_thread(rt, ctx);
     /* Fallback if the handoff did not preempt. The normal path retires IPL
      * from mainproc's first call above; IPL must never resume guest code. */
     if (recomp_thread_id(rt, 0) == -1)

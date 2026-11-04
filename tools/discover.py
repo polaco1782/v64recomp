@@ -8,7 +8,7 @@ import hashlib
 from pathlib import Path
 import sys
 
-from common import RecompError, load_profile, load_rom, validate_hook_prefix, write_json, shared_return_delay_slot
+from common import RecompError, load_profile, load_rom, validate_recomp_prefix, write_json, shared_return_delay_slot
 from code_inventory import load_inventory, load_entry_inventory, complete_code
 from emit import constant_condition, decode, target
 from native_hooks import classify_native_bodies, resolve_native_hooks
@@ -153,7 +153,7 @@ def discover(rom: bytes, profile: dict) -> dict:
             key = add_entry(hook['vram'], hook['symbol'], 'native-replacement', section['id'])
         section = sections[key[0]]
         offset = section['rom_offset'] + key[1] - section['vram']
-        size = validate_hook_prefix(rom, offset, key[1], section['vram'] + section['size'] - key[1], hook)
+        size = validate_recomp_prefix(rom, offset, key[1], section['vram'] + section['size'] - key[1], hook)
         # Shared native signatures verify the complete body. A custom handler
         # overriding one of them may check only a short prefix, but it must
         # still replace the entire recognized body in the function registry.
