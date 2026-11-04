@@ -308,7 +308,7 @@ stacks and generated functions. See [CPU profiling](profiling.md).
 | Diagnostic SDK symbols and handler coverage | [`tools/inspect_sdk_symbols.py`](../tools/inspect_sdk_symbols.py), [SDK report interpretation](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps) |
 | Optional embedded content | [`tools/package_rom.py`](../tools/package_rom.py), [ROM content packaging](rom-packaging.md) |
 | Optional executable compression | [`cmake/PackUPX.cmake`](../cmake/PackUPX.cmake) |
-| Runtime entry and boot | `games/<game>/debug/app.c` or `release/app.c`, [`runtime/game.c`](../runtime/game.c), [`runtime/bootstrap.c`](../runtime/bootstrap.c) |
+| Runtime entry and boot | `games/<game>/main.c`, [`runtime/game.c`](../runtime/game.c), [`runtime/bootstrap.c`](../runtime/bootstrap.c) |
 | Dispatch, guest memory and FPU | [`runtime/dispatch.c`](../runtime/dispatch.c), [`runtime/memory.c`](../runtime/memory.c), [`runtime/fpu.c`](../runtime/fpu.c) |
 | Guest scheduling and OS | [`runtime/scheduler.c`](../runtime/scheduler.c), [`runtime/os.c`](../runtime/os.c), [threading](threading.md), [OS emulation](os-emulation.md) |
 | Time, devices and task receipts | [`runtime/time.c`](../runtime/time.c), [`runtime/platform.c`](../runtime/platform.c), [`runtime/tasks.c`](../runtime/tasks.c), [`runtime/video.c`](../runtime/video.c) |

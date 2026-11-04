@@ -95,6 +95,10 @@ struct Runtime {
     void (*poll_platform)(Runtime *);
     const uint8_t *rom; /* Verified canonical bytes, owned by the caller. */
     size_t rom_size;
+    uint8_t rom_sha1[20];
+    const char *live_patch_dir; /* Default control directory for this game. */
+    const char *live_patch_python, *live_patch_script, *live_patch_game, *live_patch_build_dir;
+    void *live_modules; /* Shared repair modules; unloaded after guest threads stop. */
     bool platform_initialized;
     RecompTasks *tasks;
     void (*destroy_tasks)(Runtime *);
@@ -116,8 +120,8 @@ struct Runtime {
     /* Optional game loader: map relocated entries to their compiled addresses. */
     uint32_t (*canonical_function_address)(Runtime *, uint32_t);
     uint32_t (*relocated_address)(Runtime *, uint32_t section, uint32_t address);
-    bool interrupts_disabled; /* Native OS critical section; serialized guest scheduling. */
-    uint32_t interrupt_mask;  /* Logical SDK CPU/RCP interrupt mask. */
+    bool interrupts_disabled;               /* Native OS critical section; serialized guest scheduling. */
+    uint32_t interrupt_mask;                /* Logical SDK CPU/RCP interrupt mask. */
     uint32_t interrupt_global_mask_address; /* Optional guest __OSGlobalIntMask for SDK variants. */
     RecompPageMapping page_mappings[32];
 #ifdef RECOMP_DEBUG
@@ -140,8 +144,14 @@ struct Runtime {
 
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t, const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
+#ifdef RECOMP_DEBUG
+extern bool recomp_debug_trace_calls;
+void recomp_debug_trace_call(uint32_t address);
+#endif
 static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #ifdef RECOMP_DEBUG
+    if (recomp_debug_trace_calls)
+        recomp_debug_trace_call(address);
     rt->recent_calls[rt->recent_call_next] = address;
     rt->recent_call_next = (rt->recent_call_next + 1) % 128;
     if (rt->recent_call_count < 128)
@@ -152,6 +162,16 @@ static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #endif
 }
 RecompFunction recomp_lookup(Runtime *, uint32_t);
+bool recomp_has_function(Runtime *, uint32_t);
+RecompFunction recomp_live_lookup(Runtime *, uint32_t);
+/* Called only at an explicitly checked indirect-call miss. */
+void recomp_live_checked_call(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section);
+void recomp_live_checked_jump(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section,
+                              uint32_t return_address, uint32_t entry_stack_pointer);
+void recomp_live_indirect_jump(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section,
+                               uint32_t return_address, uint32_t entry_stack_pointer);
+bool recomp_live_boundary(Runtime *, MipsContext *, uint32_t address);
+void recomp_live_destroy(Runtime *);
 static inline uint32_t recomp_relocated_address(Runtime *rt, uint32_t section, uint32_t address) {
     return rt->relocated_address ? rt->relocated_address(rt, section, address) : address;
 }
@@ -366,8 +386,7 @@ static inline uint64_t mips_sra32(uint64_t x, unsigned count) {
     uint32_t value = (uint32_t)x;
     count &= 31;
 #if USE_INTRISICS && (defined(__SSE2__) || defined(_M_X64))
-    return mips_s32(_mm_cvtsi128_si32(_mm_sra_epi32(_mm_cvtsi32_si128((int32_t)value),
-                                                  _mm_cvtsi32_si128((int)count))));
+    return mips_s32(_mm_cvtsi128_si32(_mm_sra_epi32(_mm_cvtsi32_si128((int32_t)value), _mm_cvtsi32_si128((int)count))));
 #else
     /* Shift the magnitude below the sign bit, then subtract its weight.
      * MSVC /O2 can miscompile conditional sign-fill after a truncating SLL,
@@ -437,8 +456,7 @@ static inline int64_t mips_i32(uint64_t x) {
 }
 static inline void mips_mult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
 #if USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)
-    uint64_t result = is_signed ? (uint64_t)__emul((int32_t)x, (int32_t)y)
-                                : __emulu((uint32_t)x, (uint32_t)y);
+    uint64_t result = is_signed ? (uint64_t)__emul((int32_t)x, (int32_t)y) : __emulu((uint32_t)x, (uint32_t)y);
 #else
     uint64_t result = is_signed ? (uint64_t)(mips_i32(x) * mips_i32(y)) : (uint64_t)(uint32_t)x * (uint32_t)y;
 #endif
@@ -462,8 +480,8 @@ static inline void mips_div(MipsContext *ctx, uint64_t x, uint64_t y, bool is_si
 
 static inline void mips_dmult(MipsContext *ctx, uint64_t x, uint64_t y, bool is_signed) {
 #if USE_INTRISICS && defined(__SIZEOF_INT128__)
-    unsigned __int128 product = is_signed ? (unsigned __int128)((__int128)(int64_t)x * (__int128)(int64_t)y)
-                                         : (unsigned __int128)x * y;
+    unsigned __int128 product =
+        is_signed ? (unsigned __int128)((__int128)(int64_t)x * (__int128)(int64_t)y) : (unsigned __int128)x * y;
     ctx->lo = (uint64_t)product;
     ctx->hi = (uint64_t)(product >> 64);
 #elif USE_INTRISICS && defined(_MSC_VER) && defined(_M_X64)

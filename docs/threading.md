@@ -55,14 +55,13 @@ Logical CPU interrupt enable and SDK interrupt masks belong to each guest
 thread. Dispatch restores them, and blocking/preemption saves them before
 another thread runs. A blocking receive inside a critical section must resume
 with interrupts still disabled without disabling the next thread's checkpoints
-and device polling. `tools/check_thread_interrupts.c` covers that transition,
-including a higher-priority receiver preempting its sender.
+and device polling, including when a higher-priority receiver preempts its sender.
 
 Creating a new entry in a stopped thread object retires and joins its old native
 stack before resetting its context. This supports reusable loader slots such as
 RE2's; a runnable thread, the current thread, or a stopped queue waiter cannot
-be overwritten. `tools/check_thread_recreate.c` verifies that a recreated thread
-starts with its new argument and that the abandoned call stack never resumes.
+be overwritten. A recreated thread starts with its new argument; the abandoned
+call stack never resumes.
 
 Saved register contexts use a serialized-word cache for direct KSEG0/KSEG1 RAM
 on little-endian hosts. A running thread refreshes its cache at synchronization;

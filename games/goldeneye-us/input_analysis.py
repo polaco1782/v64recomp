@@ -109,6 +109,10 @@ def verify_input_analysis(rom: bytes, profile: dict, metadata: dict | None = Non
 
     adapter = profile.get(adapter_key) if adapter_key else None
     if adapter:
+        gate = adapter['dual_gate']
+        code = words(gate['owner'], gate['pc'], gate['expected_words'])
+        require(code == [0x24010000 | adapter['dual_style'], 0x50410007, 0x97af01ce]
+                and adapter['dual_style'] == 5, 'native 2.2 control-style gate mismatch')
         require(any(c['owner'] == 'MoveBond' and c['target'] == functions['bondviewProcessInput']['vram']
                     and c['pc'] + 8 == adapter['process_return'] for c in spec['calls']),
                 'input adapter return is not the verified MoveBond call')
@@ -117,7 +121,7 @@ def verify_input_analysis(rom: bytes, profile: dict, metadata: dict | None = Non
             hi, low = code[0], code[-1]
             signed_low = (low & 65535) - (65536 if low & 0x8000 else 0)
             require((len(code) == 2 or (len(code) == 3 and code[1] == 0x03e00008))
-                    and hi >> 26 == 15 and low >> 26 == 35 and (low >> 21) & 31 == (hi >> 16) & 31
+                    and hi >> 26 == 15 and low >> 26 in (35, 49) and (low >> 21) & 31 == (hi >> 16) & 31
                     and ((hi & 65535) << 16) + signed_low == state['address'],
                     f"{state['name']} address does not match the decoded global")
 

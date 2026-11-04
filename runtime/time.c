@@ -14,16 +14,34 @@ typedef struct NativeTimer {
 struct RecompClock {
     RecompClockConfig config;
     uint64_t origin_ns, last_ns, offset, order;
+    uint64_t paused_ns;
+    bool paused;
     NativeTimer *timers;
 };
 
+void recomp_clock_pause(Runtime *rt) {
+    RecompClock *c = rt->clock;
+    if (c && !c->paused) {
+        c->paused_ns = c->config.now_ns(c->config.userdata);
+        c->paused = true;
+    }
+}
+
+void recomp_clock_resume(Runtime *rt) {
+    RecompClock *c = rt->clock;
+    if (c && c->paused) {
+        uint64_t now = c->config.now_ns(c->config.userdata);
+        if (now < c->paused_ns || UINT64_MAX - c->origin_ns < now - c->paused_ns)
+            recomp_fail("guest clock cannot resume after live repair", 0);
+        c->origin_ns += now - c->paused_ns;
+        c->last_ns = now;
+        c->paused = false;
+    }
+}
+
 static uint64_t monotonic_ns(void *unused) {
     (void)unused;
-    struct timespec now;
-    if (clock_gettime(CLOCK_MONOTONIC, &now) || now.tv_sec < 0 ||
-        (uint64_t)now.tv_sec > UINT64_MAX / UINT64_C(1000000000))
-        recomp_fail("monotonic clock unavailable or exhausted", 0);
-    return (uint64_t)now.tv_sec * UINT64_C(1000000000) + (uint64_t)now.tv_nsec;
+    return recomp_monotonic_ns();
 }
 
 static RecompClock *clock_state(Runtime *rt) {

@@ -4,6 +4,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
 #else
 #include <execinfo.h>
 #include <unwind.h>
@@ -26,11 +28,17 @@ typedef struct RecompWarningSite {
 static _Thread_local RecompWarningSite warning_sites[32];
 static _Thread_local unsigned warning_site_count;
 static _Thread_local bool warning_limit_reported;
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static _Thread_local uintptr_t trace_ceiling;
+#endif
 void recomp_set_trace_ceiling(uintptr_t ceiling) {
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     trace_ceiling = ceiling;
+#else
+    (void)ceiling;
+#endif
 }
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *opaque) {
     RecompFailureInfo *info = opaque;
     /* An optional stack boundary can limit diagnostic unwinding. */
@@ -44,6 +52,12 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *op
 }
 #endif
 static void capture_trace(RecompFailureInfo *info) {
+#ifdef __EMSCRIPTEN__
+    char stack[8192];
+    info->native_frame_count = 0;
+    emscripten_get_callstack(EM_LOG_JS_STACK, stack, sizeof(stack));
+    fprintf(stderr, "WebAssembly call stack:\n%s\n", stack);
+#else
 #ifdef _WIN32
     info->native_frame_count = CaptureStackBackTrace(1, 64, info->native_frames, NULL);
 #else
@@ -55,6 +69,7 @@ static void capture_trace(RecompFailureInfo *info) {
         fprintf(stderr, "  %p\n", info->native_frames[i]);
 #else
     backtrace_symbols_fd(info->native_frames, (int)info->native_frame_count, 2);
+#endif
 #endif
 }
 
@@ -226,6 +241,7 @@ void recomp_runtime_destroy(Runtime *rt) {
     if (rt->destroy_clock)
         rt->destroy_clock(rt);
     recomp_timing_destroy(rt);
+    recomp_live_destroy(rt);
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);
@@ -259,11 +275,27 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
             result = entry->function;
         }
     }
+    if (!result && first == rt->function_count)
+        result = recomp_live_lookup(rt, address);
     if (!result)
         recomp_fail("unregistered or unloaded function", address);
     if (rt->prepare_call)
         rt->prepare_call(rt, address);
     return result;
+}
+
+bool recomp_has_function(Runtime *rt, uint32_t address) {
+    address = recomp_canonical_function_address(rt, address);
+    if (!rt->function_lookup)
+        return false;
+    size_t slot = function_hash(address) & rt->function_lookup_mask;
+    while (rt->function_lookup[slot]) {
+        size_t index = rt->function_lookup[slot] - 1;
+        if (rt->function_index[index]->address == address)
+            return true;
+        slot = (slot + 1) & rt->function_lookup_mask;
+    }
+    return false;
 }
 
 static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write) {
@@ -355,8 +387,7 @@ uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
 #endif
     uint32_t device_bus = recomp_direct_address(address) ? address & UINT32_C(0x1fffffff) : address;
     uint64_t device_value;
-    if (device_bus >= rt->rdram_size && rt->device_read &&
-        rt->device_read(rt, device_bus, bytes, &device_value))
+    if (device_bus >= rt->rdram_size && rt->device_read && rt->device_read(rt, device_bus, bytes, &device_value))
         return device_value;
     /* Some audio managers inline osAiGetLength. Use the same native DMA
      * state as the SDK hook for this read-only register, including polling
@@ -462,8 +493,7 @@ void recomp_store(Runtime *rt, uint32_t address, uint64_t value, unsigned bytes)
         fail_ram("unaligned store", address, bytes);
 #endif
     uint32_t device_bus = recomp_direct_address(address) ? address & UINT32_C(0x1fffffff) : address;
-    if (device_bus >= rt->rdram_size && rt->device_write &&
-        rt->device_write(rt, device_bus, bytes, value))
+    if (device_bus >= rt->rdram_size && rt->device_write && rt->device_write(rt, device_bus, bytes, value))
         return;
     uint32_t p = recomp_ram_address_write_slow(rt, address, bytes);
 #if RECOMP_LITTLE_ENDIAN_HOST

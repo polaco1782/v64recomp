@@ -59,7 +59,7 @@ def write_config(profile, metadata, output, startup):
         tag = name[1:].upper()
         lines += [f'#define CONKER_{tag}_SIZE 0x{len(raw):x}', f'#define CONKER_{tag}_ADDRESS 0x{address:x}',
                   'static const uint8_t conker_'+tag.lower()+'_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};']
-    (output/'conker_config.h').write_text('\n'.join(lines)+'\n')
+    (output/'game_config.h').write_text('\n'.join(lines)+'\n')
 
 
 def configure_translation(rom, metadata, profile, output):

@@ -1,4 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
 #include "host.h"
+#include "recomp.h"
+#ifdef __EMSCRIPTEN__
+#include <stdatomic.h>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -68,8 +73,8 @@ int nanosleep(const struct timespec *duration, struct timespec *remaining) {
 }
 
 int clock_nanosleep(int clock, int flags, const struct timespec *value, struct timespec *remaining) {
-    if (clock != CLOCK_MONOTONIC || (flags != 0 && flags != TIMER_ABSTIME) || !value ||
-        value->tv_sec < 0 || value->tv_nsec < 0 || value->tv_nsec >= 1000000000)
+    if (clock != CLOCK_MONOTONIC || (flags != 0 && flags != TIMER_ABSTIME) || !value || value->tv_sec < 0 ||
+        value->tv_nsec < 0 || value->tv_nsec >= 1000000000)
         return EINVAL;
     struct timespec delay = *value;
     if (flags == TIMER_ABSTIME) {
@@ -97,3 +102,24 @@ int setenv(const char *name, const char *value, int overwrite) {
     return error ? -1 : 0;
 }
 #endif
+
+uint64_t recomp_monotonic_ns(void) {
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) || now.tv_sec < 0 ||
+        (uint64_t)now.tv_sec > (UINT64_MAX - (uint64_t)now.tv_nsec) / UINT64_C(1000000000))
+        recomp_fail("monotonic clock unavailable or exhausted", 0);
+    uint64_t ns = (uint64_t)now.tv_sec * UINT64_C(1000000000) + (uint64_t)now.tv_nsec;
+#ifdef __EMSCRIPTEN__
+    /* Browser workers have independently rounded performance time origins.
+     * Emscripten's summed timestamps can regress at a worker handoff (observed
+     * at 256 ns). Expose one shared monotonic timeline to guest clocks/pacing. */
+    static _Atomic uint64_t latest;
+    uint64_t previous = atomic_load_explicit(&latest, memory_order_relaxed);
+    while (previous < ns &&
+           !atomic_compare_exchange_weak_explicit(&latest, &previous, ns, memory_order_relaxed, memory_order_relaxed)) {
+    }
+    if (previous > ns)
+        ns = previous;
+#endif
+    return ns;
+}

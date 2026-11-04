@@ -2,7 +2,7 @@
 #include "fast3d_gles2.h"
 #include "game.h"
 #include "timing.h"
-#include <openssl/evp.h>
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,8 +22,7 @@ static bool authenticate(Runtime *rt, uint32_t address, uint32_t bytes, const ch
     uint8_t data[8192], digest[32];
     for (uint32_t i = 0; i < bytes; i++)
         data[i] = (uint8_t)recomp_load(rt, address + i, 1);
-    unsigned length;
-    if (!EVP_Digest(data, bytes, digest, &length, EVP_sha256(), NULL) || length != 32)
+    if (!recomp_sha256(data, bytes, digest))
         return false;
     char hex[65];
     for (unsigned i = 0; i < 32; i++)
@@ -159,4 +158,9 @@ void recomp_renderer_mouse_mode(RecompRenderer *s, bool enabled, bool gameplay) 
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     (void)s;
     return (RecompMouseFrame){0};
+}
+
+void recomp_renderer_configure_texture_dump(const char *directory) {
+    if (directory)
+        recomp_fail("texture dumping is unavailable in GLES2", 0);
 }

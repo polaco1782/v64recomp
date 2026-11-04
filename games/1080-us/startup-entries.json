@@ -256,6 +256,12 @@
       "evidence": "Resource constructor virtual callback in 0x800e25c4, reached via 0x8010cb08; crash-3-984207398072947. Full body 0x8010cc18..0x8010ccc8 allocates and initializes counted elements; preceding return checked."
     },
     {
+      "vram": 2148586516,
+      "origin": "checked-root",
+      "sha256": "2d430d1f7c9b96442984c332833a0b2f859cc89a79a9b1cabaa5a5963fb8e09a",
+      "evidence": "Crash-126359-7969304511034: 0x800e2e7c JALR loads object callback +0x2c as 0x8010d414. Guest RAM matches the pinned relocated bootup Text; the three-instruction body 0x8010d414..0x8010d420 follows the preceding JR RA delay slot at 0x8010d410."
+    },
+    {
       "vram": 2148608480,
       "origin": "checked-root",
       "sha256": "850a6f2509d45bde3911ec8fbd9c6685c7618806e155d1507bf31c41d3dadda2",
@@ -290,6 +296,12 @@
       "origin": "checked-root",
       "sha256": "70648e2ba641fbcdab74a2105d68bc8f095e2e84b9ba04935b20c9bcc6e23f01",
       "evidence": "Element lazy-load vtable 0x80092a58 slot +0x14 reached from GUI 0x8024f228 through 0x80112b58; crash-3-984933444165716. Complete 0x80112fc0..0x80113068 body and preceding return checked."
+    },
+    {
+      "vram": 2148610224,
+      "origin": "checked-root",
+      "sha256": "781cc8ec3edd79298d8a8cca300f70c44119b604477c5eb6cc3598feea166380",
+      "evidence": "Element vtable 0x80092a58 slot +0x24 has USO data relocation symbol 2481, whose pinned cartridge symbol record at 0xe617d4 points to bootup Text +0x7d260 (0x801130b0); crash-3-985183580513219 RAM confirms the slot value. Closed leaf 0x801130b0..0x801130cc follows a return and precedes the next prologue."
     },
     {
       "vram": 2148450812,
@@ -380,6 +392,12 @@
       "origin": "checked-root",
       "sha256": "f40f989e9379b1148c6bd3aa75eb9936311f35cb550f8693e12baae81310bc1f",
       "evidence": "Audio callback materialized at 0x800db7d0..0x800db7dc and registered through 0x800d1104; consumed by 0x800d06d0 in crash-3289161-985619148393228. Complete body 0x800dbdc8..0x800dbf20 updates three audio control states through 0x800dbd54 and 0x800d1128; preceding return checked."
+    },
+    {
+      "vram": 2148174836,
+      "origin": "checked-root",
+      "sha256": "c77879323ed46e92655a704fef0239fcfc24f4128d2596d04c4947feac0b96de",
+      "evidence": "Pinned bootup.uso section 1 record at cartridge 0xe5c5f0 contains Text offset 0x12da4, resolving to 0x800a8bf4; neighboring records of the same form resolve to checked entries 0x800a55bc, 0x800a5514, 0x800a5620, and 0x800ebc88. The target is a closed 0x800a8bf4..0x800a8c08 leaf after the preceding JR RA/NOP at 0x800a8bec..0x800a8bf0 and before the next prologue at 0x800a8c08."
     }
   ]
 }

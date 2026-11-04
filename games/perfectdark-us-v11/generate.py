@@ -65,7 +65,7 @@ def write_config(profile, metadata, output, startup):
         lines += [f'#define PD_{tag}_SIZE 0x{len(raw):x}',
                   f'#define PD_{tag}_ADDRESS 0x{address:x}',
                   'static const uint8_t pd_'+tag.lower()+'_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};']
-    (output/'perfectdark_config.h').write_text('\n'.join(lines)+'\n')
+    (output/'game_config.h').write_text('\n'.join(lines)+'\n')
 
 
 def configure_translation(rom, metadata, profile, output):

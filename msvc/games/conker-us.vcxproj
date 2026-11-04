@@ -24,21 +24,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\conker-us\audio.h" />
     <None Include="$(RecompRoot)games\conker-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\conker-us\conker.c" />
-    <ClInclude Include="$(RecompRoot)games\conker-us\conker.h" />
-    <None Include="$(RecompRoot)games\conker-us\debug\analyze_switches.py" />
-    <ClCompile Include="$(RecompRoot)games\conker-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\conker-us\audio.h" />
     <None Include="$(RecompRoot)games\conker-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\conker-us\graphics.cpp" />
     <ClInclude Include="$(RecompRoot)games\conker-us\graphics.h" />
+    <ClCompile Include="$(RecompRoot)games\conker-us\main.c" />
     <None Include="$(RecompRoot)games\conker-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\conker-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\conker-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\conker-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\conker-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\conker-us\functions.c')" />

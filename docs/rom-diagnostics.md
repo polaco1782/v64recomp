@@ -106,8 +106,6 @@ be an alias into the same table; a run of code pointers does not establish the
 selector's legal range. Verify complete bounds, bytes and ABI before adding a
 checked table. Conflicting paths discard address expressions, calls discard
 volatile registers, and replaced native bodies do not supply active consumers.
-Run the ROM-free regression checks with
-`.venv/bin/python tools/check_function_candidates.py`.
 
 Task code/data sizes can include padding, DMEM BSS or adjacent cartridge data.
 An ASCII identifier anywhere in that full span does not establish the executing

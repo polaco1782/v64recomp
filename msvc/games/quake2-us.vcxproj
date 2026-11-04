@@ -24,21 +24,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h" />
     <None Include="$(RecompRoot)games\quake2-us\CMakeLists.txt" />
-    <None Include="$(RecompRoot)games\quake2-us\debug\analyze_callbacks.py" />
-    <ClCompile Include="$(RecompRoot)games\quake2-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h" />
     <None Include="$(RecompRoot)games\quake2-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\quake2-us\input.c" />
+    <ClCompile Include="$(RecompRoot)games\quake2-us\main.c" />
     <None Include="$(RecompRoot)games\quake2-us\profile.toml" />
     <ClInclude Include="$(RecompRoot)games\quake2-us\quake2_input.h" />
-    <ClCompile Include="$(RecompRoot)games\quake2-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\quake2-us\run.c" />
-    <ClInclude Include="$(RecompRoot)games\quake2-us\run.h" />
     <None Include="$(RecompRoot)games\quake2-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\quake2-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\quake2-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\quake2-us\functions.c')" />

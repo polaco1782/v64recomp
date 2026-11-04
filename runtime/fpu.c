@@ -8,7 +8,15 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
-#if (defined(__x86_64__) && defined(__SSE2__)) || defined(_M_X64)
+#if defined(RECOMP_FPU_SPECIALIZE) && defined(__clang__)
+#define RECOMP_FPU_INLINE __attribute__((always_inline))
+#else
+#define RECOMP_FPU_INLINE
+#endif
+#ifdef RECOMP_SOFTFLOAT
+#include "softfloat.h"
+#define RECOMP_FP_SSE 0
+#elif (defined(__x86_64__) && defined(__SSE2__)) || defined(_M_X64)
 #define RECOMP_FP_SSE USE_INTRISICS
 #elif defined(__aarch64__) && defined(__linux__)
 #define RECOMP_FP_SSE 0
@@ -18,7 +26,7 @@
 #if defined(__SSE2__) || defined(_M_X64)
 #include <emmintrin.h>
 #endif
-#if defined(__clang__)
+#if defined(__clang__) && !defined(RECOMP_SOFTFLOAT)
 #pragma STDC FENV_ACCESS ON
 #endif
 
@@ -27,6 +35,31 @@ _Static_assert(FLT_RADIX == 2 && FLT_MANT_DIG == 24 && FLT_MAX_EXP == 128 && DBL
                "floating-point runtime requires IEEE binary32/binary64");
 
 enum { FP_I = 1, FP_U = 2, FP_O = 4, FP_Z = 8, FP_V = 16, FP_E = 32 };
+#ifdef RECOMP_SOFTFLOAT
+static const uint_fast8_t rounding[] = {softfloat_round_near_even, softfloat_round_minMag, softfloat_round_max,
+                                        softfloat_round_min};
+typedef struct FpEnvironment {
+    uint_fast8_t rounding, flags, tininess;
+} FpEnvironment;
+static FpEnvironment begin(MipsContext *ctx, int mode, bool sse_only) {
+    (void)sse_only;
+    FpEnvironment env = {softfloat_roundingMode, softfloat_exceptionFlags, softfloat_detectTininess};
+    softfloat_roundingMode = rounding[mode < 0 ? ctx->fcr31 & 3 : (unsigned)mode];
+    softfloat_exceptionFlags = 0;
+    softfloat_detectTininess = softfloat_tininess_afterRounding;
+    return env;
+}
+static unsigned end(MipsContext *ctx, const FpEnvironment *env) {
+    (void)ctx;
+    uint_fast8_t flags = softfloat_exceptionFlags;
+    softfloat_roundingMode = env->rounding;
+    softfloat_exceptionFlags = env->flags;
+    softfloat_detectTininess = env->tininess;
+    return ((flags & softfloat_flag_inexact) ? FP_I : 0) | ((flags & softfloat_flag_underflow) ? FP_U : 0) |
+           ((flags & softfloat_flag_overflow) ? FP_O : 0) | ((flags & softfloat_flag_infinite) ? FP_Z : 0) |
+           ((flags & softfloat_flag_invalid) ? FP_V : 0);
+}
+#else
 static const int rounding[] = {FE_TONEAREST, FE_TOWARDZERO, FE_UPWARD, FE_DOWNWARD};
 typedef struct FpEnvironment {
     fenv_t saved;
@@ -91,6 +124,8 @@ static unsigned end(MipsContext *ctx, const FpEnvironment *env) {
            ((flags & FE_OVERFLOW) ? FP_O : 0) | ((flags & FE_DIVBYZERO) ? FP_Z : 0) | ((flags & FE_INVALID) ? FP_V : 0);
 }
 
+#endif
+
 static void finish(MipsContext *ctx, unsigned flags) {
     ctx->fcr31 = (ctx->fcr31 & ~UINT32_C(0x3f000)) | (flags << 12);
     if ((flags & FP_E) || (flags & (ctx->fcr31 >> 7) & 31))
@@ -142,6 +177,7 @@ static unsigned operand_flags(uint64_t bits, enum MipsFpFormat fmt) {
         return FP_E;
     return signaling(bits, fmt) ? FP_V : 0;
 }
+#ifndef RECOMP_SOFTFLOAT
 static float as_float(uint32_t bits) {
     float x;
     memcpy(&x, &bits, 4);
@@ -162,6 +198,8 @@ static uint64_t double_bits(double x) {
     memcpy(&b, &x, 8);
     return b;
 }
+
+#endif
 
 static uint64_t result(MipsContext *ctx, uint64_t bits, enum MipsFpFormat fmt, unsigned flags) {
     uint64_t minimum = fmt == MIPS_FP_D ? UINT64_C(0x10000000000000) : UINT64_C(0x800000);
@@ -188,8 +226,8 @@ static uint64_t result(MipsContext *ctx, uint64_t bits, enum MipsFpFormat fmt, u
     return bits;
 }
 
-void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enum MipsFpFormat fmt,
-                    enum MipsFpOperation op) {
+RECOMP_FPU_INLINE void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enum MipsFpFormat fmt,
+                                      enum MipsFpOperation op) {
     uint64_t a = read_bits(ctx, fs, fmt), b = read_bits(ctx, ft, fmt), bits;
     unsigned flags = operand_flags(a, fmt) | operand_flags(b, fmt);
     if (flags) {
@@ -198,6 +236,47 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enu
         return;
     }
     FpEnvironment env = begin(ctx, -1, true);
+#ifdef RECOMP_SOFTFLOAT
+    if (fmt == MIPS_FP_S) {
+        float32_t x = {(uint32_t)a}, y = {(uint32_t)b}, z;
+        switch (op) {
+            case MIPS_FP_ADD:
+                z = f32_add(x, y);
+                break;
+            case MIPS_FP_SUB:
+                z = f32_sub(x, y);
+                break;
+            case MIPS_FP_MUL:
+                z = f32_mul(x, y);
+                break;
+            case MIPS_FP_DIV:
+                z = f32_div(x, y);
+                break;
+            default:
+                recomp_fail("invalid native FP binary operation", ctx->pc);
+        }
+        bits = z.v;
+    } else {
+        float64_t x = {a}, y = {b}, z;
+        switch (op) {
+            case MIPS_FP_ADD:
+                z = f64_add(x, y);
+                break;
+            case MIPS_FP_SUB:
+                z = f64_sub(x, y);
+                break;
+            case MIPS_FP_MUL:
+                z = f64_mul(x, y);
+                break;
+            case MIPS_FP_DIV:
+                z = f64_div(x, y);
+                break;
+            default:
+                recomp_fail("invalid native FP binary operation", ctx->pc);
+        }
+        bits = z.v;
+    }
+#else
     if (fmt == MIPS_FP_S) {
         volatile float x = as_float((uint32_t)a), y = as_float((uint32_t)b), z;
 #if RECOMP_FP_SSE
@@ -277,6 +356,7 @@ void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enu
 #endif
         bits = double_bits(z);
     }
+#endif
     flags = end(ctx, &env);
     write_bits(ctx, fd, fmt, result(ctx, bits, fmt, flags));
 }
@@ -295,7 +375,9 @@ void mips_fp_unary(MipsContext *ctx, unsigned fd, unsigned fs, enum MipsFpFormat
     }
     if (op == MIPS_FP_SQRT) {
         FpEnvironment env = begin(ctx, -1, true);
-#if RECOMP_FP_SSE
+#ifdef RECOMP_SOFTFLOAT
+        bits = fmt == MIPS_FP_S ? f32_sqrt((float32_t){(uint32_t)bits}).v : f64_sqrt((float64_t){bits}).v;
+#elif RECOMP_FP_SSE
         if (fmt == MIPS_FP_S) {
             volatile float x = as_float((uint32_t)bits);
             volatile float y = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(x)));
@@ -336,7 +418,35 @@ void mips_fp_convert(MipsContext *ctx, unsigned fd, unsigned fs, enum MipsFpForm
         write_bits(ctx, fd, to, quiet_nan(to));
         return;
     }
-#if RECOMP_FP_SSE
+#ifdef RECOMP_SOFTFLOAT
+    FpEnvironment env = begin(ctx, mode, false);
+    if (from == MIPS_FP_W || from == MIPS_FP_L) {
+        uint64_t raw = from == MIPS_FP_W ? mips_s32(bits) : bits;
+        int64_t integer = (raw >> 63) ? -(int64_t)(~raw) - 1 : (int64_t)raw;
+        if (to == MIPS_FP_S)
+            bits = i64_to_f32(integer).v;
+        else if (to == MIPS_FP_D)
+            bits = i64_to_f64(integer).v;
+        else
+            recomp_fail("invalid integer FP conversion", ctx->pc);
+    } else if (to == MIPS_FP_W) {
+        bits = (uint32_t)(from == MIPS_FP_S ? f32_to_i32((float32_t){(uint32_t)bits}, softfloat_roundingMode, true)
+                                            : f64_to_i32((float64_t){bits}, softfloat_roundingMode, true));
+    } else if (to == MIPS_FP_L) {
+        bits = (uint64_t)(from == MIPS_FP_S ? f32_to_i64((float32_t){(uint32_t)bits}, softfloat_roundingMode, true)
+                                            : f64_to_i64((float64_t){bits}, softfloat_roundingMode, true));
+    } else if (to == MIPS_FP_S)
+        bits = f64_to_f32((float64_t){bits}).v;
+    else
+        bits = f32_to_f64((float32_t){(uint32_t)bits}).v;
+    flags = end(ctx, &env);
+    if (to == MIPS_FP_W || to == MIPS_FP_L) {
+        if (flags & FP_V)
+            finish(ctx, FP_E);
+        finish(ctx, flags);
+    } else
+        bits = result(ctx, bits, to, flags);
+#elif RECOMP_FP_SSE
     FpEnvironment env = begin(ctx, mode, true);
     if (from == MIPS_FP_W || from == MIPS_FP_L) {
         uint64_t signed_bits = from == MIPS_FP_W ? mips_s32(bits) : bits;
@@ -438,7 +548,7 @@ void mips_fp_compare(MipsContext *ctx, unsigned fs, unsigned ft, enum MipsFpForm
     bool unordered = nan_bits(a, fmt) || nan_bits(b, fmt), equal = false, less = false;
     unsigned flags = unordered && ((predicate & 8) || signaling(a, fmt) || signaling(b, fmt)) ? FP_V : 0;
     if (!unordered) {
-#if USE_INTRISICS
+#if USE_INTRISICS || defined(RECOMP_SOFTFLOAT)
         /* Non-NaN encodings are ordered by magnitude, reversed for negatives.
          * Treat both signed zeros as equal. Integer comparisons also preserve
          * denormals without changing host rounding, exception flags or DAZ. */

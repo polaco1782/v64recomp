@@ -9,6 +9,7 @@
 #include <time.h>
 
 static pthread_once_t settings_once = PTHREAD_ONCE_INIT;
+bool recomp_debug_trace_calls;
 static bool full;
 static uint32_t watched_queue;
 static struct timespec origin;
@@ -47,6 +48,9 @@ void recomp_debug_log(const char *category, const char *format, ...) {
     fputc('\n', stderr);
     funlockfile(stderr);
     errno = saved_errno;
+}
+void recomp_debug_trace_call(uint32_t address) {
+    recomp_debug_log("call", "0x%08x", address);
 }
 void recomp_debug_os(Runtime *rt, const MipsContext *ctx, const char *name, uint64_t count) {
     int32_t id = 0;

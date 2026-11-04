@@ -24,25 +24,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\re2-us-v1\audio.h" />
     <None Include="$(RecompRoot)games\re2-us-v1\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\debug\check_musyx.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\debug\check_video_dsp.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\re2-us-v1\debug\inspect_overlay.py" />
+    <ClInclude Include="$(RecompRoot)games\re2-us-v1\audio.h" />
     <None Include="$(RecompRoot)games\re2-us-v1\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\re2-us-v1\main.c" />
     <None Include="$(RecompRoot)games\re2-us-v1\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\run.c" />
-    <ClInclude Include="$(RecompRoot)games\re2-us-v1\run.h" />
     <None Include="$(RecompRoot)games\re2-us-v1\startup-entries.json" />
     <ClCompile Include="$(RecompRoot)games\re2-us-v1\video.c" />
     <ClInclude Include="$(RecompRoot)games\re2-us-v1\video.h" />

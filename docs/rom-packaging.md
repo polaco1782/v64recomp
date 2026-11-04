@@ -14,8 +14,8 @@ The option works with Debug as well. An embedded executable defaults to its
 internal content, and `--rom PATH` explicitly selects an external, original ROM.
 Both paths use the shared loader and crash reporter. The returned buffer remains
 owned by the app, so existing boot copies, PI DMA, cartridge reads and teardown
-keep their current behavior. Texture replacements, saves and renderer state are
-still external files.
+keep their current behavior. Saves and renderer state remain external files.
+Texture ZIPs can be embedded separately with `RECOMP_EMBED_TEXTURE_PACK`.
 
 The runtime checks the expected original ROM identity and size against the
 embedded descriptor, then verifies the sanitized payload's own SHA-1 with the
@@ -65,13 +65,19 @@ offsets from another ROM revision.
 
 ## Layout limits and code read as data
 
-The shared packager currently requires the analysis image to equal the original
+The code-stripping path requires the analysis image to equal the original
 cartridge image. Uncompressed layouts such as SM64 and Duke fit this model.
 OOT, Perfect Dark and Conker append decoded code to their analysis images;
 packaging fails explicitly for these games. Their compressed streams can contain
 both CPU text and initialized data. They need a verified game-specific repacker
 and matching loader changes before code can be removed safely. Embedding their
-original compressed streams would retain the CPU code.
+original compressed streams retains the CPU code.
+
+For a private build that embeds the original verified ROM unchanged, use
+`-DRECOMP_EMBED_ROM=ON -DRECOMP_STRIP_EMBEDDED_ROM=OFF`. This also supports
+compressed layouts such as OOT without repacking or changing their loaders.
+The payload keeps the original ROM's size and SHA-1, and its packaging report
+records zero removed bytes. The default remains code stripping.
 
 Games may read instructions as data for checksums or other behavior. Keep those
 bytes using checked exceptions in the same `games/<game>/profile.toml`:

@@ -80,9 +80,7 @@ still fall back to native poses. The option remains experimental and disabled
 by default. Presentation counts alone do not establish smooth 60 FPS.
 
 Native framebuffer readback remains unchanged. Extra GPU draws and depth/color
-surfaces increase cost; Pi performance is unverified. SM64 Debug's existing
-`renderer_results.json` reports distinct `interpolated_frames` separately from
-window presentations. The revised 120-frame Castle Grounds movement replay
+surfaces increase cost; Pi performance is unverified. The renderer's `interpolated_frames` counter is distinct from window presentations. The revised 120-frame Castle Grounds movement replay
 produced 85 midpoint presentations across 238 display ticks at 4x scale, with
 zero audio underruns and byte-identical final guest RAM and native image compared
 to native rendering, including after adding the title-head adapter. This is
@@ -106,7 +104,7 @@ using `tools/import_rom.py`. No external renderer sources/assets are build input
 Configure Debug in a separate tree with the same renderer flags, then run:
 
 ```sh
-./build/sm64-gles2-debug/bin/sm64-us --frames 60 --mode move --mute
+./build/sm64-gles2-debug/bin/sm64-us --frames 60 --mute
 ```
 
 For interactive Debug play, configure with `-DRECOMP_OPTIMIZE_DEBUG=ON` to
@@ -167,3 +165,5 @@ Command references:
 and vendored RT64 Fast3D handlers. ARM references:
 [glibc environment handling](https://github.com/bminor/glibc/blob/master/sysdeps/aarch64/fpu/fenv_private.h),
 [Mesa VC4](https://docs.mesa3d.org/drivers/vc4.html).
+
+The browser target reuses this renderer through WebGL; see [WebAssembly](webassembly.md).

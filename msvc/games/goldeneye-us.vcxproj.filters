@@ -1,26 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
+    <None Include="$(RecompRoot)games\goldeneye-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\audio_dma.c">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\boot_capture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\boot_hooks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <None Include="$(RecompRoot)games\goldeneye-us\CMakeLists.txt">
-      <Filter>Configuration</Filter>
-    </None>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\fov_check.c">
-      <Filter>Source Files\debug</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\fov.c">
       <Filter>Source Files</Filter>
@@ -49,6 +37,9 @@
     <None Include="$(RecompRoot)games\goldeneye-us\input_analysis.py">
       <Filter>Source Files</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\goldeneye-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\pager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -58,12 +49,6 @@
     <None Include="$(RecompRoot)games\goldeneye-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\services.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\goldeneye-us\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -89,12 +74,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{FB68F8A8-845E-5B8C-A063-EF1A4E020870}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{298C2DA1-C538-582C-8BB0-837FFAE0D3C0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{0783F693-4894-5C39-B460-BA0132777B62}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -2,6 +2,9 @@
 #include "input.h"
 #include <SDL.h>
 #include <SDL_opengles2.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten/html5.h>
+#endif
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -101,7 +104,11 @@ typedef struct IdentityHistory {
 struct RecompFast3DGles2 {
     Runtime *rt;
     SDL_Window *window;
+#ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context;
+#else
     SDL_GLContext context;
+#endif
     SDL_threadID owner;
     RecompInput *input;
     struct {
@@ -162,7 +169,11 @@ struct RecompFast3DGles2 {
 };
 static void flush(RecompFast3DGles2 *s);
 static void owner(RecompFast3DGles2 *s) {
+#ifdef __EMSCRIPTEN__
+    if (SDL_ThreadID() != s->owner || emscripten_webgl_get_current_context() != s->context)
+#else
     if (SDL_ThreadID() != s->owner || SDL_GL_GetCurrentContext() != s->context)
+#endif
         recomp_fail("GLES2 requires its owner thread/context", 0);
 }
 static float clampf(float x, float lo, float hi) {
@@ -1168,6 +1179,7 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
     SDL_SetMainReady();
     if (!rt || !rt->rdram || SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
         return NULL;
+#ifndef __EMSCRIPTEN__
     SDL_GL_ResetAttributes();
 #ifdef __linux__
     SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
@@ -1176,12 +1188,13 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2) || SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0) ||
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1))
         return NULL;
+#endif
     RecompFast3DGles2 *s = calloc(1, sizeof(*s));
     if (!s)
         return NULL;
     s->rt = rt;
     s->owner = SDL_ThreadID();
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__EMSCRIPTEN__)
     s->render_scale = 1;
 #else
     s->render_scale = 3;
@@ -1203,15 +1216,43 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
             recomp_fail("RECOMP_GLES2_GAMMA must be 0.5..2.5", 0);
         s->color_gamma = value;
     }
+#ifdef __EMSCRIPTEN__
+    /* SDL's EGL path does not establish WebGL's worker-local context handle.
+     * Create it through html5.h so asynchronous buffer/texture uploads target
+     * the correct owner, and present only complete frames. SDL owns input. */
+    s->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 960, 720, SDL_WINDOW_RESIZABLE);
+    EmscriptenWebGLContextAttributes attributes;
+    emscripten_webgl_init_context_attributes(&attributes);
+    attributes.alpha = false;
+    attributes.depth = false;
+    attributes.stencil = false;
+    attributes.antialias = false;
+    attributes.majorVersion = 1;
+    attributes.explicitSwapControl = true;
+    attributes.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_ALWAYS;
+    if (s->window) {
+        s->context = emscripten_webgl_create_context("#canvas", &attributes);
+        if (s->context > 0 && emscripten_webgl_make_context_current(s->context) != EMSCRIPTEN_RESULT_SUCCESS) {
+            emscripten_webgl_destroy_context(s->context);
+            s->context = 0;
+        }
+    }
+    if (s->context < 0)
+        s->context = 0;
+#else
     s->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 960, 720,
                                  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (s->window)
         s->context = SDL_GL_CreateContext(s->window);
+#endif
     if (!s->context) {
         fprintf(stderr, "GLES2 context: %s\n", SDL_GetError());
         recomp_fast3d_gles2_destroy(s);
         return NULL;
     }
+#ifdef __EMSCRIPTEN__
+#define LOAD(name, type) s->gl.name = gl##name;
+#else
 #define LOAD(name, type)                                                                                               \
     {                                                                                                                  \
         void *entry = SDL_GL_GetProcAddress("gl" #name);                                                               \
@@ -1220,6 +1261,7 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
             recomp_fail("missing GLES2 gl" #name, 0);                                                                  \
         memcpy(&s->gl.name, &entry, sizeof(entry));                                                                    \
     }
+#endif
     GL_FUNCTIONS(LOAD)
 #undef LOAD
     s->gl.GenBuffers(1, &s->buffer);
@@ -1273,7 +1315,9 @@ RecompFast3DGles2 *recomp_fast3d_gles2_create(Runtime *rt, const char *title) {
     s->input = recomp_input_create();
     if (!s->input)
         recomp_fail("GLES2 controller initialization failed", 0);
+#ifndef __EMSCRIPTEN__
     (void)SDL_GL_SetSwapInterval(0);
+#endif
     return s;
 }
 static void blit_texture(RecompFast3DGles2 *s, GLuint texture, GLuint framebuffer, int x, int y, int width, int height,
@@ -1425,7 +1469,11 @@ bool recomp_fast3d_gles2_present(RecompFast3DGles2 *s) {
         image = &s->midpoints[image - s->surfaces];
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
     int width, height;
+#ifdef __EMSCRIPTEN__
+    SDL_GetWindowSize(s->window, &width, &height);
+#else
     SDL_GL_GetDrawableSize(s->window, &width, &height);
+#endif
     s->gl.Disable(GL_SCISSOR_TEST);
     s->gl.ClearColor(0, 0, 0, 1);
     s->gl.Clear(GL_COLOR_BUFFER_BIT);
@@ -1435,7 +1483,12 @@ bool recomp_fast3d_gles2_present(RecompFast3DGles2 *s) {
         w = height * 4 / 3;
     }
     blit_texture(s, image->texture, 0, (width - w) / 2, (height - h) / 2, w, h, true);
+#ifdef __EMSCRIPTEN__
+    if (emscripten_webgl_commit_frame() != EMSCRIPTEN_RESULT_SUCCESS)
+        recomp_fail("WebGL frame presentation failed", 0);
+#else
     SDL_GL_SwapWindow(s->window);
+#endif
     bind_surface(s);
     s->textures_dirty = true;
     return midpoint;
@@ -1471,7 +1524,7 @@ bool recomp_fast3d_gles2_input(RecompFast3DGles2 *s, RecompPad *pad) {
         pad->stick_x = (int8_t)(pad->stick_x * 7 / 10);
         pad->stick_y = (int8_t)(pad->stick_y * 7 / 10);
     }
-    recomp_input_poll(s->input, pad);
+    recomp_input_poll(s->input, pad, NULL);
     return true;
 }
 bool recomp_fast3d_gles2_full_sync(RecompFast3DGles2 *s) {
@@ -1556,7 +1609,11 @@ void recomp_fast3d_gles2_destroy(RecompFast3DGles2 *s) {
             s->gl.DeleteTextures(1, &s->capture.texture);
             s->gl.DeleteFramebuffers(1, &s->capture.framebuffer);
         }
+#ifdef __EMSCRIPTEN__
+        emscripten_webgl_destroy_context(s->context);
+#else
         SDL_GL_DeleteContext(s->context);
+#endif
     }
     if (s->window)
         SDL_DestroyWindow(s->window);

@@ -62,15 +62,25 @@ void hook_os_virtual_to_physical(Runtime *rt, MipsContext *ctx) {
         mips_set(ctx, 2, recomp_ram_address(rt, physical, 1));
         return;
     }
+    bool found = false;
+    uint32_t translated = UINT32_MAX;
     for (unsigned i = 0; i < 32; i++) {
         const RecompPageMapping *m = &rt->page_mappings[i];
         if (m->installed && address >= m->virtual_base &&
             (uint64_t)address < (uint64_t)m->virtual_base + 2 * m->page_size) {
-            mips_set(ctx, 2, recomp_ram_address(rt, address, 1));
-            return;
+            if (found)
+                recomp_fail("overlapping native page mappings", address);
+            found = true;
+            uint32_t offset = address - m->virtual_base;
+            unsigned page = offset / m->page_size;
+            if (m->physical[page] != UINT32_MAX)
+                translated = m->physical[page] + offset % m->page_size;
         }
     }
-    recomp_fail("osVirtualToPhysical has no native page mapping", address);
+    /* __osProbeTLB returns -1 for a probe miss or an invalid EntryLo half.
+     * Translation does not dereference the result; actual RAM accesses retain
+     * their normal bounds/validity checks. */
+    result(ctx, (int32_t)translated);
 }
 
 void hook_os_create_thread(Runtime *rt, MipsContext *ctx) {

@@ -22,9 +22,7 @@ termination. Address validation accepts physical/KSEG aliases only when they
 match upstream's 24-bit DRAM window. ADPCM offsets use integers until validated;
 base-volume/FIR arithmetic uses wide accumulators and envelope updates wrap
 explicitly. Sample end/restart sentinels remain integer positions until used;
-every actual resampling tap is checked. `games/re2-us-v1/debug/check_musyx.c`
-exercises synthetic PCM, ADPCM, stereo output and rejected spans with sanitizers;
-it can also replay private task snapshots.
+every actual resampling tap is checked.
 
 `jpeg.c` supplies the PS/OOT JPEG task decoder: dequantization, inverse DCT and
 RGBA5551 tile output. The CPU's JPEG parsing and Huffman decoding stay translated.

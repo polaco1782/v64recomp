@@ -1,39 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\re2-us-v1\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\re2-us-v1\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\debug\check_musyx.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\debug\check_video_dsp.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\re2-us-v1\debug\inspect_overlay.py">
-      <Filter>Source Files\debug</Filter>
-    </None>
+    <ClInclude Include="$(RecompRoot)games\re2-us-v1\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\re2-us-v1\generate.py">
       <Filter>Source Files</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\re2-us-v1\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\re2-us-v1\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\re2-us-v1\run.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\re2-us-v1\run.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\re2-us-v1\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -71,12 +53,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{6CF2580B-EEE3-5249-990A-4EA45B3EBEC5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{85F97A3D-EAB9-5371-AE3A-26A1A39CC735}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{1E83291B-60AE-5BF3-BD40-C65CF26C34D3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -23,7 +23,7 @@ transitions and save/reload acceptance have not yet been established.
 
 Linux uses `cmake --workflow --preset twine-us-debug` or `twine-us-release`.
 Debug supports the shared `--input`, `--wav`, `--capture-every` and
-`--trace-calls` options. Replays use zero-based frame numbers. Its report and
+`--trace-calls` options. Replays use zero-based frame numbers. Optional
 captures live under `build/msvc/twine-us/debug/debug-output/twine-us/` on Windows.
 EEPROM uses `local/saves/twine-us.eeprom`; the first Controller Pak uses that path
 with `.pak` appended. Save type/capacity and persistence still need acceptance.

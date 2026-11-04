@@ -79,12 +79,18 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'#define BOOT_GAME_SECTION {game_section["id"]}')
     for name,value in profile.get('inspection',{}).items():
         if type(value) is int:lines.append(f'#define GE_INSPECT_{name.upper()} UINT32_C(0x{value:x})')
-    (output / 'goldeneye_boot_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     analysis = profile['input_analysis']
     constants = {'CURRENT_PLAYER': analysis['current_player']['address'],
-                 'PROCESS_RETURN': profile['input_adapter']['process_return']}
+                 'PROCESS_RETURN': profile['input_adapter']['process_return'],
+                 'DUAL_STYLE': profile['input_adapter']['dual_style'],
+                 'STAGE_ADDRESS': profile['inspection']['stage_address'],
+                 'TITLE_STAGE': profile['inspection']['title_stage']}
     constants.update({f['name'].upper(): f['offset'] for f in analysis['player_fields']})
     constants.update({g['name'].upper(): g['address'] for g in profile['input_adapter']['globals']})
+    for name, target in [('X', 0x7000c0ec), ('Y', 0x7000c1fc), ('BUTTONS', 0x7000c30c)]:
+        call = next(c for c in analysis['calls'] if c['owner'] == 'bondviewProcessInput' and c['target'] == target)
+        constants[f'SECONDARY_{name}_RETURN'] = call['pc'] + 8
     angle = next(f for f in analysis['functions'] if f['name'] == 'bondviewApplyVertaTheta')
     entry = next(f for f in metadata['functions'] if f['vram'] == angle['vram'])
     lines = ['/* Verified GoldenEye input addresses; generated from profile.toml. */']
@@ -96,7 +102,8 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
                  'STAGE_ADDRESS': profile['inspection']['stage_address'],
                  'TITLE_STAGE': profile['inspection']['title_stage']}
     constants.update({f'{c["name"].upper()}_RETURN': c['pc'] + 8 for c in fov['calls']
-                      if c['name'] in ('viewport', 'zoom', 'render')})
+                      if c['name'] in ('viewport', 'zoom', 'render', 'player_aspect_wide', 'player_aspect_normal',
+                                       'vi_aspect_wide', 'vi_aspect_normal')})
     constants.update({f['name'].upper(): f['offset'] for f in fov['player_fields']})
     lines = ['/* Verified GoldenEye FOV addresses; generated from profile.toml. */']
     lines.extend(f'#define GE_FOV_{name} UINT32_C(0x{value:x})' for name, value in constants.items())

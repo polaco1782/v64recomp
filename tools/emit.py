@@ -500,7 +500,8 @@ def direct_call_targets(registry: dict, hooks: dict[tuple[int, int], str],
 def emit_function(function: dict, instructions: list[Instruction], registry: dict,
                   yield_sites: set[int] | None = None,
                   hooks: dict[tuple[int, int], str] | None = None,
-                  direct_targets: dict[int, DirectCallTarget] | None = None) -> str:
+                  direct_targets: dict[int, DirectCallTarget] | None = None,
+                  resume_entry: bool = False) -> str:
     log_emission('Emit %s s%s 0x%08x -> %s (%d instructions)',
                  function['name'], function['section'], function['vram'], cname(function), len(instructions),
                  verbose=True)
@@ -525,7 +526,9 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         # Anything here may run native code that reads or writes ctx.
         return [*flush(indent), *statements, *(reload(indent, skip_reload) if resume else [])]
 
-    if 'return_address_stack_offset' in function:
+    if resume_entry:
+        ra_line = '    uint32_t return_address = saved_return_address;'
+    elif 'return_address_stack_offset' in function:
         ra_line = (f"    uint32_t return_address = recomp_load32(runtime, "
                    f"(uint32_t){reg(29)} + UINT32_C(0x{function['return_address_stack_offset']:x}));")
     elif 'return_address_fpr' in function:
@@ -533,18 +536,31 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
     else:
         ra_line = f"    uint32_t return_address = (uint32_t){reg(function.get('return_address_register', 31))};"
 
+    symbol = cname(function) + ('_live_resume' if resume_entry else '')
+    arguments = ('Runtime *runtime, MipsContext *ctx, uint32_t start_pc, '
+                 'uint32_t saved_return_address, uint32_t saved_entry_stack_pointer' if resume_entry
+                 else 'Runtime *runtime, MipsContext *ctx')
     lines = [f"/* {safe_name} at 0x{function['vram']:08x} */",
-             f"void {cname(function)}(Runtime *runtime, MipsContext *ctx) {{",
+             f"void {symbol}({arguments}) {{",
              *(['    uint64_t ' + ', '.join(f'{reg(n)} = ctx->gpr[{n}]' for n in gprs) + ';'] if gprs else []),
              ra_line,
              "    (void)return_address; (void)runtime; (void)ctx;"]
+    if resume_entry:
+        lines.append('    (void)saved_entry_stack_pointer;')
     if function.get('unwind_calls'):
-        lines.append(f'    uint32_t entry_stack_pointer = (uint32_t){reg(29)};')
+        lines.append('    uint32_t entry_stack_pointer = saved_entry_stack_pointer;' if resume_entry
+                     else f'    uint32_t entry_stack_pointer = (uint32_t){reg(29)};')
 
     addresses = instruction_addresses(function)
     transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
     fallthrough_transfers = {t['pc']: t for t in function.get('fallthrough_transfers', [])}
     used_labels = set()
+    if resume_entry:
+        used_labels.update(f'L_{address:08x}:' for address in addresses)
+        lines.append('    switch (start_pc) {')
+        for address in sorted(addresses):
+            lines.append(f'    case UINT32_C(0x{address:08x}): goto L_{address:08x};')
+        lines.extend(['    default: recomp_fail("invalid live resume PC", start_pc);', '    }'])
     yield_sites = yield_sites or set()
     hooks = hooks or {}
     if direct_targets is None:
@@ -720,6 +736,15 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         if i.opcode in ('jr', 'jalr'):
             # Read the target before the delay slot can change the source register.
             lines.append(f"        uint32_t destination = (uint32_t){reg(i.rs)};")
+        relocated_jal = i.opcode == 'jal' and i.pc in function.get('relocation_pcs', [])
+        if relocated_jal:
+            # A loader may bind this J26 import after generation. Fetch the
+            # relocated instruction before executing its original delay slot.
+            lines.extend([f'        uint32_t call_pc = recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc:08x}));',
+                          '        uint32_t call_word = recomp_load32(runtime, call_pc);',
+                          '        if ((call_word >> 26) != 3)',
+                          '            recomp_fail("relocated call opcode mismatch", call_pc);',
+                          '        uint32_t destination = ((call_pc + 4) & UINT32_C(0xf0000000)) | ((call_word & UINT32_C(0x03ffffff)) << 2);'])
         if i.opcode in ('jal', 'jalr'):
             ra = (f'mips_s32(recomp_relocated_address(runtime, {function["section"]}, UINT32_C(0x{i.pc+8:08x})))'
                   if function.get('relocatable') else signed_constant(i.pc + 8, 32))
@@ -746,18 +771,23 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                                   *emit_call(address, '            ', resume=False), '            return;'])
             lines.append('        default:')
             lines.extend(flush('            '))
-            lines.extend(['            recomp_fail("unlisted indirect jump target", destination);', '        }'])
+            saved_sp = 'entry_stack_pointer' if function.get('unwind_calls') else '(uint32_t)ctx->gpr[29]'
+            lines.extend([f'            recomp_live_checked_jump(runtime, ctx, destination, UINT32_C(0x{i.pc:08x}),'
+                          f'                                     {function["section"]}, return_address, {saved_sp});',
+                          '            return;', '        }'])
         elif i.opcode == 'jr':
             if i.rs != 31:
                 log_emission('Indirect tail %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                              function['name'], function['section'], i.pc, i.assembly, verbose=True)
             # Flush before the branch: both the lookup-tail and the return path leave the function.
             lines.extend(flush('        '))
+            saved_sp = 'entry_stack_pointer' if function.get('unwind_calls') else '(uint32_t)ctx->gpr[29]'
             lines.extend(['        if (destination != return_address) {',
                           location(i.pc, '            '),
-                          '            recomp_lookup(runtime, destination)(runtime, ctx);', '        }', '        return;'])
+                          f'            recomp_live_indirect_jump(runtime, ctx, destination, UINT32_C(0x{i.pc:08x}),',
+                          f'                                      {function["section"]}, return_address, {saved_sp});',
+                          '        }', '        return;'])
         elif i.opcode in ('jal', 'jalr'):
-            dest = 'destination' if i.opcode == 'jalr' else f"UINT32_C(0x{target(i):08x})"
             if checked and not checked.get('registered_targets'):
                 destination = ('recomp_canonical_function_address(runtime, destination)'
                                if function.get('relocatable') else 'destination')
@@ -768,12 +798,13 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                                   *emit_call(address, '            '), '            break;'])
                 lines.append('        default:')
                 lines.extend(flush('            '))
-                lines.extend(['            recomp_fail("unlisted indirect call target", destination);', '        }'])
+                lines.extend([f'            recomp_live_checked_call(runtime, ctx, destination, UINT32_C(0x{i.pc:08x}), {function["section"]});',
+                              *reload('            '), '            break;', '        }'])
             else:
-                if i.opcode == 'jalr':
+                if i.opcode == 'jalr' or relocated_jal:
                     log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                                  function['name'], function['section'], i.pc, i.assembly, verbose=True)
-                    call = around([f"        recomp_lookup(runtime, {dest})(runtime, ctx);"], '        ')
+                    call = around(["        recomp_lookup(runtime, destination)(runtime, ctx);"], '        ')
                 else:
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))

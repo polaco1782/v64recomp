@@ -24,24 +24,15 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\sm64-us\audio.h" />
     <None Include="$(RecompRoot)games\sm64-us\CMakeLists.txt" />
+    <ClInclude Include="$(RecompRoot)games\sm64-us\audio.h" />
     <None Include="$(RecompRoot)games\sm64-us\code-inventory.json" />
-    <ClCompile Include="$(RecompRoot)games\sm64-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\sm64-us\debug\check_physics.py" />
-    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_audio.py" />
-    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_f3d.py" />
-    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_interior.py" />
-    <None Include="$(RecompRoot)games\sm64-us\debug\inspect_rom_assets.py" />
     <None Include="$(RecompRoot)games\sm64-us\game_config.py" />
     <None Include="$(RecompRoot)games\sm64-us\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\sm64-us\graphics.c" />
+    <ClInclude Include="$(RecompRoot)games\sm64-us\graphics.h" />
+    <ClCompile Include="$(RecompRoot)games\sm64-us\main.c" />
     <None Include="$(RecompRoot)games\sm64-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\sm64-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\sm64-us\validation_input.h" />
     <ClCompile Include="$(RecompBuildDir)\generated\sm64-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\sm64-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\sm64-us\functions.c')" />
     <ClInclude Include="$(RecompBuildDir)\generated\sm64-us\*.h" />

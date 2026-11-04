@@ -1,7 +1,7 @@
 #include "recomp_jpeg.h"
 #include "hle_internal.h"
 #include "memory.h"
-#include <openssl/evp.h>
+#include "hash.h"
 #include <stdarg.h>
 #include <setjmp.h>
 #include <stdio.h>
@@ -45,8 +45,7 @@ static bool fingerprint(Runtime *rt, uint32_t address, uint32_t bytes, const cha
     for (uint32_t i = 0; i < bytes; i++)
         image[i] = rt->rdram[(physical + i) ^ 3];
     uint8_t digest[32];
-    unsigned length = 0;
-    bool ok = EVP_Digest(image, bytes, digest, &length, EVP_sha256(), NULL) && length == 32;
+    bool ok = recomp_sha256(image, bytes, digest);
     free(image);
     for (unsigned i = 0; ok && i < 32; i++) {
         unsigned expected;

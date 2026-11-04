@@ -31,8 +31,8 @@ cmake --workflow --preset sm64-us-debug
 ./build/sm64-us-debug/bin/sm64-us --help
 ```
 
-Debug renderer reports include `display_frames` and
-`display_elapsed_ns` to distinguish displayed frames from host presentations.
+Shared renderer statistics distinguish displayed frames from host presentations;
+Debug uses the common tracing, replay and capture options.
 
 Configure either mode with `-DRECOMP_EMBED_ROM=ON` to include ROM content in the
 executable and launch without the external ROM. SM64's complete checked inventory
@@ -41,23 +41,19 @@ boot block while retaining data and RSP programs. See
 [ROM packaging](../../docs/rom-packaging.md) for exact scope, validation, reports
 and comparison with an original ROM through `--rom`.
 
-`release/` contains the playable app and Release-only sources. `debug/` contains
-the original trace/capture harness and inspection tools. Shared headers, adapters,
-`generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
-build directory, and private ROM/save data stays in `local/`.
+`main.c` contains the shared entry point and lifecycle for Debug and Release.
+Headers, adapters, `generate.py`, `profile.toml`, inventories and maintained
+replay inputs live beside it. Generated code stays under the selected build
+directory; private ROMs and saves stay in `local/`.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).
 
-The generated physics regression can run without launching the game. From a
-Developer PowerShell after generating/building SM64:
+Word shifts retain the fix for MSVC optimized sign extension that affected
+packed physics parameters. The standalone physics regression harness and
+scripted validation frontend have been removed; Debug now uses the common
+frame loop, replay and capture options.
 
-```powershell
-.\.venv\Scripts\python.exe games/sm64-us/debug/check_physics.py --build build/msvc/sm64-us/release --cc cl
-```
+## Browser preview
 
-It checks arithmetic shifts and the generated `SET_OBJ_PHYSICS` routine with
-intrinsics enabled and disabled, at both compiler optimization levels. This
-covers an MSVC optimized sign-extension failure that turned Goomba drag from
-`10` into `-645.36`, causing runaway speed and an animation conversion trap in
-Bowser in the Fire Sea. On Linux, select an existing SM64 build and `--cc clang`.
+See [WebAssembly build and validation](../../docs/webassembly.md) for the experimental Emscripten/GLES2 target.

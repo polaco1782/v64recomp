@@ -23730,6 +23730,7 @@
     },
     "osVirtualToPhysical": {
       "native_signatures": [
+        {"handler": "hook_os_virtual_to_physical", "body_size": 124, "sha256": "c8a1bc746351256e03f3266340afe6890d5264db6126ccbc53b281ff87f66907", "expected_words": [666763240, 2946760728, 2410545176, 1006731264], "notes": ["1080 Snowboarding JU revision 0, 0x80116840: complete relocated body reviewed. KSEG0/1 mask, fallback __osProbeTLB at 0x80117d50 returns -1 for missing/invalid mappings."]},
         {"handler": "hook_os_virtual_to_physical", "body_size": 84, "sha256": "26706c30148ebbd9fee5b1dc51d47b198151e2f84649ecf23a1e64734d978837", "expected_words": [666763240, 1006837759, 878968831, 1006796800, 8523811, 6426667, 272629770, 2948530192]},
         {"handler": "hook_os_virtual_to_physical", "body_size": 84, "sha256": "2d88f93ea419a3e9ead4d18325b8fff782e0bcc1b8b38c83418afe7057ab3565", "expected_words": [666763240, 1006837759, 878968831, 1006796800, 8523811, 6426667, 272629770, 2948530192], "notes": ["TWINE USA revision 0; complete SDK body and relocated calls/globals reviewed"]},
         {"handler": "hook_os_virtual_to_physical", "body_size": 84, "sha256": "2f2f283b286544585b9ba7f691dae164b6b617ef9f5e9ae37b6a92700a5ce558", "expected_words": [666763240, 1006837759, 878968831, 1006796800], "notes": ["Quake II US rev 0; SHA-1 2edb00e602e7c2813a5d6a04dfec80487627237a; VRAM 0x80052360. Reviewed o32 arguments, SDK calls/globals and return boundary."]},

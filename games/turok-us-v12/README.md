@@ -34,20 +34,19 @@ host remap.
 ```sh
 cmake --workflow --preset turok-us-v12-debug
 ./build/turok-us-v12-debug/bin/turok-us-v12 --frames 1800 \
-  --input games/turok-us-v12/debug/title.txt --capture-every 150
+  --input local/replays/turok-us-v12-title.txt --capture-every 150
 ```
 
-Debug reports/captures are under
+Optional Debug captures are under
 `build/turok-us-v12-debug/debug-output/turok-us-v12/`. Replay frames are presentation
-indices, rather than guest game frames. `debug/play-through.txt` starts play and
+indices, rather than guest game frames. `local/replays/turok-us-v12-play-through.txt` starts play and
 exercises movement, firing, jumping, weapon selection, automap and pause/resume.
 The bounded 3,000-presentation gameplay replay and 3,300-presentation Release
 X11 replay completed; the final 55-second Release replay exercised the live host
 remap and restored widescreen, including camera turning and the automap. These
 are focused acceptance paths, not full-game coverage.
 Nonzero PCM and SDL queue activity are verified, while listening quality remains
-unverified. Set `RECOMP_TUROK_CAPTURE_FROM` to a presentation index to bound capture
-output during a focused late-game diagnostic.
+unverified. Use `--capture-every N` for optional periodic screenshots.
 
 Turok uses the shared expanded widescreen viewport and 60 FPS interpolation. Disabling interpolation or widescreen did not fix
 the starting-camera fog flashes. The verified cause was RT64's combined
@@ -79,9 +78,9 @@ unpacked CRC checks and appends it at analysis offset `0x800000`. Those analysis
 offsets are never used as cartridge DMA offsets.
 
 Live decoded bytes are fully checked before activating the main section. The
-adapter suppresses scheduler-global publication during IPL decompression. Debug
-poisons and checks the original BSS clear at `0x800f9170..0x8013a280`; the synthetic
-IPL thread is destroyed and joined at the verified main-thread handoff before its
+adapter suppresses scheduler-global publication during IPL decompression.
+The ROM clears BSS at `0x800f9170..0x8013a280`; the synthetic IPL thread is
+destroyed and joined at the verified main-thread handoff before its
 RAM can be reused. The game uses 4 MiB RAM and its original 46.875 MHz counter.
 
 The original RNC2 wrapper calls `0x80000c78`, also the terminal `jr ra` delay slot
@@ -125,3 +124,6 @@ as translated guest code.
 
 No external ROM or game assets were fetched. References remain private scratch
 material; build/discovery depend only on this repository and the user's pinned ROM.
+
+Replay commands above use private input files under `local/replays/`; create or
+restore those recordings before running them. They are not shipped with the port.

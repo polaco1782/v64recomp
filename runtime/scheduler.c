@@ -5,6 +5,9 @@
 #endif
 
 #include "runtime.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten/threading.h>
+#endif
 #include "runtime_debug.h"
 #include "timing.h"
 #include <stdatomic.h>
@@ -477,6 +480,8 @@ static void *enter(void *opaque) {
     for (size_t i = 0; i < strlen(name); i++)
         wide_name[i] = (unsigned char)name[i];
     SetThreadDescription(GetCurrentThread(), wide_name);
+#elif defined(__EMSCRIPTEN__)
+    emscripten_set_thread_name(pthread_self(), name);
 #else
     pthread_setname_np(pthread_self(), name);
 #endif

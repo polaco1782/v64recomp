@@ -2,6 +2,7 @@
 #define RECOMP_RENDERER_H
 #include "runtime.h"
 #include "mouse_input.h"
+#include "input.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,7 +18,7 @@ typedef struct RecompVertexIdentity {
 void recomp_renderer_set_vertex_identity(RecompRenderer *, const RecompVertexIdentity *);
 /* Configure the original graphics microcode accepted by the GLES2 parser. */
 void recomp_renderer_graphics_identity(RecompRenderer *, const char *code_sha256, uint32_t code_bytes,
-                                      const char *data_sha256, uint32_t data_bytes);
+                                       const char *data_sha256, uint32_t data_bytes);
 typedef void (*RecompGraphicsHook)(void *interpreter, size_t ram_size, uint64_t *rdp_triangles);
 typedef bool (*RecompMicrocodeHook)(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
 typedef struct RecompRendererStats {
@@ -34,6 +35,9 @@ typedef struct RecompRendererStats {
  * guest execution parked. Display-list parsing, readbacks and presentation
  * preparation use live RAM; RT64's render/present queues remain asynchronous. */
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
+/* Select PNG/JSON texture dumping for subsequently created renderers.
+ * Call before renderer creation; NULL disables dumping (the default). */
+void recomp_renderer_configure_texture_dump(const char *directory);
 /* Defaults to 60 FPS interpolation. 0 preserves the game's original rate;
  * 10..1000 enables RT64 interpolation at the requested rate.
  * GLES2 defaults to native and accepts 0/30 (native) or 60 (geometry midpoints).
@@ -48,13 +52,28 @@ void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
 /* Bare-metal RDP DMA, without an RSP microcode task. Registers describe the
  * actual scanout; framebuffer is its base before the VI scanline offset. */
-bool recomp_renderer_submit_rdp(RecompRenderer *, uint32_t start, uint32_t end,
-                                const RecompViRegisters *, uint32_t framebuffer);
+bool recomp_renderer_submit_rdp(RecompRenderer *, uint32_t start, uint32_t end, const RecompViRegisters *,
+                                uint32_t framebuffer);
 bool recomp_renderer_present(RecompRenderer *);
 bool recomp_renderer_input(RecompRenderer *, RecompPad *);
+/* Opt into keypad +/- FOV changes, one degree per keydown (including repeat).
+ * Callback runs on the host owner with guest execution parked. */
+void recomp_renderer_set_fov_hook(RecompRenderer *, void (*adjust)(int steps));
+/* Opt into a game's native anamorphic projection instead of RT64 expansion.
+ * Called with the window aspect (4:3 when F7 is off) on the parked owner.
+ * Return true when the native world camera supports that aspect; presentation
+ * then stretches the completed native framebuffer to the window. */
+void recomp_renderer_set_aspect_hook(RecompRenderer *, bool (*update)(void *, float), void *opaque);
 /* Opt-in PC controls. Gameplay false releases capture and clears motion.
  * Escape toggles capture; F4 recaptures; F10 quits. Other games are unchanged. */
 void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);
+/* Opt into arrow keys as C-buttons and WASD as the analog stick. This mapping
+ * remains available when mouse capture ends, including dialog/instrument modes. */
+void recomp_renderer_keyboard_c_buttons(RecompRenderer *, bool enabled);
+/* Native right-stick camera and D-pad C-buttons, independent of mouse capture.
+ * The held camera state is neutral while unfocused or a UI captures input. */
+void recomp_renderer_gamepad_camera_mode(RecompRenderer *, bool enabled);
+RecompCameraStick recomp_renderer_camera_stick(RecompRenderer *);
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *);
 bool recomp_renderer_capture(RecompRenderer *, const char *ppm_path);
 RecompRendererStats recomp_renderer_stats(RecompRenderer *);

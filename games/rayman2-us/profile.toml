@@ -4,7 +4,7 @@ name = "Rayman 2: The Great Escape (US)"
 rom = "../../local/rayman2.us.z64"
 rom_sha1 = "50558356b059ad3fbaf5fe95380512b9dceaaf52"
 rom_size = 0x2000000
-ram_size = 0x400000
+ram_size = 0x800000
 entry_symbol = "entry_point"
 code_sections = [".boot", ".main", ".support"]
 boot_sections = [".boot"]
@@ -25,6 +25,13 @@ roots = [
   {name = "mainproc", vram = 0x800004c0},
   {name = "prenmi_thread", vram = 0x800007ec},
   {name = "game_thread", vram = 0x80000854},
+  # Functions promoted from verified live modules.
+  {name = "live_800b5e78", vram = 0x800b5e78, section = ".main"},
+  {name = "live_800b5ea0", vram = 0x800b5ea0, section = ".main"},
+  {name = "live_800b74d8", vram = 0x800b74d8, section = ".main"},
+  {name = "live_800b7500", vram = 0x800b7500, section = ".main"},
+  {name = "live_800b807c", vram = 0x800b807c, section = ".main"},
+  {name = "live_800b8098", vram = 0x800b8098, section = ".main"},
 ]
 
 # Table counts follow the unsigned bounds checks immediately before each JR.
@@ -195,4 +202,4 @@ boot_stack = 0x803fd000
 0x8000030c = 0
 0x80000310 = 0x17d6
 0x80000314 = 1
-0x80000318 = 0x400000
+0x80000318 = 0x800000

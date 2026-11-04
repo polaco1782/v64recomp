@@ -98,3 +98,13 @@ RT64's bundled dependencies retain their licenses under `third_party/rt64/`,
 including the notices in its submodules and `src/contrib/`. External libraries
 and build tools retain their respective licenses. This project license does
 not grant rights to ROMs, game assets, or third-party texture packs.
+
+## Berkeley SoftFloat (optional portable guest FPU)
+
+Browser builds and desktop builds with `RECOMP_SOFTFLOAT=ON` fetch Berkeley
+SoftFloat Release 3e, copyright John R. Hauser and The Regents of the University
+of California, from <https://github.com/ucb-bar/berkeley-softfloat-3> at commit
+`07ebd29db0cfb55723a79fbbffe99103ef38e305`. Its BSD 3-clause license is copied
+from the pinned upstream `COPYING.txt` into `bin/licenses/SoftFloat.txt`.
+The repository supplies a portable platform configuration and build integration;
+upstream arithmetic sources are unmodified.

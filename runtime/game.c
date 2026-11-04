@@ -23,6 +23,101 @@
 
 static const char *crash_dir;
 static uint8_t rom_sha1[20];
+#ifdef RECOMP_DEBUG
+static RecompGameOptions debug_options;
+static FILE *input_script;
+static uint64_t presentation;
+static uint32_t input_frame, previous_input_frame;
+static bool next_input;
+static RecompPad replay_pad = {.connected = true}, pending_pad = {.connected = true};
+
+bool recomp_game_replaying(void) {
+    return input_script != NULL;
+}
+
+static void close_input(void) {
+    if (input_script) {
+        fclose(input_script);
+        input_script = NULL;
+    }
+}
+
+static void read_input(void) {
+    char row[256];
+    next_input = false;
+    while (fgets(row, sizeof(row), input_script)) {
+        char *cursor = row;
+        while (*cursor == ' ' || *cursor == '\t' || *cursor == '\r' || *cursor == '\n')
+            cursor++;
+        if (!*cursor || *cursor == '#')
+            continue;
+        long long values[4];
+        for (unsigned i = 0; i < 4; i++) {
+            char *end;
+            errno = 0;
+            values[i] = strtoll(cursor, &end, 10);
+            recomp_game_require(!errno && end != cursor, "invalid controller replay row", previous_input_frame);
+            cursor = end;
+        }
+        while (*cursor == ' ' || *cursor == '\t' || *cursor == '\r' || *cursor == '\n')
+            cursor++;
+        recomp_game_require(!*cursor && values[0] >= previous_input_frame && values[0] <= UINT32_MAX &&
+                                values[1] >= 0 && values[1] <= UINT16_MAX && values[2] >= -128 && values[2] <= 127 &&
+                                values[3] >= -128 && values[3] <= 127,
+                            "invalid controller replay values", previous_input_frame);
+        input_frame = previous_input_frame = (uint32_t)values[0];
+        pending_pad = (RecompPad){.connected = true,
+                                  .buttons = (uint16_t)values[1],
+                                  .stick_x = (int8_t)values[2],
+                                  .stick_y = (int8_t)values[3]};
+        next_input = true;
+        return;
+    }
+    recomp_game_require(!ferror(input_script), "controller replay read failed", previous_input_frame);
+}
+#endif
+
+bool recomp_game_input(Runtime *rt, unsigned controller, const RecompPad *pad) {
+#ifdef RECOMP_DEBUG
+    if (input_script && controller == 0) {
+        while (next_input && input_frame <= presentation) {
+            replay_pad = pending_pad;
+            read_input();
+        }
+        pad = &replay_pad;
+    }
+#endif
+    return recomp_input_set(rt, controller, pad);
+}
+
+bool recomp_game_present(RecompRenderer *renderer) {
+    if (!recomp_renderer_present(renderer))
+        return false;
+#ifdef RECOMP_DEBUG
+    presentation++;
+    if (debug_options.capture_every && presentation % debug_options.capture_every == 0) {
+        char path[4096];
+        recomp_game_require(snprintf(path, sizeof(path), "%s/frame-%06" PRIu64 ".ppm", RECOMP_DEBUG_OUTPUT,
+                                     presentation) < (int)sizeof(path),
+                            "capture path too long", 0);
+        recomp_game_require(recomp_renderer_capture(renderer, path), "frame capture failed", 0);
+    }
+#endif
+    return true;
+}
+
+RecompAudio *recomp_game_audio_create(Runtime *rt, const RecompAudioConfig *config) {
+#ifdef RECOMP_DEBUG
+    RecompAudioConfig configured = *config;
+    if (debug_options.wav)
+        configured.wav_path = debug_options.wav;
+    if (debug_options.audio_trace)
+        configured.trace_path = debug_options.audio_trace;
+    config = &configured;
+#endif
+    return recomp_audio_create(rt, config);
+}
+
 static void directory(const char *path) {
     char buffer[4096];
     recomp_game_require(strlen(path) < sizeof(buffer), "game directory path too long", 0);
@@ -46,6 +141,7 @@ static void directory(const char *path) {
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
     const char *texture_pack = NULL;
+    const char *texture_dump = NULL;
     const char *profile_directory = NULL;
     unsigned profile_hz = 99, profile_delay = 0, profile_seconds = 0;
     *o = (RecompGameOptions){.rom = RECOMP_DEFAULT_ROM,
@@ -56,18 +152,31 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
             printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
-                   "[--texture-pack ZIP]\n"
+                   "[--texture-pack ZIP] [--texture-dump DIR]\n"
+                   "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
+                   "                        Skip textures below 64 pixels or with a single RGBA color\n"
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
                    "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
                    "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
                    "  --profile-seconds N    Stop profiling after N seconds; 0 = until exit (default)\n",
                    argv[0]);
+#ifdef RECOMP_DEBUG
+            puts("Debug: --trace-calls --input FILE --wav FILE --audio-trace FILE --capture-every N\n"
+                 "  Input rows: frame buttons stick_x stick_y (decimal, starting at frame 0).\n"
+                 "  Captures: " RECOMP_DEBUG_OUTPUT "/frame-NNNNNN.ppm");
+#endif
             return 1;
         }
         if (!strcmp(arg, "--mute")) {
             o->mute = true;
             continue;
         }
+#ifdef RECOMP_DEBUG
+        if (!strcmp(arg, "--trace-calls")) {
+            o->trace_calls = true;
+            continue;
+        }
+#endif
         if (i + 1 >= argc) {
             fprintf(stderr, "missing value for %s\n", arg);
             return -1;
@@ -85,6 +194,24 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->save = value;
         else if (!strcmp(arg, "--crash-dir"))
             o->crash_dir = value;
+#ifdef RECOMP_DEBUG
+        else if (!strcmp(arg, "--input"))
+            o->input = value;
+        else if (!strcmp(arg, "--wav"))
+            o->wav = value;
+        else if (!strcmp(arg, "--audio-trace"))
+            o->audio_trace = value;
+        else if (!strcmp(arg, "--capture-every")) {
+            char *end;
+            errno = 0;
+            unsigned long n = strtoul(value, &end, 10);
+            if (errno || *end || *value < '0' || *value > '9' || n > UINT32_MAX) {
+                fprintf(stderr, "invalid capture interval: %s\n", value);
+                return -1;
+            }
+            o->capture_every = (uint32_t)n;
+        }
+#endif
         else if (!strcmp(arg, "--texture-pack")) {
             struct stat source;
             if (stat(value, &source) || !S_ISREG(source.st_mode)) {
@@ -92,7 +219,9 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                 return -1;
             }
             texture_pack = value;
-        } else if (!strcmp(arg, "--profile"))
+        } else if (!strcmp(arg, "--texture-dump"))
+            texture_dump = value;
+        else if (!strcmp(arg, "--profile"))
             profile_directory = value;
         else if (!strcmp(arg, "--profile-hz") || !strcmp(arg, "--profile-delay") || !strcmp(arg, "--profile-seconds")) {
             char *end;
@@ -140,12 +269,41 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         directory(parent);
     }
     crash_dir = o->crash_dir;
+    recomp_renderer_configure_texture_dump(texture_dump);
     if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
         setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
     if (texture_pack)
         setenv("RECOMP_TEXTURE_PACK", texture_pack, 1);
+#ifdef RECOMP_EMBED_TEXTURE_PACK
+    else if (!getenv("RECOMP_TEXTURE_PACK")) {
+        char executable[4096];
+#ifdef _WIN32
+        DWORD n = GetModuleFileNameA(NULL, executable, sizeof(executable));
+        recomp_game_require(n > 0 && n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
+#else
+        ssize_t n = readlink("/proc/self/exe", executable, sizeof(executable));
+        recomp_game_require(n > 0 && (size_t)n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
+#endif
+        executable[n] = 0;
+        recomp_game_require(!setenv("RECOMP_TEXTURE_PACK", executable, 1), "cannot select embedded texture ZIP", 0);
+    }
+#endif
     if (profile_directory && !recomp_profile_start(profile_directory, profile_hz, profile_delay, profile_seconds))
         return -1;
+#ifdef RECOMP_DEBUG
+    debug_options = *o;
+    if (o->capture_every)
+        directory(RECOMP_DEBUG_OUTPUT);
+    if (o->input) {
+        input_script = fopen(o->input, "r");
+        if (!input_script) {
+            fprintf(stderr, "cannot open controller replay: %s\n", o->input);
+            return -1;
+        }
+        atexit(close_input);
+        read_input();
+    }
+#endif
     return 0;
 }
 void recomp_game_require(bool condition, const char *message, uint32_t address) {
@@ -153,9 +311,7 @@ void recomp_game_require(bool condition, const char *message, uint32_t address) 
         recomp_fail(message, address);
 }
 uint64_t recomp_game_monotonic(void) {
-    struct timespec ts;
-    recomp_game_require(clock_gettime(CLOCK_MONOTONIC, &ts) == 0, "host clock failed", 0);
-    return (uint64_t)ts.tv_sec * UINT64_C(1000000000) + (uint64_t)ts.tv_nsec;
+    return recomp_monotonic_ns();
 }
 void recomp_game_sleep(uint64_t deadline) {
     struct timespec ts = {(time_t)(deadline / 1000000000), (long)(deadline % 1000000000)};
@@ -212,9 +368,8 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
     char path[4096], ram_path[4096], executable[4096];
     /* Keep earlier failures, including failures from simultaneous sessions. */
     uint64_t stamp = recomp_game_monotonic();
-    if (snprintf(path, sizeof(path), "%s/%s-%ld-%" PRIu64 ".json", crash_dir,
-                 info->warning ? "warning" : "crash", (long)getpid(), stamp) >=
-            (int)sizeof(path) ||
+    if (snprintf(path, sizeof(path), "%s/%s-%ld-%" PRIu64 ".json", crash_dir, info->warning ? "warning" : "crash",
+                 (long)getpid(), stamp) >= (int)sizeof(path) ||
         snprintf(ram_path, sizeof(ram_path), "%s.rdram.bin", path) >= (int)sizeof(ram_path))
         return;
     FILE *f = fopen(ram_path, "wb");
@@ -291,7 +446,10 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         uintptr_t base = (uintptr_t)handle;
         if (handle)
             GetModuleFileNameA(handle, module, sizeof(module));
-        union { SYMBOL_INFO info; char bytes[sizeof(SYMBOL_INFO) + MAX_SYM_NAME]; } symbol = {0};
+        union {
+            SYMBOL_INFO info;
+            char bytes[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
+        } symbol = {0};
         symbol.info.SizeOfStruct = sizeof(SYMBOL_INFO);
         symbol.info.MaxNameLen = MAX_SYM_NAME;
         bool named = symbols && SymFromAddr(process, address, NULL, &symbol.info);
@@ -300,6 +458,9 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         quoted(f, module);
         fputs(",\"symbol\":", f);
         quoted(f, named ? symbol.info.Name : NULL);
+#elif defined(__EMSCRIPTEN__)
+        fprintf(f, "%s{\"address\":\"0x%" PRIxPTR "\",\"symbol\":null", i ? "," : "",
+                (uintptr_t)info->native_frames[i]);
 #else
         Dl_info d = {0};
         (void)dladdr(info->native_frames[i], &d);
@@ -326,16 +487,26 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
     fputs("}}\n", f);
     bool okay = !ferror(f);
     okay = fclose(f) == 0 && okay;
-    fprintf(stderr, "%s report %s: %s\n", info->warning ? "Warning" : "Crash",
-            okay ? "written" : "incomplete", path);
+    fprintf(stderr, "%s report %s: %s\n", info->warning ? "Warning" : "Crash", okay ? "written" : "incomplete", path);
 }
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, const uint8_t sha1[20]) {
-    /* Positional diagnostic entry points may bypass recomp_game_options(). */
+#ifdef RECOMP_DEBUG
+    recomp_debug_trace_calls = o->trace_calls;
+#endif
+    /* Callers may supply options directly; keep a default crash destination. */
     if (o->crash_dir)
         crash_dir = o->crash_dir;
     if (!crash_dir)
         crash_dir = RECOMP_DEFAULT_CRASH;
     directory(crash_dir);
+    rt->live_patch_dir = RECOMP_DEFAULT_LIVE_PATCH_DIR;
+    rt->live_patch_python = RECOMP_DEFAULT_LIVE_PYTHON;
+    rt->live_patch_script = RECOMP_DEFAULT_LIVE_SCRIPT;
+    rt->live_patch_game = RECOMP_GAME_ID;
+    rt->live_patch_build_dir = RECOMP_DEFAULT_LIVE_BUILD_DIR;
+    const char *live_override = getenv("RECOMP_LIVE_PATCH_DIR");
+    if (!live_override || (*live_override && strcmp(live_override, "off")))
+        directory(live_override ? live_override : rt->live_patch_dir);
     memcpy(rom_sha1, sha1, sizeof(rom_sha1));
     recomp_set_failure_handler(failure, rt);
 #ifdef RECOMP_EMBED_ROM
@@ -345,7 +516,7 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
         uint8_t *rom = malloc(bytes);
         recomp_game_require(rom != NULL, "cannot allocate embedded ROM", 0);
         memcpy(rom, recomp_embedded_rom, bytes);
-        /* Verify the sanitized payload against its own digest. The original
+        /* Verify the embedded payload against its own digest. The original
          * identity above still binds it to this game's generated native code. */
         recomp_game_require(recomp_rom_attach(rt, rom, bytes, recomp_embedded_sha1), "embedded ROM content mismatch",
                             0);

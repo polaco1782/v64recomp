@@ -131,8 +131,14 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     progress.stage('Inspecting unregistered function candidates')
     candidates=inspect_candidates(rom,metadata)
     write_json(output/'function-candidates.json',candidates)
-    print(f"{game}: unregistered function candidates {candidates['summary']}; "
-          f"see {output/'function-candidates.json'} (review required)",flush=True)
+    print(f"{game}: diagnostic function candidates {candidates['summary']}; "
+          f"see {output/'function-candidates.json'} "
+          "(not registered automatically; build continues)", flush=True)
+    if candidates['summary'].get('likely', 0) >= 100:
+        print(f"{game}: candidate-review ranks missing call trees and indirect "
+              "tables; candidate-review-roots and candidate-review-tables "
+              "verify bounded batches and save accepted entries in profile.toml.",
+              flush=True)
     if not report_only and hasattr(generator,'configure_translation'):
         progress.stage('Configuring translation')
         generator.configure_translation(rom,metadata,profile,output)

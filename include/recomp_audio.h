@@ -53,9 +53,6 @@ RecompAudio *recomp_audio_create(Runtime *, const RecompAudioConfig *);
 void recomp_audio_destroy(RecompAudio *);
 void recomp_audio_set_output_enabled(RecompAudio *, bool);
 bool recomp_audio_submit(RecompAudio *, const RecompTask *);
-/* Explicit ABI1 DSP entry point, without microcode recognition or task receipts.
- * Useful for independent signal fixtures. Normal game tasks use submit(). */
-void recomp_audio_execute_abi1(RecompAudio *, uint32_t commands, uint32_t bytes);
 RecompAudioStats recomp_audio_stats(RecompAudio *);
 RecompAudioSnapshot recomp_audio_snapshot(const RecompAudio *);
 #ifdef __cplusplus

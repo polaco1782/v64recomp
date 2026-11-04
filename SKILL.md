@@ -88,8 +88,9 @@ Keep game-specific files under `games/<game>/`. Put shared services in `runtime/
 Follow the required filenames and source placement in [AGENTS.md](AGENTS.md).
 Use the same structure for every new game; older layouts and external reference
 projects do not override it. Keep all headers, shared adapters and generation
-helpers in the game's parent folder. Reserve `debug/` and `release/` for their
-own entry points and configuration-specific sources or diagnostic inputs.
+helpers in the game's root folder. Use one `main.c` for both build modes.
+Do not create `debug/` or `release/` source directories, separate app entry points,
+or thin `run.c`/`run.h` launchers. Keep any retained replay inputs beside the code.
 
 Create the files the port needs:
 
@@ -99,8 +100,8 @@ Create the files the port needs:
 - `generate.py`: configuration emission and optional preparation/metadata
   hooks, following `tools/generate_game.py`'s current interface.
 - Parent-folder headers, adapters and audio profiles shared by both builds.
-- `release/app.c`: the playable runtime and any Release-only sources.
-- `debug/app.c`: bounded diagnostics, replay, captures, and startup checks.
+- `main.c`: one entry point, game state, bootstrap, frame loop and teardown for
+  both builds; small `#ifdef RECOMP_DEBUG` blocks for game-specific diagnostics.
 - `CMakeLists.txt` and `README.md`: build integration and accurate game instructions.
 
 Do not split the profile into additional TOML files or introduce an inheritance
@@ -114,24 +115,34 @@ compressed data; they do not maintain a second table inventory. ROM-bound JSON
 code/entry inventories remain separate evidence files.
 
 Export `write_config(profile, metadata, output, startup)` from the
-parent-folder `generate.py`, with optional hooks as documented in
+parent-folder `generate.py`, emitting `game_config.h` under the generated build
+directory, with optional hooks as documented in
 [adding a ROM](docs/adding-a-rom.md). Keep game-specific generation logic there
 rather than adding game-ID branches to the shared driver.
 
 Register the ID in root `CMakeLists.txt`'s `RECOMP_GAMES` and
 `tools/generate_game.py`'s `GAMES`. Add Release/Debug configure, build and workflow
 presets in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
-entries. Each workflow runs its matching configure and build presets; build
-presets default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
+entries. Each workflow runs its matching configure preset, its
+`promote-live-patches` build preset, then its normal build preset; normal builds
+default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
 additional sources, generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
 Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
 game-specific RT64 copy. Its independent build cache is under `build/shared/rt64/`.
-List shared translation units in `RECOMP_GAME_SOURCES`; use
-`RECOMP_GAME_DEBUG_SOURCES` / `RECOMP_GAME_RELEASE_SOURCES` for additional
-mode-specific sources. Neither mode may include or compile files from the other
-mode's folder. Check source lists, tool paths and docs against this layout before
-handing off the port.
+List only additional root-level translation units in `RECOMP_GAME_SOURCES`;
+`cmake/Game.cmake` always compiles `main.c`. Keep separate input, graphics, paging
+or codec adapters only for independent responsibilities. Check source lists,
+tool paths and docs against this layout before handing off the port.
+
+Follow the starter pattern in [adding a ROM](docs/adding-a-rom.md#7-add-the-native-application-and-cmake-integration):
+includes, game state, static helpers/native hooks, then `main`. Parse options once
+with `recomp_game_options`; initialize runtime, ROM, services and backends; boot;
+run the common frame loop; tear down. Use `recomp_game_input`,
+`recomp_game_present` and `recomp_game_audio_create` so Debug replay, captures and
+audio recording come from the shared game layer. Core dispatch supplies tracing.
+Do not recreate per-game argument shims, controller replay parsers, report writers or
+standalone validation harnesses. Release retains all runtime correctness checks.
 
 CMake is the user-facing build/run selector. Python handles generation and
 analysis. Do not recreate obsolete per-game Python build/launch wrappers.
@@ -178,9 +189,10 @@ offset, instruction bytes, and evidence for the proposed classification.
 | Overlapping functions or nonsense instructions | Revisit code/data classification, function ownership, shared tails, delay slots, section overlap, decompression, and relocations. Do not grow a code region merely to absorb the error. |
 | Privileged instruction, hardware access, or unknown SDK routine | Determine whether this is an OS/device boundary, a game-specific pager, or real CPU code. Use the shared native catalog/runtime or a checked game adapter as appropriate. |
 
-For callback discovery, use `pointer_entries` and `materialized_entries` from
-`tools/metadata_candidates.py`; OOT's `debug/analyze_callbacks.py` demonstrates
-their use. Adapt ranges to the new game and exclude known switch tables/data.
+For callback discovery, use `tools/inspect_callbacks.py` and
+`tools/inspect_function_candidates.py`, which share the scans in
+`tools/metadata_candidates.py`. Adapt ranges to the new game and exclude known
+switch tables/data.
 Treat pointer scans, stack-prologue scans, and valid-looking MIPS as candidates.
 Review call sites, instruction flow, alignment, section identity, and code/data
 ownership before adding entries. Do not blindly apply another game's analyzer.
@@ -202,9 +214,21 @@ Use the maintained command-line tools before writing investigation snippets:
   targets marked `review`: reaching the bounded body-probe limit does not rule
   out a real callback. Never bulk-register
   the candidate list. See [ROM diagnostics](docs/rom-diagnostics.md) for report
-  interpretation and scanner regression checks. For already registered targets, use
+  interpretation. For already registered targets, use
   `tools/inspect_function_candidates.py --game <game> --metadata PATH
   --include-registered --output build/<game>-function-candidates.json`.
+- A table with an unproved selector range cannot become a checked
+  `function_tables` declaration. Its exact ROM pointer slots may still support
+  individual roots after the consumer, distinct entry boundaries, closed bodies,
+  and full discovery and translation are checked. Leave ambiguous slots out.
+- When likely candidates form a disconnected call tree, run
+  `tools/probe_function_roots.py --game <game> --build-dir build/<game>-debug`
+  to see what a temporary root would discover. Use
+  `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+  --roots-only --codex` for bounded Codex review; accepted entries are written
+  to the checked profile after ROM and generation validation. The CMake
+  `candidate-review-roots` target runs this review explicitly. A dry-run
+  discovery result alone is not proof of a real entry.
 - Shared discovery automatically follows constant callback arguments when a
   translated callee's owned control flow proves that argument reaches `jalr`.
   It also follows constant indirect-call targets and repeats to a fixed point.
@@ -438,8 +462,9 @@ unavailable, continue independent work and report that acceptance gap explicitly
 Verify title/menu navigation, starting play, visible scene updates, movement and
 game-specific actions, working controller input, and audible audio. Check a
 meaningful transition and save/reload when available in the tested path. Retain a
-small deterministic replay in `games/<game>/debug/` when it supports reproduction;
-use `tools/controller_replay.py` for the supported JSON-to-text input conversion.
+small deterministic replay in `games/<game>/` when it supports reproduction.
+Write the runtime's text format directly: zero-based frame, button mask, stick X
+and stick Y. Do not add JSON copies or conversion scripts.
 Inspect captures visually. Separate presentation counts from actual game progress.
 
 Build and run Release through the same exercised path; Debug success alone is
@@ -454,7 +479,7 @@ driver instead of rewriting desktop automation:
 ```sh
 .venv/bin/python tools/desktop_replay.py \
   --executable build/<game>-release/bin/<game> --frames 4200 \
-  --input games/<game>/debug/play-through.txt \
+  --input games/<game>/play-through.txt \
   --output build/<game>-release/acceptance \
   --capture-at 29 --capture-at 49 --capture-at 65
 ```
@@ -470,9 +495,10 @@ alone cannot establish them. Use the game's Debug replay for frame-exact input.
 After the game runs, run focused checks for the shared code actually changed and
 smoke an affected existing game. For emitter changes, regenerate Debug/Release,
 inspect affected MIPS semantics including delay slots/branch-likely where relevant,
-and verify Debug PC tracking stays compiled out of Release. Add lasting regression
-tests for demonstrated bugs when they provide meaningful coverage; avoid tests
-that just mirror implementation or assert generated wording.
+and verify Debug PC tracking stays compiled out of Release. Keep temporary
+verification harnesses under ignored `build/` or `/tmp` and
+remove them after recording the result. Do not add standalone test/check scripts
+to the game layout.
 
 ## 7. Clean tests and remaining useless files before finishing
 
@@ -482,24 +508,30 @@ diff against the starting status and identify files created by this work.
 - Remove temporary tests, throwaway harnesses, one-off ROM scanners, scratch
   scripts, experimental patches, duplicate fixtures, unused copied game code,
   obsolete launchers, and abandoned configuration. Consolidate useful analysis
-  into the maintained tools or the game's Debug support.
-- Remove diagnostic logging/probes from normal Release play. Keep only useful
-  maintained regression tests and reproducible replay inputs; do not delete a
-  meaningful test because it exposes an unresolved failure.
+  into maintained root-level tools or the shared Debug support.
+- Remove diagnostic logging/probes from normal Release play. Keep useful
+  reproducible replay inputs and maintained investigation tools;
+  remove obsolete validation harnesses without masking unresolved failures.
 - Clean task-created disposable binaries, logs, WAVs, RAM dumps, screenshots,
   caches, and intermediate reports once their findings are recorded and they are
   no longer needed. Preserve evidence and matching build artifacts needed for an
   unresolved crash. Keep generated outputs under ignored `build/`, and private
   runtime data under ignored `local/`; commit only intentional documentation images.
 - Before deleting a file, check imports/includes, CMake, generation dependencies,
-  tests, presets, editor tasks, and documentation references. Preserve required
+  presets, editor tasks, and documentation references. Preserve required
   inventories, fingerprints, adapters, licenses, user ROMs, saves, texture packs,
   and unrelated existing files. Use targeted deletions; do not blanket-clean the
   worktree or shared `local/` and `build/` trees.
+- Trace each retained Python helper to a generation import or maintained command,
+  and each JSON file to a reader or profile declaration. A cache glob or editor
+  project entry is not a consumer. Delete one-off analysis/import scripts once
+  their reviewed results are recorded, plus unused replay fixtures and reports.
+  Remove their documentation and project references in the same change.
 - After cleanup, regenerate/build in a fresh directory when needed to show the
   port does not depend on deleted scratch artifacts. Rerun the affected acceptance
   path if executable inputs changed. Run `git diff --check` and review status for
-  leftover references and accidental generated/private files.
+  leftover references and accidental generated/private files. Run `tools/format.sh`
+  and regenerate editor projects with `python3 tools/msvc_solution.py`.
 
 Update the game's README, root game/import/build lists, and
 [docs/status.md](docs/status.md) with the exact ROM revision, commands, observed

@@ -49,4 +49,4 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines = ['/* Generated from the pinned Media Player profile. */']
     lines += [f'#define BOOT_{k.upper()} UINT32_C(0x{v:x})' for k, v in constants.items()]
     lines += ['static const uint8_t boot_sha1[20] = {' + ','.join(str(b) for b in bytes.fromhex(game['rom_sha1']))+'};']
-    (output/'media_player_config.h').write_text('\n'.join(lines)+'\n')
+    (output/'game_config.h').write_text('\n'.join(lines)+'\n')

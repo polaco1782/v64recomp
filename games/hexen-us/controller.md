@@ -36,7 +36,7 @@ keyboard map. `RECOMP_MOUSE_SENSITIVITY` defaults to `0.08` and accepts
 `0.001..10`: horizontal degrees per mouse count and vertical native look units
 per count. `RECOMP_MOUSE_INVERT_Y=1` inverts vertical look. Native pitch remains
 clamped to `[-110,90]`; fractional motion is retained between updates.
-Debug `--input` / `RECOMP_HEXEN_INPUT` controller replay disables the adapter.
+Debug `--input` controller replay disables the adapter.
 Inventory selection and automap zoom retain their original controller behavior
 with capture released; the wheel is assigned to weapons while captured.
 
@@ -85,17 +85,7 @@ were checked independently against this cartridge's MIPS.
 
 ## Validation
 
-MSVC Debug and Release builds pass. The maintained synthetic Debug check covers
-all four class movement tables, run/walk, attack/use/jump, look direction and
-clamps, single consumption of deltas, queued wheel detents, key/artifact edges,
-original-call preservation, gameplay gates and stale-input clearing. Run it
-from the repository root with default sensitivity/inversion and replay disabled:
-
-```powershell
-$env:RECOMP_HEXEN_CHECK_INPUT = '1'
-.\build\msvc\hexen-us\debug\bin\Debug\hexen-us.exe --frames 1
-Remove-Item Env:RECOMP_HEXEN_CHECK_INPUT
-```
+Earlier MSVC Debug and Release builds passed.
 
 Release boot and rendered attract mode were observed. Live adapter gameplay,
 camera feel, pause/focus recapture, class selection, and artifact/weapon behavior

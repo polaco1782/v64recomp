@@ -12,8 +12,7 @@ enum {
 };
 
 static void check_node(uint32_t node) {
-    if (node < DMA_NODES || node >= DMA_NODES + DMA_COUNT * DMA_NODE_BYTES ||
-        (node - DMA_NODES) % DMA_NODE_BYTES)
+    if (node < DMA_NODES || node >= DMA_NODES + DMA_COUNT * DMA_NODE_BYTES || (node - DMA_NODES) % DMA_NODE_BYTES)
         recomp_fail("GoldenEye invalid audio DMA cache node", node);
 }
 
