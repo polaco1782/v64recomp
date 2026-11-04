@@ -1,3 +1,8 @@
+function_wrappers = [
+  {section = ".main", vram = 0x8009989c, size = 0x768, sha256 = "f155ff51473b7cd1d3ef8eaca93d0af2dc572907524a6f4d8d083f48972eb97b", handler = "rayman2_projection_hook"},
+  {section = ".main", vram = 0x8009ff70, size = 0xc4, sha256 = "5b742dec5deef9c0e81333c4a727e5bb8418d524cad1f1520e5e37f4932296f0", handler = "rayman2_pad_hook"},
+]
+
 # Rayman 2: The Great Escape, US revision 0, original big-endian cartridge.
 [game]
 name = "Rayman 2: The Great Escape (US)"
@@ -203,3 +208,46 @@ boot_stack = 0x803fd000
 0x80000310 = 0x17d6
 0x80000314 = 1
 0x80000318 = 0x800000
+
+
+# Addresses and layouts below come from this cartridge's owned MIPS bodies.
+# Raymap is a conceptual reference only; its packed CameraInfo is not the
+# runtime camera object used here.
+[controls]
+reference = "https://github.com/byvar/raymap"
+reference_revision = "2df138379acaa5c9d74ae275c6690ba8e2e3e52e"
+reference_scope = "N64 camera concepts only; all native layouts and ABI from local disassembly"
+functions = [
+  {name = "scene_initialize", section = 1, vram = 0x800263c8, size = 0x59c, sha256 = "80d078427134dffcf8d7667b75ad1b84e5ad45b9e9a70640a668bdb6eea0dc30"},
+  {name = "camera_setup", section = 1, vram = 0x8009989c, size = 0x768, sha256 = "f155ff51473b7cd1d3ef8eaca93d0af2dc572907524a6f4d8d083f48972eb97b"},
+  {name = "controller_dispatch", section = 1, vram = 0x8009ff70, size = 0xc4, sha256 = "5b742dec5deef9c0e81333c4a727e5bb8418d524cad1f1520e5e37f4932296f0"},
+  {name = "camera_record", section = 1, vram = 0x8002d4a0, size = 0x34, sha256 = "58ce855682e1f164cd14bbb5977a50bc5bfe59d21088477ee479257d65d75e0a"},
+  {name = "camera_activate", section = 1, vram = 0x8002d4f4, size = 0x30, sha256 = "317da5aa8d4d6beb10818d630bcb118512e52a23cfb2b7f2115d61c9d6306648"},
+  {name = "camera_initialize", section = 1, vram = 0x8002d5b0, size = 0x7c, sha256 = "bea9c42585a250dc3162761fb604808658985db0f5d5a1d6c02c5e1c7b34beca"},
+  {name = "camera_update", section = 1, vram = 0x8002d650, size = 0x18c, sha256 = "15d489054fd4c5c58355168615157e0cdbb5817530f5a06abec528b5fc6731c3"},
+  {name = "scene_update_gate", section = 1, vram = 0x80026378, size = 0x14, sha256 = "7f1363203632e7fd16959343b1315c1b1b7cfa69b2dcda32d5fc3ce4847e11ff"},
+  {name = "camera_install", section = 1, vram = 0x8009a31c, size = 0x6c, sha256 = "a4f84393557dbb610b886d5c4e0b06f9dbdd7283fde8a7aadc3489a9475ac17e"},
+  {name = "sphere_visibility", section = 1, vram = 0x800894ac, size = 0x364, sha256 = "709ea19ef415c206a961881cb3b965cf25ebd427b480187aca30124ace63f253"},
+  {name = "camera_planes", section = 1, vram = 0x80089810, size = 0x344, sha256 = "60a4236e2bb40a1865a61dc4f67b89fe0dea62f5312f0774185a838ddb403643"},
+  {name = "controller_read", section = 1, vram = 0x8009f38c, size = 0xec, sha256 = "6911a29fe15e3f86f7f084c58b3f716ebd22f662749698563378d74fa85a635c"},
+  {name = "guPerspective", section = 0, vram = 0x800038c0, size = 0x1c8, sha256 = "a170b90b93123c80a4f3ad29ba9fc4d42bb6b7ee0c2ade8804ed90ed31a9cf97"},
+]
+bindings = [
+  {name = "play_phase", kind = "literal", pcs = [0x800268dc], words = [0x24040009], value = 9},
+  {name = "camera_records", kind = "address", pcs = [0x8002d4b8, 0x8002d4bc], words = [0x3c03800e, 0x8c635fc4], value = 0x800e5fc4},
+  {name = "record_camera", kind = "field", pcs = [0x8002d714], words = [0x8e300008], value = 0x8},
+  {name = "record_active", kind = "field", pcs = [0x8002d510], words = [0xa043000c], value = 0xc},
+  {name = "scene_phase", kind = "address", pcs = [0x80026378, 0x8002637c], words = [0x3c02800e, 0x8c425d40], value = 0x800e5d40},
+  {name = "input_mode", kind = "address", pcs = [0x8009ff90, 0x8009ff94], words = [0x3c03800d, 0x8c6394a0], value = 0x800c94a0},
+  {name = "camera_type", kind = "field", pcs = [0x800999f0], words = [0x8e030008], value = 0x8},
+  {name = "perspective_type", kind = "literal", pcs = [0x80099a24], words = [0x24020067], value = 0x67},
+  {name = "horizontal", kind = "field", pcs = [0x80099cd8], words = [0xc60c0064], value = 0x64},
+  {name = "vertical", kind = "field", pcs = [0x80099df8], words = [0xc6000068], value = 0x68},
+  {name = "native_horizontal_bits", kind = "upper_bits", pcs = [0x8002d5f4], words = [0x3c053fc0], value = 0x3fc00000},
+  {name = "native_ratio_bits", kind = "upper_bits", pcs = [0x8002d5f8], words = [0x3c063f40], value = 0x3f400000},
+  {name = "projection_return", kind = "return", pcs = [0x80099edc, 0x80099ee0], words = [0x0c000e30, 0x262500c8], value = 0x80099ee4},
+  {name = "cpu_right_plane", kind = "field", pcs = [0x80089648], words = [0xc64000a8], value = 0xa8},
+  {name = "cpu_left_plane", kind = "field", pcs = [0x800896b4], words = [0xc6400098], value = 0x98},
+  {name = "cpu_bottom_plane", kind = "field", pcs = [0x8008972c], words = [0xc64000bc], value = 0xbc},
+  {name = "cpu_top_plane", kind = "field", pcs = [0x80089798], words = [0xc64000cc], value = 0xcc},
+]

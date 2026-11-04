@@ -3,6 +3,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
+#include "controls.h"
 #include "game_config.h"
 #include <inttypes.h>
 #include <stdio.h>
@@ -13,6 +14,15 @@ static RecompRenderer *renderer;
 static RecompAudio *audio;
 static uint64_t wall_origin;
 static bool boot_retired;
+static bool window_closed;
+static void poll_controls(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (!rayman2_controls_poll(rt, renderer, &pad))
+        window_closed = true;
+    else
+        recomp_game_require(recomp_game_input(rt, 0, &pad), "controller update failed", 0);
+}
 static uint64_t guest_time(void *opaque) {
     (void)opaque;
     return recomp_game_monotonic() - wall_origin;
@@ -81,6 +91,8 @@ int main(int argc, char **argv) {
                         0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Rayman 2: The Great Escape");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    rayman2_controls_init(poll_controls);
+    recomp_renderer_set_fov_hook(renderer, rayman2_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -92,9 +104,9 @@ int main(int argc, char **argv) {
     recomp_thread_start(&rt, BOOT_BOOT_OBJECT);
     uint64_t next_present = recomp_game_monotonic();
     uint32_t frame = 0;
-    for (; !options.frames || frame < options.frames; frame++) {
+    for (; !window_closed && (!options.frames || frame < options.frames); frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!rayman2_controls_poll(&rt, renderer, &pad))
             break;
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "controller update failed", 0);
         drain(&rt);

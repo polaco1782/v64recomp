@@ -83,10 +83,11 @@ fallback.
 | Duke Nukem 64 | [WASD, mouse-look and combat controls](games/duke-us/controller.md) | [Original → 140°](games/duke-us/README.md#field-of-view) |
 | Hexen | [WASD, mouse-look, combat and inventory](games/hexen-us/controller.md) | [Original → 140°](games/hexen-us/README.md#field-of-view) |
 | Ocarina of Time US V1.2 | [WASD and third-person camera orbit](games/oot-us-v12/controller.md) | [Original → 140°](games/oot-us-v12/README.md#field-of-view) |
+| Rayman 2 | [WASD and native mouse camera controls](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) | [Original → 140°](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) |
 | Nightmare Creatures | [WASD, mouse steering, dodges and combat](games/nightmare-us/controller.md) | — |
 
 **FOV** means field of view: how much of the world you can see at once. In the
-five games listed with FOV controls, use **keypad + / −** to change the horizontal
+games listed with FOV controls, use **keypad + / −** to change the horizontal
 angle one degree at a time, or hold a key to keep adjusting. Each launch starts
 at the original view; lowering the setting to its minimum restores that view.
 GoldenEye retains its native weapon zoom. These controls work in both builds.

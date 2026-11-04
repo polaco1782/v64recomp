@@ -7,6 +7,15 @@
     <ClInclude Include="$(RecompRoot)games\rayman2-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\rayman2-us\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\rayman2-us\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\rayman2-us\controls_analysis.py">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="$(RecompRoot)games\rayman2-us\generate.py">
       <Filter>Source Files</Filter>
     </None>

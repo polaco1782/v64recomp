@@ -1,5 +1,16 @@
 """Rayman 2's pinned cartridge configuration for the shared generator."""
 from pathlib import Path
+from controls_analysis import verify_controls
+
+
+def prepare(rom, profile, output):
+    verify_controls(rom, profile)
+    return rom, profile
+
+
+def write_report(rom, profile, metadata, coverage, output):
+    from common import write_json
+    write_json(output / 'controls-hooks.json', verify_controls(rom, profile, metadata, coverage))
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
@@ -16,3 +27,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    lines = ['/* Checked Rayman 2 camera/input operands from profile.toml. */']
+    lines.extend(f'#define R2_CTL_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['controls']['bindings'])
+    (output / 'rayman2_controls_config.h').write_text('\n'.join(lines) + '\n')
