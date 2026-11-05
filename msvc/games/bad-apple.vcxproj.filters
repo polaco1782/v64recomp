@@ -4,9 +4,6 @@
     <None Include="$(RecompRoot)games\bad-apple\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <None Include="$(RecompRoot)games\bad-apple\fetch_rom.py">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="$(RecompRoot)games\bad-apple\generate.py">
       <Filter>Source Files</Filter>
     </None>

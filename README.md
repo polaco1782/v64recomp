@@ -499,8 +499,11 @@ runtime implementation and validation status.
 ### MP3 player
 
 The `media-player` target runs Media Player V2's recompiled MP3 decoder with
-native file selection, pause/resume and restart controls. Import the official
-homebrew ROM, build **N64 MP3 Player**, then drop a local MP3 onto its window.
+native file selection, pause/resume and restart controls. Building **N64 MP3
+Player** automatically downloads the [official V2 homebrew ROM](https://github.com/lewilou22/N64-Media-Player/releases/tag/V2),
+verifies its pinned size and SHA-256, and caches it in `local/media-player.z64`.
+Later builds reuse the verified cache offline. Drop a local MP3 onto its window
+to play it.
 See the [player notes](games/media-player/README.md) for setup and decoder scope.
 
 </details>

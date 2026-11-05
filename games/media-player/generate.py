@@ -5,6 +5,7 @@ from pathlib import Path
 import struct
 
 from common import write_json
+from fetch_rom import ensure_rom
 from prepare import lz4_decode, read_symbols, require
 
 

@@ -25,7 +25,6 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\bad-apple\CMakeLists.txt" />
-    <None Include="$(RecompRoot)games\bad-apple\fetch_rom.py" />
     <None Include="$(RecompRoot)games\bad-apple\generate.py" />
     <ClCompile Include="$(RecompRoot)games\bad-apple\main.c" />
     <None Include="$(RecompRoot)games\bad-apple\profile.toml" />

@@ -235,6 +235,9 @@
     <None Include="$(RecompRoot)tools\export_analysis_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\fetch_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\format.sh">
       <Filter>Source Files\tools</Filter>
     </None>

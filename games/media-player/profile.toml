@@ -9,6 +9,10 @@ fpu_fr = 1
 code_sections = [".main"]
 boot_sections = [".main"]
 
+[download]
+url = "https://github.com/lewilou22/N64-Media-Player/releases/download/V2/MediaPlayer_64.z64"
+sha256 = "5260dde362cb03b239c5d4cc446af9a1a1689797fe5b23aebc8ed4fed7dd7fc1"
+
 [packaging]
 allow_embedding = false
 
