@@ -7,6 +7,15 @@
     <ClInclude Include="$(RecompRoot)games\turok-us-v12\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\turok-us-v12\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\turok-us-v12\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\turok-us-v12\controls_analysis.py">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="$(RecompRoot)games\turok-us-v12\generate.py">
       <Filter>Source Files</Filter>
     </None>

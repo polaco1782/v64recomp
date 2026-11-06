@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "audio.h"
 #include "graphics.h"
+#include "controls.h"
 #include "game_config.h"
 #include <inttypes.h>
 #include <openssl/sha.h>
@@ -16,19 +17,13 @@ static RecompAudio *audio;
 static uint64_t wall_origin;
 static bool boot_retired, program_verified;
 static const uint8_t *cartridge;
-/* Keep horizontal stick input for analog turning. Swap only vertical live
- * input: arrows/left stick move forward/back, while I/K/right stick look
- * up/down. J/L/right stick retain C-button strafing. Debug replays remain
- * original N64 inputs, independent of the host bindings. */
-static void map_controls(RecompPad *pad) {
-    const uint16_t look = pad->buttons & 0x000c;
-    const int y = pad->stick_y;
-    pad->buttons &= ~0x000c;
-    if (y > 20)
-        pad->buttons |= 0x0008;
-    if (y < -20)
-        pad->buttons |= 0x0004;
-    pad->stick_y = ((look & 0x0008) != 0) * 80 - ((look & 0x0004) != 0) * 80;
+static bool running = true;
+static void poll_command_input(Runtime *rt, void *opaque) {
+    (void)opaque;
+    RecompPad pad = {.connected = true};
+    if (!turok_controls_poll(rt, renderer, &pad))
+        running = false;
+    recomp_game_require(recomp_game_input(rt, 0, &pad), "controller update failed", 0);
 }
 static uint64_t guest_time(void *opaque) {
     (void)opaque;
@@ -126,6 +121,8 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "Turok");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_set_microcode_hook(renderer, turok_bind_microcode);
+    turok_controls_init(poll_command_input);
+    recomp_renderer_set_fov_hook(renderer, turok_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -139,9 +136,8 @@ int main(int argc, char **argv) {
     uint32_t frame = 0;
     for (; !options.frames || frame < options.frames; frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!running || !turok_controls_poll(&rt, renderer, &pad))
             break;
-        map_controls(&pad);
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "controller update failed", 0);
         drain(&rt);
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);

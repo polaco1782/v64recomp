@@ -26,6 +26,9 @@
   <ItemGroup>
     <None Include="$(RecompRoot)games\turok-us-v12\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\turok-us-v12\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\turok-us-v12\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\turok-us-v12\controls.h" />
+    <None Include="$(RecompRoot)games\turok-us-v12\controls_analysis.py" />
     <None Include="$(RecompRoot)games\turok-us-v12\generate.py" />
     <ClCompile Include="$(RecompRoot)games\turok-us-v12\graphics.cpp" />
     <ClInclude Include="$(RecompRoot)games\turok-us-v12\graphics.h" />

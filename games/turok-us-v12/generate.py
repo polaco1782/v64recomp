@@ -3,6 +3,7 @@ import hashlib
 from pathlib import Path
 from common import RecompError
 from rnc import decode_rnc1
+from controls_analysis import verify_controls
 
 
 def prepare(rom, profile, output):
@@ -10,7 +11,15 @@ def prepare(rom, profile, output):
     raw = decode_rnc1(rom[boot['compressed_offset']:])
     if len(raw) != boot['decoded_size'] or hashlib.sha256(raw).hexdigest() != boot['decoded_sha256']:
         raise RecompError('Turok program fingerprint mismatch')
-    return rom + raw, profile
+    prepared = rom + raw
+    verify_controls(prepared, profile)
+    return prepared, profile
+
+
+def write_report(rom, profile, metadata, coverage, output):
+    from common import write_json
+    prepared, resolved = prepare(rom, profile, output)
+    write_json(output / 'controls-hooks.json', verify_controls(prepared, resolved, metadata, coverage))
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
@@ -27,3 +36,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    lines = ['/* Verified Turok US v1.2 input, camera and visibility operands. */']
+    lines.extend(f'#define T_CTL_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['controls']['bindings'])
+    (output / 'turok_controls_config.h').write_text('\n'.join(lines) + '\n')

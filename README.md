@@ -84,6 +84,7 @@ fallback.
 | Hexen | [WASD, mouse-look, combat and inventory](games/hexen-us/controller.md) | [Original → 140°](games/hexen-us/README.md#field-of-view) |
 | Ocarina of Time US V1.2 | [WASD and third-person camera orbit](games/oot-us-v12/controller.md) | [Original → 140°](games/oot-us-v12/README.md#field-of-view) |
 | Rayman 2 | [WASD and native mouse camera controls](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) | [Original → 140°](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) |
+| Turok US v1.2 | [WASD, mouse-look, weapons and automap](games/turok-us-v12/controller.md) | [Original → 140°](games/turok-us-v12/controller.md) |
 | Nightmare Creatures | [WASD, mouse steering, dodges and combat](games/nightmare-us/controller.md) | — |
 
 **FOV** means field of view: how much of the world you can see at once. In the
