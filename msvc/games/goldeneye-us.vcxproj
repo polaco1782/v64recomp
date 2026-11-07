@@ -25,6 +25,7 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\goldeneye-us\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\goldeneye-us\ai.c" />
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\audio.h" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\audio_dma.c" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\fov.c" />

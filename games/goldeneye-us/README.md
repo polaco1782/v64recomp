@@ -63,6 +63,62 @@ generations still follows the original fallback and retains the HLE warning.
 The Release executable rebuilt successfully on 2026-10-30. In-game validation
 is left to the user at their request; further testing was waived.
 
+## Combat AI
+
+Shared guard combat now uses the native selector in `ai.c`, enabled by default
+in Debug and Release. Guards choose attacks from distance and line of sight:
+they sprint toward distant targets, favor running fire while advancing, and use
+standing or kneeling fire nearby. Incoming fire can trigger a collision-checked
+sidestep, with a three-second cooldown per guard. Completed idle animations can
+transition into combat; firing, injury and movement animations finish normally.
+The shared attack selector no longer randomly chooses pointing, hops, rolls or
+grenades. Weapon accuracy, damage and initial stealth detection retain the
+game's rules.
+
+Weapon noise reaches 75% farther through the original hearing scan. Silenced
+weapons retain their quieter noise values, and silence generates no alert.
+Ordinary guards investigate the sound's recorded position without waiting to
+see Bond; deaf guards and alarm-specific scripts keep their original response.
+This extends weapon-noise hearing; it does not invent footstep or ambient-sound
+events that the original hearing scan never receives.
+
+Shared pursuit follows the last seen or heard position for up to ten simulation
+seconds, using the game's sprint mode and collision/navigation checks. It keeps
+an active route and limits replanning to once per second. Guards can reacquire
+Bond while investigating instead of finishing the entire route first. The
+persistent combat list uses the same decisions, removing its random stop/start
+loop. Decisions run at most ten times per simulation second, independently of
+rendering FPS.
+
+Mission scripts, vehicles and characters observed with invincibility retain
+their translated behavior. Menus, cutscenes, watch, tank gameplay and multiplayer
+also retain the original AI. Set `RECOMP_GOLDENEYE_AI=0` before launching to use
+the original AI throughout, including for comparisons.
+
+The wrappers are `ai` (`0x7f035484`), `ailistFindById` (`0x7f035398`) and the
+weapon-noise scan (`0x7f022eec`).
+The latter catches an attack-list transition inside the interpreter, preserves
+its caller's return list and resumes that list after the native decision.
+`profile.toml` pins complete function bodies, the self-switch call/delay pair,
+structure operands, simulation clock and decompressed script/table bytes.
+Generation verifies these and emits `goldeneye_ai_config.h`; reference source
+is not a build dependency. Semantic names were traced from the pinned
+[interpreter](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chrai.c),
+[shared scripts](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraidata.c)
+and [actions](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraction.c),
+then checked against the supplied ROM SHA-1
+`a963ea5308a4dda41354bca7751446248302a099`.
+
+Linux Debug/Release builds and twenty-three temporary ASan/UBSan behavior scenarios
+pass. The checks cover register preservation, animation completion, attack range,
+last-seen/heard sprint navigation, noise scaling, evade cooldowns and original-script
+fallbacks. Mutated function, field, data and noise-call fingerprints are rejected.
+Bounded 6,600-presentation Debug and Release Dam runs exited normally; GDB in
+Debug confirmed native combat, weapon-noise dispatch and navigation with sprint
+mode `2`. Captures showed the level and first-person firing, and the player's
+save stayed byte-identical.
+Broader combat balance and mission progression still require playtesting.
+
 ## Mouse and keyboard
 
 Single-player on-foot gameplay uses mouse-look and WASD by default. Mouse motion

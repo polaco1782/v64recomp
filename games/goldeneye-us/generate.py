@@ -108,6 +108,81 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines = ['/* Verified GoldenEye FOV addresses; generated from profile.toml. */']
     lines.extend(f'#define GE_FOV_{name} UINT32_C(0x{value:x})' for name, value in constants.items())
     (output / 'goldeneye_fov_config.h').write_text('\n'.join(lines) + '\n')
+    ai = verify_ai_analysis(Path(game['rom']).read_bytes(), profile, metadata)
+    lines = ['/* ROM-checked GoldenEye combat AI ABI; generated from profile.toml. */']
+    lines.extend(f'#define GE_AI_{name.upper()} UINT32_C(0x{value:x})' for name, value in ai.items())
+    (output / 'goldeneye_ai_config.h').write_text('\n'.join(lines) + '\n')
+
+
+def verify_ai_analysis(rom, profile, metadata=None):
+    """Bind the native combat selector to complete bodies, operands and scripts."""
+    spec = profile['ai_analysis']
+    region = next(r for r in profile['discovery']['regions'] if r['name'] == spec['section'])
+
+    def require(ok, message):
+        if not ok:
+            raise RecompError('GoldenEye AI: ' + message)
+
+    def raw(address, size):
+        offset = region['rom_offset'] + address - region['vram']
+        require(region['vram'] <= address and address + size <= region['vram'] + region['size'],
+                'code outside mapped section')
+        return rom[offset:offset + size]
+
+    require(len(rom) == profile['game']['rom_size'] and
+            hashlib.sha1(rom).hexdigest() == profile['game']['rom_sha1'], 'ROM identity mismatch')
+    constants = {'STAGE': profile['inspection']['stage_address']}
+    owned = set()
+    for function in spec['functions']:
+        address, size = function['vram'], function['size']
+        require(hashlib.sha256(raw(address, size)).hexdigest() == function['sha256'],
+                function['name'] + ' body fingerprint mismatch')
+        constants[function['name'].upper()] = address
+        if metadata:
+            sections = {s['id'] for s in metadata['sections'] if s['name'] == spec['section']}
+            matches = [f for f in metadata['functions'] if f['vram'] == address and f['section'] in sections]
+            require(len(matches) == 1 and matches[0]['size'] == size and
+                    matches[0]['sha256'] == function['sha256'], function['name'] + ' metadata mismatch')
+            owned.update(matches[0]['instruction_addresses'])
+
+    def words(pc, expected):
+        require(raw(pc, 4 * len(expected)) == b''.join(w.to_bytes(4, 'big') for w in expected),
+                f'instruction mismatch at {pc:#x}')
+        if metadata:
+            require(set(range(pc, pc + 4 * len(expected), 4)) <= owned, 'unowned ABI evidence')
+
+    for field in spec['fields']:
+        word = field['expected_word']
+        words(field['pc'], [word])
+        require(word >> 26 in (32, 33, 35, 36, 37, 40, 41, 43, 49, 57) and
+                (word >> 21) & 31 != 29, 'field evidence is not an object-relative memory operand')
+        constants[field['name'].upper()] = word & 65535
+    words(spec['set_self_pc'], spec['set_self_words'])
+    require(spec['set_self_words'] == [0x0fc0d4e6, 0x00009025] and
+            constants['FIND_LIST'] == 0x7f035398, 'SetChrAiList self-call ABI mismatch')
+    constants['SET_SELF_RETURN'] = spec['set_self_pc'] + 8
+    words(spec['noise_pc'], spec['noise_words'])
+    require(spec['noise_words'] == [0x0fc08bbb, 0xc7ac00e4] and constants['HEAR_SOUND'] == 0x7f022eec,
+            'weapon-noise call/F12 argument mismatch')
+    constants['NOISE_RETURN'] = spec['noise_pc'] + 8
+    words(spec['clock_pc'], spec['clock_words'])
+    require(spec['clock_words'] == [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c], 'clock operand mismatch')
+    constants['CLOCK'] = 0x80050000 - 0x7c84
+    data = startup_data(rom, profile['bootstrap'])
+    blocks = {}
+    for block in spec['data']:
+        offset = block['address'] - profile['bootstrap']['data_address']
+        require(0 <= offset and offset + block['size'] <= len(data), 'data outside initialized RAM')
+        body = data[offset:offset + block['size']]
+        require(hashlib.sha256(body).hexdigest() == block['sha256'], block['name'] + ' data mismatch')
+        blocks[block['name']] = (block['address'], body)
+    table = blocks['global_lists'][1]
+    require(len(table) == 19 * 8 and table[-8:] == bytes(8), 'global-list table bounds mismatch')
+    for name, index in [('standard', 2), ('simple', 7), ('attack', 6), ('chase', 8), ('persistent', 13)]:
+        pointer, identifier = struct.unpack_from('>II', table, index * 8)
+        require(identifier == index and pointer == blocks[name][0], name + ' script selector mismatch')
+        constants[name.upper() + '_LIST'] = pointer
+    return constants
 
 
 def verify_fov_analysis(rom, profile, metadata=None, coverage=None):
@@ -204,6 +279,7 @@ def validate_inspection(rom: bytes, profile: dict) -> None:
 
 
 def prepare(rom, profile, output):
+    verify_ai_analysis(rom, profile)
     verify_input_analysis(rom, profile)
     verify_fov_analysis(rom, profile)
     validate_idle_loop(rom,profile)
@@ -216,6 +292,7 @@ def write_report(rom, profile, metadata, coverage, output):
     from common import write_json
     write_json(output / 'input-hooks.json', verify_input_analysis(rom, profile, metadata, coverage))
     write_json(output / 'fov-hooks.json', verify_fov_analysis(rom, profile, metadata, coverage))
+    verify_ai_analysis(rom, profile, metadata)
 
 
 def configure_translation(rom, metadata, profile, output):

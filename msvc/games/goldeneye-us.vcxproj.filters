@@ -4,6 +4,9 @@
     <None Include="$(RecompRoot)games\goldeneye-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\goldeneye-us\ai.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>

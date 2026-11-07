@@ -6,6 +6,9 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".game", vram = 0x7f022eec, size = 0xdc, sha256 = "da8b2e0611c67f526e290fb2db9a87fd29842aa32c92a9e0537b10ef512b63ae", handler = "goldeneye_ai_noise_hook"},
+  {section = ".game", vram = 0x7f035484, size = 0x4dbc, sha256 = "2e52864c8bff532a50dc2b3ce18b5230ca5e15f20343260259d5667201905cae", handler = "goldeneye_ai_hook"},
+  {section = ".game", vram = 0x7f035398, size = 0x9c, sha256 = "a8473ce020468fb6961fe97b02210eec2fce2d3af8d50ff24b30aaf29afc8bba", handler = "goldeneye_ai_list_hook"},
   {section = ".lib", vram = 0x7000c0ec, size = 0x88, sha256 = "265b273a41288b1a8e572c51355eb9c288ce878f1f1120591250855c163ef6ea", handler = "goldeneye_input_stick_x_hook"},
   {section = ".lib", vram = 0x7000c1fc, size = 0x88, sha256 = "bf728b6203c4674b1758344a8bbf1ceb882273f4aa612725c1ee7aa8d0d6d4b2", handler = "goldeneye_input_stick_y_hook"},
   {section = ".lib", vram = 0x7000c30c, size = 0xa0, sha256 = "e45ee3ddd0f852410e544e7b25eb6d6b7a45fc023b4a36be75f4e2db696dbaf6", handler = "goldeneye_input_buttons_hook"},
@@ -421,3 +424,59 @@ owner = "bondviewMovePlayerUpdateViewport"
 pc = 0x7f086fbc
 expected_words = [0x3c014270, 0x44816000]
 value = 60.0
+
+[ai_analysis]
+# Semantic reference only; all addresses and bytes are checked against the supplied ROM.
+reference = "https://github.com/n64decomp/007"
+reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
+section = ".game"
+functions = [
+  {name = "hear_sound", vram = 0x7f022eec, size = 0xdc, sha256 = "da8b2e0611c67f526e290fb2db9a87fd29842aa32c92a9e0537b10ef512b63ae"},
+  {name = "alert", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a"},
+  {name = "movement_speed", vram = 0x7f02f690, size = 0x1f8, sha256 = "a1f5c464a197b04ca31fe76620ed6e1feebd7e81a4b545ec3518f138c7300be5"},
+  {name = "player_input", vram = 0x7f081974, size = 0x2654, sha256 = "7430db6f9b1da0a4d25f7583a9bc4a8007848149d4003b21e23ae78d63c66222"},
+  {name = "interpreter", vram = 0x7f035484, size = 0x4dbc, sha256 = "2e52864c8bff532a50dc2b3ce18b5230ca5e15f20343260259d5667201905cae"},
+  {name = "find_list", vram = 0x7f035398, size = 0x9c, sha256 = "a8473ce020468fb6961fe97b02210eec2fce2d3af8d50ff24b30aaf29afc8bba"},
+  {name = "can_see", vram = 0x7f0294bc, size = 0x114, sha256 = "ccaa176872dec9a58d6e39c29bd10a3c46df1cb306e72291142154678a248643"},
+  {name = "remember", vram = 0x7f029bb0, size = 0x50, sha256 = "bdde0425f6c30996e106f0f7a79b307eb3a01e5413a7a5b58a4cdc5ee27af8f2"},
+  {name = "ready", vram = 0x7f029c5c, size = 0x114, sha256 = "0756aa7e0f0408457939e8efc0d4d6d1b6423c731c763fba77a1bd52c3a7fd3b"},
+  {name = "step", vram = 0x7f02a2c8, size = 0x160, sha256 = "7b316e9d26f7e7da0413e97f96c1e45afcbe0b970329c841671eccfabfb5f1a5"},
+  {name = "walk_fire", vram = 0x7f02a704, size = 0xf4, sha256 = "d2735775a1243116328f122309433f1b48924eafd2e3e6b81cfecd74154a4f1b"},
+  {name = "run_fire", vram = 0x7f02a7f8, size = 0xf4, sha256 = "f8b0f30cd816955562cca572daca6fc40e5c8b7a19fd67140dee41060fb931ad"},
+  {name = "stand_fire", vram = 0x7f02aa1c, size = 0x6c, sha256 = "b34606e2e4b851503b27194896fa7ae2fbf7f50daf8f546a92ba254bcf507fbd"},
+  {name = "kneel_fire", vram = 0x7f02aa88, size = 0x6c, sha256 = "d840bc1aa346fd6f768bb1db49bf1411a4a4efa5eec72adfec29a1bfe9b68857"},
+  {name = "navigate", vram = 0x7f028ddc, size = 0x1d0, sha256 = "c233f36b6f852950b85668e16e994711e171695762599dd954088782c349208b"},
+  {name = "distance", vram = 0x7f032de4, size = 0x64, sha256 = "e4cc8ecddc9dc78e8a00aa36e43090ab8c1f2809d8797a2c129f8d6c050ec3d9"},
+  {name = "recent", vram = 0x7f032b68, size = 0x38, sha256 = "c215433d9892eeec9eb275aa6030fc8dcfb432888a0b425973850f00ebbd3bf7"},
+  {name = "set_flags2", vram = 0x7f033218, size = 0x14, sha256 = "9184879fe52ff3cf39c77ec91f4c65ed044628ee968ceba572714f6ad0ca61f2"},
+]
+fields = [
+  {name = "last_heard", pc = 0x7f029c28, expected_word = 0xac9800f0},
+  {name = "action", pc = 0x7f029c68, expected_word = 0x80820007},
+  {name = "prop", pc = 0x7f032dec, expected_word = 0x8c830018},
+  {name = "model", pc = 0x7f035988, expected_word = 0x8c4c001c},
+  {name = "number", pc = 0x7f038d6c, expected_word = 0x84470000},
+  {name = "flags", pc = 0x7f0382b0, expected_word = 0x8ee90014},
+  {name = "list", pc = 0x7f035520, expected_word = 0x8ef60104},
+  {name = "offset", pc = 0x7f03551c, expected_word = 0x96f20108},
+  {name = "return_list", pc = 0x7f035718, expected_word = 0x86e4010a},
+  {name = "last_seen", pc = 0x7f029bcc, expected_word = 0xac8e00d4},
+  {name = "last_position", pc = 0x7f029bd4, expected_word = 0xe48400d8},
+  {name = "target_tile", pc = 0x7f029bec, expected_word = 0xac8f00e4},
+  {name = "flags2", pc = 0x7f03321c, expected_word = 0x908f010e},
+]
+noise_pc = 0x7f082d30
+noise_words = [0x0fc08bbb, 0xc7ac00e4]
+set_self_pc = 0x7f035664
+set_self_words = [0x0fc0d4e6, 0x00009025]
+# LUI t6,0x8005; intervening branch/delay slot; LW t6,-0x7c84(t6).
+clock_pc = 0x7f032b6c
+clock_words = [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c]
+data = [
+  {name = "standard", address = 0x80037084, size = 0x58, sha256 = "ee89d3873098214e70e4a849ab3b2595cb8c0213944ef10eb5dba8faf297e6a9"},
+  {name = "simple", address = 0x80037250, size = 0x30, sha256 = "bbcac172d950fa025c42cf91d105d930200820c02434f16d120fc3a3a8c96095"},
+  {name = "global_lists", address = 0x8003744c, size = 0x98, sha256 = "f5bd1b46e8f79826c9c178187f7423e947d64b9a2e8f26a51bcad760322e19c2"},
+  {name = "attack", address = 0x800371b4, size = 0x58, sha256 = "2278a7bc8ffbf0c378ce9af28bb2840254ea5c85274856c2159dadcae5cd3a30"},
+  {name = "chase", address = 0x8003720c, size = 0x18, sha256 = "e25ef474ebb494e5acbe285560f863da35d20dd3514fae9f40f1785abc389580"},
+  {name = "persistent", address = 0x800372e0, size = 0xf0, sha256 = "49973df5625cce34789e6807420a78b01ea1a4fd973c6447ce344ef470914f6b"},
+]
