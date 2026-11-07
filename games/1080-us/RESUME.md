@@ -1,6 +1,52 @@
 # 1080 Snowboarding continuation notes
 
-## Verified state (2026-11-02)
+## SP-status crash repair and current blocker (2026-11-07)
+
+`local/crashes/1080-us/crash-2290557-475547973434220.json` fails reading
+`SP_STATUS` at `0xa4040010`, guest PC `0x8011ed18`. The call chain is the task
+scheduler at `0x800f7cd0` -> `osSpTaskYielded` at `0x80119f90` ->
+`__osSpGetStatus` at `0x8011ed10`. Load, start and yield already had native
+bindings; the yield-query variant was missing.
+
+All 32 instructions of `0x80119f90..0x8011a00f` and all three instructions of
+the status getter match the supplied crash RAM and the verified prepared ROM.
+The complete query body SHA-256 is
+`2ca5c293ab062321cb75121e1f335368a1475e14bfae6aa8212f0243c4819db1`.
+It has the standard o32 `OSTask *` ABI: status bit `0x100` determines its return,
+and bit `0x80` gates setting `OS_TASK_YIELDED` and clearing `OS_TASK_DP_WAIT`.
+This agrees with the reviewed [libultra implementation](https://github.com/n64decomp/libreultra/blob/master/src/io/sptaskyielded.c)
+and existing `recomp_os_sp_task_yielded` semantics. Its new shared catalog
+fingerprint binds the entire function, removing the direct hardware-read path
+without adding low-level SP register emulation.
+
+Both `cmake --workflow --preset 1080-us-debug` and `1080-us-release` pass.
+Generated metadata in both builds selects the native replacement, and the
+scheduler's generated call invokes `recomp_os_sp_task_yielded` directly.
+The SDK scanner confirms that the status getter's only caller is now replaced
+natively. Catalog normalization, formatting and project regeneration pass.
+
+The current 3,000-presentation menu replays are **incomplete**, with exit `-6`
+and no timeout. Debug reaches Select Rider (48-second capture), then fails at
+68.3 seconds; Release fails at 33.1 seconds. Both report
+`1080 loaded scene differs from compiled USO` at `0x803f0c2c`. No SP-status fault
+occurred, but the Debug log did not exercise the rare yield query before this
+separate stop. Keep these artifacts for the next scene investigation:
+
+- `build/1080-us-debug/sp-yield-replay/`: failed replay report/log and Select
+  Rider capture.
+- `build/1080-us-release/sp-yield-replay/`: failed replay report/log.
+- `local/crashes/1080-us/crash-2294861-475962130632338.json` and matching RAM:
+  Debug scene failure.
+- `local/crashes/1080-us/crash-2296435-476058149026584.json` and matching RAM:
+  Release scene failure.
+
+At the new target, neither configured genproc nor game Text matches RAM (14,675
+of 14,728 and 18,043 of 18,124 words differ, respectively), and no compiled entry
+exists at that address. Identify the loaded USO and its actual allocation from
+the loader and crash RAM before adding mappings or roots. Preserve the image
+check. This is separate from the missing SDK fingerprint.
+
+## Earlier verified state (2026-11-02)
 
 Debug and Release render the intro/title and navigate Match Race into Select
 Rider, including the character animation and stats. Both complete the
@@ -37,7 +83,7 @@ before the tool installs an inventory. It never launches a game or guesses
 roots from pointer scans.
 
 The current `uso-entries.json` contains 2,489 CPU entries. Discovery registers
-2,785 functions: 2,718 ready, 55 SDK hooks and 12 explicit privileged boundaries.
+2,785 functions: 2,716 ready, 57 SDK hooks and 12 explicit privileged boundaries.
 These counts cover mapped modules, not the whole cartridge. Reports are generated
 under `build/1080-us-debug/uso-symbol-review/`.
 

@@ -469,6 +469,8 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         fputs(",\"symbol\":", f);
         quoted(f, d.dli_sname);
 #endif
+        fputs(",\"source\":", f);
+        quoted(f, info->native_sources[i]);
         fputc('}', f);
     }
 #ifdef _WIN32

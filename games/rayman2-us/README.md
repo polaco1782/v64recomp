@@ -34,14 +34,21 @@ Both builds include these controls by default:
 
 Third-person mouse turning uses the game's original C-button camera actions;
 vertical mouse look uses its native look mode while holding right click.
+Any horizontal movement now reaches the next guest input update immediately,
+without a movement threshold or queued turns. Turning uses the native digital
+camera speed and stops requesting turns when the mouse stops; it is not a
+proportional free-orbit camera.
 Camera collision, pitch limits and scripted control restrictions remain under
 the original game logic. WASD and arrow-key C-buttons remain available with the
 mouse released. Mouse capture requires the active world camera, running scene
 phase 9 and live controller mode; menus and the game's recorded demos release it.
 Native gamepads remain available. Set `RECOMP_RAYMAN2_MOUSE=0` for the original
 shared keyboard/gamepad mapping. Debug `--input` replay disables live overrides.
-`RECOMP_MOUSE_SENSITIVITY` scales mouse input (default `0.08`, range
-`0.001..10`); `RECOMP_MOUSE_INVERT_Y=1` reverses look-mode pitch.
+`RECOMP_MOUSE_SENSITIVITY` scales right-click analog look (default `0.08`, range
+`0.001..10`). `RECOMP_MOUSE_INVERT_X=1` reverses horizontal mouse control in both
+modes; `RECOMP_MOUSE_INVERT_Y=1` reverses look-mode pitch. These settings avoid
+source edits when changing direction. Mouse deltas collected before a right-click
+mode change are discarded so they cannot turn the other mode.
 
 FOV starts at the exact original path every launch. Lowering to the minimum
 restores that path. The override scales the tangent of the native horizontal

@@ -1,12 +1,27 @@
+#define _GNU_SOURCE
 #include "runtime.h"
 #include "runtime_debug.h"
 #include "timing.h"
 
 #ifdef _WIN32
 #include <windows.h>
+#ifdef RECOMP_DEBUG
+#include <dbghelp.h>
+#endif
 #else
 #include <execinfo.h>
 #include <unwind.h>
+#if defined(RECOMP_DEBUG) && defined(__linux__)
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <link.h>
+#include <poll.h>
+#include <signal.h>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <unistd.h>
+extern char **environ;
+#endif
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,18 +58,142 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *op
     return _URC_NO_REASON;
 }
 #endif
+/* Resolve return PCs at the calling instruction, rather than the next line.
+ * Batch each ELF image into one addr2line invocation. link_map.l_addr is zero
+ * for non-PIE executables and the relocation bias for PIE/shared libraries. */
+static void resolve_trace(RecompFailureInfo *info) {
+#if defined(RECOMP_DEBUG) && (defined(__linux__) || defined(_WIN32))
+    /* Reports are consumed synchronously, including forwarding from guest threads. */
+    static _Thread_local char sources[64][1024];
+    memset(sources, 0, sizeof(sources));
+#endif
+#if defined(RECOMP_DEBUG) && defined(__linux__)
+    bool resolved[64] = {0};
+    for (size_t first = 0; first < info->native_frame_count; first++) {
+        if (resolved[first])
+            continue;
+        Dl_info image;
+        struct link_map *map = NULL;
+        uintptr_t pc = (uintptr_t)info->native_frames[first] - 1;
+        if (!dladdr1((void *)pc, &image, (void **)&map, RTLD_DL_LINKMAP) || !map)
+            continue;
+        char addresses[64][32];
+        char *args[69] = {RECOMP_ADDR2LINE, "-e", (char *)image.dli_fname};
+        size_t indices[64], count = 0;
+        for (size_t i = first; i < info->native_frame_count; i++) {
+            Dl_info other;
+            uintptr_t address = (uintptr_t)info->native_frames[i] - 1;
+            if (resolved[i] || !dladdr((void *)address, &other) || other.dli_fbase != image.dli_fbase)
+                continue;
+            resolved[i] = true;
+            indices[count] = i;
+            snprintf(addresses[count], sizeof(addresses[count]), "0x%lx",
+                     (unsigned long)(address - (uintptr_t)map->l_addr));
+            args[3 + count] = addresses[count];
+            count++;
+        }
+        int output[2];
+        if (pipe(output))
+            continue;
+        posix_spawn_file_actions_t actions;
+        if (posix_spawn_file_actions_init(&actions)) {
+            close(output[0]);
+            close(output[1]);
+            continue;
+        }
+        int error = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO);
+        error |= posix_spawn_file_actions_addclose(&actions, output[0]);
+        error |= posix_spawn_file_actions_addclose(&actions, output[1]);
+        error |= posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+        pid_t child;
+        if (!error)
+            error = posix_spawn(&child, RECOMP_ADDR2LINE, &actions, NULL, args, environ);
+        posix_spawn_file_actions_destroy(&actions);
+        close(output[1]);
+        if (error) {
+            close(output[0]);
+            continue;
+        }
+        /* A missing/broken resolver must never prevent the crash report. */
+        size_t row = 0, column = 0;
+        bool complete = false;
+        struct timespec start, now;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        while (row < count) {
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            long remaining = 5000 - (now.tv_sec - start.tv_sec) * 1000 - (now.tv_nsec - start.tv_nsec) / 1000000;
+            struct pollfd ready = {.fd = output[0], .events = POLLIN};
+            if (remaining <= 0 || poll(&ready, 1, (int)remaining) <= 0)
+                break;
+            char buffer[1024];
+            ssize_t bytes = read(output[0], buffer, sizeof(buffer));
+            if (bytes <= 0) {
+                complete = bytes == 0;
+                break;
+            }
+            for (ssize_t i = 0; i < bytes && row < count; i++) {
+                char *source = sources[indices[row]];
+                if (buffer[i] == '\n') {
+                    source[column] = 0;
+                    const char *line = strrchr(source, ':');
+                    if (source[0] == '?' || !line || !strtoul(line + 1, NULL, 10))
+                        source[0] = 0;
+                    info->native_sources[indices[row]] = source[0] ? source : NULL;
+                    row++;
+                    column = 0;
+                } else if (column + 1 < sizeof(sources[0])) {
+                    source[column++] = buffer[i];
+                }
+            }
+        }
+        close(output[0]);
+        if (!complete) {
+            /* All output may have arrived before EOF; kill is harmless then. */
+            (void)kill(child, SIGKILL);
+        }
+        (void)waitpid(child, NULL, 0);
+    }
+#elif defined(RECOMP_DEBUG) && defined(_WIN32)
+    HANDLE process = GetCurrentProcess();
+    SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES);
+    if (!SymInitialize(process, NULL, TRUE))
+        return;
+    for (size_t i = 0; i < info->native_frame_count; i++) {
+        IMAGEHLP_LINE64 line = {.SizeOfStruct = sizeof(line)};
+        DWORD displacement;
+        if (SymGetLineFromAddr64(process, (DWORD64)(uintptr_t)info->native_frames[i] - 1, &displacement, &line))
+            snprintf(sources[i], sizeof(sources[i]), "%s:%lu", line.FileName, (unsigned long)line.LineNumber);
+        if (sources[i][0])
+            info->native_sources[i] = sources[i];
+    }
+    SymCleanup(process);
+#else
+    (void)info;
+#endif
+}
 static void capture_trace(RecompFailureInfo *info) {
 #ifdef _WIN32
     info->native_frame_count = CaptureStackBackTrace(1, 64, info->native_frames, NULL);
 #else
     (void)_Unwind_Backtrace(trace_frame, info);
 #endif
+    resolve_trace(info);
     fputs("Native call stack:\n", stderr);
-#ifdef _WIN32
-    for (size_t i = 0; i < info->native_frame_count; i++)
-        fprintf(stderr, "  %p\n", info->native_frames[i]);
-#else
-    backtrace_symbols_fd(info->native_frames, (int)info->native_frame_count, 2);
+#ifndef _WIN32
+    char **symbols = backtrace_symbols(info->native_frames, (int)info->native_frame_count);
+#endif
+    for (size_t i = 0; i < info->native_frame_count; i++) {
+#ifndef _WIN32
+        if (symbols)
+            fprintf(stderr, "  %s\n", symbols[i]);
+        else
+#endif
+            fprintf(stderr, "  %p\n", info->native_frames[i]);
+        if (info->native_sources[i])
+            fprintf(stderr, "    at %s\n", info->native_sources[i]);
+    }
+#ifndef _WIN32
+    free(symbols);
 #endif
 }
 

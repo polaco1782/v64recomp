@@ -9,9 +9,8 @@
 #define radians (3.14159265358979323846 / 180)
 static RecompFov fov;
 static RecompMouseBuffer mouse;
-static bool enabled, looking;
-static double sensitivity, turn;
-static uint32_t input_camera;
+static bool enabled;
+static double sensitivity, invert_x, invert_y;
 static void (*poll_live_input)(Runtime *, void *);
 
 static float from_bits(uint32_t bits) {
@@ -44,9 +43,6 @@ static bool live_input(Runtime *rt) {
 }
 static void clear(void) {
     recomp_mouse_clear(&mouse);
-    turn = 0;
-    looking = false;
-    input_camera = 0;
 }
 void rayman2_controls_init(void (*poll)(Runtime *, void *)) {
     poll_live_input = poll;
@@ -66,6 +62,10 @@ void rayman2_controls_init(void (*poll)(Runtime *, void *)) {
                                 sensitivity <= 10,
                             "mouse sensitivity must be 0.001..10", 0);
     }
+    setting = getenv("RECOMP_MOUSE_INVERT_X");
+    invert_x = setting && !strcmp(setting, "1") ? -1 : 1;
+    setting = getenv("RECOMP_MOUSE_INVERT_Y");
+    invert_y = setting && !strcmp(setting, "1") ? -1 : 1;
     double horizontal = from_bits(R2_CTL_NATIVE_HORIZONTAL_BITS);
     double aspect = 1.0 / from_bits(R2_CTL_NATIVE_RATIO_BITS);
     recomp_fov_init(&fov, 2 * atan(tan(horizontal / 2) / aspect) / radians, aspect);
@@ -81,7 +81,7 @@ bool rayman2_controls_poll(Runtime *rt, RecompRenderer *renderer, RecompPad *pad
         return false;
     }
     RecompMouseFrame frame = recomp_renderer_mouse_frame(renderer);
-    if (!frame.active)
+    if (!frame.active || ((frame.actions ^ mouse.pending.actions) & RECOMP_MOUSE_SECONDARY_ATTACK))
         clear();
     recomp_mouse_submit(&mouse, frame);
     if (frame.active) {
@@ -114,7 +114,7 @@ void rayman2_pad_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     original(rt, ctx);
     if (!enabled || !port_zero)
         return;
-    uint32_t pad = (uint32_t)ctx->gpr[2], camera = world_camera(rt);
+    uint32_t pad = (uint32_t)ctx->gpr[2];
     if (!live_input(rt) || !valid(rt, pad, 6)) {
         clear();
         return;
@@ -125,29 +125,23 @@ void rayman2_pad_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
         return;
     }
     bool look = (frame.actions & RECOMP_MOUSE_SECONDARY_ATTACK) != 0;
-    if (camera != input_camera || look != looking)
-        turn = 0;
-    input_camera = camera;
-    looking = look;
     if (look) {
         // C-up uses the original analog look path, including its pitch limits.
         // Each delta is consumed at the guest input update, not presentation rate.
-        double x = fmax(-80, fmin(80, frame.dx * sensitivity * 50 * 1));
-        double y = fmax(-80, fmin(80, -frame.dy * sensitivity * 50));
+        double x = fmax(-80, fmin(80, frame.dx * sensitivity * 50 * invert_x));
+        double y = fmax(-80, fmin(80, -frame.dy * sensitivity * 50 * invert_y));
         recomp_store8(rt, pad + 2, (uint8_t)(int8_t)lround(x));
         recomp_store8(rt, pad + 3, (uint8_t)(int8_t)lround(y));
     } else {
-        // Native third-person camera rotation is a C-button action. Queue a
-        // bounded number of update ticks so motion survives a slow guest frame.
-        turn = fmax(-16, fmin(16, turn + frame.dx * sensitivity));
+        // Native third-person rotation is digital. Even the smallest mouse
+        // motion must reach this update; a sensitivity threshold drops slow
+        // motion and a queued hold continues turning after the mouse stops.
+        double dx = frame.dx * invert_x;
         uint16_t buttons = recomp_load16(rt, pad);
-        if (turn >= 1) {
+        if (dx > 0)
             buttons |= 0x0001;
-            turn -= 1;
-        } else if (turn <= -1) {
+        else if (dx < 0)
             buttons |= 0x0002;
-            turn += 1;
-        }
         recomp_store16(rt, pad, buttons);
     }
 }

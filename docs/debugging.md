@@ -256,4 +256,11 @@ The core writes ROM identity, failure details, loaded-section state, guest threa
 registers (GPRs, FPRs, HI/LO and FPU control), task words, native stack frames and
 a word-swapped RAM dump. Debug dispatch also retains the last 128 guest-call
 addresses without needing a game-specific trace hook or `--trace-calls`.
+Debug stack dumps include compiled C file names and line numbers in the terminal
+and each JSON frame's `source` field. Linux uses `addr2line` (or
+`llvm-addr2line`, selected at configure time); Windows uses the matching PDB.
+Keep the executable's debug information available. Unresolved frames retain their
+raw addresses. Generated game frames point into the build directory's C sources.
+The inspector prefers the saved locations so rebuilding does not change them.
+
 Game code does not provide its own failure callback or crash-report serializer.

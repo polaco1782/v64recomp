@@ -185,6 +185,7 @@ typedef struct RecompFailureInfo {
     bool ram_range;
     bool warning;
     void *native_frames[64];
+    const char *native_sources[64]; /* Captured file:line, NULL when unavailable. */
     size_t native_frame_count;
 } RecompFailureInfo;
 typedef void (*RecompFailureHandler)(const RecompFailureInfo *, void *);

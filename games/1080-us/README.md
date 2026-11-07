@@ -1,8 +1,8 @@
 # 1080 Snowboarding JU revision 0
 
 Partial native port of the shared Japanese/US cartridge. **Debug and Release
-render the intro/title and navigate the first menu into Select Rider.** Both
-completed the 3,000-frame `first-menu.txt` replay with exit 0 and no timeout:
+render the intro/title and navigate the first menu into Select Rider.** Previously,
+both completed the 3,000-frame `first-menu.txt` replay with exit 0 and no timeout:
 65.7 seconds in Debug and 51.3 seconds in Release. Captures show the rider
 animation and stats. Debug logged 3,491 graphics tasks and 3,000 presentations.
 
@@ -10,6 +10,14 @@ The first-menu freeze was caused by missing mgrproc/genproc module mappings and
 reused scene addresses. Both modules now have checked Text, ROD, symbol entries
 and bounded switches. Player-controlled riding, later modes/transitions and
 gameplay save/reload remain unvalidated. See `RESUME.md` for exact evidence.
+
+The November 7 SP-status crash came from an unrecognized `osSpTaskYielded`
+variant at `0x80119f90`, which called `__osSpGetStatus` and read `0xa4040010`.
+Its complete ROM/RAM-verified body now uses the shared native task handler,
+alongside the existing load/start/yield hooks. Both builds pass. Current menu
+replays stop at a separate scene-image mismatch at `0x803f0c2c`; Debug visibly
+reaches Select Rider first. The rare yield timing was not reproduced before
+that stop, so these replays do not establish complete runtime acceptance.
 
 ## Build and run
 
