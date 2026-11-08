@@ -81,6 +81,17 @@ Configure and build with `cmake --workflow --preset <game>-debug`. The binary is
 compile `games/<game>/main.c`; generated sources live under the build's
 `generated/` directory. Both use the same named command-line options.
 
+Linux Release builds move debug sections into a compressed `<game>.debug`
+sidecar beside the executable and add a `.gnu_debuglink`. GDB and compatible
+address resolvers can use that matching file for source locations. Keep the
+sidecar with build artifacts; copying only the executable is sufficient to run
+the game. The native symbol table, dynamic exports and unwind information remain
+in the executable for crash reports, profiling and live repair. Debug retains
+its embedded debug information; MSVC uses PDB files in both configurations.
+Disable separation with `-DRECOMP_SEPARATE_DEBUG_INFO=OFF` when needed.
+Both Linux modes explicitly link as PIE; the profiler and crash resolver account
+for the module's runtime relocation base.
+
 RT64 and its bundled dependencies share a build under `build/shared/rt64/` across
 all games and both modes, with separate caches where the Windows CRT differs.
 The default `RelWithDebInfo` configuration uses release optimization and `NDEBUG`

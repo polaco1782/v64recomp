@@ -43,6 +43,8 @@
     <None Include="$(RecompRoot)cmake\Game.cmake" />
     <None Include="$(RecompRoot)cmake\OptimizeDebug.cmake" />
     <None Include="$(RecompRoot)cmake\PackUPX.cmake" />
+    <None Include="$(RecompRoot)cmake\Release.cmake" />
+    <None Include="$(RecompRoot)cmake\SeparateDebug.cmake" />
     <None Include="$(RecompRoot)cmake\SharedRT64.cmake" />
     <None Include="$(RecompRoot)cmake\SourceGroups.cmake" />
     <None Include="$(RecompRoot)cmake\rt64\AnamorphicPresentation.cmake" />

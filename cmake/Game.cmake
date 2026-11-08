@@ -86,6 +86,16 @@ file(GLOB RECOMP_GAME_BROWSE CONFIGURE_DEPENDS "${RECOMP_GAME_DIR}/*.h"
 target_sources(${RECOMP_GAME} PRIVATE ${RECOMP_GAME_BROWSE} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/game_defaults.h" "${CMAKE_SOURCE_DIR}/include/game.h")
 set_target_properties(${RECOMP_GAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+# PIC previously enabled -fPIE for CPU objects without enabling PIE at link
+# time. Check both drivers because games can include C++ graphics adapters.
+include(CheckPIESupported)
+check_pie_supported(LANGUAGES C CXX OUTPUT_VARIABLE RECOMP_PIE_ERROR)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
+        AND (NOT CMAKE_C_LINK_PIE_SUPPORTED OR NOT CMAKE_CXX_LINK_PIE_SUPPORTED))
+    message(FATAL_ERROR "The selected toolchain cannot link PIE games: ${RECOMP_PIE_ERROR}")
+endif()
+set_property(TARGET ${RECOMP_GAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+recomp_separate_release_debug(${RECOMP_GAME})
 if(RECOMP_EMBED_TEXTURE_PACK)
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_EMBED_TEXTURE_PACK)
     # A changed ZIP must relink before appending, avoiding accumulated overlays.
@@ -119,7 +129,7 @@ if(MSVC)
     target_compile_options(${RECOMP_GAME} PRIVATE /W4 /wd4102 /fp:strict /bigobj
         "$<$<NOT:$<CONFIG:Debug>>:/O2>")
     target_link_options(${RECOMP_GAME} PRIVATE /DEBUG /STACK:8388608
-        "$<$<NOT:$<CONFIG:Debug>>:/OPT:REF;/OPT:ICF>")
+        "$<$<NOT:$<CONFIG:Debug>>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF>")
 else()
     target_compile_options(${RECOMP_GAME} PRIVATE
         "$<$<CONFIG:Debug>:-O0;-g3>" "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL};-g1>"
@@ -127,6 +137,8 @@ else()
         -fno-fast-math -frounding-math -ffp-contract=off)
     target_link_options(${RECOMP_GAME} PRIVATE -rdynamic)
 endif()
+recomp_optimize_release_target(${RECOMP_GAME})
+recomp_optimize_release_cpu(${RECOMP_CPU_SOURCES})
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_renderer recomp_audio)
 if(WIN32)
     add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD

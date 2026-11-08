@@ -338,6 +338,17 @@ For an incremental build with a different job count, use
 separately with `cmake --preset quake2-us-release -DOPTION=VALUE`; subsequent
 workflows retain cached options that the preset does not override.
 
+Release builds optimize generated CPU code for size (`-Oz`, falling back to
+`-Os`; `/O1 /Os` on MSVC), while the runtime and native adapters retain their
+speed optimization. Generated CPU objects avoid LTO, and unused sections can be
+discarded. Set `-DRECOMP_OPTIMIZE_SIZE=OFF` to use the previous compiler policy.
+Linux Release executables keep their debug information in a compressed matching
+`bin/<game>.debug` file. Keep that file for source-level diagnostics; it is not
+required to play. Set `-DRECOMP_SEPARATE_DEBUG_INFO=OFF` to retain debug information
+inside the executable. MSVC continues to produce PDB files. Native games build
+as position-independent executables on Linux, including an explicit PIE link.
+See the [size measurements](docs/code-expansion.md#release-build-policy).
+
 CMake prefers Clang (`clang`/`clang++`), falling back to GCC (`gcc`/`g++`) when
 the corresponding Clang compiler is unavailable. Explicit `CC`/`CXX`,
 `CMAKE_C_COMPILER`/`CMAKE_CXX_COMPILER`, and toolchain selections take precedence.

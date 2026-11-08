@@ -58,6 +58,12 @@
     <None Include="$(RecompRoot)cmake\PackUPX.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\Release.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SeparateDebug.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
     <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>

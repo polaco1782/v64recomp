@@ -215,11 +215,182 @@ C/libm implementation with full `fenv` isolation. This is individual-operation
 acceleration, not automatic SIMD vectorization of the game's loops.
 See [floating-point semantics](fpu.md).
 
-Release presets currently select `RECOMP_OPT_LEVEL=3`. Explicit configurations
-default that option to `2`; [`cmake/Game.cmake`](../cmake/Game.cmake) accepts
-either `2` or `3`. Debug uses `-O0 -g3`, so compare expansion and performance
-using the intended build mode. Splitting CPU sources makes parallel compilation
-practical; it is a build-time improvement, not by itself a runtime optimization.
+Release presets select `RECOMP_OPT_LEVEL=3` for handwritten game code. Explicit
+configurations default that option to `2`; [`cmake/Game.cmake`](../cmake/Game.cmake)
+accepts either `2` or `3`. Generated CPU code uses the size policy below by
+default. Debug uses `-O0 -g3`, so compare expansion and performance using the
+intended build mode. Splitting CPU sources makes parallel compilation practical;
+it is a build-time improvement, not by itself a runtime optimization.
+
+## Release build policy
+
+`RECOMP_OPTIMIZE_SIZE=ON` is the default. Generated CPU sources use `-Oz` when
+supported, otherwise `-Os`, and disable LTO for those objects. MSVC selects
+`/O1 /Os /GL-`. Runtime, renderer and handwritten game optimization levels stay
+unchanged. Local Linux targets use function/data sections and the game linker
+discards unused sections; MSVC uses `/Gy /Gw` and `/OPT:REF /OPT:ICF` without
+incremental linking. Dynamic exports, native symbols and unwind information
+remain available for the existing crash reporter, profiler and live modules.
+Scheduling boundaries, RAM checks and strict floating-point semantics remain
+enabled. `RECOMP_OPTIMIZE_SIZE=OFF` restores the generated sources' optimization
+settings inherited from the selected game.
+
+`RECOMP_SEPARATE_DEBUG_INFO=ON` moves Linux Release debug sections into a matching
+compressed `bin/<game>.debug` file and adds `.gnu_debuglink` to the executable.
+The sidecar is a linker byproduct: deleting it triggers a fresh link, and source
+changes refresh both files. Separation happens before texture ZIP embedding so
+the ZIP's offsets describe the final executable. The regular executable is also
+the input to the existing UPX `pack` target. Debug retains embedded information;
+Windows MSVC continues to use separate PDB files. Set the option to `OFF` to keep
+Linux Release debug sections in the executable instead.
+
+All native game objects and their static runtime libraries support relocation.
+Linux executables explicitly link as PIE after checking both C and C++ linker
+support. Guest addresses in generated C still refer to the original N64 memory
+map; host ASLR relocates native code and registry pointers independently.
+
+The 2026-11-08 Linux builds with this policy and explicit PIE produced these
+executable sizes, excluding their optional compressed debug sidecars:
+
+| Game | Previous executable, MiB | Optimized PIE, MiB | Reduction |
+| --- | ---: | ---: | ---: |
+| Turok US V1.2 | 35.70 | 10.72 | 70.0% |
+| Rayman 2 US | 38.44 | 11.37 | 70.4% |
+| 1080° US | 44.37 | 12.89 | 71.0% |
+| Media Player | 18.42 | 5.94 | 67.8% |
+
+All four Release builds and Turok Debug passed. Release binaries verified as
+`ET_DYN` with the PIE dynamic flag and no text relocations. Matching compressed
+sidecars resolved `recomp_scheduler_run` back to its source line; symbol tables,
+unwind sections and live-repair API exports remained present. Turok Debug also
+verified as PIE with embedded debug information.
+
+Temporary CMake integration checks passed with Ninja and Ninja Multi-Config,
+including inherited IPO, the `-Os` fallback, Debug, sidecar regeneration, unchanged
+incremental builds, rebased texture ZIP offsets after a ZIP update, and distinct
+ASLR addresses across launches. Turok completed a 3,300-presentation X11 replay
+before and after the change; captures showed rendered first-person gameplay,
+and the optimized executable's profiler resolved generated and static native
+functions under PIE. The captures differed in camera/weapon state, so these runs
+do not establish a frame-time or CPU-speed improvement. MSVC flags were not
+built on this Linux host. Reports are under the ignored
+`build/release-optimization-2026-11-08/` directory; temporary fixtures were removed.
+
+## Scheduling and function size audit, 2026-11-08
+
+The current emitter does not put an instruction budget or a general resumption
+state machine in ordinary generated functions. Guest pthreads retain the native
+C stack across blocking OS calls. `recomp_scheduler_run(max_resumes)` bounds
+scheduler handoffs in shared runtime code; it does not decrement a counter at
+every translated instruction. Its compiled body occupied 1,127–1,219 bytes in
+the Release executables inspected here. See [native threading](threading.md).
+
+The `switch (start_pc)` in `emit_function(..., resume_entry=True)` belongs to a
+separate live-repair module for an interior jump. Normal game generation leaves
+that option false. None of the four audited games' normal CPU sources contained
+that switch. Checked ROM-specific continuations are local control-flow edges,
+not a general scheduler resumption mechanism.
+
+### Executable disk size
+
+These existing Linux x86-64 Release artifacts were inspected without rebuilding
+or changing their build settings. Sizes are MiB (1,048,576 bytes). Removing only
+debug sections from temporary copies produced:
+
+| Game | Original executable | Without debug sections | Reduction |
+| --- | ---: | ---: | ---: |
+| GoldenEye US | 72.58 | 29.80 | 58.9% |
+| 1080° US | 44.37 | 17.77 | 59.9% |
+| Turok US V1.2 | 35.70 | 14.58 | 59.2% |
+| Rayman 2 US | 38.44 | 15.46 | 59.8% |
+| Media Player | 18.42 | 7.77 | 57.8% |
+
+This saves distribution space without reducing executable instructions or
+runtime memory used by loaded sections. An experiment with a separate debug file
+on Turok used `objcopy --only-keep-debug`, `strip --strip-debug` and
+`objcopy --add-gnu-debuglink`. Every allocated ELF section retained its address,
+size and content, and `addr2line` resolved `recomp_scheduler_run` to the same
+source line through the sidecar. Keep matching debug files for diagnostics;
+discarding them loses source information. Embedded texture ZIPs need their
+offsets rebuilt after any operation that changes executable file size, as in
+the existing [packing path](../cmake/PackUPX.cmake).
+
+### Loop checkpoint cost
+
+Checkpoints remain necessary for polling devices and preempting translated
+loops. They save cached guest registers only when a checkpoint is due, then
+reload registers after another thread or native callback may have changed them.
+Deleting them can leave a runnable loop executing indefinitely, preventing
+device service and the host frame loop from progressing. Removing the scheduler's
+resume bound can likewise prevent a run call from returning to presentation.
+
+To measure their size contribution, all 119 cached generated CPU units from
+GoldenEye, 1080°, Turok and Rayman 2 were compiled three ways with Clang 22.1.8:
+their existing optimization flags, the same flags with every generated
+`recomp_checkpoint_due(runtime, true/false)` replaced by `false`, and `-Oz`
+with the original checkpoint code. All variants retained the floating-point
+semantic flags and frame pointers; `-fno-lto -g0` made their object text directly
+comparable. The existing baseline was `-O3` except 1080°, whose cache selected
+`-O2`. All 357 compilations passed. Sums below count `.text` and `.text.*`, in
+MiB, excluding shared libraries, registry data and debug sections.
+
+| Game | CPU units | Baseline text | Checkpoints removed | Reduction | `-Oz`, checkpoints kept | Reduction |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| GoldenEye US | 34 | 12.12 | 11.00 | 9.18% | 8.49 | 29.95% |
+| 1080° US | 34 | 9.75 | 9.34 | 4.24% | 6.52 | 33.08% |
+| Turok US V1.2 | 24 | 6.71 | 6.39 | 4.83% | 4.54 | 32.29% |
+| Rayman 2 US | 27 | 7.37 | 6.95 | 5.74% | 4.93 | 33.13% |
+
+The checkpoint-free variant was a compile-only size experiment and was never
+run. These differences include register-allocation and compiler optimization
+effects; they are not an exact attribution of bytes to individual checks.
+`-Oz` offers a larger code-size opportunity while keeping scheduling semantics,
+but its gameplay and frame-time effects have not been measured. No runtime code,
+generation policy or default compiler settings were changed for this audit.
+
+The existing GoldenEye cache additionally enabled ThinLTO. An isolated relink
+with its original objects reproduced the original executable size and text
+size. Replacing only the 34 CPU objects with the measured ordinary ELF objects,
+while retaining the other original objects, libraries and link flags, gave:
+
+| GoldenEye CPU compilation | Final `.text`, MiB | Executable without debug sections, MiB |
+| --- | ---: | ---: |
+| Existing `-O3 -flto=thin` | 25.78 | 29.80 |
+| `-O3 -fno-lto` | 16.44 | 20.43 |
+| `-Oz -fno-lto` | 12.81 | 16.81 |
+
+All three relinks succeeded. This is evidence that cross-module optimization
+substantially expands this particular build; it does not establish a performance
+regression or imply that every game's cache enables LTO. Its speed/size tradeoff
+needs measurement before changing the build policy.
+
+### Function fragmentation
+
+`split_sources` groups whole generated functions into C translation units by
+section and 32-KiB guest-address buckets. It does not split a guest function into
+native fragments for an execution budget. The discovery inventories also showed
+almost no duplicated instruction ownership: zero repeated `(section, PC)` words in
+GoldenEye, 1080° and Rayman 2; one in Turok, at `0x80000c78`. This counts explicit
+instruction addresses, rather than overlapping function address spans.
+
+There were 419, 365, 106 and 606 ordinary functions shorter than eight MIPS words
+in GoldenEye, 1080°, Turok and Rayman 2, respectively. Their native function
+symbols accounted for only 0.23%, 0.51%, 0.23% and 0.85% of the translated
+function-symbol bytes in the existing executables. Small functions and shared
+tails may still warrant targeted analysis, but these measurements do not show
+widespread duplicated fragments to remove. Merging checked entries globally
+would need to preserve indirect-call identity, section loading, relocations and
+native return behavior.
+
+The first size reduction to pursue is distribution with separate debug files.
+For actual instruction footprint, compare size-oriented compilation and inlining
+policy under representative gameplay. Further checkpoint work should reduce
+repeated synchronization with proven register data flow while retaining every
+required scheduling boundary.
+
+The local audit's input hashes, per-unit compiler commands and measurements are
+under the ignored `build/code-size-audit-2026-11-08/` directory. Temporary source
+copies, objects and linked executables were removed after recording the results.
 
 ## Reproduce the footprint measurement
 
