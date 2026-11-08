@@ -6,6 +6,11 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".game", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a", handler = "goldeneye_ai_alert_hook"},
+  {section = ".game", vram = 0x7f02d734, size = 0xb38, sha256 = "ec668e47336a9e5fca08a9501fdd79c8959416dc7a20a663766f53a509b0145d", handler = "goldeneye_ai_fire_hook"},
+  {section = ".game", vram = 0x7f032c78, size = 0xf8, sha256 = "4a5f32ff833cfcc82021a3f1529d88902d3c28623166ed2219e1558dfc86849c", handler = "goldeneye_ai_target_hook"},
+  {section = ".game", vram = 0x7f09c250, size = 0x55c, sha256 = "f3228bfe30edf7a2b72dbaacc07ba866869c62953b5d649d8dc21ede814aa764", handler = "goldeneye_ai_explosion_hook"},
+  {section = ".game", vram = 0x7f06441c, size = 0x304, sha256 = "c263f5d1ad14e4d2af4445d2dd0761fb8041497063fc159cb16b877d325bbfa1", handler = "goldeneye_ai_impact_hook"},
   {section = ".game", vram = 0x7f022eec, size = 0xdc, sha256 = "da8b2e0611c67f526e290fb2db9a87fd29842aa32c92a9e0537b10ef512b63ae", handler = "goldeneye_ai_noise_hook"},
   {section = ".game", vram = 0x7f035484, size = 0x4dbc, sha256 = "2e52864c8bff532a50dc2b3ce18b5230ca5e15f20343260259d5667201905cae", handler = "goldeneye_ai_hook"},
   {section = ".game", vram = 0x7f035398, size = 0x9c, sha256 = "a8473ce020468fb6961fe97b02210eec2fce2d3af8d50ff24b30aaf29afc8bba", handler = "goldeneye_ai_list_hook"},
@@ -431,6 +436,25 @@ reference = "https://github.com/n64decomp/007"
 reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
 section = ".game"
 functions = [
+  {name = "stop", vram = 0x7f0335d4, size = 0x3c, sha256 = "dea2654684e42435b226aa5a5f0f52099de2ae674ec54cd31a96eb73206d662c"},
+  {name = "armed_prop", vram = 0x7f02303c, size = 0x50, sha256 = "86cbaf2df53dc9963a743471f54393669cf7bfaa89d5a00d138e71dfdb04567c"},
+  {name = "resolve_target", vram = 0x7f032c78, size = 0xf8, sha256 = "4a5f32ff833cfcc82021a3f1529d88902d3c28623166ed2219e1558dfc86849c"},
+  {name = "active_props", vram = 0x7f03a424, size = 0xc, sha256 = "6948d996b2f9e5440cd48e356e840c8cb168288fd51ed832c583dd64bc20c20e"},
+  {name = "visible_position", vram = 0x7f0295d0, size = 0xcc, sha256 = "dad91972cfe878b108321b5ffd49483540479ca6e313d3ea5d88bba3737e6cc3"},
+  {name = "explosion", vram = 0x7f09c250, size = 0x55c, sha256 = "f3228bfe30edf7a2b72dbaacc07ba866869c62953b5d649d8dc21ede814aa764"},
+  {name = "explosion_tick", vram = 0x7f09cee8, size = 0x604, sha256 = "4b203c90bc11a36cec341946ee3372d7b41f1cd0f4e7338058d5216835a68d4b"},
+  {name = "explosion_damage_function", vram = 0x7f09c9d8, size = 0x510, sha256 = "0f43df815adbf7ac097d97dfbab2357d39cb377d77dfa5763e25267e7be8520b"},
+  {name = "prop_impact", vram = 0x7f06441c, size = 0x304, sha256 = "c263f5d1ad14e4d2af4445d2dd0761fb8041497063fc159cb16b877d325bbfa1"},
+  {name = "line_test", vram = 0x7f0b0e24, size = 0x5ec, sha256 = "b0cf79c31efe3e76dc0e739231a7dc4836599c0f58d3ce4379def00fb44c0a89"},
+  {name = "fire_weapon", vram = 0x7f02d734, size = 0xb38, sha256 = "ec668e47336a9e5fca08a9501fdd79c8959416dc7a20a663766f53a509b0145d"},
+  {name = "prop_sort", vram = 0x7f03a240, size = 0x1c4, sha256 = "3590294b381a711c39b41827d18cb38d89539b395b6f32017ffe78bc5e12f9c8"},
+  {name = "prop_allocate", vram = 0x7f03a430, size = 0x54, sha256 = "ea5588bd2848e41593bd254951b8a352b6446a98611f51e75d1e91f6cbda4844"},
+  {name = "object_init", vram = 0x7f04054c, size = 0x1ac, sha256 = "487bca03604e4bffd3e19135a0a83db4f89269b9d94d445d5fc410b97934c56e"},
+  {name = "object_model_lookup", vram = 0x7f04071c, size = 0x38, sha256 = "450e02bb8fe17963a9281eff09eebfd31752d69981b2f6c41f91a7b7699a781a"},
+  {name = "object_destroyed", vram = 0x7f03ffc0, size = 0x38, sha256 = "7c8964e00897bb66f3d188a54adec19f7ed75d714f8f8f15081b5ef6cf8c5f92"},
+  {name = "equipped_weapon", vram = 0x7f02302c, size = 0x10, sha256 = "65a0044584b967c90a5c5f0eb2da09b7c80aedb8f35485986161525992e3bb42"},
+  {name = "object_runtime", vram = 0x7f042eb4, size = 0x64, sha256 = "29a0c9d534d539b813bf1dce5c7cdad6a943e3f997a25ed07918ccb00d8019c8"},
+  {name = "player_prop", vram = 0x7f089798, size = 0x10, sha256 = "bde9a2d680ddb1ef8786cff337764c9855e163a3ae626da3913c3f023af68b75"},
   {name = "hear_sound", vram = 0x7f022eec, size = 0xdc, sha256 = "da8b2e0611c67f526e290fb2db9a87fd29842aa32c92a9e0537b10ef512b63ae"},
   {name = "alert", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a"},
   {name = "movement_speed", vram = 0x7f02f690, size = 0x1f8, sha256 = "a1f5c464a197b04ca31fe76620ed6e1feebd7e81a4b545ec3518f138c7300be5"},
@@ -451,6 +475,37 @@ functions = [
   {name = "set_flags2", vram = 0x7f033218, size = 0x14, sha256 = "9184879fe52ff3cf39c77ec91f4c65ed044628ee968ceba572714f6ad0ca61f2"},
 ]
 fields = [
+  {name = "body", pc = 0x7f038d68, expected_word = 0x8045000f},
+  {name = "explosion_hrange", pc = 0x7f09cfb8, expected_word = 0xc6b00000},
+  {name = "explosion_vrange", pc = 0x7f09cfbc, expected_word = 0xc6a60004},
+  {name = "explosion_hchange", pc = 0x7f09cfac, expected_word = 0xc6b20008},
+  {name = "explosion_vchange", pc = 0x7f09cfb0, expected_word = 0xc6a8000c},
+  {name = "explosion_size", pc = 0x7f09d198, expected_word = 0xc6b20010},
+  {name = "explosion_range", pc = 0x7f09d2a0, expected_word = 0xc6a00014},
+  {name = "explosion_damage_range", pc = 0x7f09d2a4, expected_word = 0xc6b20018},
+  {name = "explosion_duration", pc = 0x7f09cf98, expected_word = 0x86a2001c},
+  {name = "explosion_flare_speed", pc = 0x7f09d470, expected_word = 0xc6b00020},
+  {name = "explosion_damage", pc = 0x7f09cb68, expected_word = 0xc6da003c},
+  {name = "hearing", pc = 0x7f022f68, expected_word = 0xc72600ec},
+  {name = "hidden", pc = 0x7f029c18, expected_word = 0x948e0012},
+  {name = "weapons", pc = 0x7f023038, expected_word = 0x8de20160},
+  {name = "prop_data", pc = 0x7f02d760, expected_word = 0x8c4f0004},
+  {name = "prop_position", pc = 0x7f029bd0, expected_word = 0xc4440008},
+  {name = "prop_tile", pc = 0x7f029be8, expected_word = 0x8c4f0014},
+  {name = "prop_flags", pc = 0x7f03a268, expected_word = 0x90ae0001},
+  {name = "prop_prev", pc = 0x7f03a288, expected_word = 0x8ca50024},
+  {name = "prop_parent", pc = 0x7f03a45c, expected_word = 0xac60001c},
+  {name = "object_state", pc = 0x7f03ffc0, expected_word = 0x908e0002},
+  {name = "object_type", pc = 0x7f040588, expected_word = 0x920e0003},
+  {name = "object_model_id", pc = 0x7f040724, expected_word = 0x848e0004},
+  {name = "object_flags", pc = 0x7f0405c4, expected_word = 0x8e0f0008},
+  {name = "object_flags2", pc = 0x7f038580, expected_word = 0x8c4a000c},
+  {name = "object_prop", pc = 0x7f04060c, expected_word = 0xae110010},
+  {name = "object_model", pc = 0x7f040608, expected_word = 0x8e0c0014},
+  {name = "object_runtime_flags", pc = 0x7f042ebc, expected_word = 0x8c8e0064},
+  {name = "weapon_item", pc = 0x7f02d7bc, expected_word = 0x81840080},
+  {name = "attack_target_type", pc = 0x7f02d78c, expected_word = 0x8ca3004c},
+  {name = "prop_type", pc = 0x7f02e070, expected_word = 0x90620000},
   {name = "last_heard", pc = 0x7f029c28, expected_word = 0xac9800f0},
   {name = "action", pc = 0x7f029c68, expected_word = 0x80820007},
   {name = "prop", pc = 0x7f032dec, expected_word = 0x8c830018},
@@ -465,18 +520,57 @@ fields = [
   {name = "target_tile", pc = 0x7f029bec, expected_word = 0xac8f00e4},
   {name = "flags2", pc = 0x7f03321c, expected_word = 0x908f010e},
 ]
+globals = [
+  {name = "last_hit_prop", pc = 0x7f0b1018, expected_words = [0x3c178008, 0x26f7ba04]},
+]
 noise_pc = 0x7f082d30
 noise_words = [0x0fc08bbb, 0xc7ac00e4]
+# JAL set-heard-Bond helper; ADDU a0,s1,s0 in the weapon scan.
+noise_alert_pc = 0x7f022f80
+noise_alert_words = [0x0fc0a700, 0x02302021]
 set_self_pc = 0x7f035664
 set_self_words = [0x0fc0d4e6, 0x00009025]
 # LUI t6,0x8005; intervening branch/delay slot; LW t6,-0x7c84(t6).
 clock_pc = 0x7f032b6c
 clock_words = [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c]
+# LUI/ADDIU table base, then SLL type,6 for the native 64-byte definition.
+explosion_pc = 0x7f09c25c
+explosion_words = [0x3c198004, 0xafb10020, 0x27390284, 0x000fc180]
 data = [
+  {name = "explosion_types", address = 0x80040284, size = 0x540, sha256 = "00faf0d7884c4915cebe468aa85b46471ba613a766c9a7c84c03894a75a47909"},
+  {name = "draw", address = 0x800373e8, size = 0x5c, sha256 = "e79286b042e8b36bfc3aaa6d245476df296ff26e2bf39af62001f6ec335c328f"},
+  {name = "bodies", address = 0x8003de10, size = 0x35c, sha256 = "eaabf09c06c46f44958c5d87c25b5d6f5d31a6a99450f18b6db17071cbe993be"},
+  {name = "setup_names", address = 0x800374e4, size = 0xec, sha256 = "d1235f8424683d1049302dd9b5c94fe5818c887ef37c1a1fef7c0a1751901b42"},
+  {name = "deaf", address = 0x8003717c, size = 0x38, sha256 = "a404059cdb36fbeb4913c554af0c4ac97e8a6059857fc4e9d5333fcce2876359"},
   {name = "standard", address = 0x80037084, size = 0x58, sha256 = "ee89d3873098214e70e4a849ab3b2595cb8c0213944ef10eb5dba8faf297e6a9"},
   {name = "simple", address = 0x80037250, size = 0x30, sha256 = "bbcac172d950fa025c42cf91d105d930200820c02434f16d120fc3a3a8c96095"},
   {name = "global_lists", address = 0x8003744c, size = 0x98, sha256 = "f5bd1b46e8f79826c9c178187f7423e947d64b9a2e8f26a51bcad760322e19c2"},
   {name = "attack", address = 0x800371b4, size = 0x58, sha256 = "2278a7bc8ffbf0c378ce9af28bb2840254ea5c85274856c2159dadcae5cd3a30"},
   {name = "chase", address = 0x8003720c, size = 0x18, sha256 = "e25ef474ebb494e5acbe285560f863da35d20dd3514fae9f40f1785abc389580"},
   {name = "persistent", address = 0x800372e0, size = 0xf0, sha256 = "49973df5625cce34789e6807420a78b01ea1a4fd973c6447ce344ef470914f6b"},
+]
+
+# Ordinary scenery only; tagged/attached/protected instances are excluded at runtime.
+scenery_models = [
+  3, # PROP_AMMO_CRATE1
+  4, # PROP_AMMO_CRATE2
+  5, # PROP_AMMO_CRATE3
+  6, # PROP_AMMO_CRATE4
+  7, # PROP_AMMO_CRATE5
+  8, # PROP_BIN1
+  18, # PROP_CARD_BOX1
+  19, # PROP_CARD_BOX2
+  20, # PROP_CARD_BOX3
+  21, # PROP_CARD_BOX4_LG
+  22, # PROP_CARD_BOX5_LG
+  23, # PROP_CARD_BOX6_LG
+  51, # PROP_METAL_CRATE1
+  52, # PROP_METAL_CRATE2
+  54, # PROP_METAL_CRATE4
+  79, # PROP_WOOD_LG_CRATE1
+  80, # PROP_WOOD_LG_CRATE2
+  81, # PROP_WOOD_MD_CRATE3
+  82, # PROP_WOOD_SM_CRATE4
+  83, # PROP_WOOD_SM_CRATE5
+  84, # PROP_WOOD_SM_CRATE6
 ]

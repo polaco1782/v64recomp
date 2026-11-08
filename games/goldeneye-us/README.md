@@ -75,12 +75,27 @@ The shared attack selector no longer randomly chooses pointing, hops, rolls or
 grenades. Weapon accuracy, damage and initial stealth detection retain the
 game's rules.
 
-Weapon noise reaches 75% farther through the original hearing scan. Silenced
-weapons retain their quieter noise values, and silence generates no alert.
-Ordinary guards investigate the sound's recorded position without waiting to
-see Bond; deaf guards and alarm-specific scripts keep their original response.
-This extends weapon-noise hearing; it does not invent footstep or ambient-sound
-events that the original hearing scan never receives.
+Weapon noise now uses an eight-metre base range plus 2.5 times the original
+weapon radius, scaled by each guard's hearing. This fixes the previous multiplier
+leaving a suppressed PP7 audible at only about two metres. Bullet impacts create
+fourteen-metre alerts and enlarged explosions 135-metre alerts (forty-five metres
+with original explosion settings); the small explosion effects used for impacts
+retain the shorter range. Ordinary guards, including the shared deaf-guard list,
+interrupt idle activity and investigate a saved snapshot
+of the sound's position and navigation tile. Moving Bond afterward does not move
+that destination. On arrival, guards wait at the sound location until they see
+Bond, hear another sound or the ten-second memory expires. The replacement owns
+this investigation instead of letting the original hearing scripts redirect it
+to Bond. Silence generates no alert; footstep sounds remain unchanged.
+
+Idle ordinary guards occasionally fire short bursts at visible crates, cardboard
+boxes or bins within two to twelve metres. Selection varies per guard, with a
+three-to-seven-second initial delay and six-to-twelve-second cooldown. Normal
+weapon animations, bullet collision and object damage perform the shooting.
+Only ordinary bullet weapons are eligible. Tagged mission props, attached,
+destroyed, protected and gunfire-immune objects are excluded. Fresh nearby noise
+cancels an ambient burst and takes priority; guards ignore their own impact
+alerts. Active combat takes priority over scenery shooting.
 
 Shared pursuit follows the last seen or heard position for up to ten simulation
 seconds, using the game's sprint mode and collision/navigation checks. It keeps
@@ -90,33 +105,63 @@ persistent combat list uses the same decisions, removing its random stop/start
 loop. Decisions run at most ten times per simulation second, independently of
 rendering FPS.
 
-Mission scripts, vehicles and characters observed with invincibility retain
-their translated behavior. Menus, cutscenes, watch, tank gameplay and multiplayer
-also retain the original AI. Set `RECOMP_GOLDENEYE_AI=0` before launching to use
-the original AI throughout, including for comparisons.
+Ordinary scientists start attacking when Bond is visible within six metres.
+Unarmed scientists use the original shared TT33 routine to turn, draw a pistol
+and fire; armed scientists enter the shared combat selector immediately. The
+reaction latches so approaching and retreating cannot repeatedly restart the
+draw animation. Dr. Doak stays friendly and keeps his decoder interaction.
+Scientists still count toward the game's civilian-casualty objectives.
 
-The wrappers are `ai` (`0x7f035484`), `ailistFindById` (`0x7f035398`) and the
-weapon-noise scan (`0x7f022eec`).
-The latter catches an attack-list transition inside the interpreter, preserves
-its caller's return list and resumes that list after the native decision.
+Other mission scripts, vehicles and characters observed with invincibility
+retain their translated behavior. Menus, cutscenes, watch, tank gameplay and
+multiplayer also retain the original AI. Set `RECOMP_GOLDENEYE_AI=0` before
+launching to use the original AI throughout, including for comparisons.
+
+Explosions use three times the original visual size and blast/damage radius,
+with the original active duration and fade time. Expansion speed is tripled
+so growing explosions reach the intended larger size over the original lifetime.
+Bullet-impact puffs and debris-only effects retain their original definitions.
+This explosion change also applies outside the AI adapter's on-foot mode; set
+`RECOMP_GOLDENEYE_EXPLOSIONS=0` before launching for original explosion settings.
+
+The wrappers cover `ai` (`0x7f035484`), `ailistFindById` (`0x7f035398`), the
+weapon-noise scan (`0x7f022eec`), prop impacts (`0x7f06441c`), explosion creation
+(`0x7f09c250`), the legacy hearing alert (`0x7f029c00`), target resolution
+(`0x7f032c78`) and guard firing (`0x7f02d734`).
+The list lookup catches an attack-list transition inside the interpreter,
+preserves its caller's return list and resumes it after the native decision.
+The scenery selector supplies an owned prop position to the native aiming path;
+the firing wrapper cancels expired bursts or targets that become invalid.
+The checked weapon-scan alert call is suppressed for adapted guards: its original
+body copies Bond's current coordinates into the shared last-position fields.
+Mission actors retain that original alert. Sound investigation uses its own
+coordinates and restores them before requesting a route.
 `profile.toml` pins complete function bodies, the self-switch call/delay pair,
 structure operands, simulation clock and decompressed script/table bytes.
 Generation verifies these and emits `goldeneye_ai_config.h`; reference source
 is not a build dependency. Semantic names were traced from the pinned
 [interpreter](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chrai.c),
-[shared scripts](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraidata.c)
-and [actions](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraction.c),
+[shared scripts](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraidata.c),
+[actions](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraction.c)
+and [explosions](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/explosion.c),
 then checked against the supplied ROM SHA-1
 `a963ea5308a4dda41354bca7751446248302a099`.
+The scientist body IDs are checked against the native body/model table; the
+shared draw script is checked against global list 16. Doak's Facility identity
+and initial script come from the pinned
+[Facility setup](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/assets/obseg/setup/UsetuparkZ.c).
+Explosion definitions, table addressing, field operands and complete creation,
+tick and damage bodies are pinned. Generated value changes accept either the
+native or already adjusted definition, avoiding repeated multiplication across
+explosions and stage transitions.
 
-Linux Debug/Release builds and twenty-three temporary ASan/UBSan behavior scenarios
-pass. The checks cover register preservation, animation completion, attack range,
-last-seen/heard sprint navigation, noise scaling, evade cooldowns and original-script
-fallbacks. Mutated function, field, data and noise-call fingerprints are rejected.
-Bounded 6,600-presentation Debug and Release Dam runs exited normally; GDB in
-Debug confirmed native combat, weapon-noise dispatch and navigation with sprint
-mode `2`. Captures showed the level and first-person firing, and the player's
-save stayed byte-identical.
+The preceding noise/scenery revision passed Linux Debug/Release builds and
+temporary ASan/UBSan checks for hearing ranges, register preservation,
+self-noise suppression, protected targets, visibility, weapon restrictions,
+target resolution and burst cancellation. Changed function, field, global,
+script and model-allowlist evidence was rejected by generation. The subsequent
+sound-destination, scientist and explosion changes have not been built or run;
+testing is left to the user at their request.
 Broader combat balance and mission progression still require playtesting.
 
 ## Mouse and keyboard
@@ -299,9 +344,12 @@ identifies other sampled routines `0x7f0b0e24` (`stanTestLineUnobstructed`) and
 visibility bottleneck; low aggregate CPU/GPU utilization does not rule it out.
 The checked ROM remains the US image declared in `profile.toml`.
 
-Release enables link-time optimization for GoldenEye and its runtime when the
-toolchain supports it. Clang also specializes the binary FP helper at translated
-call sites, where the operation, format and register indices are constants.
+With `RECOMP_OPTIMIZE_SIZE=OFF`, Release enables link-time optimization for
+GoldenEye and its runtime when the toolchain supports it. Clang also specializes
+the binary FP helper at translated call sites, where the operation, format and
+register indices are constants. The default size policy keeps FP helpers shared
+and uses the common compact CPU compilation settings; see the
+[Release size audit](../../docs/code-expansion.md#release-build-policy).
 Strict floating-point flags, rounding, exceptions and host-state restoration
 remain enabled. Debug and other games retain the ordinary helper. This targets
 arithmetic overhead without changing portal visibility or collision behavior.

@@ -1,6 +1,6 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
-import hashlib, json, struct, zlib
+import hashlib, json, math, struct, zlib
 import re
 from common import RecompError
 from input_analysis import verify_input_analysis
@@ -111,6 +111,39 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     ai = verify_ai_analysis(Path(game['rom']).read_bytes(), profile, metadata)
     lines = ['/* ROM-checked GoldenEye combat AI ABI; generated from profile.toml. */']
     lines.extend(f'#define GE_AI_{name.upper()} UINT32_C(0x{value:x})' for name, value in ai.items())
+    models = profile['ai_analysis']['scenery_models']
+    lines.append('static const uint16_t ge_ai_scenery_models[] = {' + ','.join(str(i) for i in models) + '};')
+    # Native definitions control both damage/collision radius and rendered size.
+    # Scale spatial growth with the radius while keeping the original timing.
+    data = startup_data(Path(game['rom']).read_bytes(), boot)
+    block = next(b for b in profile['ai_analysis']['data'] if b['name'] == 'explosion_types')
+    lines.append('static const uint32_t ge_explosion_changes[][3] = {')
+    for index in range(21):
+        address = block['address'] + index * 64
+        row = data[address - boot['data_address']:address - boot['data_address'] + 64]
+        if struct.unpack_from('>f', row, ai['EXPLOSION_DAMAGE'])[0] <= 0:
+            continue # Bullet impacts and debris-only effects keep their timing.
+        for name, scale in [
+            ('hrange', 3), ('vrange', 3), ('hchange', 3), ('vchange', 3),
+            ('size', 3), ('range', 3), ('damage_range', 3),
+            # ('flare_speed', 5), # Disabled: keep the original fade timing.
+        ]:
+            offset = ai['EXPLOSION_' + name.upper()]
+            value = struct.unpack_from('>f', row, offset)[0]
+            if not math.isfinite(value) or value < 0:
+                raise RecompError('GoldenEye explosion: invalid native definition')
+            before = struct.unpack_from('>I', row, offset)[0]
+            after = int.from_bytes(struct.pack('>f', value * scale), 'big')
+            if before != after:
+                lines.append(f'    {{UINT32_C(0x{address + offset:x}), UINT32_C(0x{before:x}), UINT32_C(0x{after:x})}},')
+        # Disabled: keep the original explosion duration.
+        # offset = ai['EXPLOSION_DURATION']
+        # duration, rate = struct.unpack_from('>hh', row, offset)
+        # if not 0 < duration <= 32767 // 5 or rate <= 0:
+        #     raise RecompError('GoldenEye explosion: invalid native lifetime')
+        # before, after = duration << 16 | rate, duration * 5 << 16 | rate
+        # lines.append(f'    {{UINT32_C(0x{address + offset:x}), UINT32_C(0x{before:x}), UINT32_C(0x{after:x})}},')
+    lines.append('};')
     (output / 'goldeneye_ai_config.h').write_text('\n'.join(lines) + '\n')
 
 
@@ -157,6 +190,12 @@ def verify_ai_analysis(rom, profile, metadata=None):
         require(word >> 26 in (32, 33, 35, 36, 37, 40, 41, 43, 49, 57) and
                 (word >> 21) & 31 != 29, 'field evidence is not an object-relative memory operand')
         constants[field['name'].upper()] = word & 65535
+    for global_ in spec['globals']:
+        words(global_['pc'], global_['expected_words'])
+        hi, lo = global_['expected_words']
+        require(hi >> 26 == 15 and lo >> 26 == 9 and (hi >> 16) & 31 == (lo >> 21) & 31 and
+                (lo >> 16) & 31 == (hi >> 16) & 31, 'global is not LUI/ADDIU')
+        constants[global_['name'].upper()] = ((hi & 65535) << 16) + struct.unpack('>h', struct.pack('>H', lo & 65535))[0]
     words(spec['set_self_pc'], spec['set_self_words'])
     require(spec['set_self_words'] == [0x0fc0d4e6, 0x00009025] and
             constants['FIND_LIST'] == 0x7f035398, 'SetChrAiList self-call ABI mismatch')
@@ -165,9 +204,16 @@ def verify_ai_analysis(rom, profile, metadata=None):
     require(spec['noise_words'] == [0x0fc08bbb, 0xc7ac00e4] and constants['HEAR_SOUND'] == 0x7f022eec,
             'weapon-noise call/F12 argument mismatch')
     constants['NOISE_RETURN'] = spec['noise_pc'] + 8
+    words(spec['noise_alert_pc'], spec['noise_alert_words'])
+    require(spec['noise_alert_words'] == [0x0fc0a700, 0x02302021] and constants['ALERT'] == 0x7f029c00,
+            'weapon-noise alert caller mismatch')
+    constants['NOISE_ALERT_RETURN'] = spec['noise_alert_pc'] + 8
     words(spec['clock_pc'], spec['clock_words'])
     require(spec['clock_words'] == [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c], 'clock operand mismatch')
     constants['CLOCK'] = 0x80050000 - 0x7c84
+    words(spec['explosion_pc'], spec['explosion_words'])
+    require(spec['explosion_words'] == [0x3c198004, 0xafb10020, 0x27390284, 0x000fc180],
+            'explosion table pointer/64-byte stride mismatch')
     data = startup_data(rom, profile['bootstrap'])
     blocks = {}
     for block in spec['data']:
@@ -176,12 +222,31 @@ def verify_ai_analysis(rom, profile, metadata=None):
         body = data[offset:offset + block['size']]
         require(hashlib.sha256(body).hexdigest() == block['sha256'], block['name'] + ' data mismatch')
         blocks[block['name']] = (block['address'], body)
+    require(blocks['explosion_types'][0] == 0x80040284 and len(blocks['explosion_types'][1]) == 21 * 64,
+            'explosion type table bounds mismatch')
     table = blocks['global_lists'][1]
     require(len(table) == 19 * 8 and table[-8:] == bytes(8), 'global-list table bounds mismatch')
-    for name, index in [('standard', 2), ('simple', 7), ('attack', 6), ('chase', 8), ('persistent', 13)]:
+    for name, index in [('standard', 2), ('deaf', 5), ('simple', 7), ('attack', 6), ('chase', 8),
+                        ('persistent', 13), ('draw', 16)]:
         pointer, identifier = struct.unpack_from('>II', table, index * 8)
         require(identifier == index and pointer == blocks[name][0], name + ' script selector mismatch')
         constants[name.upper() + '_LIST'] = pointer
+    bodies = blocks['bodies'][1]
+    require(len(bodies) == 43 * 20, 'body table bounds mismatch')
+    for name, index, filename in [('scientist_female', 28, b'CtechwomanZ\0'),
+                                  ('scientist_male', 35, b'CtechmanZ\0')]:
+        pointer = struct.unpack_from('>I', bodies, index * 20 + 4)[0]
+        offset = pointer - profile['bootstrap']['data_address']
+        require(data[offset:offset + len(filename)] == filename, name + ' model mismatch')
+        constants[name.upper() + '_BODY'] = index
+    pointer = struct.unpack_from('>I', blocks['setup_names'][1], 34 * 4)[0]
+    offset = pointer - profile['bootstrap']['data_address']
+    facility_name = b'UsetuparkZ\0'
+    require(data[offset:offset + len(facility_name)] == facility_name, 'Facility stage selector mismatch')
+    constants['FACILITY_STAGE'] = 34
+    models = spec['scenery_models']
+    require(models and len(set(models)) == len(models) and all(type(i) is int and 0 <= i < 341 for i in models),
+            'invalid scenery model allowlist')
     return constants
 
 
