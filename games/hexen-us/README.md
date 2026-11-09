@@ -53,8 +53,14 @@ expansion is separate and can widen the displayed view further.
 The full bodies at `0x800559f0` (`guPerspective`) and `0x803bba90` (CPU
 angle-to-screen setup) remain wrapped with their originals retained. The
 perspective override is restricted to return PC `0x8004e85c` and world matrix
-`0x80084c78`. Its o32 `a2` argument carries vertical FOV bits, converted using
-the ROM's checked aspect bits `0x3fd097b4`.
+`0x80084c78`. Its o32 `a2` argument carries vertical FOV bits, with the ROM's
+checked aspect bits `0x3fd097b4` in `a3`. The original call runs unchanged and
+its fixed-point matrix is saved. Hexen caches this matrix between camera/level
+setup calls, so each keypad adjustment also updates its X/Y diagonal using the
+native-to-selected horizontal tangent ratio. Scaling always starts from the
+saved native words; depth terms and perspective normalization remain native.
+Returning to the minimum restores all 64 original matrix bytes exactly. The
+world renderer at `0x801127f4` selects this matrix, including for its pitch path.
 
 The original CPU initializer runs once normally. Its finished 4096-entry table
 at `0x80144bf8` and clip angle at `0x80144bdc` are saved. Live changes rebuild
@@ -69,7 +75,11 @@ are in `profile.toml`; generation emits `hexen_fov_config.h` and `fov-hooks.json
 with `runtime_verified=false`. See the [investigation guide](../../docs/field-of-view.md).
 
 Earlier FOV versions passed MSVC Debug/Release builds and gameplay testing by the
-user. The keypad/140-degree extension has not been rebuilt or tested in game.
+user. The live keypad version could print a changing FOV while leaving the cached
+projection unchanged. The matrix update correction passes Linux Debug/Release
+builds and ROM/translation verification. The user confirmed the live controls
+work after rebuilding. Full-range visibility and combined F7 behavior remain
+unverified.
 
 ## Existing gameplay validation
 

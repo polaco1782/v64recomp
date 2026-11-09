@@ -331,10 +331,19 @@ guest's trigonometric approximations; angular overscan keeps clipping
 conservative. Returning to the minimum copies the exact saved native words back.
 
 Key changes update only these CPU tables and projection scalars, with the guest
-parked. They never re-enter the guest allocator. The ROM operands and an
-analytical table model were reviewed during implementation. This extension was
-not rebuilt at the user's request; live
-geometry/edge visibility and combined F7 behavior still need acceptance.
+parked. They never re-enter the guest allocator. Hexen also caches its fixed
+world projection at `0x80084c78`: changing a future `guPerspective` argument
+does not update the current view. Save the native matrix after the scoped call,
+then scale its split 16.16 X/Y diagonal by
+`tan(original_horizontal/2) / tan(selected_horizontal/2)` on every adjustment.
+Always start from the saved matrix and restore all 64 bytes at the minimum.
+The checked `guMtxF2L` body verifies the packing; the world renderer at
+`0x801127f4` selects the cached matrix and derives its pitched view from it.
+Keep depth terms and perspective normalization unchanged.
+
+The live matrix correction passes Linux Debug/Release builds and generation
+verification. The user confirmed the live controls work after rebuilding;
+full-range geometry/edge visibility and combined F7 behavior still need acceptance.
 
 ## Quake 64 investigation record
 
