@@ -1,5 +1,9 @@
 # Nightmare Creatures US
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 Original title, menus, character selection and playable Chelsea with graphics, ABI1 audio and live input. Full-game progression remains unverified.
 
 Mouse steering and WASD are enabled by default. W/S move forward/back; A/D use

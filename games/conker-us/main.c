@@ -2,7 +2,6 @@
 #include <setjmp.h>
 #include "generated.h"
 #include "audio.h"
-#include "graphics.h"
 #include <openssl/evp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -286,9 +285,8 @@ static void game_init(Game *game, const RecompGameOptions *options) {
     recomp_copy_to_ram(rt, BOOT_INITIAL_LOAD_ADDRESS, game->rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
         recomp_store(rt, boot_parameters[i][0], boot_parameters[i][1], 4);
-    game->renderer = recomp_renderer_create_named(rt, options->data, "Conker's Bad Fur Day");
+    game->renderer = recomp_renderer_create_named(rt, "Conker's Bad Fur Day");
     recomp_game_require(game->renderer != NULL, "Conker renderer initialization failed", 0);
-    recomp_renderer_set_microcode_hook(game->renderer, conker_bind_microcode);
     MipsContext boot = {.fcr31 = 0x01000800, .fpu_fr1 = true};
     boot.gpr[31] = mips_s32(0xf0000000);
     game->booting = true;

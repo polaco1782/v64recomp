@@ -19,12 +19,6 @@
     <None Include="$(RecompRoot)games\hexen-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\hexen-us\graphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\hexen-us\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="$(RecompRoot)games\hexen-us\hexen_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>

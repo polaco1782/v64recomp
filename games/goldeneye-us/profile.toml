@@ -607,3 +607,18 @@ scenery_models = [
   83, # PROP_WOOD_SM_CRATE5
   84, # PROP_WOOD_SM_CRATE6
 ]
+
+# Both full OSTask spans match the verified RareZip startup image and captured RAM.
+[graphics]
+framebuffers = [{width = 320, height = 240}, {width = 440, height = 330}]
+[[graphics.microcodes]]
+name = "GoldenEye Fast3D fifo 2.0G"
+code = {image = "startup", offset = 0xd0, size = 0x1000, sha256 = "33acf608f113ea2afd50631467ff46e3588df079f345aafbf91d9a71ef3f9b62"}
+data = {image = "startup", offset = 0x3ba90, size = 0x800, sha256 = "d7384da26d58cc17f0d8c531c450ca8b3b85d11f59d628487a96fdc3459c1165"}
+
+# Full program includes the IMEM overlays beyond the initial 4 KiB task span.
+[graphics.rsp]
+images = [
+  {name = "GoldenEye RSP bootstrap", image = "startup", offset = 0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "GoldenEye Fast3D 2.0G with overlays", image = "startup", offset = 0xd0, size = 0x1420, sha256 = "0702f0908aeda4009eb67a5735960fa001dabbfc9787c0d76e296bafa3224797"},
+]

@@ -1,6 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
 #include "game.h"
-#include "graphics.h"
 #include "audio.h"
 #include "generated.h"
 #include "game_config.h"
@@ -128,12 +127,11 @@ static void game_init(Game *g, const RecompGameOptions *options) {
     RecompTaskBackend backend = {.submit = submit, .userdata = g};
     recomp_game_require(recomp_io_init(rt, &io) && recomp_tasks_init(rt, &backend),
                         "Hexen IO/tasks initialization failed", 0);
-    g->renderer = recomp_renderer_create_named(rt, options->data, "Hexen");
+    g->renderer = recomp_renderer_create_named(rt, "Hexen");
     recomp_game_require(g->renderer != NULL, "Hexen renderer initialization failed", 0);
     recomp_renderer_set_fov_hook(g->renderer, hexen_fov_adjust);
     g->running = true;
     hexen_input_init(poll_command_input);
-    recomp_renderer_set_microcode_hook(g->renderer, hexen_bind_microcode);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,

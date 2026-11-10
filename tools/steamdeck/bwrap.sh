@@ -71,5 +71,4 @@ fi
     --ro-bind "$root" /src \
     --bind "$root/build/steamdeck" /src/build/steamdeck \
     --ro-bind "$root/build/steamdeck/bwrap" /src/build/steamdeck/bwrap \
-    --bind "$root/build/shared/rt64/steamdeck" /src/build/shared/rt64/steamdeck \
     --chdir /src -- /bin/bash tools/steamdeck/build.sh "$game" "$jobs"

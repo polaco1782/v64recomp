@@ -1,5 +1,9 @@
 # 1080 Snowboarding JU revision 0
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 Partial native port of the shared Japanese/US cartridge. **Debug and Release
 render the intro/title and navigate the first menu into Select Rider.** Previously,
 both completed the 3,000-frame `first-menu.txt` replay with exit 0 and no timeout:
@@ -93,11 +97,6 @@ Scene Text is hashed at each entry for correctness. Generation pins the same
 bytes in word-swapped RAM order, allowing a direct full-span hash without a
 temporary allocation or byte-at-a-time guest loads.
 
-All ordinary SDK hooks are in shared `tools/symbols.json`, authorized by complete
-body hashes. The shared runtime supplies the SDK global interrupt-mask variant,
-early PI status access and the NEAD 1080 audio selection. The game has no private
-OS hook table. Graphics microcode identifies as Nintendo F3DEX 1.23 and was
-matched to cartridge bytes before RT64 replay.
 
 ## Evidence and reference
 

@@ -196,7 +196,7 @@ void oot_normal_camera_hook(Runtime *rt, MipsContext *ctx, RecompFunction origin
     if (camera_stick.active) {
         uint64_t now = recomp_game_monotonic();
         // A held stick is angular velocity, independent of host polling and
-        // RT64 interpolation. Do not accumulate a jump across pauses or stalls.
+        // presentation. Do not accumulate a jump across pauses or stalls.
         double seconds = camera_time ? fmin((now - camera_time) * 1e-9, 0.1) : 0;
         camera_time = now;
         yaw_delta += camera_stick.x * 120 * seconds;

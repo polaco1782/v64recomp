@@ -32,13 +32,6 @@ services cover these groups:
 | Cache maintenance | `osWritebackDCache`, `osInvalDCache`, `osInvalICache` | Validate supported ranges while coherent host memory supplies CPU/backend visibility. |
 | Common memory/string routines | `memcpy`, `memset`, `bcopy`, `bzero`, `bcmp`, `strlen`, `strchr` | Operate on guest addresses while preserving byte order, return values and each routine's overlap behavior. |
 
-Ordinary game logic, including movement, physics, AI and command-list
-construction, remains compiled from the ROM. Graphics tasks go to RT64, while
-supported ABI1 and Zelda NEAD audio tasks go to the native DSP backend and SDL
-playback. These backends execute supported task operations separately from the
-recompiled CPU code. Game-specific adapters handle custom startup, paging,
-graphics extensions and overlay relocation. Device and task coverage remains
-specific to each port; see [game support](status.md).
 
 ## Controller Pak saves
 
@@ -81,11 +74,6 @@ retrace, device completion or message send can wake the receiver; it resumes
 its existing call stack when scheduled. Returning immediately from every OS
 call would break this synchronization and change the game's behavior.
 
-Graphics HLE parsing and audio DSP run synchronously on the owner while the
-guest is parked. They use live RAM and finish their output writes before queuing
-SP/DP completion events. RT64 rendering and SDL playback remain asynchronous.
-AI buffer timing and completion are modeled by the runtime. SDL sound-device
-progress does not determine guest AI completion.
 
 ## How replacements are selected
 

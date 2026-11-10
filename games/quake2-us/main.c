@@ -94,8 +94,10 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Quake II IO/task init failed",
                         0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Quake II");
+    renderer = recomp_renderer_create_named(&rt, "Quake II");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     running = true;
     quake2_input_init(poll_command_input);
     RecompAudioConfig ac = {.output_enabled = true,

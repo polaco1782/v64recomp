@@ -120,20 +120,6 @@ directory, with optional hooks as documented in
 [adding a ROM](docs/adding-a-rom.md). Keep game-specific generation logic there
 rather than adding game-ID branches to the shared driver.
 
-Register the ID in root `CMakeLists.txt`'s `RECOMP_GAMES` and
-`tools/generate_game.py`'s `GAMES`. Add Release/Debug configure, build and workflow
-presets in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
-entries. Each workflow runs its matching configure preset, its
-`promote-live-patches` build preset, then its normal build preset; normal builds
-default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
-additional sources, generated headers, source splitting, and mode selection. Ensure new preparation
-inputs participate in CMake dependencies and generation cache invalidation.
-Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
-game-specific RT64 copy. Its independent build cache is under `build/shared/rt64/`.
-List only additional root-level translation units in `RECOMP_GAME_SOURCES`;
-`cmake/Game.cmake` always compiles `main.c`. Keep separate input, graphics, paging
-or codec adapters only for independent responsibilities. Check source lists,
-tool paths and docs against this layout before handing off the port.
 
 Follow the starter pattern in [adding a ROM](docs/adding-a-rom.md#7-add-the-native-application-and-cmake-integration):
 includes, game state, static helpers/native hooks, then `main`. Parse options once
@@ -143,6 +129,13 @@ run the common frame loop; tear down. Use `recomp_game_input`,
 audio recording come from the shared game layer. Core dispatch supplies tracing.
 Do not recreate per-game argument shims, controller replay parsers, report writers or
 standalone validation harnesses. Release retains all runtime correctness checks.
+
+Use the shared C11 GLES2 RDP pipeline and compiled RSP worker. Declare complete
+bootstrap/program/overlay spans and task identities in the game's graphics profile;
+verify original ROM hashes and every IMEM transfer. Generate native `game_rsp.c`
+through `graphics_microcode.py`, bind the checked table in `main.c`, and validate
+rendered output. Do not add display-list HLE, C++ graphics adapters or backend
+selection guards. Audio and JPEG remain separate native task implementations.
 
 CMake is the user-facing build/run selector. Python handles generation and
 analysis. Do not recreate obsolete per-game Python build/launch wrappers.
@@ -331,10 +324,6 @@ cmake --workflow --preset <game>-debug
 ./build/<game>-debug/bin/<game> --frames 300
 ```
 
-Inspect `generation.log` when configuration fails. Check Python dependencies and
-the populated pinned `third_party/rt64` submodules before attributing toolchain
-failures to the port. The current playable CMake target requires graphics and
-audio; use a bounded diagnostic path if headless bootstrap isolation is needed.
 
 Use short bounded runs to reach successive milestones: BSS/system entry, initial
 thread ABI, queues/events, first graphics/audio task, title, menu, gameplay, and
@@ -362,10 +351,6 @@ loaded-section versus missing-entry diagnosis, complete-table verification and
 exact-trigger replay. `tools/compare_native_hooks.py` can suggest unknown SDK
 variants; its masked matches are hypotheses requiring full-body/ABI review.
 
-For high CPU usage, use the maintained profiling workflows in
-[CPU profiling](docs/profiling.md). Measure a settled **Release** scene; Debug's
-unoptimized game code and diagnostics change the workload. Attribute costs to
-guest threads, shared runtime, audio, RT64 and driver work before optimizing.
 
 - Apps using the shared command line support the built-in x86-64 Linux sampler,
   including packaged Steam Deck builds, without Python or `perf`:
@@ -417,22 +402,6 @@ changing a microcode profile:
   --extract build/<game>-report/rsp-task
 ```
 
-The tool reads the shared reporter's RDRAM snapshot, converts its recorded byte
-order, bounds-checks physical/KSEG ranges and verifies the supplied ROM identity.
-It prints the complete OSTask, microcode SHA-256 fingerprints, ASCII identifiers,
-exact original-ROM matches and a flat display-list opcode histogram. Use
-`--opcode 0xb5` to filter command rows; `--commands 0` prints only the summary.
-For games such as Hexen whose graphics descriptor stores command counts instead
-of bytes, pass `--list-scale 8` after verifying the submission adapter. Nested
-lists are not followed. Extracted bytes belong in ignored `build/` or `local/`.
-Fingerprint the full verified text/data spans; a microcode name or an address
-alone does not prove compatibility. Check whether RT64 actually implements the
-identified GBI: a database entry can still map to `Unknown` or a stub handler.
-Use the existing microcode hook for a game-specific extension, keep it in the
-game's parent folder, and retain fatal checks for unsupported behavior. Replay
-the triggering feature and transitions back to ordinary graphics, then visually
-inspect the feature's output; accepting a task without rendering its commands
-does not resolve the failure.
 
 Pay particular attention to these runtime boundaries:
 
@@ -455,8 +424,8 @@ Pay particular attention to these runtime boundaries:
 
 ## 6. Establish playable acceptance, then check shared regressions
 
-Use the real X11/Xwayland desktop and Vulkan renderer. Headless boot or successful
-Vulkan initialization cannot establish rendered gameplay. If desktop access is
+Use the real X11/Xwayland desktop and GLES2 renderer. Headless boot or successful
+GLES2 initialization cannot establish rendered gameplay. If desktop access is
 unavailable, continue independent work and report that acceptance gap explicitly.
 
 Verify title/menu navigation, starting play, visible scene updates, movement and

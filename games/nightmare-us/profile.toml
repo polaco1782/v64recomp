@@ -144,3 +144,16 @@ bindings = [
   {name = "actions_return", value = 0x80034b08, kind = "return", pcs = [0x80034b00, 0x80034b04], words = [0xc0014ba, 0x2002021]},
   {name = "read_return", value = 0x8000536c, kind = "return", pcs = [0x80005364, 0x80005368], words = [0xc011cab, 0x24050001]},
 ]
+
+[graphics]
+framebuffers = [{width = 512, height = 240}]
+[[graphics.microcodes]]
+name = "F3DEX fifo 2.06"
+code = {rom_offset = 0x7dbb0, size = 0x1390, sha256 = "b0b3cf30952ebc1b68be5038b4cf0dcda5f60f6bb42f172b88f9afebb4c5bd06"}
+data = {rom_offset = 0xa3360, size = 0x420, sha256 = "0cd69649bbe6ca275f4c5f1bbec8811f03ed2941cb9167267cf8a085d7e103f8"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x7dae0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX fifo 2.06 with overlays", rom_offset = 0x7dbb0, size = 0x1390, sha256 = "b0b3cf30952ebc1b68be5038b4cf0dcda5f60f6bb42f172b88f9afebb4c5bd06"},
+]

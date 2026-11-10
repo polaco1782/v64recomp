@@ -9,21 +9,6 @@ the N64 OS and hardware interactions required by each game.
 See the [complete process flow](process-flow.md) for detailed graphs of the build,
 runtime services, graphics/audio HLE, packaging and investigation loop.
 
-```mermaid
-flowchart TD
-    ROM[Verified N64 ROM] --> Discovery[Static function discovery]
-    Profile[Game profile and checked inventories] --> Discovery
-    Discovery --> Metadata[symbols.json and coverage.json]
-    Metadata --> Translation[MIPS instructions to C11 functions]
-    Translation --> Compiler[Host C and C++ compiler]
-    Runtime[Native runtime and game adapters] --> Compiler
-    Backends[RT64 graphics and native audio] --> Compiler
-    Compiler --> Executable[Native game executable]
-    ROM --> Executable
-    Executable --> Diagnostics[Failure reports and RAM snapshots]
-    Diagnostics --> Review[Review missing targets or incorrect behavior]
-    Review --> Profile
-```
 
 ### 1. Verify the ROM and describe its memory layout
 
@@ -227,16 +212,6 @@ Native services preserve guest memory structures, calling conventions and
 completion events expected by the translated game.
 See [native threading](threading.md) for scheduling and HLE ownership.
 
-Graphics tasks pass to RT64 for Vulkan rendering. The translated game's audio
-code builds command lists; the shared native audio backend executes supported,
-verified ABI1 and Zelda NEAD tasks to produce PCM in guest RAM. The native AI service supplies
-buffer timing and completion events, and SDL plays the samples. Audio synthesis,
-graphics display-list parsing and presentation preparation run on the main
-owner thread with the guest parked. They use live RAM and queue SP/DP completion
-after output writes. RT64's internal rendering queues and SDL playback remain
-asynchronous. SDL window and input operations stay on the main thread. These task
-backends implement supported graphics/audio behavior rather than translating
-RSP microcode through the CPU translator. See [audio](audio.md).
 
 ### 5. Record gaps and investigate runtime failures
 
@@ -261,30 +236,10 @@ this one shared word, with the preceding `jr ra` checked against the ROM. Other
 body overlaps remain errors. Turok US v1.2 uses this arrangement at `0x80000c78`
 in its original RNC2 unpacker.
 
-The shared RT64 build applies `cmake/rt64/StableProjection.cmake` to a private build
-copy of the pinned math translation unit. Combined view/projection decomposition
-selects the largest view-axis component before dividing, avoiding a zero X pivot
-and amplification of 16.16 quantization around axis-aligned cameras. The source
-checkout is unchanged; a changed upstream calculation stops configuration for
-review. The correction was checked against the captured starting camera and
-quantized axis-aligned matrices at O0 and O2.
+## Graphics programs
 
-The shared build also applies `cmake/rt64/PrimitiveDepth.cmake` to its private RDP
-translation unit. Primitive Z uses unsigned 0.15 fixed point: `0x7fff` is
-`32767 / 32768`, below the cleared D32 depth of `1.0`. The pinned RT64 calculation
-uses `32767` as the divisor, causing a maximum-depth rectangle to fail `LESS`
-against a cleared buffer. Hexen draws its sky, writes sky-sector depth masks,
-then uses this rectangle to clear the remaining background. The incorrect
-conversion leaves blue sky visible outside those masks. The correction retains
-the game's commands and ordinary depth testing. The replacement is guarded
-against upstream source changes. The fixed-point interpretation also matches
-[GLideN64's primitive-depth decoder](https://github.com/gonetz/GLideN64/blob/master/src/gDP.cpp#L104-L108).
-
-`cmake/rt64/LookAtMatching.cmake` patches the build copy of the frame matcher.
-Look-at indices encode a per-vertex texture-generation enable bit; draw-time
-geometry mode alone does not establish that a vertex has a look-at entry.
-Matching checks that bit and the face, vertex, data, and mapping bounds before
-adding candidates. It also excludes candidates from other workloads because
-the existing matching loop indexes the first workload's arrays. Invalid or
-unsupported candidates retain their original data without look-at interpolation.
-The replacement is guarded against upstream source changes.
+Graphics display lists run through statically recompiled RSP microcode in C11.
+Python verifies the profile's bootstrap and full program/overlay images and emits
+`game_rsp.c`. A worker executes the native entries on a private RAM snapshot;
+GLES2 draws the emitted RDP stream on the owner. There is no display-list HLE
+fallback or renderer-selection branch. See [graphics](armv8-gles2.md).

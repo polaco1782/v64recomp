@@ -5,7 +5,9 @@
   "dependencies": [
     "openssl",
     "sdl2",
-    { "name": "curl", "default-features": false, "features": ["ssl"] },
-    { "name": "pthreads", "platform": "windows" }
+    {
+      "name": "pthreads",
+      "platform": "windows"
+    }
   ]
 }

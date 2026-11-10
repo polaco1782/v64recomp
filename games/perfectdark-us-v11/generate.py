@@ -7,6 +7,7 @@ from pathlib import Path
 import hashlib
 import struct
 import zlib
+from graphics_microcode import append_graphics_config, generated_sources
 from common import RecompError, write_json
 
 
@@ -66,6 +67,7 @@ def write_config(profile, metadata, output, startup):
                   f'#define PD_{tag}_ADDRESS 0x{address:x}',
                   'static const uint8_t pd_'+tag.lower()+'_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};']
     (output/'game_config.h').write_text('\n'.join(lines)+'\n')
+    append_graphics_config(profile, output, {name: raw for name, _, raw in images(profile['game']['rom'].read_bytes())})
 
 
 def configure_translation(rom, metadata, profile, output):

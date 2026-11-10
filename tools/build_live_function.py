@@ -273,7 +273,7 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
     command = [compiler, '-std=c11', '-shared', '-fPIC', '-Wl,-Bsymbolic',
                '-fno-fast-math', '-frounding-math', '-ffp-contract=off',
                '-Wall', '-Wextra', '-Werror', '-Wno-unused-label',
-               '-DRECOMP_WITH_RT64=1', '-DRECOMP_WITH_AUDIO=1',
+               '-DRECOMP_WITH_AUDIO=1',
                '-I', str(PROJECT / 'include'), '-I', str(output),
                '-O0' if mode == 'Debug' else '-O2']
     if mode == 'Debug':

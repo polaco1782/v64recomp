@@ -10,30 +10,6 @@
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\cheat_database.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\cheat_menu.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\cheat_menu.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\fast3d.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\fast3d_gles2.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -43,21 +19,12 @@
     <ClCompile Include="$(RecompRoot)backends\jpeg.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\rt64.cpp">
+    <ClCompile Include="$(RecompRoot)backends\rdp_gles2.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\texture_decode.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\textures.cpp">
+    <ClCompile Include="$(RecompRoot)backends\rdp_triangle.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\textures.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <None Include="$(RecompRoot)cmake\BuildRT64.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
     <None Include="$(RecompRoot)cmake\Game.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
@@ -73,26 +40,8 @@
     <None Include="$(RecompRoot)cmake\SeparateDebug.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
-    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
     <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
       <Filter>Configuration\cmake</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\AnamorphicPresentation.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\LookAtMatching.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\PrimitiveDepth.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
     </None>
     <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake">
       <Filter>Configuration\cmake\toolchains</Filter>
@@ -101,12 +50,6 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)include\fast3d.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)include\fast3d_gles2.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\fov_control.h">
@@ -127,6 +70,12 @@
     <ClInclude Include="$(RecompRoot)include\profiler.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rdp_gles2.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rdp_triangle.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\recomp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -140,6 +89,12 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\renderer.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rsp.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rsp_worker.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\runtime.h">
@@ -199,6 +154,15 @@
     <ClCompile Include="$(RecompRoot)runtime\profiler.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\rsp.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\rsp_vector.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\rsp_worker.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\scheduler.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
@@ -253,9 +217,6 @@
     <None Include="$(RecompRoot)tools\dump_cpu_code.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\embed_texture_pack.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\emit.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -269,6 +230,9 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\generate_game.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\graphics_microcode.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\import_rom.py">
@@ -319,9 +283,6 @@
     <None Include="$(RecompRoot)tools\profile_execution.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\profile_frames.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\promote_live_patches.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -329,6 +290,9 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\review_discovery.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\rsp_recompile.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\setup_windows.ps1">
@@ -369,9 +333,6 @@
     <Filter Include="Configuration\cmake">
       <UniqueIdentifier>{E5AD29D0-B01C-5827-9290-D7B25CEF7790}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Configuration\cmake\rt64">
-      <UniqueIdentifier>{1CBD586A-9036-5A81-A764-F240AF05E3D4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Configuration\cmake\toolchains">
       <UniqueIdentifier>{20EE7F38-027F-5260-B59B-593AAB48DA5E}</UniqueIdentifier>
     </Filter>
@@ -383,9 +344,6 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{E9A7F251-9AB3-53C7-8CDD-7946290D9E2A}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\backends">
-      <UniqueIdentifier>{D2D23502-9D21-539D-BBA4-21F5DB89B7F6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{360CC0C4-8AB5-5F6C-88CE-F143FE46165D}</UniqueIdentifier>

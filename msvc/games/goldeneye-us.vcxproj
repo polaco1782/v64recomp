@@ -32,9 +32,6 @@
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\fov.h" />
     <None Include="$(RecompRoot)games\goldeneye-us\generate.py" />
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\goldeneye_input.h" />
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\graphics.cpp" />
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\graphics.h" />
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\graphics_packets.h" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\input.c" />
     <None Include="$(RecompRoot)games\goldeneye-us\input_analysis.py" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\main.c" />

@@ -16,12 +16,6 @@
     <None Include="$(RecompRoot)games\sm64-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\sm64-us\graphics.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\sm64-us\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\sm64-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

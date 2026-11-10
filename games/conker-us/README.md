@@ -1,5 +1,10 @@
 # Conker's Bad Fur Day US
 
+This fork keeps the CPU port sources, but its GLES2 graphics integration still
+needs a checked compiled RSP profile. The milestones below describe earlier CPU
+port work and do not establish current graphics acceptance. See
+[graphics status](../../docs/armv8-gles2.md).
+
 The US revision 0 port has a native Debug executable. It runs original startup,
 creates five guest threads, decompresses paged code on demand into the game's
 allocated cache, loads scene assets through PI DMA, polls the controller, and
@@ -53,8 +58,3 @@ The checked entry inventory is bound to this prepared image's SHA-1; the import
 profile remains bound to the original cartridge SHA-1. Full code classification
 is incomplete. The normal build emits a `pending-boundaries.json` inventory;
 those failing functions do not implement the missing behavior.
-
-The graphics adapter uses RT64's RAM-backed framebuffer copies because the intro
-reinterprets a CI8 render target as RGBA16 without a TLUT, a conversion absent
-from RT64's GPU reinterpretation shader. This preserves packed texture bytes;
-extra framebuffer synchronization may affect performance.

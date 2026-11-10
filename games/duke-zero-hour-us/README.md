@@ -1,5 +1,9 @@
 # Duke Nukem: Zero Hour (US revision 0)
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 The port uses the original US cartridge, normalized to big-endian bytes:
 32 MiB, SHA-1 `de4db292cc6cf5dd1dd1d3c9700cf8e5c3078410`.
 The header title is `DUKE NUKEM ZERO HOUR`, country `0x45`, revision `0`.
@@ -42,10 +46,6 @@ from ROM `0xeb300..0xf6d70` to `0x801c0d80..0x801cc7f0`.
 The shared PI service activates that section only after the whole checked load
 completes. ROM offsets are retained for asset and audio sample DMA.
 
-A synthetic IPL thread uses `0x807ff000` temporarily and is destroyed on
-mainproc's first SDK call, before game allocation can reuse its storage.
-Both configurations share the parent-folder runtime adapter and use the core
-failure reporter. RT64 is reused from the shared renderer build.
 
 `profile.toml` is the single complete configuration. Checked jump tables bind
 instruction words, table bytes and lengths established from the bounds checks.

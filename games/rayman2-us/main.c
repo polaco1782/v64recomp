@@ -89,8 +89,12 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Rayman 2 IO/task init failed",
                         0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Rayman 2: The Great Escape");
+    renderer = recomp_renderer_create_named(&rt, "Rayman 2: The Great Escape");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
+    recomp_renderer_set_framebuffer_sizes(renderer, game_graphics_framebuffers,
+                                          sizeof(game_graphics_framebuffers) / sizeof(game_graphics_framebuffers[0]));
     rayman2_controls_init(poll_controls);
     recomp_renderer_set_fov_hook(renderer, rayman2_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,

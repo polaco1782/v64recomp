@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Build in an older userspace; never reuse the host's CMake or RT64 cache.
+# Build in an older userspace; never reuse the host's CMake cache.
 set -euo pipefail
 
 usage() {
     cat <<'EOF'
 Usage: tools/build_steamdeck.sh [GAME] [JOBS]
 
-Defaults: oot-us-v12, 4 jobs. Supports Podman, Docker and Bubblewrap.
+Defaults: goldeneye-us, 4 jobs. Supports Podman, Docker and Bubblewrap.
 Outputs: build/steamdeck/GAME/package and GAME-steamdeck.tar.gz
 Set CONTAINER_ENGINE=podman, docker or bwrap to select the engine.
 Automatic selection tries Podman, Docker, then Bubblewrap.
@@ -15,7 +15,7 @@ EOF
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
 if (( $# > 2 )); then usage >&2; exit 2; fi
-game=${1:-oot-us-v12}
+game=${1:-goldeneye-us}
 jobs=${2:-4}
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 if [[ ! $game =~ ^[a-z0-9]+(-[a-z0-9]+)*$ || ! -f $root/games/$game/profile.toml ]]; then
@@ -41,7 +41,7 @@ if [[ $engine != podman && $engine != docker && $engine != bwrap ]]; then
     printf 'CONTAINER_ENGINE must be podman, docker or bwrap\n' >&2; exit 2
 fi
 command -v "$engine" >/dev/null
-mkdir -p "$root/build/steamdeck" "$root/build/shared/rt64/steamdeck"
+mkdir -p "$root/build/steamdeck"
 printf 'Steam Deck build engine: %s\n' "$engine"
 if [[ $engine == bwrap ]]; then
     exec bash "$root/tools/steamdeck/bwrap.sh" "$root" "$game" "$jobs"
@@ -57,5 +57,4 @@ if [[ $engine == podman ]]; then user_options+=(--userns keep-id); fi
     --security-opt label=disable --env HOME=/tmp \
     --volume "$root:/src:ro" \
     --volume "$root/build/steamdeck:/src/build/steamdeck:rw" \
-    --volume "$root/build/shared/rt64/steamdeck:/src/build/shared/rt64/steamdeck:rw" \
     --workdir /src "$image" bash tools/steamdeck/build.sh "$game" "$jobs"

@@ -2,11 +2,6 @@
 # Ordinary CPU text, native OS bodies, RSP programs and data are classified
 # by code-inventory.json. The build does not read a reference ELF/map or C tree.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
-# Original Goddard vertex converters run first; graphics.c annotates their Vtx links.
-function_wrappers = [
-  {section = ".goddard", vram = 0x801930d8, size = 0x34c, sha256 = "777e7cb77b724e429ed16bef367f17c7c0a3f38778194e151aa6d4629d76d963", handler = "sm64_head_vertices_hook"},
-  {section = ".goddard", vram = 0x80193424, size = 0x118, sha256 = "e16e2c10ea005b0d908e4f85476926de915e0e21756a08f92e9270c85436dba7", handler = "sm64_head_vertices_hook"},
-]
 checkpoints = [
   {pc = 0x80246dd8, expected_word = 0x1000ffff, kind = "yield", reason = "Return control to the host on every iteration of SM64's idle loop"},
 ]
@@ -22,7 +17,7 @@ code_sections = [".main", ".engine", ".goddard"]
 boot_sections = [".main"]
 
 [packaging]
-# Native startup loads .main at ROM 0x1000; RT64 only consumes the 64-byte header.
+# Native startup loads .main at ROM 0x1000.
 # The hardware IPL3 block is never executed or loaded by this port.
 discard = [
   {rom_offset = 0x40, size = 0xfc0, sha256 = "61e88238552c356c23d19409fe5570ee6910419586bc6fc740f638f761adc46e", reason = "IPL3 hardware boot block bypassed by the native bootstrap"},
@@ -331,6 +326,13 @@ vi_intr_count = 0x8036711c
 app_nmi_buffer = 0x8000031c
 
 [graphics]
-# Original Fast3D task identity from the pinned ROM.
-code = {vram = 0x8032b330, size = 0x1000, sha256 = "ffd76b7092ce0c1b6dc2b1fb9992ab2b330f0d813577f49b3a1f32b2af9ac618"}
-data = {vram = 0x80339ac0, size = 0x800, sha256 = "b842fb99d1899c2f0345fcd43bd9f61f38675c39e4ec7bab5cb130518fbf0f3a"}
+[[graphics.microcodes]]
+name = "Fast3D 2.0D"
+code = {rom_offset = 0xe6330, size = 0x1000, sha256 = "ffd76b7092ce0c1b6dc2b1fb9992ab2b330f0d813577f49b3a1f32b2af9ac618"}
+data = {rom_offset = 0xf4ac0, size = 0x800, sha256 = "b842fb99d1899c2f0345fcd43bd9f61f38675c39e4ec7bab5cb130518fbf0f3a"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xe6260, size = 0xd0, sha256 = "589d793eda195c576c9d767e7a5e4b77352826f59669d20bdcc358a8ebc979a3"},
+  {name = "Fast3D 2.0D with overlays", rom_offset = 0xe6330, size = 0x1408, sha256 = "36b959e4da70aec0beda2222581041af8ec1407478fa8b83ae3128fec87d5bc0"},
+]

@@ -727,3 +727,16 @@ diagnostic_thread_tail = 0x803fffe0
 # Original IPL3 at cartridge 0x6d8/0x6dc writes CIC ID 6103 here.
 0x80000310 = 0x17d7
 0x80000318 = 0x400000
+
+# Full task spans matched against the original ROM and a captured OSTask.
+[graphics]
+[[graphics.microcodes]]
+name = "F3DEX 1.23"
+code = {rom_offset = 0xdfb86c, size = 0x1000, sha256 = "d9d2d49bb31cc18af243e7b4b4157dca3cea48c4943b4d2c4e94381c26e7ee7f"}
+data = {rom_offset = 0xdb7940, size = 0x800, sha256 = "fda1625b808c4bf1d33c556ba1524ebb1f8050b6ed48ba3f15ab5dd835b6336f"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xb70, size = 0x100, sha256 = "41a5f4f68d34a88f8f849be2ccc0cb7ea616ced19de16c2c1460b66995d99e0f"},
+  {name = "F3DEX 1.23 with overlays", rom_offset = 0xdfb86c, size = 0x1430, sha256 = "9c19d2f0cba40449f00af9a0ca47d211f41032fa1ef574d8d1e03d9c1787e433"},
+]

@@ -27,8 +27,6 @@
     <None Include="$(RecompRoot)games\conker-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\conker-us\audio.h" />
     <None Include="$(RecompRoot)games\conker-us\generate.py" />
-    <ClCompile Include="$(RecompRoot)games\conker-us\graphics.cpp" />
-    <ClInclude Include="$(RecompRoot)games\conker-us\graphics.h" />
     <ClCompile Include="$(RecompRoot)games\conker-us\main.c" />
     <None Include="$(RecompRoot)games\conker-us\profile.toml" />
     <None Include="$(RecompRoot)games\conker-us\startup-entries.json" />

@@ -1,6 +1,9 @@
 # Duke Nukem 64 US
 
-Original menus and first level with RT64 graphics, ABI1 audio and live input. Full-game progression remains unverified.
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 
 Single-player WASD/mouse controls are enabled by default. See the
 [controller guide](controller.md) for bindings, settings, ROM evidence and
@@ -26,9 +29,6 @@ and the maximum is 140 degrees. Each launch starts at the original FOV. Lowering
 to the minimum restores the original projection and visibility window. No FOV
 environment variable is read. Changes print the current value to the console.
 
-This works in Debug and Release independently of mouse capture. Multiplayer,
-orthographic HUD/menu calls retain native behavior. RT64 F7 aspect expansion
-is separate and can widen the displayed view further.
 
 The verified `guPerspectiveF` wrapper updates both CPU float and GPU fixed
 projection paths. World billboards receive the same focal-length ratio as the

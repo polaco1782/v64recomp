@@ -1,5 +1,9 @@
 # GoldenEye 007 US
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 Original startup, menus and playable Dam. CPU inventory is partial and remaining unsupported functions fail explicitly. Full-game progression remains unverified.
 
 From the project root, import the pinned ROM using
@@ -333,16 +337,6 @@ restored after the call, without changing the save or exposing another player.
 Watch, death, tank, scripted cameras and multiplayer retain the native path;
 controller/mouse replays do not inherit physical gamepad look.
 
-GoldenEye's backgrounds are CPU-projected RDP triangles. Independent RT64
-projection expansion left these clipped to the old central region. F7 now uses
-the native player/VI aspect setters (`0x7f09b224`, `0x70004590`) at the four
-ROM-checked viewport call sites. Both CPU visibility/scale and GPU projection
-receive the same native aspect, scaled for the window and the watch's existing
-4:3/16:9 choice. Native top/bottom letterboxing and zoom are retained. RT64 then
-stretches the completed anamorphic framebuffer at scanout, with projection
-expansion disabled. Other games retain their existing RT64 aspect behavior.
-Menus, watch and excluded cameras retain original presentation. The HUD follows
-the native framebuffer layout, so it stretches horizontally in wide gameplay.
 
 ROM fingerprints, call/delay words and field operands pass generation checks.
 Linux Debug/Release and the Debian 12 Steam Deck build pass. A live Dam virtual

@@ -101,8 +101,10 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend),
                         "1080 IO/task initialization failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "1080 Snowboarding");
+    renderer = recomp_renderer_create_named(&rt, "1080 Snowboarding");
     recomp_game_require(renderer != NULL, "1080 renderer initialization failed", 0);
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .microcode = RECOMP_AUDIO_NEAD_1080,

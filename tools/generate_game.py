@@ -154,11 +154,16 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     if report_only:return
     progress.stage('Splitting CPU sources for parallel compilation')
     sources=split_sources(output)
+    extra_sources=generator.generated_sources(original_profile,output) if hasattr(generator,'generated_sources') else []
+    for source in extra_sources:
+        if source.parent != output or source.suffix != '.c' or not source.is_file():
+            raise RecompError('invalid additional generated C source')
     # CMake reconfigures when this source manifest changes.
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
+    manifest+='set(RECOMP_EXTRA_GENERATED_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in extra_sources)+')\n'
     (output/'sources.cmake').write_text(manifest)
     progress.stage('Finalizing generated files and cache')
-    outputs=[p.name for p in [*sources,*output.glob('*.h'),output/'sources.cmake',
+    outputs=[p.name for p in [*sources,*extra_sources,*output.glob('*.h'),output/'sources.cmake',
                              output/'symbols.json',output/'coverage.json',output/'function-candidates.json']]
     (output/'outputs.json').write_text(json.dumps(outputs))
     # Input changes can leave CPU bytes identical. Preserve their timestamps so

@@ -29,8 +29,6 @@
     <None Include="$(RecompRoot)games\sm64-us\code-inventory.json" />
     <None Include="$(RecompRoot)games\sm64-us\game_config.py" />
     <None Include="$(RecompRoot)games\sm64-us\generate.py" />
-    <ClCompile Include="$(RecompRoot)games\sm64-us\graphics.c" />
-    <ClInclude Include="$(RecompRoot)games\sm64-us\graphics.h" />
     <ClCompile Include="$(RecompRoot)games\sm64-us\main.c" />
     <None Include="$(RecompRoot)games\sm64-us\profile.toml" />
     <ClCompile Include="$(RecompBuildDir)\generated\sm64-us\cpu-*.c" />

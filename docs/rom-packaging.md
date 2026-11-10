@@ -10,12 +10,6 @@ cmake --build --preset sm64-us-release -j 4
 ./build/sm64-us-release/bin/sm64-us
 ```
 
-The option works with Debug as well. An embedded executable defaults to its
-internal content, and `--rom PATH` explicitly selects an external, original ROM.
-Both paths use the shared loader and crash reporter. The returned buffer remains
-owned by the app, so existing boot copies, PI DMA, cartridge reads and teardown
-keep their current behavior. Saves and renderer state remain external files.
-Texture ZIPs can be embedded separately with `RECOMP_EMBED_TEXTURE_PACK`.
 
 The runtime checks the expected original ROM identity and size against the
 embedded descriptor, then verifies the sanitized payload's own SHA-1 with the

@@ -1,5 +1,6 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
+from graphics_microcode import append_graphics_config, generated_sources
 from common import RecompError, write_json
 from input_evidence import verify_input_evidence as verify_input
 
@@ -34,6 +35,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    append_graphics_config(profile, output)
     lines = ['/* Generated from verified Quake II input operands. */']
     lines.extend(f'#define Q2_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['input_adapter']['bindings'])

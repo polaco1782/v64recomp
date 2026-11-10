@@ -9,9 +9,15 @@
   },
   "project": "v64recomp",
   "status": "in-progress",
-  "targets": ["Windows", "Linux"],
-  "toolchain": ["V64recomp", "RT64"],
-  "approach": "Static MIPS-to-C recompilation with a shared native runtime and RT64 Vulkan rendering.",
+  "targets": [
+    "Windows",
+    "Linux"
+  ],
+  "toolchain": [
+    "V64recomp",
+    "GLES2"
+  ],
+  "approach": "Static MIPS-to-C and RSP-to-C11 recompilation with a shared native runtime and GLES2 rendering.",
   "maintainers": [
     {
       "name": "polaco1782",

@@ -25,15 +25,6 @@
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\goldeneye_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\graphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\graphics_packets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\input.c">
       <Filter>Source Files</Filter>
     </ClCompile>

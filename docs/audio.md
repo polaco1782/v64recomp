@@ -52,11 +52,6 @@ Consumed buffers post AI events, with bounded transport retries and the SDK's
 nonblocking behavior for a full guest queue. Host sound-device progress does not
 determine guest completion.
 
-Graphics receipts are published after RT64's display-list interpreter has
-finished guest RAM readbacks and copied the inputs needed by its render queues.
-The adapter does not wait for GPU presentation before releasing the shared RSP
-for audio synthesis. Presentation pacing stays on RT64's queues; texture reload
-and shutdown retain their explicit GPU barriers.
 
 `recomp_ai_set_output` attaches an owner-thread PCM sink. It copies a buffer when
 it becomes active, including promotion of a queued successor. SDL receives signed
@@ -104,3 +99,7 @@ underrun/reset counts. Without an explicit trace request, playback stays quiet.
 Captured ROM scenarios can verify stereo output, bounded clipping and waveform
 changes following input. Desktop playback remains the check for audible quality
 during broader gameplay.
+
+Graphics tasks use the separate compiled RSP worker. Their private snapshots do
+not change audio's owner-thread RAM writes or playback ownership. SP/DP receipts
+remain task-token based; audio is not moved onto the graphics worker.

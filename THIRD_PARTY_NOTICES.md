@@ -18,57 +18,14 @@ Its MIT notice is in [licenses/N64-Media-Player.txt](licenses/N64-Media-Player.t
 The decoder is [minimp3](https://github.com/lieff/minimp3), released under
 [CC0 1.0](https://github.com/lieff/minimp3/blob/master/LICENSE).
 The native interface uses Sean Barrett's public-domain `stb_easy_font.h` from
-the existing RT64 dependency. The external homebrew ROM and user music are not
+`third_party/stb/`. The external homebrew ROM and user music are not
 included in the repository or executable.
 
-## RT64
+## stb_easy_font
 
-The renderer is from the RT64 project. Its main license is reproduced below.
-The GPL Rice texture-hashing component is identified separately in the next section.
-
-```text
-MIT License
-
-Copyright (c) 2024 RT64 Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## Rice / GLideN64 texture hashing
-
-RT64's live ZIP matcher and offline texture hasher share
-`src/common/rt64_rice_hasher.cpp`. Its Rice checksum algorithms are derived from
-GLideN64 and RiceVideo and licensed under the GPL. Its original attribution is retained in
-the source; the full accompanying notice and GPL text are preserved in
-[licenses/GLideN64.txt](licenses/GLideN64.txt).
-
-GLideN64's notice credits Sergey Lipskiy and the glN64, Glide64, and GLideHQ
-contributors. See the preserved notice for the complete credits.
-
-Turok's automap adapter in `games/turok-us-v12/graphics.cpp` follows the existing
-Hexen adapter and uses GLideN64's `L3DEX.cpp` / `gSP.cpp` as references for line
-encoding and widths, under GPL version 2 or later.
-
-Conker's graphics adapter in `games/conker-us/graphics.cpp` also uses
-GLideN64's `F3DEX2CBFD.cpp` and `gSP.cpp` as references for the CBFD command and
-lighting behavior, under GPL version 2 or later. The accompanying notice and
-license are linked above.
+The Media Player native interface uses Sean Barrett's `stb_easy_font.h`, kept
+independently in `third_party/stb/`. Its unmodified header includes both the MIT
+and public-domain license choices and the original notice.
 
 ## Mupen64Plus RSP HLE
 
@@ -97,11 +54,7 @@ independently from the supplied ROMs.
 ## Other dependencies
 
 Windows dependencies are pinned in `vcpkg.json`: OpenSSL (Apache-2.0), SDL2
-(zlib), libcurl (curl license), and PThreads4W (Apache-2.0). libcurl is also
-used on Linux. Installed vcpkg packages preserve their complete notices in
-`build/vcpkg_installed/x64-windows/share/<package>/copyright`.
-
-RT64's bundled dependencies retain their licenses under `third_party/rt64/`,
-including the notices in its submodules and `src/contrib/`. External libraries
-and build tools retain their respective licenses. This project license does
-not grant rights to ROMs, game assets, or third-party texture packs.
+(zlib) and PThreads4W (Apache-2.0). Installed vcpkg packages preserve their complete
+notices under `build/vcpkg_installed/x64-windows/share/<package>/copyright`.
+External libraries and build tools retain their respective licenses. This project
+license does not grant rights to ROMs, game assets or third-party texture packs.

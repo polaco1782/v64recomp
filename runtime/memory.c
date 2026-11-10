@@ -324,7 +324,7 @@ bool recomp_runtime_init(Runtime *rt, size_t ram_size, const RecompFunctionEntry
     if (!ram_size || ram_size % 4 || ram_size > UINT32_C(0x20000000) || !sections || (count && !functions) ||
         count > SIZE_MAX / sizeof(*rt->function_index))
         return false;
-    /* RT64 addresses an 8 MiB physical window, including its RAM debugger dump.
+    /* Diagnostic consumers may inspect an 8 MiB physical window.
      * Preserve that backing for 4 MiB games now that it uses live RAM. Guest
      * bounds and Expansion Pak detection still use the requested rdram_size. */
     size_t backing_size = ram_size == 4 * 1024 * 1024 ? 8 * 1024 * 1024 : ram_size;
@@ -562,7 +562,7 @@ uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
         return rt->rdram[p ^ 3];
 #endif
     uint64_t value = 0;
-    /* Guest big-endian bytes reside in word-swapped storage for RT64. */
+    /* Guest big-endian bytes reside in native-word storage. */
     for (unsigned i = 0; i < bytes; i++)
         value = (value << 8) | rt->rdram[(p + i) ^ 3];
     return value;

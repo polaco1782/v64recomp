@@ -1,7 +1,5 @@
 # Native threading
 
-See the [thread ownership graph and blocking-receive sequence](process-flow.md#thread-ownership-and-concurrency)
-for the scheduler, guest fibers, synchronous HLE and RT64 presentation flow.
 
 Each libultra thread has a stackful fiber, a native C stack and its own
 `MipsContext`. The scheduler resumes one fiber at a time on the main owner OS
@@ -93,36 +91,19 @@ directly. SDL input, window creation, event handling and audio
 queue admission stay on that thread. This preserves application callback state
 and SDL's main-thread requirements.
 
-Graphics display-list parsing, framebuffer readbacks and audio DSP synthesis
-execute synchronously on the owner with guest CPU execution parked. Both use
-live `Runtime.rdram`; there are no task RAM snapshots, full-RAM merges or
-`n64-audio`/`n64-video` adapter threads. This follows the execution model of
-UltraHLE's synchronous HLE path. The SP service still permits one active task.
+Graphics uses `runtime/rsp_worker.c`: the owner snapshots the descriptor and
+RDRAM, then wakes one worker running statically recompiled C11 RSP instructions.
+The worker only owns that snapshot and its RSP state. It never accesses the live
+`Runtime`, guest dispatch, SDL or GL. The task service polls or waits for its
+result on the owner, renders RDP output, commits actual DMA/readback writes and
+posts SP followed by applicable DP receipts. Shutdown drains and joins it.
 
-RT64 captures vertices, matrices, textures and framebuffer data into its own
-workload/presentation storage before returning from the owner call. Its internal
-render, upload and present threads, GPU rendering and SDL playback remain
-asynchronous and can overlap guest execution. No RT64 queue receives a pointer
-into guest RAM for later consumption. Texture reload, capture and shutdown keep
-the explicit RT64 queue barriers they require.
+Audio and JPEG execute their existing native task implementations synchronously
+on the owner with guest execution parked. Audio writes PCM and decoder state
+before SP completion. The audio playback device remains asynchronous. Graphics
+and audio tasks finish at whole-task boundaries; a requested yield first drains
+completion. This is not cycle-accurate SP preemption.
 
-Audio writes PCM and decoder state directly into live RAM before queuing SP
-completion. Graphics queues SP and applicable DP receipts after parsing and
-readbacks; completion does not wait for GPU presentation. The task service
-delivers queued guest events during polling, in SP-before-DP order. A split list
-without DP full sync still retires after SP. HLE tasks finish at whole-list
-boundaries; a late yield first polls their queued completion.
-
-Guest and HLE failures occur on the owner and use its shared crash reporter.
-Diagnostic unwinding stops at the guest fiber's entry stack boundary.
-Backends must be destroyed before the runtime. Four-MiB games retain an eight-MiB
-host allocation for RT64's physical address window and RAM dump; guest bounds
-and Expansion Pak detection still use the configured four-MiB logical size.
-
-The synchronous path removes snapshot copying, merge scanning and adapter-worker
-handoffs, but also removes CPU/HLE overlap. Compare equivalent settled scenes
-before claiming a gameplay improvement; see [CPU profiling](profiling.md).
-
-Build the shared services with `cmake -S . -B build/host -G Ninja
--DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF`, then `cmake --build build/host`.
-Game diagnostic runs use the debug presets described in [debugging](debugging.md).
+See [graphics architecture](armv8-gles2.md) for IMEM overlays, snapshot ownership,
+program authentication and validation limits. Full-RAM snapshot traffic and
+worker scheduling must be measured on the target before making speed claims.

@@ -290,3 +290,15 @@ bindings = [
   {name = "new_owner", kind = "immediate", value = 0x2be, pcs = [0x800a40ac], words = [0x861802be]},
   {name = "centering", kind = "immediate", value = 0x36c, pcs = [0x800a5c2c], words = [0xa205036c]},
 ]
+
+[graphics]
+[[graphics.microcodes]]
+name = "Fast3D 2.0H"
+code = {rom_offset = 0x87090, size = 0x1000, sha256 = "49a27b5c262dc32a23a616283a973d85825617fd663639d1bd76760e6152204c"}
+data = {rom_offset = 0xbfdc0, size = 0x800, sha256 = "5c0571726ef3b8951ac92f7cc420308476e8948b4146b0f77d6bf89349cc725c"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x86fc0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Fast3D 2.0H with overlays", rom_offset = 0x87090, size = 0x1400, sha256 = "45524293bfd7c5ef0ad03c27f3df1ac7fbffd86b698100d065bae2f17cea04e5"},
+]

@@ -37,10 +37,6 @@ original N64 pad semantics.
 `0.001..10`; `RECOMP_MOUSE_INVERT_Y=1` reverses vertical mouse motion.
 Keypad FOV adjustment remains independent of capture and these mouse settings.
 
-Each launch starts at the exact original FOV. Keypad adjustments use the shared
-FOV control and preserve native zoom/water distortion with tangent scaling.
-Lowering to the minimum takes the unmodified projection/visibility path.
-RT64's F7 aspect expansion remains a separate setting.
 
 ## Retail evidence and timing
 

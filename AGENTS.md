@@ -68,9 +68,9 @@ games/<game>/
 - Keep generated sources in the selected `build/` directory and private ROMs
   and saves in `local/`. Put cross-game services in `runtime/`, `include/`,
   `backends/`, or `tools/` only when their behavior is shared between games.
-- Reuse the RT64 targets imported by `cmake/SharedRT64.cmake`. RT64 and its
-  bundled libraries belong in `build/shared/rt64/`; do not add a separate RT64
-  source build for a game. Game adapters retain their own Debug/Release flags.
+- Reuse the shared C11 GLES2 renderer and compiled RSP worker targets. Keep
+  verified bootstrap/program images in each game's profile and generated C in
+  its selected build directory. Do not add display-list HLE or per-game renderers.
 - Use `recomp_fail(message, address)` or
   `recomp_game_require(condition, message, address)` for fatal failures in every
   game and both configurations. Load the ROM through `recomp_game_rom()`, which

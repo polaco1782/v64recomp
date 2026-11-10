@@ -3,54 +3,40 @@
 #include "runtime.h"
 #include "mouse_input.h"
 #include "input.h"
+#include "rsp.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 typedef struct RecompRenderer RecompRenderer;
-/* Optional game-owned identities for packed vertices. Called on the renderer
- * thread while the guest is parked. begin selects frames with fresh metadata;
- * identify returns zero for unannotated vertices. No guest RAM is modified. */
-typedef struct RecompVertexIdentity {
-    void *userdata;
-    bool (*begin)(void *);
-    uint64_t (*identify)(void *, uint32_t physical, const float position[3]);
-} RecompVertexIdentity;
-void recomp_renderer_set_vertex_identity(RecompRenderer *, const RecompVertexIdentity *);
-/* Configure the original graphics microcode accepted by the GLES2 parser. */
-void recomp_renderer_graphics_identity(RecompRenderer *, const char *code_sha256, uint32_t code_bytes,
-                                       const char *data_sha256, uint32_t data_bytes);
-typedef void (*RecompGraphicsHook)(void *interpreter, size_t ram_size, uint64_t *rdp_triangles);
-typedef bool (*RecompMicrocodeHook)(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
+/* ROM-bound task identity and its statically compiled RSP program. */
+typedef struct RecompGraphicsMicrocode {
+    const char *name;
+    uint32_t code_size, data_size;
+    const char *code_sha256, *data_sha256;
+    const RecompRspProgram *rsp; /* Required checked native RSP catalog. */
+} RecompGraphicsMicrocode;
+void recomp_renderer_set_graphics_microcodes(RecompRenderer *, const RecompGraphicsMicrocode *, size_t count);
+typedef struct RecompFramebufferSize {
+    unsigned width, height;
+} RecompFramebufferSize;
+/* Additional native color-image extents, verified by the game's profile.
+ * The default GLES2 adapter accepts 320x240. Bind before submitting tasks. */
+void recomp_renderer_set_framebuffer_sizes(RecompRenderer *, const RecompFramebufferSize *, size_t count);
 typedef struct RecompRendererStats {
     uint64_t graphics_tasks, sp_callbacks, dp_callbacks, presentations;
     uint64_t submit_ns, present_ns;
-    uint64_t textures_dumped, textures_replaced, replacement_files;
     uint64_t rdp_triangles;
     uint64_t graphics_tasks_without_dp;
-    /* Swap-chain draws, including interpolated frames, and time from first to last. */
+    /* Swap-chain draws and time from first to last. */
     uint64_t display_frames, display_elapsed_ns;
-    uint64_t interpolated_frames; /* Distinct GLES2 geometry midpoint presentations. */
 } RecompRendererStats;
-/* Linux/X11 Vulkan adapter. Public entry points run on the host owner with
- * guest execution parked. Display-list parsing, readbacks and presentation
- * preparation use live RAM; RT64's render/present queues remain asynchronous. */
-RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
-/* Select PNG/JSON texture dumping for subsequently created renderers.
- * Call before renderer creation; NULL disables dumping (the default). */
-void recomp_renderer_configure_texture_dump(const char *directory);
-/* Defaults to 60 FPS interpolation. 0 preserves the game's original rate;
- * 10..1000 enables RT64 interpolation at the requested rate.
- * GLES2 defaults to native and accepts 0/30 (native) or 60 (geometry midpoints).
- * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */
-void recomp_renderer_set_frame_rate(RecompRenderer *, uint32_t target_fps);
-/* Configure a game-specific microcode extension after RT64 recognizes a task. */
-void recomp_renderer_set_graphics_hook(RecompRenderer *, RecompGraphicsHook);
-/* A game may bind a verified custom GBI before the normal RT64 lookup. Return
- * false to use RT64's database; true requires a configured interpreter GBI. */
-void recomp_renderer_set_microcode_hook(RecompRenderer *, RecompMicrocodeHook);
+/* GLES2 entry points run on the creating host thread. The RSP worker owns
+ * private task state; drawing, readback and task receipts stay on the owner. */
+RecompRenderer *recomp_renderer_create_named(Runtime *, const char *window_title);
 void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
-/* Bare-metal RDP DMA, without an RSP microcode task. Registers describe the
+/* Bare-metal RDP DMA, without an RSP microcode task. Start/end accept physical
+ * RDRAM addresses or checked KSEG aliases. Registers describe the
  * actual scanout; framebuffer is its base before the VI scanline offset. */
 bool recomp_renderer_submit_rdp(RecompRenderer *, uint32_t start, uint32_t end, const RecompViRegisters *,
                                 uint32_t framebuffer);
@@ -59,7 +45,7 @@ bool recomp_renderer_input(RecompRenderer *, RecompPad *);
 /* Opt into keypad +/- FOV changes, one degree per keydown (including repeat).
  * Callback runs on the host owner with guest execution parked. */
 void recomp_renderer_set_fov_hook(RecompRenderer *, void (*adjust)(int steps));
-/* Opt into a game's native anamorphic projection instead of RT64 expansion.
+/* Opt into a game's native anamorphic projection.
  * Called with the window aspect (4:3 when F7 is off) on the parked owner.
  * Return true when the native world camera supports that aspect; presentation
  * then stretches the completed native framebuffer to the window. */

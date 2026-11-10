@@ -1,5 +1,6 @@
 """Rayman 2's pinned cartridge configuration for the shared generator."""
 from pathlib import Path
+from graphics_microcode import append_graphics_config, generated_sources
 from controls_analysis import verify_controls
 
 
@@ -27,6 +28,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    append_graphics_config(profile, output)
     lines = ['/* Checked Rayman 2 camera/input operands from profile.toml. */']
     lines.extend(f'#define R2_CTL_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['controls']['bindings'])

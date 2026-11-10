@@ -3,7 +3,6 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
-#include "graphics.h"
 #include "controls.h"
 #include "game_config.h"
 #include <inttypes.h>
@@ -118,9 +117,8 @@ int main(int argc, char **argv) {
     RecompIOConfig io = {.connected_mask = 1, .pak_mask = 1, .pak_paths = {options.save}};
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Turok IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Turok");
+    renderer = recomp_renderer_create_named(&rt, "Turok");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-    recomp_renderer_set_microcode_hook(renderer, turok_bind_microcode);
     turok_controls_init(poll_command_input);
     recomp_renderer_set_fov_hook(renderer, turok_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,

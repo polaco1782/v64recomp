@@ -258,3 +258,16 @@ vi_period_ticks = 781250
 0x80000308 = 0xb0000000
 0x80000310 = 6103
 0x80000318 = 0x800000
+
+[graphics]
+framebuffers = [{width = 292, height = 216}]
+[[graphics.microcodes]]
+name = "F3DEX 1.21"
+code = {image = ".core1", offset = 0x357d0, size = 0x1000, sha256 = "9097a96c337ca1d94f828f9bf334a085e6418d520b9106865672cb9e3463f4ca"}
+data = {image = ".core1", offset = 0x3b710, size = 0x800, sha256 = "2eabbaafd46e17f1d81509f3dcbe76b65f937e8353c9c489016ac4ba4870a6d6"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xb70, size = 0x100, sha256 = "41a5f4f68d34a88f8f849be2ccc0cb7ea616ced19de16c2c1460b66995d99e0f"},
+  {name = "F3DEX 1.21 with overlays", image = ".core1", offset = 0x357d0, size = 0x1430, sha256 = "7d7b4767f80ded79bada554c591d2f793572607bf8c74986bf85855cc9332410"},
+]

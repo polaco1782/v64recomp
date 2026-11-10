@@ -29,12 +29,6 @@ their guest bodies rather than translating them, so exclude those bodies from
 the translated-instruction count. Unsupported failure boundaries are also not
 ordinary translated game code.
 
-For native size, sum `.text` and `.text.*` sections from generated CPU objects.
-This includes emitted code and compiler alignment within those sections. It
-excludes debug information, unwind metadata, function registry data, shared
-runtime implementations, RT64, audio backends and other libraries. The complete
-executable's disk size is a separate packaging measurement. Object text size
-also precedes any final linker transformations.
 
 The current build splits generated functions into `cpu-*.c` files. Its
 `functions.c` now contains the address registry; measuring that file alone would
@@ -147,8 +141,6 @@ Addresses, instruction selection and alignment can differ from the standalone
 example. The useful observation is the constant guest address and native helper
 call, rather than a fixed instruction listing across all builds.
 
-## Why the compiled code can execute efficiently
-
 ### Decode once, compile control flow ahead of time
 
 Rabbitizer decodes CPU instructions during generation. At runtime the game runs
@@ -200,10 +192,6 @@ Ordinary translated function calls, dynamic indirect calls and ambiguous
 addresses still use `recomp_lookup`; they are not all direct native calls.
 See [native hook recognition](native-hooks.md).
 
-Graphics and supported audio tasks likewise use RT64 and the native audio
-backend. Their implementations are shared services, outside the generated CPU
-text counted above. Moving work there reduces the translated CPU workload but
-does not make the service itself free.
 
 ### Use targeted host instructions while preserving semantics
 

@@ -223,7 +223,7 @@ static bool file_range(size_t bytes, uint64_t offset, uint64_t length) {
     return offset <= bytes && length <= bytes - offset;
 }
 /* dladdr only sees dynamic exports. Read native ELF function symbols as well,
- * so static runtime helpers and RT64's hidden C++ functions retain their names.
+ * so static runtime helpers and worker functions retain their names.
  * This runs exclusively on the collector, never in a sampling signal. */
 static const char *elf_function(const Dl_info *info, uintptr_t pc, uintptr_t *local_address) {
     if (!info->dli_fname)

@@ -10,12 +10,6 @@
     <None Include="$(RecompRoot)games\conker-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\conker-us\graphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\conker-us\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\conker-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

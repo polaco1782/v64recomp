@@ -1,7 +1,6 @@
 # Included by Game.cmake in the game's subdirectory, after target creation.
 # Keep RECOMP_DEBUG, assertions, symbols and the Debug CRT/ABI. Only optimization
-# and incompatible compiler runtime-check flags change; RT64 stays in its shared
-# cache with its existing build configuration.
+# and incompatible compiler runtime-check flags change.
 message(STATUS "Optimized Debug enabled for ${RECOMP_GAME}; use RECOMP_OPTIMIZE_DEBUG=OFF for source stepping")
 if(MSVC)
     foreach(language C CXX)
@@ -19,7 +18,7 @@ if(MSVC)
     endforeach()
 endif()
 foreach(target ${RECOMP_GAME} recomp_runtime recomp_rsp_memory recomp_jpeg recomp_audio recomp_renderer
-        recomp_fast3d recomp_fast3d_gles2)
+        recomp_rdp recomp_rdp_gles2 recomp_rsp)
     if(TARGET "${target}")
         if(MSVC)
             target_compile_options(${target} PRIVATE /O2 /Ob2)

@@ -7,6 +7,7 @@ import hashlib
 from pathlib import Path
 import zlib
 
+from graphics_microcode import append_graphics_config, generated_sources
 from common import RecompError
 
 
@@ -61,3 +62,4 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'    {{{section}, 0x{overlay["vram"]:x}, 0x{overlay["size"]:x}, {{{digest}}}}},')
     lines += ['};']
     (output / 'game_config.h').write_text('\n'.join(lines) + '\n')
+    append_graphics_config(profile, output, {o['name']: decode_overlay(game['rom'].read_bytes(), o) for o in profile['discovery']['overlays']})

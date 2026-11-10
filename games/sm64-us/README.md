@@ -1,24 +1,11 @@
 # Super Mario 64 US
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 Working gameplay baseline, with Castle Grounds movement/jumping and the castle lobby transition previously validated. Broader courses, ending and prolonged runs still need validation.
 
-An experimental GLES2 backend parses the game's original Fast3D display lists,
-including scene, HUD and frame setup. Desktop Castle Grounds movement passes;
-Pi 3 hardware is not tested. See [Fast3D GLES2](../../docs/armv8-gles2.md) for
-build flags and validation limits. RT64 remains the default.
-
-With GLES2 and `RECOMP_GLES2_FPS=60`, `graphics.c` records stable identities for
-the title head's packed vertices after running the original Goddard converters.
-The US-ROM wrappers at `0x801930d8` (size `0x34c`, positions/normals) and
-`0x80193424` (size `0x118`, positions) are SHA-256 checked in `profile.toml`.
-Both take a group in `a0`; the adapter follows group `+0x1c` membership links
-and vertex `+0x44` packed-vertex links, verified against their full local MIPS
-bodies. The reference names are `convert_gd_verts_to_Vn` and
-`convert_gd_verts_to_Vtx` in
-[n64decomp's skin.c](https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/goddard/skin.c).
-The build uses the ROM and checked profile, not that source tree. This adds
-renderer metadata only: display-list generation, physics and audio keep their
-original timing. At native FPS or with RT64, the wrappers only call the originals.
 
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/sm64-us/profile.toml --rom /path/to/rom`.
@@ -33,6 +20,11 @@ cmake --workflow --preset sm64-us-debug
 
 Shared renderer statistics distinguish displayed frames from host presentations;
 Debug uses the common tracing, replay and capture options.
+
+The castle doorway trim uses RDP decal depth mode. Its GLES2 depth offset now
+follows the triangle's native depth tolerance, preventing the surrounding wall
+from intermittently hiding the coplanar trim. Debug close-up camera sweeps and
+both build configurations pass; the user confirmed the flicker appears fixed.
 
 The live loop uses the shared wall-clock pacer to service VI/AI, timers and task
 completion between display ticks. The profile's verified priority-zero idle

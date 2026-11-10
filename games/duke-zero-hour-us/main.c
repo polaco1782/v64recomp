@@ -78,8 +78,10 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Zero Hour IO/task init failed",
                         0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Duke Nukem: Zero Hour");
+    renderer = recomp_renderer_create_named(&rt, "Duke Nukem: Zero Hour");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,

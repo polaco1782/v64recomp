@@ -70,7 +70,7 @@ typedef struct RecompSchedulerConfig {
 
 /* Guest fibers and host callbacks execute serially on the owner's OS thread. Guest code must
  * reach checkpoints/hooks to yield; max_resumes is not an instruction budget.
- * Destroy backends and drain their RT64 queues before destroying the runtime. */
+ * Destroy backends and drain their task workers before destroying the runtime. */
 bool recomp_scheduler_init(Runtime *, const RecompSchedulerConfig *);
 void recomp_scheduler_destroy(Runtime *);
 /* Arm idle detection after a priority-zero thread finishes its startup work.

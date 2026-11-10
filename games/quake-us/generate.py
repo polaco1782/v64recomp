@@ -1,5 +1,6 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
+from graphics_microcode import append_graphics_config, generated_sources
 from controls_analysis import verify_controls
 
 
@@ -25,6 +26,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    append_graphics_config(profile, output)
     lines = ['/* Verified Quake US command, projection and culling operands. */']
     for binding in profile['controls']['bindings']:
         value = binding['value']

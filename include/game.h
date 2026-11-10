@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 typedef struct RecompGameOptions {
-    const char *rom, *data, *save, *crash_dir;
+    const char *rom, *save, *crash_dir;
     uint32_t frames;
     bool mute;
 #ifdef RECOMP_DEBUG

@@ -146,11 +146,14 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend),
                         "Banjo IO/task initialization failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Banjo-Kazooie");
+    renderer = recomp_renderer_create_named(&rt, "Banjo-Kazooie");
     recomp_game_require(renderer != NULL, "Banjo renderer initialization failed", 0);
+    recomp_renderer_set_framebuffer_sizes(renderer, game_graphics_framebuffers,
+                                          sizeof(game_graphics_framebuffers) / sizeof(game_graphics_framebuffers[0]));
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     /* Preserve the game's steady 30 Hz output. Automatic 60 Hz matching
      * presents the logo's interpolated frames in uneven pairs. */
-    recomp_renderer_set_frame_rate(renderer, 0);
     rt.prepare_call = prepare_call;
     rt.canonical_function_address = activate_image;
     wall_origin = recomp_game_monotonic();

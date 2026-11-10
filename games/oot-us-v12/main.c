@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit, .additional_task_types = 1u << 4};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend),
                         "Ocarina of Time IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "The Legend of Zelda: Ocarina of Time");
+    renderer = recomp_renderer_create_named(&rt, "The Legend of Zelda: Ocarina of Time");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_set_fov_hook(renderer, oot_fov_adjust);
     oot_controls_init(poll_controls);

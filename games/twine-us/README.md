@@ -1,5 +1,10 @@
 # 007: The World Is Not Enough (USA, revision 0)
 
+This fork keeps the CPU port sources, but its GLES2 graphics integration still
+needs a checked compiled RSP profile. The milestones below describe earlier CPU
+port work and do not establish current graphics acceptance. See
+[graphics status](../../docs/armv8-gles2.md).
+
 Experimental partial port, registered as `twine-us`. Native startup and MusyX v1
 task execution are integrated. Rendered gameplay, audible accuracy, mission
 transitions and save/reload acceptance have not yet been established.

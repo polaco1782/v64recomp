@@ -125,8 +125,7 @@ def capture(args) -> int:
     if executable:
         cache = Path(executable).parent.parent / 'CMakeCache.txt'
         metadata['build_settings'] = [line for line in (optional_text(cache) or '').splitlines()
-                                      if line.startswith(('CMAKE_BUILD_TYPE:', 'RECOMP_OPT_LEVEL:',
-                                                          'RECOMP_RT64_BUILD_TYPE:'))]
+                                      if line.startswith(('CMAKE_BUILD_TYPE:', 'RECOMP_OPT_LEVEL:'))]
     maps = optional_text(process / 'maps')
     if maps:
         (directory / 'maps.txt').write_text(maps + '\n')

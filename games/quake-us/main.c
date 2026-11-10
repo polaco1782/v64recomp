@@ -66,8 +66,10 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Quake 64 IO/task init failed",
                         0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Quake 64");
+    renderer = recomp_renderer_create_named(&rt, "Quake 64");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     quake_controls_init(poll_controls);
     recomp_renderer_set_fov_hook(renderer, quake_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,

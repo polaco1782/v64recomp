@@ -30,8 +30,6 @@
     <ClInclude Include="$(RecompRoot)games\hexen-us\fov.h" />
     <None Include="$(RecompRoot)games\hexen-us\fov_analysis.py" />
     <None Include="$(RecompRoot)games\hexen-us\generate.py" />
-    <ClCompile Include="$(RecompRoot)games\hexen-us\graphics.cpp" />
-    <ClInclude Include="$(RecompRoot)games\hexen-us\graphics.h" />
     <ClInclude Include="$(RecompRoot)games\hexen-us\hexen_input.h" />
     <ClCompile Include="$(RecompRoot)games\hexen-us\input.c" />
     <None Include="$(RecompRoot)games\hexen-us\lzh.py" />

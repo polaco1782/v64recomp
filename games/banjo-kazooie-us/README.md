@@ -1,5 +1,9 @@
 # Banjo-Kazooie US
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 Experimental port of US revision 0, pinned to SHA-1
 `1fe1632098865f639e22c11b9a81ee8f29c75d7a` (16 MiB, big-endian).
 Original cartridge DMA and RareZip decoding load both resident cores and the

@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
         .connected_mask = 1, .eeprom_size = 512, .eeprom_path = options.save, .pak_mask = 1, .pak_paths = {pak_path}};
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "TWINE IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "007: The World Is Not Enough");
+    renderer = recomp_renderer_create_named(&rt, "007: The World Is Not Enough");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,

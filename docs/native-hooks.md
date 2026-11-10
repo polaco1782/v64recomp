@@ -24,13 +24,6 @@ Wrapped functions retain `ready` coverage; `coverage.json` lists wrappers separa
 This is distinct from replacing an entire function. See GoldenEye's `input.c`
 for a scoped adapter.
 
-`include/mouse_input.h` provides a game-independent motion buffer. Host input
-submissions accumulate deltas while replacing held movement state. One selected
-guest update consumes the deltas; later updates retain held movement only.
-Inactive submissions and explicit clearing flush both. Host access occurs while
-guest execution is parked; this is not a concurrent producer/consumer queue.
-`recomp_renderer_mouse_mode` opts into the SDL mouse/keyboard mapping and capture
-policy; each game supplies its own verified gameplay gate and angle adapter.
 
 ## Native replacements
 

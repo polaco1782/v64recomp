@@ -1,17 +1,14 @@
 # Shadow Man US
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 Original startup, audio, Controller Pak screen, main menu and rendered level
 progression work in desktop runs. Movement and animation transitions have been
 exercised, but later levels and a complete playthrough remain unverified. This
 is still an incomplete port.
 
-Both configurations use native frame timing and VI-driven presentation. The
-game's custom VI mode starts at framebuffer row zero, whereas RT64 estimates
-the framebuffer base by subtracting a scanline. The shared renderer normalizes
-its VI snapshot using the OS swap address for this case. This avoids displaying
-an offset RAM fallback instead of the rendered GPU image; guest VI state is
-preserved. Loading can still take a while, and loading/HUD images retain visible
-grain that has not been established as matching original hardware.
 
 The checked profile covers menu callbacks, sound-ID remapping, animation events
 and transitions, and scene collision callbacks. Additional constant callbacks
@@ -47,3 +44,11 @@ directory; private ROMs and saves stay in `local/`.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).
+
+The maintained title/intro replay uses the shared Debug input format:
+
+```sh
+./build/shadowman-us-debug/bin/shadowman-us --frames 3600 --mute \
+  --input games/shadowman-us/title-intro.txt --save /tmp/shadowman.eeprom \
+  --crash-dir /tmp/shadowman-crashes --capture-every 600
+```

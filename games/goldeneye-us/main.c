@@ -3,7 +3,6 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
-#include "graphics.h"
 #include "pager.h"
 #include "goldeneye_input.h"
 #include "fov.h"
@@ -118,7 +117,7 @@ void recomp_ge_dp_counters(Runtime *rt, MipsContext *ctx) {
 void recomp_ge_dp_status(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     (void)ctx;
-    /* RT64 executes RDP tasks synchronously; counter reset, freeze and flush
+    /* The RDP command sink completes synchronously; counter reset, freeze and flush
      * requests do not leave an asynchronous hardware operation outstanding. */
 }
 void recomp_ge_vi_framebuffer(Runtime *rt, MipsContext *ctx) {
@@ -186,11 +185,14 @@ int main(int argc, char **argv) {
                                             recomp_boot_sections, recomp_section_count),
                         "runtime init failed", 0);
     uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
-    renderer = recomp_renderer_create_named(&rt, options.data, "GoldenEye 007");
+    renderer = recomp_renderer_create_named(&rt, "GoldenEye 007");
     recomp_game_require(renderer != NULL, "GoldenEye renderer init failed", 0);
     recomp_renderer_set_fov_hook(renderer, goldeneye_fov_adjust);
     recomp_renderer_set_aspect_hook(renderer, goldeneye_aspect_update, &rt);
-    recomp_renderer_set_graphics_hook(renderer, goldeneye_configure_graphics);
+    recomp_renderer_set_framebuffer_sizes(renderer, game_graphics_framebuffers,
+                                          sizeof(game_graphics_framebuffers) / sizeof(game_graphics_framebuffers[0]));
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
         recomp_store(&rt, boot_parameters[i][0], boot_parameters[i][1], 4);

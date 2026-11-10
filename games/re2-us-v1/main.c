@@ -200,11 +200,10 @@ int main(int argc, char **argv) {
     RecompIOConfig io = {.connected_mask = 1};
     RecompTaskBackend backend = {.submit = submit, .validate_custom_data = re2_video_validate};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "RE2 IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Resident Evil 2");
+    renderer = recomp_renderer_create_named(&rt, "Resident Evil 2");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-    /* Video writes framebuffer RAM without a graphics full-sync. PresentEarly
-     * skips VI-only updates; use RT64's original-rate VI presentation path. */
-    recomp_renderer_set_frame_rate(renderer, 0);
+    /* Video writes framebuffer RAM without a graphics full-sync; VI-only
+     * updates are presented directly from guest RAM. */
     RecompAudioConfig audio_config = {.output_enabled = true,
                                       .playback = !options.mute,
                                       .microcode = RECOMP_AUDIO_MUSYX_V1,

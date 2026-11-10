@@ -140,21 +140,13 @@ static void directory(const char *path) {
     }
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
-    const char *texture_pack = NULL;
-    const char *texture_dump = NULL;
     const char *profile_directory = NULL;
     unsigned profile_hz = 99, profile_delay = 0, profile_seconds = 0;
-    *o = (RecompGameOptions){.rom = RECOMP_DEFAULT_ROM,
-                             .data = RECOMP_DEFAULT_DATA,
-                             .save = RECOMP_DEFAULT_SAVE,
-                             .crash_dir = RECOMP_DEFAULT_CRASH};
+    *o = (RecompGameOptions){.rom = RECOMP_DEFAULT_ROM, .save = RECOMP_DEFAULT_SAVE, .crash_dir = RECOMP_DEFAULT_CRASH};
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
-            printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
-                   "[--texture-pack ZIP] [--texture-dump DIR]\n"
-                   "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
-                   "                        Skip textures below 64 pixels or with a single RGBA color\n"
+            printf("usage: %s [--rom FILE] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
                    "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
                    "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
@@ -188,8 +180,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         }
         if (!strcmp(arg, "--rom"))
             o->rom = value;
-        else if (!strcmp(arg, "--data"))
-            o->data = value;
         else if (!strcmp(arg, "--save"))
             o->save = value;
         else if (!strcmp(arg, "--crash-dir"))
@@ -212,15 +202,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->capture_every = (uint32_t)n;
         }
 #endif
-        else if (!strcmp(arg, "--texture-pack")) {
-            struct stat source;
-            if (stat(value, &source) || !S_ISREG(source.st_mode)) {
-                fprintf(stderr, "texture pack must be a ZIP file: %s\n", value);
-                return -1;
-            }
-            texture_pack = value;
-        } else if (!strcmp(arg, "--texture-dump"))
-            texture_dump = value;
         else if (!strcmp(arg, "--profile"))
             profile_directory = value;
         else if (!strcmp(arg, "--profile-hz") || !strcmp(arg, "--profile-delay") || !strcmp(arg, "--profile-seconds")) {
@@ -252,7 +233,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             return -1;
         }
     }
-    directory(o->data);
     directory(o->crash_dir);
     char parent[4096];
     if (strlen(o->save) >= sizeof(parent)) {
@@ -269,25 +249,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         directory(parent);
     }
     crash_dir = o->crash_dir;
-    recomp_renderer_configure_texture_dump(texture_dump);
-    if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
-        setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
-    if (texture_pack)
-        setenv("RECOMP_TEXTURE_PACK", texture_pack, 1);
-#ifdef RECOMP_EMBED_TEXTURE_PACK
-    else if (!getenv("RECOMP_TEXTURE_PACK")) {
-        char executable[4096];
-#ifdef _WIN32
-        DWORD n = GetModuleFileNameA(NULL, executable, sizeof(executable));
-        recomp_game_require(n > 0 && n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
-#else
-        ssize_t n = readlink("/proc/self/exe", executable, sizeof(executable));
-        recomp_game_require(n > 0 && (size_t)n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
-#endif
-        executable[n] = 0;
-        recomp_game_require(!setenv("RECOMP_TEXTURE_PACK", executable, 1), "cannot select embedded texture ZIP", 0);
-    }
-#endif
     if (profile_directory && !recomp_profile_start(profile_directory, profile_hz, profile_delay, profile_seconds))
         return -1;
 #ifdef RECOMP_DEBUG

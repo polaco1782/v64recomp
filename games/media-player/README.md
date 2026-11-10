@@ -1,5 +1,8 @@
 # N64 MP3 Player
 
+This target uses its independent native SDL interface and C11 ROM decoder.
+It does not execute graphics display lists or require a graphics microcode profile.
+
 `media-player` recompiles the MP3 decoder in lewilou22's **Media Player V2**
 homebrew ROM. A small native SDL interface supplies file access, controls and
 PCM playback. MP3 decompression and synthesis execute the translated MIPS

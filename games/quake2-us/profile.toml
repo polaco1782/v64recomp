@@ -172,3 +172,21 @@ bindings = [
   {name = "dispatch_return", value = 0x8002b84c, kind = "return", pcs = [0x8002b844, 0x8002b848], words = [0xc009374, 0x2602021]},
   {name = "command_return", value = 0x80025124, kind = "return", pcs = [0x8002511c, 0x80025120], words = [0xc009284, 0x2e02021]},
 ]
+
+[graphics]
+[[graphics.microcodes]]
+name = "F3DLP.Rej 1.23"
+code = {rom_offset = 0x62f20, size = 0x1000, sha256 = "fc9992dfac1fa68390007fc6d2ee8740d1754b249c512fa56b540e69d94759d5"}
+data = {rom_offset = 0x6e6e0, size = 0x800, sha256 = "0d6d515987cc3a41ba1e0131d86db652846e0a6f7b2195c919a040f6c06c944c"}
+
+[[graphics.microcodes]]
+name = "F3DEX.NoN 1.23"
+code = {rom_offset = 0x61af0, size = 0x1000, sha256 = "c7e4e769fc995d7eaddeae79d3f610ce7bb9ece5e88148e6d5d9ad8e35439790"}
+data = {rom_offset = 0x6dee0, size = 0x800, sha256 = "9bad5879304d2768d75e81e77c699a40727ddb8561062c3aa894e60cb7fc3bc1"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x61a20, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DLP.Rej 1.23 with overlays", rom_offset = 0x62f20, size = 0x13c8, sha256 = "f377415e101acf08d9bf69d961902721c94b9f3f227c6c89b9ca2b19e3de1d26"},
+  {name = "F3DEX.NoN 1.23 with overlays", rom_offset = 0x61af0, size = 0x1430, sha256 = "bcc2c734687e9fc95b9d793965f9679a214152bb783fe69c02237dc51a661c32"},
+]

@@ -1,5 +1,10 @@
 # Resident Evil 2 US, revision 1
 
+This fork keeps the CPU port sources, but its GLES2 graphics integration still
+needs a checked compiled RSP profile. The milestones below describe earlier CPU
+port work and do not establish current graphics acceptance. See
+[graphics status](../../docs/armv8-gles2.md).
+
 Experimental native bring-up. The opening logos, warning, movie and title menu
 render on the desktop, and Start skips the movie. Gameplay, audible audio and
 saves are not yet accepted. This is the supplied `Resident Evil 2 (U) [!].z64`, whose
@@ -89,12 +94,6 @@ the overwritten slot, and enables the patched variant only after its complete
 hash matches. The original translated patch loop still runs. Other enemy
 overlays and module records remain incomplete.
 
-F3DEX.Rej and other graphics lists reach RT64; their zero `data_size` is
-permitted because F3DEX follows list terminators. Native video tasks authenticate
-the complete boot and executable microcode plus their vector constants and
-validate every input/output span before writing. RE2 selects original-rate VI
-presentation: early presentation depends on graphics full-sync events and would
-miss CPU/RSP-produced framebuffer updates during the logos and movies.
 
 `video_dsp.c` supplies integer resize, YCbCr conversion and frame blending. Resize preserves
 fractional strip offsets, vector rounding, dithering and the RSP's output-DMEM

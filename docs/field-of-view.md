@@ -143,15 +143,6 @@ The existing implementations illustrate different boundaries:
 
 ## 5. Choose conversion and scope
 
-Use the shared keypad `+` / `-` controls in both Debug and Release. Bind the
-game's adjustment callback with `recomp_renderer_set_fov_hook`. The renderer
-delivers one-degree keydown steps (including repeat) on the owner thread, with
-guest execution parked. It ignores these shortcuts when keyboard input is
-captured by the shared menu or Debug inspector, or the window lacks focus.
-The shared `fov_control` service clamps horizontal degrees at a documented
-reference aspect between the exact original angle and 140. Start at the original
-each launch and preserve its exact guest path when lowering to the minimum.
-There is no FOV environment lookup or startup parser.
 
 For a fixed horizontal setting `h` and aspect `a`, the vertical angle is:
 
@@ -168,11 +159,6 @@ scale = tan(requested_horizontal / 2) / (reference_aspect * tan(stock_vertical /
 adjusted_vertical = 2 * atan(tan(incoming_native_vertical / 2) * scale)
 ```
 
-Keep native zoom fields unchanged so later updates cannot compound the override.
-Scope hooks with verified return addresses, matrix identities or camera state.
-Decide how multiplayer, menus, watch screens, death and scripted cameras should
-behave; verify any state globals used for that decision. RT64 F7 aspect expansion
-is separate from this reference-angle conversion and needs combined testing.
 
 ## 6. Store evidence and integrate the setting
 

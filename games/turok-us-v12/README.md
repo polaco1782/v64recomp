@@ -1,11 +1,10 @@
 # Turok: Dinosaur Hunter US v1.2
 
-Experimental native recompilation of the US header-revision-2 cartridge. CPU
-coverage is partial; undiscovered executable targets fail explicitly. Debug and
-Release build. Original startup, title/menu selection and first-person gameplay
-run through RT64 with controller input and ABI1 audio synthesis. Movement,
-firing, weapon selection, death/respawn and pause/resume have been exercised.
-Full-game progression, save/reload and audible quality remain unverified.
+This fork keeps the CPU port sources, but its GLES2 graphics integration still
+needs a checked compiled RSP profile. The milestones below describe earlier CPU
+port work and do not establish current graphics acceptance. See
+[graphics status](../../docs/armv8-gles2.md).
+
 
 ## Build and run
 
@@ -52,23 +51,6 @@ are focused acceptance paths, not full-game coverage.
 Nonzero PCM and SDL queue activity are verified, while listening quality remains
 unverified. Use `--capture-every N` for optional periodic screenshots.
 
-Turok uses the shared expanded widescreen viewport and 60 FPS interpolation. Disabling interpolation or widescreen did not fix
-the starting-camera fog flashes. The verified cause was RT64's combined
-view/projection decomposition dividing by a zero or nearly zero X component.
-The shared RT64 integration now pivots on the largest view-axis component.
-The user confirmed the fog correction in Turok and reported improved GoldenEye
-fog as well. Quantized camera matrices and the captured Turok starting pose were
-checked against the actual shared build at O0 and O2.
-
-The automap switches to L3DEX 1.00 at `0x800b4ca0` with data `0x800f86b0`.
-RT64 recognizes this version but does not implement its command decoder. Treating
-it as a usable decoder skips `G_ENDDL` and runs beyond the submitted list, eventually
-causing `invalid RT64 DP receipt`. The game-local `graphics.cpp` adapter checks the
-complete task text/data fingerprints, decodes the ordinary F3DEX commands and
-renders the map's line commands through RT64's RDP triangle path. Its orthographic
-projection uses constant homogeneous W=32; screen coordinates already divide by W.
-Perspective, lighting and fog line modes still fail explicitly. Core task token
-and duplicate completion checks remain enabled.
 
 ## Loading and checked boundaries
 
@@ -117,14 +99,6 @@ as translated guest code.
   revision `499e8128f9a3890cb4d287a11608b3ae1e0df440`. Our prepared main image
   matched its method-1 decoder byte for byte. It is not a build dependency.
 
-- [PaxDino RT64 projection analysis](https://github.com/wootbeer/PaxDino/blob/1ccc166419539ac069b2cac32ae912798b39466e/lib-patches/rt64/0001-expand-exact-view-projection.patch)
-  identified the unstable decomposition calculation. Our independently implemented
-  correction chooses the largest axis as its division pivot. The local regression
-  failed against the original pinned RT64 code and passed at O0/O2 after correction.
-- [GLideN64 L3DEX decoder](https://github.com/gonetz/GLideN64/blob/master/src/uCodes/L3DEX.cpp)
-  documents the line index/width encoding. The existing Hexen adapter supplied the
-  repository implementation pattern; both text/data spans were verified against
-  the original decoded Turok ROM and the user's crash RAM before reuse.
 
 No external ROM or game assets were fetched. References remain private scratch
 material; build/discovery depend only on this repository and the user's pinned ROM.

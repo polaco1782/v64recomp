@@ -1,5 +1,10 @@
 # Hexen US
 
+This fork keeps the CPU port sources, but its GLES2 graphics integration still
+needs a checked compiled RSP profile. The milestones below describe earlier CPU
+port work and do not establish current graphics acceptance. See
+[graphics status](../../docs/armv8-gles2.md).
+
 Hexen US revision 0 boots through the title and class menus into the first level.
 Debug and Release desktop runs have exercised fighter selection, movement,
 turning, combat, damage and the death screen. This establishes an initial playable
@@ -46,9 +51,6 @@ the original projection and CPU visibility tables. No FOV environment variable
 is read. The setting works independently of mouse capture in Debug and Release.
 The current value is printed to the console when it changes.
 
-The override targets the world projection; the intro's separate perspective
-and orthographic HUD/automap retain their original calls. RT64's F7 aspect
-expansion is separate and can widen the displayed view further.
 
 The full bodies at `0x800559f0` (`guPerspective`) and `0x803bba90` (CPU
 angle-to-screen setup) remain wrapped with their originals retained. The
@@ -124,13 +126,6 @@ traversal target `0x800f4dc4` and script target `0x800dff00` were fixed at these
 registration sources. Fatal failures and optional `RECOMP_HEXEN_SNAPSHOT=1`
 diagnostics use the shared crash reporter.
 
-The sky pass first draws textured clouds, writes sky-sector depth masks, and
-then clears the remaining background with a maximum-primitive-depth rectangle.
-The shared RT64 build corrects primitive Z from inclusive UNORM to unsigned
-0.15 fixed point, so that rectangle passes `LESS` against cleared depth outside
-the sky masks. See [the shared renderer correction](../../docs/recompilation.md).
-`local/replays/hexen-us-sky-depth.txt` reaches the first level, backs into the courtyard and turns
-for a focused rendering replay:
 
 ```sh
 ./build/hexen-us-debug/bin/hexen-us --frames 3300 \
@@ -141,18 +136,6 @@ Debug and Release passed 55-second first-level runs with movement and turning.
 Captured-task isolation verifies the sky, depth-mask and background-clear passes
 separately. Later levels and other games have not been checked for this change.
 
-The automap uses L3DEX 1.21 at physical `0x66490`. RT64's database identifies
-this version but marks its implementation `Unknown`; its L3DEX2 line handler
-also has no implementation. `graphics.cpp` binds only Hexen's verified L3DEX
-text/data, reuses ordinary F3DEX commands and renders LINE3D segments as
-screen-space triangles through RT64's RDP path. The game retains its colors,
-scissor, combiner and blending. Other microcodes use RT64's normal lookup.
-Unverified lighting, fog, perspective lines and triangle opcodes fail explicitly.
-The full text and data fingerprints match original ROM `0x1c090..0x1d090`
-and `0x20530..0x20d30`; the reported failing task contained 424 lines.
-Both builds passed 75-second desktop runs with visible automap lines and repeated
-returns to 3D gameplay. Release captures also verified zoom in/out and movement
-while the map was open. These focused runs do not establish later hub progression.
 
 Inspect another captured RSP task without writing a snapshot decoder:
 

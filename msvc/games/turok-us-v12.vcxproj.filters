@@ -19,12 +19,6 @@
     <None Include="$(RecompRoot)games\turok-us-v12\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\graphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok-us-v12\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\turok-us-v12\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

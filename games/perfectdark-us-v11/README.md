@@ -1,5 +1,9 @@
 # Perfect Dark US V1.1
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 This port targets the big-endian US revision 1.1 ROM with SHA-1
 `af8788ac4d1a57260eae9c53ffe851fcf2a3319b` and uses 8 MiB of guest RAM.
 Bring-up is in progress; the checked startup inventory is partial and unknown

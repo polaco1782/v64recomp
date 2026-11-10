@@ -1,5 +1,10 @@
 # Ocarina of Time US V1.2
 
+This fork keeps the CPU port sources, but its GLES2 graphics integration still
+needs a checked compiled RSP profile. The milestones below describe earlier CPU
+port work and do not establish current graphics acceptance. See
+[graphics status](../../docs/armv8-gles2.md).
+
 Original title, file select, name entry and new-game opening with verified decompressed code and 469 relocatable overlays. Zelda NEAD audio and native JPEG SP decoding are supported. Inventory and full-game validation remain incomplete.
 
 From the project root, import the pinned ROM using
@@ -51,9 +56,6 @@ degrees. Each launch starts at the original FOV; lowering to the minimum restore
 its original path. No FOV environment variable is read. Changes print the current
 angle to the console. This works independently of mouse capture.
 
-Native zoom ratios are preserved. The override applies to normal-family 3D
-gameplay cameras; fixed/prerendered backgrounds, dialog, pause and scripted
-cameras keep their original framing. RT64 F7 aspect expansion is separate.
 
 The adapter adjusts the view FOV after the original camera update, before the
 shared CPU/GPU view-projection matrices are built. It leaves the native camera

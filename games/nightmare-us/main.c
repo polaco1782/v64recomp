@@ -87,8 +87,12 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend),
                         "Nightmare Creatures IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Nightmare Creatures");
+    renderer = recomp_renderer_create_named(&rt, "Nightmare Creatures");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_framebuffer_sizes(renderer, game_graphics_framebuffers,
+                                          sizeof(game_graphics_framebuffers) / sizeof(game_graphics_framebuffers[0]));
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     nightmare_input_init();
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,

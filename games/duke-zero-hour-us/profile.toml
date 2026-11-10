@@ -136,3 +136,15 @@ vram = 0x80003940
 kind = "unsupported_function"
 reason = "Original ROM debug-buffer reset calls an unlinked null function at 0x80003970"
 expected_words = [0x27bdffe8, 0x3c03801d, 0x8c63dc68, 0x3c04801d, 0x2484dc70, 0xafbf0010, 0x24620001, 0x3c01801d, 0xac22dc68, 0xa0600000, 0x3c01801d, 0xac20db4c, 0xc000000, 0x24050800, 0x8fbf0010, 0x27bd0018, 0x3e00008, 0x0]
+
+[graphics]
+[[graphics.microcodes]]
+name = "F3DEX.NoN fifo 2.08"
+code = {rom_offset = 0xbbe20, size = 0x1000, sha256 = "3164c92f07af422b1ae4ef3988a69a52144a21192d053b544ebe4662a103f011"}
+data = {rom_offset = 0xe4920, size = 0x800, sha256 = "d7d21acfecb4a0b3d83cb271f4a8d9f58bf7aae7d4660f77fa54c0c809075cf3"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xbbd50, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX.NoN fifo 2.08 with overlays", rom_offset = 0xbbe20, size = 0x1390, sha256 = "b660b67bb3806c9f463ee4ef3df92cf38753f5b65b74daab46434e5f31f30395"},
+]

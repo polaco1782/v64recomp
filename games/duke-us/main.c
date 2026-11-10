@@ -24,13 +24,11 @@ static void poll_command_input(Runtime *rt, void *opaque) {
 static RecompAudio *audio;
 static uint64_t now_ns, wall_origin;
 static void prepare_call(Runtime *rt, uint32_t address) {
-#ifdef RECOMP_WITH_RT64
     if (!wall_origin && address == BOOT_FRAME_CALIBRATION_END) {
         recomp_game_require(recomp_load(rt, BOOT_FRAME_VI_PERIOD, 8) == 781250,
                             "Duke Nukem 64 retrace calibration mismatch", BOOT_FRAME_VI_PERIOD);
         wall_origin = recomp_game_monotonic();
     }
-#endif
 }
 static void drain(Runtime *rt) {
     for (unsigned batch = 0; batch < 128; batch++) {
@@ -154,8 +152,10 @@ int main(int argc, char **argv) {
     RecompTaskBackend backend = {.submit = submit};
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend),
                         "Duke Nukem 64 IO/task init failed", 0);
-    renderer = recomp_renderer_create_named(&rt, options.data, "Duke Nukem 64");
+    renderer = recomp_renderer_create_named(&rt, "Duke Nukem 64");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_graphics_microcodes(renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     recomp_renderer_set_fov_hook(renderer, duke_fov_adjust);
     duke_input_init(poll_command_input);
     RecompAudioConfig ac = {.output_enabled = true,

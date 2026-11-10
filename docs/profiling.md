@@ -36,16 +36,12 @@ The capture contains:
 | `samples.jsonl` | Aggregated leaf-to-root stacks with counts, TIDs, native PCs, module paths, and load bases/offsets |
 | `maps.txt`, `maps-end.txt`, `process-status.txt` | Process mappings at capture start/end and initial Linux status |
 
-Start with `hotspots.txt` to identify the busy thread, then find its TID in
-`thread-hotspots.txt`. `recomp_s<section>_<vram>` identifies translated guest
-functions; scheduler, memory, audio, RT64, and driver symbols identify
-native work. Folded stacks retain the caller paths behind those costs. C++ names
-are demangled when libstdc++ is available. The collector also reads native ELF
-symbol tables to name static runtime helpers and RT64's hidden functions. Local
-functions include an address suffix to distinguish identical names. Stripped
-libraries can still appear as module offsets; keep the matching executable and
-libraries to resolve those addresses with `addr2line` or another native symbolizer.
-
+Start with `hotspots.txt`, then inspect the busy TID in `thread-hotspots.txt`.
+Generated guest functions use `recomp_s<section>_<vram>` names. Compiled RSP,
+vector, DMA, RDP, runtime and driver symbols identify the native stages.
+The collector resolves native ELF symbols, including static helpers; a local
+address suffix distinguishes functions with identical names. Keep the matching
+executable and debug information when resolving module offsets later.
 CPU percentages use **one logical CPU = 100%** and can sum above 100%. Process
 user/kernel totals include all process threads, including threads that exit
 between observations. Per-thread counters are polled every 100 ms; short-lived
@@ -66,14 +62,12 @@ when a sampling storage limit is reached. `discarded_stacks`, `thread_limit_hits
 and `allocation_failures` flag lost detail.
 
 Stacks use interrupted x86-64 registers and bounded, fault-safe reads through
-`/proc/self/mem`; allocation, symbol resolution, and file output run on the
-collector thread. Our generated code, runtime, audio adapter, renderer adapter,
-RT64 and Plume retain frame pointers. Third-party code may omit frame pointers,
-optimized tail calls may disappear, and deep stacks may be truncated. Samples
-include user and kernel CPU time, but kernel work is attributed to the userspace
-instruction where the signal is delivered; they do not provide kernel stacks.
-Use the external perf workflow below for DWARF unwinding or kernel attribution.
-
+`/proc/self/mem`; the collector performs allocation, symbol resolution and file
+output. Generated code and native graphics libraries retain frame pointers.
+Third-party code can omit them, optimized tail calls can disappear, and deep
+stacks can be truncated. Samples include user and kernel CPU time, but attribute
+kernel work to the interrupted userspace instruction rather than kernel stacks.
+Use the external perf workflow for DWARF unwinding or kernel attribution.
 Profiling itself consumes CPU: collector work appears as `n64-profiler`, while
 signal-handler work is charged to the sampled thread. Use `--profile-hz 49` to
 reduce sampling overhead or raise it up to 1,000 for a short detailed capture.
@@ -82,34 +76,22 @@ disabled.
 
 ## Frame pacing and stutter
 
-CPU sampling does not explain time spent asleep. Set `RECOMP_FRAME_TRACE` to a
-new CSV path to record host presentation requests, graphics submissions, graphics
-and presentation HLE calls, queued graphics completions, and display draw
-callbacks. The parent directory must exist; existing files are rejected.
+Set `RECOMP_TIMING` to a new CSV path to collect one-second owner-thread timing
+windows alongside a CPU sample report. The `graphics` category measures owner
+RDP/GLES2 submission/readback wall time; `graphics_cpu` measures that same owner's
+CPU time. Neither includes the RSP worker's CPU time. Use the sampled worker
+thread and process/thread CPU totals for that part of the path. Categories may
+nest and must not be added into a frame total.
 
 ```sh
-RECOMP_FRAME_TRACE=build/quake-frames.csv ./build/quake-us-release/bin/quake-us
-python3 tools/profile_frames.py build/quake-frames.csv --start 30 --end 50
+RECOMP_TIMING=build/goldeneye-timing.csv ./build/goldeneye-us-release/bin/goldeneye-us \
+  --profile build/goldeneye-profile --profile-delay 60 --profile-seconds 20
 ```
 
-Exit normally before reading the buffered trace. Window bounds are seconds
-after the first recorded event. Use the same settled scene, replay, build and
-graphics settings for comparisons. `--json` emits the report as JSON.
-
-The report includes median, p95, p99 and maximum intervals/job durations, and
-counts display/presentation/full-sync intervals exceeding 50 ms. `graphics_end`
-has value 1 when the task produced a DP receipt; split tasks without full sync
-have value 0. Graphics begin/submit values are microcode addresses; presentation
-values are VI origins. The receipt delay ends when the owner queues completion after the HLE call,
-before guest event delivery. Current HLE processing is synchronous; older traces
-include the worker collection delay.
-
-These timestamps measure **CPU callbacks**, not GPU execution, compositor
-scanout, or unique game frames. A full-sync task is not universally one game
-frame. Display callbacks can repeat a buffer or include interpolation. Use them
-alongside scene captures and task timing; avoid calling their rate game FPS.
-Tracing performs buffered file writes and can affect timing, so also verify
-ordinary play with tracing and sampling disabled.
+This does not measure GPU execution or compositor scanout. Inspect a rendered
+scene in the same window before attributing cost, and measure final game speed
+with sampling disabled. Native graphics libraries retain symbols and frame
+pointers so the compiled RSP and RDP helper stacks can be resolved.
 
 Frame loops that sleep a whole presentation interval can delay guest VI/AI and
 task servicing even when rendering is cheap. `recomp_game_pace(rt, deadline)`
@@ -155,11 +137,8 @@ restarting it. Python 3 is sufficient for thread CPU accounting. Install your
 distribution's `perf` package matching the running kernel for function sampling.
 The tool does not change kernel permissions or invoke `sudo`.
 
-Start a **Release** build, reach the scene to measure, and let shader compilation
-settle. Release game targets retain symbols and frame pointers; shared RT64 uses
-optimized `RelWithDebInfo` by default. Debug game code is unoptimized and includes
-extra diagnostics, so its CPU consumption is not representative of Release.
-
+Use a Release build, reach the scene to measure, and let shader compilation
+settle. Debug code and diagnostics do not represent Release execution cost.
 ## Capture
 
 From the repository root, measure every thread for 30 seconds:
@@ -251,13 +230,12 @@ Route hot symbols to the corresponding code:
 
 | Symbols | Code to inspect |
 | --- | --- |
-| `recomp_s<section>_<address>` | Generated game functions; section and guest entry address are encoded in the name |
-| `ram_address`, `recomp_load*`, `recomp_store*` | Shared memory helpers in `runtime/memory.c` |
-| `mips_fp_*` | Floating-point helpers in `runtime/fpu.c` |
-| `sync_guest`, `save_context`, `recomp_scheduler_run` | Guest scheduling/context serialization in `runtime/scheduler.c` |
-| `RT64::…`, Vulkan driver symbols | Renderer/driver CPU work |
-| Audio synthesis functions | Audio backend/HLE work |
-
+| `recomp_s<section>_<address>` | Generated game functions and the matching profile/discovery evidence |
+| `rsp_run`, `recomp_rsp_*` | Generated RSP instruction dispatch, vector operations, DMA and worker snapshot handling |
+| `recomp_rdp_*`, renderer-local helpers | RDP triangle decoding, GLES2 textures, submission and readback |
+| `recomp_scheduler_*`, `recomp_lookup`, memory helpers | Runtime scheduling, guest calls and memory access |
+| `recomp_audio_*` | Audio task processing |
+| EGL, GL and driver module offsets | Driver CPU work; separate GPU tools are needed for GPU execution time |
 Map a generated function's guest address to discovery evidence using the
 existing address inspection tool:
 
@@ -272,27 +250,14 @@ locks or GPU presentation may require separate scheduling/GPU measurements.
 
 ## GoldenEye threads
 
-The host thread is named `goldeneye-us`. Its Release frame loop drains guest
-scheduling, services audio/graphics completion, updates input, presents and waits
-for the next frame. Guest threads are stackful fibers on that same OS thread,
-so CPU profiles attribute their execution to `goldeneye-us`. The profile's
-entry-address labels (`n64-main`, `n64-idle`, `n64-scheduler`, `n64-sound` and
-`n64-controller`) identify logical guest threads in diagnostics, with
-`n64-<guest ID>` as the fallback. Older captures with separate guest pthreads
-retain their original native thread names. Graphics HLE,
-audio synthesis and presentation preparation now run synchronously on the main
-host thread while guest execution is parked. The adapter no longer creates
-`n64-video` or `n64-audio` threads. RT64 retains its own workload, texture, buffer
-and presentation threads; SDL retains its playback thread.
+The owner executes translated game code, task services, RDP/GLES2 work and
+presentation. The separate RSP worker executes the compiled graphics programs;
+identify it by `worker_main`, `rsp_run` and vector-helper samples. Guest fibers
+share their host thread and do not add OS context switches. Driver and audio
+threads can also consume CPU, so use sampled stacks to distinguish their work.
 
-A busy main thread can reflect HLE processing, guest context serialization,
-device services or scheduling. Use sampled call trees to distinguish these from
-translated game computation. Guest fiber switches do not contribute to OS
-context-switch counters. Remaining voluntary switches can reflect frame pacing,
-I/O or backend waits; inspect stacks to identify their cause.
-
-The historical captures below predate synchronous HLE and describe the former
-snapshot/worker implementation. Their timings are not current-path benchmarks.
+The historical captures below describe earlier renderers and thread models.
+Their timings are not current-path benchmarks.
 
 ### Observed GoldenEye capture, 2026-10-18
 
@@ -309,13 +274,6 @@ submission, merges to their completion services, and many checked stores to
 `sync_guest` / `save_context`. This makes task snapshots/merges and repeated
 context serialization concrete optimization candidates.
 
-On guest thread 3, `mips_fp_binary` accounted for 24.0% of that thread's userspace
-Self samples, address resolution 13.0%, and `recomp_store` 7.3%. Graphics-worker
-samples centered on RT64 texture hashing/loading, vertex handling and texture
-coordinates. The host and guest thread 3 made approximately 19,200 and 17,900
-voluntary context switches per second respectively, consistent with frequent
-handoffs. Kernel cost is included in the CPU table but excluded from this
-userspace function recording; these switches alone do not quantify its cost.
 
 The capture and filtered per-thread reports are under the ignored directory
 `build/profiles/goldeneye-live-660450-confirmed/`. The original executable was

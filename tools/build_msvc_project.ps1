@@ -43,7 +43,7 @@ $generator = switch ($major) {
     default { throw 'Visual Studio 2022 or newer is required.' }
 }
 Invoke-Checked $cmake @('-S', $repo, '-B', $buildDirectory, '-G', $generator, '-A', 'x64',
-    "-DCMAKE_BUILD_TYPE=$Configuration", "-DRECOMP_GAME=$Game", '-DRECOMP_BUILD_RT64=ON',
+    "-DCMAKE_BUILD_TYPE=$Configuration", "-DRECOMP_GAME=$Game",
     '-DRECOMP_BUILD_AUDIO=ON', '-DRECOMP_EMBED_ROM=OFF',
     "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake",
     '-DVCPKG_TARGET_TRIPLET=x64-windows', "-DVCPKG_INSTALLED_DIR=$repo/build/vcpkg_installed",

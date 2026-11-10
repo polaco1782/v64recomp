@@ -12,7 +12,7 @@ import tarfile
 
 # Core ABI libraries also serve the host's dynamically loaded graphics drivers.
 # Keep its C++ runtime and window-system libraries: older bundled copies can
-# prevent a newer Mesa driver from loading, hiding all Vulkan surface extensions.
+# prevent a newer Mesa driver from loading, hiding all graphics entry points.
 SYSTEM_LIBRARY = re.compile(
     r"^(?:ld-linux.*|lib(?:c|m|pthread|dl|rt|resolv|util|anl|stdc\+\+|gcc_s)\.so.*|"
     r"lib(?:GL.*|EGL.*|GLES.*|OpenGL|GLX.*|vulkan|drm.*|gbm|"
@@ -35,7 +35,6 @@ def glibc_requirement(path):
 def package(game, build):
     cache = (build / "CMakeCache.txt").read_text()
     embedded_rom = bool(re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:ON|TRUE|1|YES|Y)$", cache, re.M | re.I))
-    embedded_textures = bool(re.search(r"^RECOMP_EMBED_TEXTURE_PACK:FILEPATH=.+$", cache, re.M))
     defaults = (build / "generated" / game / "game_defaults.h").read_text()
     paths = dict(re.findall(r'^#define RECOMP_DEFAULT_(ROM|SAVE) "([^"]+)"', defaults, re.M))
     rom = Path(paths["ROM"]).relative_to("/src/local")
@@ -95,10 +94,9 @@ export LD_LIBRARY_PATH="$here/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
 export SDL_VIDEODRIVER=x11
 export RECOMP_STEAM_DECK="${{RECOMP_STEAM_DECK-1}}"
 export RECOMP_LIVE_PATCH_DIR="${{RECOMP_LIVE_PATCH_DIR-off}}"
-export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"
 {gamepad_defaults}cd -- "$here"
 exec "$here/{game}"{rom_argument} \\
-    --data "$here/local/rt64/{game}" --save "$here/local/{save}" \\
+    --save "$here/local/{save}" \\
     --crash-dir "$here/local/crashes/{game}" "$@"
 ''')
     launcher.chmod(0o755)
@@ -129,10 +127,9 @@ exec "$here/{game}"{rom_argument} \\
     (destination / "README.txt").write_text(
         ("Private build: ROM content is embedded. Run ./launch.sh; no external ROM is needed.\n"
          if embedded_rom else f"No ROM is included. Supply your own verified ROM at local/{rom}, then run ./launch.sh.\n") +
-        ("The texture ZIP is embedded and loads automatically.\n" if embedded_textures else "") +
         "Keep the entire directory together. local/ holds private saves and caches.\n"
         "Requires x86_64 Linux with glibc 2.36+, GCC 12+ runtime (GLIBCXX_3.4.30),\n"
-        "X11/Xwayland and a Vulkan driver.\n"
+        "X11/Xwayland and a GLES2 driver.\n"
         "For Steam Deck, add launch.sh as a non-Steam game with compatibility tools disabled.\n"
         "Native analog input: select the Gamepad template in Steam Input.\n"
         "For the v64recomp - N64 template, run ./install-controls.sh and restart Steam.\n"
@@ -147,7 +144,7 @@ exec "$here/{game}"{rom_argument} \\
         "Profiling needs no Python, perf installation or sudo; CPU stacks use frame pointers.\n"
         "Existing saves are excluded. Hardware gameplay is not validated by packaging.\n"
     )
-    # Verify loader resolution and startup without initializing Vulkan or a ROM.
+    # Verify loader resolution and startup without initializing graphics or a ROM.
     subprocess.run([str(launcher), "--help"], check=True)
     package_name = f"{game}-steamdeck" + ("-embedded" if embedded_rom else "")
     archive = build / f"{package_name}.tar.gz"

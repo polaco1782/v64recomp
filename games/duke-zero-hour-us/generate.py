@@ -1,4 +1,5 @@
 """Game-specific inputs for CMake source generation."""
+from graphics_microcode import append_graphics_config, generated_sources
 from pathlib import Path
 
 
@@ -14,3 +15,4 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    append_graphics_config(profile, output)

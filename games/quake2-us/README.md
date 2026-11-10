@@ -1,12 +1,9 @@
 # Quake II US revision 0
 
-The port uses the original cartridge code, RT64 graphics, standard NAudio and
-**8 MiB of RDRAM with the Expansion Pak enabled**. The cartridge's startup screen
-confirms “Expansion Pak detected. Features enabled.” Full-game progression is
-not yet validated. Debug and Release build, the bounded Debug replay reaches
-Strogg Outpost with first-person rendering and nonzero audio output, and the user
-confirmed that the game runs well. Further testing stopped at the user's request;
-save/reload, sustained audio quality and broader progression remain unverified.
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 
 Single-player mouse-look and WASD are enabled by default. Mouse wheel changes
 weapons; Space/right-click jumps; Shift changes run speed while held; Tab pauses.
@@ -49,22 +46,6 @@ the resulting screens before treating a replay as gameplay acceptance. Diagnosti
 output is under `build/quake2-us-debug/debug-output/quake2-us/`; crash reports and
 RAM snapshots are under `local/crashes/quake2-us/`.
 
-Quake II defaults to **optimized Debug** (`RECOMP_OPTIMIZE_DEBUG=ON`). The
-translated CPU, runtime, audio and renderer adapter use compiler optimization
-while retaining `RECOMP_DEBUG`, instruction counters, checked guest memory,
-the overlay, captures, assertions, debug symbols and the matching Debug CRT.
-RT64 uses its shared release-optimized build with symbols. MSVC iterator tracking
-is disabled by default for all games, including Debug; the user confirmed a
-substantial improvement in Quake II's larger scenes after this change.
-
-Optimized source stepping can skip lines or hide locals. For unoptimized
-stepping, configure the same build directory with
-`-DRECOMP_OPTIMIZE_DEBUG=OFF`, then rebuild. MSVC's `/RTC` compiler checks are
-disabled in optimized Debug because they conflict with `/O2`; project-level
-guest validation and crash diagnostics remain enabled. Changing this option
-rebuilds the game and its local runtime/backends, not the shared RT64 cache.
-`--trace-calls` enables the shared core trace and prints every guest call
-and can substantially slow the game.
 
 For the remaining scene-dependent slowdown, use the shared `RECOMP_TIMING` CSV
 report in either configuration; see [performance timing](../../docs/debugging.md#shared-performance-timing).
@@ -74,6 +55,14 @@ limiting the frame rate. The report separates graphics wall time from calling-
 thread CPU time to help distinguish processing cost from waits.
 
 ## Verified implementation
+
+The GLES2 depth path treats comparison and writing independently. The pinned
+ROM constructs update-only render modes `0x0f0a0220` and `0xcb020220` at
+`0x8000e4a8..0x8000e4d0`; these must still write the Z buffer even though depth
+comparison is disabled. GLES2 now uses an enabled `GL_ALWAYS` test for that
+case, so later depth-tested objects can be occluded by those surfaces. This is
+a shared C11 renderer correction; gameplay acceptance is left to the user.
+See the [OpenGL ES depth-test rule](https://github.com/KhronosGroup/OpenGL-Refpages/blob/main/es2.0/glDepthFunc.xml#L133-L137).
 
 The initial load maps ROM `0x1000..0x72940` to guest
 `0x80000400..0x80071d40`. The entry clears BSS
@@ -112,11 +101,6 @@ Callback groups include:
   index, reads `{first,last,frames,endfunc}`, and invokes `{ai,distance,think}`
   records at stride 12. The reviewed arrays contain 143 move descriptors.
 
-The graphics task uses the cartridge microcode at `0x80062320`; it runs through
-the existing RT64 adapter. The audio task uses boot/code/data at
-`0x80060e20` / `0x800636f0` / `0x8006e2e0`, with exact task descriptors and hashes
-in `audio.h`. Standard NAudio opcode 14 is a volume-rate update, which differs
-from the filter in the existing MP3 and Conker modes.
 
 The initial single-frame stall came from an untranslated next-framebuffer query
 reading stale guest VI context after native swaps. Binding that SDK body to the

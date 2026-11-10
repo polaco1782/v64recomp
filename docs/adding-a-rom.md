@@ -12,12 +12,11 @@ it consistently. Addresses in the Duke examples apply only to that pinned ROM.
 
 ## 1. Prepare the tools
 
-Install the build dependencies listed in the README: Python 3.11+, a C/C++
-compiler, CMake, Ninja, OpenSSL 3, SDL2, X11/Xwayland and Vulkan. Initialize the
-pinned renderer and Python environment:
+Install the build dependencies listed in the README: Python 3.11+, a C11
+compiler, CMake, Ninja, OpenSSL 3, SDL2 and a GLES2 driver. Initialize the
+Python environment:
 
 ```sh
-git submodule update --init --recursive
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
@@ -387,86 +386,12 @@ Read an existing app for structure, then replace its ROM-specific assumptions.
 [Duke's main.c](../games/duke-us/main.c) is a compact example, but its
 thread addresses, timing calibration and audio profile are Duke-specific.
 
-1. Export `write_config(profile, metadata, output, startup)` from `generate.py`.
-   It writes the generated `game_config.h` consumed by `main.c`: pinned identity, boot addresses,
-   runtime globals and any adapter descriptors. Add `prepare`,
-   `finalize_metadata` or `configure_translation` only when needed, with checks.
-   The shared driver calls preparation before discovery, finalization before
-   saving metadata, and translation configuration only for actual generation.
-   An optional `write_report(rom, profile, metadata, report, output)` writes
-   game-specific analysis after translation in both generation and report mode.
-   Set `REQUIRE_COMPLETE_INVENTORY = True` only for a complete CPU inventory;
-   this retains the translator's discovery-issue and unresolved-boundary checks.
-2. Initialize `Runtime` with the generated registry and boot-section states,
-   verify/attach the original ROM through `recomp_game_rom`, load the verified
-   initial CPU bytes, and supply the measured boot parameters. Reproduce BSS
-   initialization without erasing thread objects or active runtime state.
-   The ROM helper installs the shared crash reporter. Use `recomp_fail(message,
-   address)` or `recomp_game_require(condition, message, address)` for all fatal
-   errors in either mode; keep crash serialization and diagnostic capture in
-   the core rather than adding a game-specific handler.
-3. Configure clock, scheduler, platform, IO and task services using the measured
-   guest globals. Choose synthetic boot-thread storage outside guest-owned data,
-   stacks and framebuffers, and retire it before the game reuses that RAM.
-4. Create the renderer and audio backend. Identify actual task types and microcode
-   from submitted tasks. Supply checked audio profiles and any required graphics
-   extensions; an unknown RSP task is not fixed by declaring it standard graphics
-   or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
-5. Run the scheduler, input, presentation and deadlines from the app loop.
-   Use `recomp_game_input`, `recomp_game_present` and
-   `recomp_game_audio_create` from `game.h` so shared Debug replay, captures and
-   audio recording work after game-specific input mapping. Keep SDL
-   input/window operations and synchronous HLE on their owner thread. Drain RT64
-   queues and destroy backends before runtime teardown.
-   Once the guest clock follows wall time and its priority-zero idle thread has
-   been verified/configured, prefer `recomp_game_pace(rt, deadline)` between
-   presentations so VI/AI/timers and queued RSP completions remain serviced.
-   Keep synthetic-clock bootstrap, calibration, busy-poll handling and
-   frame-exact diagnostic routes in the adapter when they need different
-   behavior. See the game-by-game [pacing policy](profiling.md#frame-pacing-and-stutter).
-6. Parse options once with `recomp_game_options` in `main`. Debug automatically
-   supports `--input`, `--wav`, `--audio-trace`, `--capture-every` and
-   `--trace-calls`. Core dispatch retains the last 128 guest-call addresses.
-   Do not add per-game argument adapters, controller replay parsers, report writers or
-   standalone test/check scripts. Keep essential ROM and runtime validation in
-   both builds. See [Debug options](debugging.md) for input and output formats.
 
 Organize `main.c` in this order: includes, game state, static helpers and native
 hooks, then `main`. This outline shows the shared lifecycle; `game_init`,
 `game_step` and `game_destroy` stand for your ROM-specific static implementations
 in the same file, not runtime APIs or a second runner translation unit:
 
-```c
-#include "game.h"
-#include "generated.h"
-/* Game state and ROM-specific static helpers go here. */
-
-int main(int argc, char **argv) {
-    RecompGameOptions options;
-    int parsed = recomp_game_options(argc, argv, &options);
-    if (parsed)
-        return parsed < 0 ? 2 : 0;
-
-    Game game; /* Define only the state this title needs. */
-    game_init(&game, &options); /* Runtime, recomp_game_rom, services, backends, boot. */
-    uint64_t deadline = recomp_game_monotonic();
-    for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
-        RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(game.renderer, &pad))
-            break;
-        recomp_game_require(recomp_game_input(&game.runtime, 0, &pad), "controller update failed", 0);
-        game_step(&game); /* ROM-specific scheduler budget and device service. */
-        recomp_game_require(recomp_game_present(game.renderer), "presentation failed", 0);
-#ifdef RECOMP_DEBUG
-        /* Only necessary, title-specific diagnostics; no second loop. */
-#endif
-        deadline += 16666667; /* Replace with this title's verified timing. */
-        recomp_game_pace(&game.runtime, deadline);
-    }
-    game_destroy(&game); /* Audio, renderer, runtime, owned ROM allocation. */
-    return 0;
-}
-```
 
 Use the title's measured timing and lifecycle; the outline does not supply boot
 addresses, an idle-thread policy or a universal scheduler budget. Create audio
@@ -478,6 +403,8 @@ The minimal game `CMakeLists.txt` is:
 ```cmake
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/newgame.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/newgame-us.eeprom")
+# Set only after binding a checked compiled graphics profile.
+set(RECOMP_GAME_GLES2_SUPPORTED ON)
 # Set RECOMP_GAME_SOURCES here if the adapter needs additional translation units.
 # Use parent-folder paths for shared sources, e.g. set(RECOMP_GAME_SOURCES pager.c).
 # main.c is automatic in both builds; RECOMP_DEBUG guards optional diagnostics.
@@ -529,7 +456,7 @@ nm -A --defined-only build/newgame-us-debug/librecomp_runtime.a | rg 'recomp_exa
 ```
 
 If the declaration and implementation exist, verify the defining `.c` is compiled
-and linked, and that a C++ implementation exports the required C linkage. A TOML
+and linked with the declared C ABI. A TOML
 handler name does not create a C implementation. For a missing generated
 `recomp_sN_ADDRESS`, inspect that build's registry in generated `functions.c` and
 `generated.h`, selected functions, and `generation.log`; regenerate through CMake.
@@ -604,7 +531,7 @@ mkdir -p local/diagnostics/newgame-us
 
 `--frames` counts presentations in most apps; it is not a timeout or instruction
 budget, so a guest hang may prevent the bound from being reached. Use a desktop
-session for rendered tests. An SDL/X11/Vulkan initialization failure occurs before
+session for rendered tests. An SDL/X11/GLES2 initialization failure occurs before
 game acceptance and does not establish a guest crash. Add `--trace-calls` for a
 focused reproduction; `RECOMP_DEBUG_FULL=1` expands sampled diagnostics and can
 produce substantial output. See [debugging options](debugging.md) for availability.

@@ -4,6 +4,7 @@ import hashlib, json, math, struct, zlib
 import re
 from common import RecompError
 from input_analysis import verify_input_analysis
+from graphics_microcode import append_graphics_config, generated_sources
 
 
 def startup_data(rom: bytes, boot: dict) -> bytes:
@@ -80,6 +81,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     for name,value in profile.get('inspection',{}).items():
         if type(value) is int:lines.append(f'#define GE_INSPECT_{name.upper()} UINT32_C(0x{value:x})')
     (output / 'game_config.h').write_text('\n'.join(lines))
+    append_graphics_config(profile, output, {'startup': startup_data(Path(game['rom']).read_bytes(), boot)})
     analysis = profile['input_analysis']
     constants = {'CURRENT_PLAYER': analysis['current_player']['address'],
                  'PROCESS_RETURN': profile['input_adapter']['process_return'],

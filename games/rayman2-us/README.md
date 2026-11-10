@@ -1,5 +1,9 @@
 # Rayman 2: The Great Escape (US revision 0)
 
+This fork uses the C11 GLES2 renderer and statically recompiled RSP graphics
+programs directly. Existing presets/workflows need no renderer flags. See the
+[graphics notes](../../docs/armv8-gles2.md) for this ROM's acceptance boundary.
+
 This port targets the 32 MiB big-endian US revision 0 cartridge, header title
 `Rayman 2`, country `0x45`, entry `0x80000400`:
 
@@ -86,10 +90,6 @@ cmake --workflow --preset rayman2-us-debug
 ./build/rayman2-us-debug/bin/rayman2-us --frames 360
 ```
 
-Use `rayman2-us-release` for the Release configure/build presets. Both modes use
-the parent-folder adapter, shared runtime, RT64 build and crash reporter. The
-default Controller Pak image is `local/saves/rayman2-us.mpk`; `--save FILE`
-selects another image. ROMs, saves and renderer data remain under ignored `local/`.
 
 ## Verified loading model
 

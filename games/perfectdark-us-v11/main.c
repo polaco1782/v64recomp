@@ -142,8 +142,12 @@ static void game_init(Game *game, const RecompGameOptions *options) {
     recomp_copy_to_ram(rt, BOOT_INITIAL_LOAD_ADDRESS, game->rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
         recomp_store(rt, boot_parameters[i][0], boot_parameters[i][1], 4);
-    game->renderer = recomp_renderer_create_named(rt, options->data, "Perfect Dark");
+    game->renderer = recomp_renderer_create_named(rt, "Perfect Dark");
     recomp_game_require(game->renderer != NULL, "Perfect Dark renderer initialization failed", 0);
+    recomp_renderer_set_framebuffer_sizes(game->renderer, game_graphics_framebuffers,
+                                          sizeof(game_graphics_framebuffers) / sizeof(game_graphics_framebuffers[0]));
+    recomp_renderer_set_graphics_microcodes(game->renderer, game_graphics_microcodes,
+                                            sizeof(game_graphics_microcodes) / sizeof(game_graphics_microcodes[0]));
     MipsContext boot = {.fcr31 = 0x01000800};
     boot.gpr[31] = mips_s32(0xf0000000);
     recomp_lookup(rt, BOOT_ENTRY)(rt, &boot);
