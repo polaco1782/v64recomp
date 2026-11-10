@@ -24,19 +24,14 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\rayman2-us\audio.h" />
     <None Include="$(RecompRoot)games\rayman2-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\rayman2-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\rayman2-us\debug\gameplay-input.json" />
+    <ClInclude Include="$(RecompRoot)games\rayman2-us\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\rayman2-us\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\rayman2-us\controls.h" />
+    <None Include="$(RecompRoot)games\rayman2-us\controls_analysis.py" />
     <None Include="$(RecompRoot)games\rayman2-us\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\rayman2-us\main.c" />
     <None Include="$(RecompRoot)games\rayman2-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\rayman2-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\rayman2-us\run.c" />
-    <ClInclude Include="$(RecompRoot)games\rayman2-us\run.h" />
     <None Include="$(RecompRoot)games\rayman2-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\rayman2-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\rayman2-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\rayman2-us\functions.c')" />

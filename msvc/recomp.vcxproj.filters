@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
+    <None Include="$(RecompRoot)CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)CMakePresets.json">
+      <Filter>Configuration</Filter>
+    </None>
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -22,6 +28,15 @@
     <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\fast3d.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\fast3d_gles2.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\input.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -52,6 +67,21 @@
     <None Include="$(RecompRoot)cmake\PackUPX.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\Release.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SeparateDebug.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\rt64\AnamorphicPresentation.cmake">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
     <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
@@ -64,22 +94,22 @@
     <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
-    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
-    <None Include="$(RecompRoot)CMakeLists.txt">
-      <Filter>Configuration</Filter>
-    </None>
-    <None Include="$(RecompRoot)CMakePresets.json">
-      <Filter>Configuration</Filter>
+    <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake">
+      <Filter>Configuration\cmake\toolchains</Filter>
     </None>
     <ClInclude Include="$(RecompRoot)include\cheats.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\fast3d.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\fast3d_gles2.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\fov_control.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\game.h">
@@ -104,6 +134,9 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\recomp_jpeg.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\recomp_live.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\renderer.h">
@@ -133,10 +166,10 @@
     <ClCompile Include="$(RecompRoot)runtime\debug.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)runtime\debug_game.c">
+    <ClCompile Include="$(RecompRoot)runtime\dispatch.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)runtime\dispatch.c">
+    <ClCompile Include="$(RecompRoot)runtime\fov_control.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\fpu.c">
@@ -149,6 +182,9 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\io.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\live_patch.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\memory.c">
@@ -178,34 +214,19 @@
     <ClCompile Include="$(RecompRoot)runtime\video.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
+    <ClInclude Include="$(RecompRoot)third_party\minicoro\minicoro.h">
+      <Filter>Header Files\third_party\minicoro</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)tools\auto_live_function.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\build_live_function.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\build_msvc_project.ps1">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\build_steamdeck.sh">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_branch_link.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_function_candidates.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_multiply.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_overflow.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_overlays.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_registered_calls.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_teq.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\check_timing.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\code_inventory.py">
@@ -215,9 +236,6 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\compare_native_hooks.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\controller_replay.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\desktop_replay.py">
@@ -235,10 +253,16 @@
     <None Include="$(RecompRoot)tools\dump_cpu_code.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\embed_texture_pack.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\emit.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\export_analysis_rom.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\fetch_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\format.sh">
@@ -274,9 +298,6 @@
     <None Include="$(RecompRoot)tools\inspect_sdk_symbols.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\inspect_switch_tables.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\merge_symbol_database.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -292,10 +313,22 @@
     <None Include="$(RecompRoot)tools\package_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\probe_function_roots.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\profile_execution.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\profile_frames.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\promote_live_patches.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\review_candidates.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\review_discovery.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\setup_windows.ps1">
@@ -339,6 +372,9 @@
     <Filter Include="Configuration\cmake\rt64">
       <UniqueIdentifier>{1CBD586A-9036-5A81-A764-F240AF05E3D4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Configuration\cmake\toolchains">
+      <UniqueIdentifier>{20EE7F38-027F-5260-B59B-593AAB48DA5E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Configuration\msvc">
       <UniqueIdentifier>{CB95410B-A50C-54D9-BF39-639D72BB7F5A}</UniqueIdentifier>
     </Filter>
@@ -353,6 +389,12 @@
     </Filter>
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{360CC0C4-8AB5-5F6C-88CE-F143FE46165D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\third_party">
+      <UniqueIdentifier>{C973E584-B597-53D2-BED0-7B0D34D3DB02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\third_party\minicoro">
+      <UniqueIdentifier>{BC409265-1466-5BC9-B848-B39EF6711C5D}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{BDCE5D5A-1719-5579-B014-087B01302240}</UniqueIdentifier>

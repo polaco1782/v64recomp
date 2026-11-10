@@ -77,10 +77,10 @@ void line(RT64::State *s, RT64::DisplayList **dl) {
     // Turok's guOrtho matrix has homogeneous scale 32, unlike Hexen's 1.
     // posScreen already divides by W. Accept any finite positive constant W,
     // while retaining the rejection of perspective and behind-camera lines.
-    const auto &matrix = rsp->modelViewProjMatrix;
+    const auto& matrix = rsp->modelViewProjMatrix;
     const float w = matrix[3][3];
-    if (matrix[0][3] != 0.0f || matrix[1][3] != 0.0f || matrix[2][3] != 0.0f ||
-        !std::isfinite(w) || w <= 0.0f || draw.posTransformed[ia][3] != w || draw.posTransformed[ib][3] != w) {
+    if (matrix[0][3] != 0.0f || matrix[1][3] != 0.0f || matrix[2][3] != 0.0f || !std::isfinite(w) || w <= 0.0f ||
+        draw.posTransformed[ia][3] != w || draw.posTransformed[ib][3] != w) {
         recomp_warn("Turok unsupported perspective L3DEX line",
                     uint32_t(reinterpret_cast<uintptr_t>(*dl) - reinterpret_cast<uintptr_t>(s->RDRAM)));
         return;

@@ -1471,7 +1471,7 @@ bool recomp_fast3d_gles2_input(RecompFast3DGles2 *s, RecompPad *pad) {
         pad->stick_x = (int8_t)(pad->stick_x * 7 / 10);
         pad->stick_y = (int8_t)(pad->stick_y * 7 / 10);
     }
-    recomp_input_poll(s->input, pad);
+    recomp_input_poll(s->input, pad, NULL);
     return true;
 }
 bool recomp_fast3d_gles2_full_sync(RecompFast3DGles2 *s) {

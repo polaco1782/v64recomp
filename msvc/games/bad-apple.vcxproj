@@ -25,18 +25,9 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\bad-apple\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\bad-apple\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <None Include="$(RecompRoot)games\bad-apple\debug\check_download.py" />
-    <ClCompile Include="$(RecompRoot)games\bad-apple\demo.c" />
-    <ClInclude Include="$(RecompRoot)games\bad-apple\demo.h" />
-    <None Include="$(RecompRoot)games\bad-apple\fetch_rom.py" />
     <None Include="$(RecompRoot)games\bad-apple\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\bad-apple\main.c" />
     <None Include="$(RecompRoot)games\bad-apple\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\bad-apple\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="$(RecompBuildDir)\generated\bad-apple\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\bad-apple\functions.c" Condition="Exists('$(RecompBuildDir)\generated\bad-apple\functions.c')" />
     <ClInclude Include="$(RecompBuildDir)\generated\bad-apple\*.h" />

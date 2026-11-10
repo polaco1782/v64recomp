@@ -24,17 +24,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
+    <None Include="$(RecompRoot)games\goldeneye-us\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\goldeneye-us\ai.c" />
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\audio.h" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\audio_dma.c" />
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\boot_capture.h" />
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\boot_hooks.h" />
-    <None Include="$(RecompRoot)games\goldeneye-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\debug\fov_check.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\fov.c" />
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\fov.h" />
     <None Include="$(RecompRoot)games\goldeneye-us\generate.py" />
@@ -44,13 +37,10 @@
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\graphics_packets.h" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\input.c" />
     <None Include="$(RecompRoot)games\goldeneye-us\input_analysis.py" />
+    <ClCompile Include="$(RecompRoot)games\goldeneye-us\main.c" />
     <ClCompile Include="$(RecompRoot)games\goldeneye-us\pager.c" />
     <ClInclude Include="$(RecompRoot)games\goldeneye-us\pager.h" />
     <None Include="$(RecompRoot)games\goldeneye-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\goldeneye-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\goldeneye-us\services.h" />
     <None Include="$(RecompRoot)games\goldeneye-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\goldeneye-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\goldeneye-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\goldeneye-us\functions.c')" />

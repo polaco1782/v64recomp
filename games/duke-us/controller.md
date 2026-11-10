@@ -31,12 +31,12 @@ shared controller state. Focus loss and overlays release capture automatically.
 Set `RECOMP_DUKE_MOUSE=0` to restore the ordinary keyboard/controller mapping.
 `RECOMP_MOUSE_SENSITIVITY` defaults to `0.08` degrees per mouse count, range
 `0.001..10`; `RECOMP_MOUSE_INVERT_Y=1` reverses vertical look. These apply at launch.
-The mouse setting is independent of `RECOMP_FOV`.
+Keypad `+` / `-` changes FOV independently of mouse capture.
 
 Capture requires game state 2, no inactive/demo flag, one local player, no pause
 or overhead map, positive player health, no fist/exit sequence and no remote
 camera owner. These state gates prevent capture in menus, demos and death.
-Debug `--input` / `RECOMP_DUKE_INPUT` controller replay disables the adapter.
+Debug `--input` controller replay disables the adapter.
 
 ## Native command boundary
 
@@ -107,21 +107,8 @@ the player count is `0x800ff624`, not `0x8010f624`.
 emits `duke_input_config.h` and writes `input-hooks.json` in the selected build.
 These establish static evidence and translated coverage, not gameplay acceptance.
 
-## Focused checks and acceptance
+## Gameplay acceptance
 
-The maintained Debug check executes the actual translated command builder using
-synthetic player/controller state. It checks movement following yaw, strafing,
-action bits, one-time delta consumption, pitch limits, queued weapon detents,
-restoration, capture-loss clearing and state gates. Player-process free-look
-setup uses an observer; it does not execute physics in a loaded level.
-
-```powershell
-$env:RECOMP_DUKE_CHECK_INPUT = '1'
-.\build\msvc\duke-us\debug\bin\Debug\duke-us.exe --frames 1
-Remove-Item Env:RECOMP_DUKE_CHECK_INPUT
-```
-
-On 2026-10-31, static ROM/translation verification, Debug/Release builds and the
-focused input check passed. The user subsequently confirmed that the input and
+The user subsequently confirmed that the input and
 FOV changes work well in game. Broader level progression, sustained audio and
 less common controller/camera transitions remain unverified.

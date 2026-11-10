@@ -44,7 +44,6 @@ These are the investigation tools and when to use them:
 | `tools/inspect_function_candidates.py` | Find potentially missing entries from owned address-producing code, image-wide pointers, stack frames and direct calls in candidate bodies; report bounded control-flow and ownership checks. |
 | `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
 | `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |
-| `tools/controller_replay.py` | Convert existing ROM-bound replay JSON to the debug app's text input format. |
 | `tools/desktop_replay.py` | Replay text inputs as keyboard actions in a launched app's own X11 window; capture Release scenes and record the bounded process result. |
 | Optional MIPS disassembler/decompiler, such as Ghidra | Investigate loaders, BSS bounds, callbacks and data structures. Configure big-endian VR4300/MIPS III semantics and the verified address mapping. |
 
@@ -108,10 +107,11 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
 An explicitly downloadable demo may also export `ensure_rom(profile)` from its
 `generate.py`. The driver calls it before loading the ROM or checking the
 generation cache. Keep the pinned source URL, size and checksums in that game's
-single profile, and the fetch/cache implementation in its parent folder. This
-is an opt-in build prerequisite for that demo, not a default download policy for
-commercial games. Bad Apple demonstrates an atomic verified download into
-ignored `local/`, offline cache reuse, and rejection of mismatched local files.
+single profile. Bad Apple and Media Player import the shared fetch/cache helper
+from `tools/fetch_rom.py`. This is an opt-in build prerequisite for those homebrew
+targets, not a default download policy for commercial games. The helper downloads
+atomically into ignored `local/`, reuses a verified cache offline, and rejects
+mismatched local files.
 
 Examples are OOT's [Yaz0/overlay preparation](../games/oot-us-v12/prepare.py)
 and Perfect Dark's [RareZip preparation](../games/perfectdark-us-v11/generate.py).
@@ -149,7 +149,7 @@ regions = [{name = ".main", vram = 0x8004b400, rom_offset = 0x1000, size = 0xbf8
 
 `discovery.entry_vram` can override the header entry for a verified analysis
 layout. `game.fpu_fr` defaults to 0; use 1 only when the game uses independent
-64-bit FPRs, and set `RecompSchedulerConfig.fpu_fr1` consistently in both apps.
+64-bit FPRs, and set `RecompSchedulerConfig.fpu_fr1` consistently in both builds.
 The runtime `[bootstrap]` fields are consumed by your game's config generator;
 they are not a universal loader that automatically boots every profile.
 
@@ -266,6 +266,20 @@ the CPU load mappings. A bounded body probe checks instruction validity, control
 flow and overlap with owned code; clean candidate bodies expose further direct
 callees. Checked switch-table words and already owned interiors are excluded.
 Stack frames supply additional candidates for routines without pointer references.
+`tools/probe_function_roots.py` follows a proposed root through normal discovery
+without changing checked inputs. `tools/review_candidates.py --roots-only --codex`
+uses that probe, asks Codex to verify the entry and its pointer source, and
+keeps an accepted root in `profile.toml` only after ROM and generation checks.
+Subsequent builds reuse the saved root without another AI review. The
+`candidate-review-roots` CMake target runs a bounded batch of this review.
+`candidate-review-tables` checks indirect-call groups. Games opting into
+`auto_candidate_review` run both bounded reviews when their checked profile or
+runtime missing-call requests change; the saved profile and marker keep routine
+builds from repeating Codex review.
+If an indirect caller has no proven selector bound, review its individual
+ROM pointer slots as possible roots instead of declaring an unbounded
+`function_tables` entry. Keep only distinct closed bodies that pass normal
+discovery and translation.
 
 Discovery also follows proven constant callback flows automatically for partial
 profiles with checked registered-call policy. It traces entry arguments through
@@ -328,8 +342,8 @@ checked root at the target. Runtime lookup still requires exactly one loaded
 function at that address; the game loader must invalidate the old section and
 verify the complete replacement before activating it. Auto-detected native
 bodies retain their section identity, and custom hooks in an overlapping slot
-also need `section`. `tools/check_overlays.py --build build/<game>-debug`
-exercises synthetic overlapping code, switches and native dispatch.
+also need `section`. Verify overlay loading, switches and native dispatch with
+the exact ROM and the affected gameplay path.
 
 `allow_registered_indirect_calls` permits runtime lookup only with a checked
 code/entry inventory. It does not discover missing entries or make arbitrary
@@ -352,25 +366,29 @@ games/newgame-us/
   ...                       # shared headers, loaders, hooks and adapters
   startup-entries.json       # when checked callback roots are available
   CMakeLists.txt
-  release/
-    app.c
-    ...                     # additional Release-only sources
-  debug/
-    app.c
-    ...                     # replay inputs and diagnostic-only code
+  main.c                    # one entry point and lifecycle for both builds
+  *.txt                     # maintained replay inputs, when useful
 ```
 
 Keep one complete `profile.toml`; do not add game profile inheritance chains or
 alternative profile filenames. Keep all headers and shared adapters in the parent
-directory. Each configuration has its own `app.c` and may use the parent folder;
-it must not include or compile files from the other configuration's folder.
+directory. Both configurations compile the same `main.c`; do not add `debug/`
+or `release/` source folders, separate entry points, or thin runner wrappers.
+Keep the common startup and frame loop together, with small
+`#ifdef RECOMP_DEBUG` blocks for game-specific diagnostics. Independent input,
+graphics, paging or codec adapters may remain separate root-level files.
+Every Python helper must serve generation or a documented, maintained command;
+every JSON file must have a reader or profile declaration. Editor entries and
+cache globs do not establish use. Remove one-off scanners/importers after their
+reviewed findings are recorded, and keep replay inputs in the runtime's text
+format without JSON duplicates.
 
 Read an existing app for structure, then replace its ROM-specific assumptions.
-[Duke's release app](../games/duke-us/release/app.c) is a compact example, but its
+[Duke's main.c](../games/duke-us/main.c) is a compact example, but its
 thread addresses, timing calibration and audio profile are Duke-specific.
 
 1. Export `write_config(profile, metadata, output, startup)` from `generate.py`.
-   It writes the header consumed by your apps: pinned identity, boot addresses,
+   It writes the generated `game_config.h` consumed by `main.c`: pinned identity, boot addresses,
    runtime globals and any adapter descriptors. Add `prepare`,
    `finalize_metadata` or `configure_translation` only when needed, with checks.
    The shared driver calls preparation before discovery, finalization before
@@ -394,7 +412,10 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    from submitted tasks. Supply checked audio profiles and any required graphics
    extensions; an unknown RSP task is not fixed by declaring it standard graphics
    or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
-5. Run the scheduler, input, presentation and deadlines from the app loop. Keep SDL
+5. Run the scheduler, input, presentation and deadlines from the app loop.
+   Use `recomp_game_input`, `recomp_game_present` and
+   `recomp_game_audio_create` from `game.h` so shared Debug replay, captures and
+   audio recording work after game-specific input mapping. Keep SDL
    input/window operations and synchronous HLE on their owner thread. Drain RT64
    queues and destroy backends before runtime teardown.
    Once the guest clock follows wall time and its priority-zero idle thread has
@@ -403,10 +424,54 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    Keep synthetic-clock bootstrap, calibration, busy-poll handling and
    frame-exact diagnostic routes in the adapter when they need different
    behavior. See the game-by-game [pacing policy](profiling.md#frame-pacing-and-stutter).
-6. Add a debug app with startup assertions and useful reports/captures. Check its
-   `--help`; per-game diagnostic argument parsing is not supplied just by creating
-   a file under `debug/`. Use the same shared crash handler as Release; core
-   dispatch retains the last 128 guest-call addresses in Debug.
+6. Parse options once with `recomp_game_options` in `main`. Debug automatically
+   supports `--input`, `--wav`, `--audio-trace`, `--capture-every` and
+   `--trace-calls`. Core dispatch retains the last 128 guest-call addresses.
+   Do not add per-game argument adapters, controller replay parsers, report writers or
+   standalone test/check scripts. Keep essential ROM and runtime validation in
+   both builds. See [Debug options](debugging.md) for input and output formats.
+
+Organize `main.c` in this order: includes, game state, static helpers and native
+hooks, then `main`. This outline shows the shared lifecycle; `game_init`,
+`game_step` and `game_destroy` stand for your ROM-specific static implementations
+in the same file, not runtime APIs or a second runner translation unit:
+
+```c
+#include "game.h"
+#include "generated.h"
+/* Game state and ROM-specific static helpers go here. */
+
+int main(int argc, char **argv) {
+    RecompGameOptions options;
+    int parsed = recomp_game_options(argc, argv, &options);
+    if (parsed)
+        return parsed < 0 ? 2 : 0;
+
+    Game game; /* Define only the state this title needs. */
+    game_init(&game, &options); /* Runtime, recomp_game_rom, services, backends, boot. */
+    uint64_t deadline = recomp_game_monotonic();
+    for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
+        RecompPad pad = {.connected = true};
+        if (!recomp_renderer_input(game.renderer, &pad))
+            break;
+        recomp_game_require(recomp_game_input(&game.runtime, 0, &pad), "controller update failed", 0);
+        game_step(&game); /* ROM-specific scheduler budget and device service. */
+        recomp_game_require(recomp_game_present(game.renderer), "presentation failed", 0);
+#ifdef RECOMP_DEBUG
+        /* Only necessary, title-specific diagnostics; no second loop. */
+#endif
+        deadline += 16666667; /* Replace with this title's verified timing. */
+        recomp_game_pace(&game.runtime, deadline);
+    }
+    game_destroy(&game); /* Audio, renderer, runtime, owned ROM allocation. */
+    return 0;
+}
+```
+
+Use the title's measured timing and lifecycle; the outline does not supply boot
+addresses, an idle-thread policy or a universal scheduler budget. Create audio
+through `recomp_game_audio_create` during initialization. Do not leave empty
+conditional blocks, placeholder types or speculative helpers in the finished port.
 
 The minimal game `CMakeLists.txt` is:
 
@@ -415,8 +480,7 @@ set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/newgame.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/newgame-us.eeprom")
 # Set RECOMP_GAME_SOURCES here if the adapter needs additional translation units.
 # Use parent-folder paths for shared sources, e.g. set(RECOMP_GAME_SOURCES pager.c).
-# Optional RECOMP_GAME_DEBUG_SOURCES / RECOMP_GAME_RELEASE_SOURCES select extra
-# configuration-only sources using debug/ or release/ paths. app.c is automatic.
+# main.c is automatic in both builds; RECOMP_DEBUG guards optional diagnostics.
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 ```
 
@@ -424,7 +488,7 @@ Use the actual save medium/path; add required target libraries after the include
 Register `newgame-us` in **both** root `CMakeLists.txt`'s `RECOMP_GAMES` and
 `tools/generate_game.py`'s `GAMES`. The driver uses `profile.toml` and `generate.py`
 in every game's parent directory. Shared headers belong there too; CMake includes
-that directory and the selected configuration directory in both builds.
+that directory and the generated output directory in both builds.
 Explicit CMake configurations then work without presets:
 
 ```sh
@@ -434,9 +498,10 @@ cmake --build build/newgame-us-debug -j 4
 ```
 
 Add Release/Debug configure, build and workflow presets to `CMakePresets.json`.
-Each workflow runs the matching configure and build presets, and build presets
-default to four jobs. Use `cmake --workflow --preset newgame-us-debug` to configure
-and build together (CMake 3.25+). Add optional VS Code entries in `.vscode/tasks.json` and
+Each workflow runs the matching configure preset, a build preset targeting
+`promote-live-patches`, then its normal build preset. Normal builds default to
+four jobs. Use `cmake --workflow --preset newgame-us-debug` to configure,
+promote checked live functions, and build together (CMake 3.25+). Add optional VS Code entries in `.vscode/tasks.json` and
 `.vscode/launch.json`. Update the root import/game lists and `docs/status.md` with
 the actual milestone. `cmake/Game.cmake` handles generated-source caching/splitting,
 mode-specific app selection, debug flags, and `run`/`report` targets. Configuration
@@ -449,7 +514,7 @@ First classify the failure:
 | Message or symptom | Where to investigate |
 | --- | --- |
 | Compiler says an identifier is undeclared | Missing C declaration/header, or wrong generated config. |
-| Linker says `undefined reference to hook_...` | Native handler absent, wrong linkage, or source/library omitted from CMake. |
+| Linker says `undefined reference to recomp_...` | Native handler absent, wrong linkage, or source/library omitted from CMake. |
 | Generator says symbol/root missing or ambiguous | Names/aliases, mappings, checked roots and profile inheritance. |
 | Runtime says `unregistered or unloaded function` | Guest target lacks an entry, or its section/overlay is not active. |
 | Runtime says `ambiguous loaded function` | More than one active registry entry for the canonical guest address. |
@@ -457,10 +522,10 @@ First classify the failure:
 For a missing host symbol, search declaration, implementation and build wiring:
 
 ```sh
-rg -n 'hook_example' include runtime backends games tools
+rg -n 'recomp_example' include runtime backends games tools
 cmake --build build/newgame-us-debug --verbose
 # Replace this archive with the library expected to supply the symbol:
-nm -A --defined-only build/newgame-us-debug/librecomp_runtime.a | rg 'hook_example'
+nm -A --defined-only build/newgame-us-debug/librecomp_runtime.a | rg 'recomp_example'
 ```
 
 If the declaration and implementation exist, verify the defining `.c` is compiled
@@ -643,8 +708,8 @@ overlapped memory reused for a framebuffer. The former merge helper detected
 conflicting writes. A stopped guest thread still had scheduler-synchronized state;
 stopping it did not release the RAM. The fix retires it from `oot_prepare_call`
 at `0x80005f20`, before graphics submission, with a debug guard that it is dead.
-See [the hook](../games/oot-us-v12/hooks.h) and
-[debug task checks](../games/oot-us-v12/debug/app.c). This illustrates the chain:
+See [the hook](../games/oot-us-v12/main.c) and
+[the common frame loop](../games/oot-us-v12/main.c). This illustrates the chain:
 failure byte → guest alias → object ownership → writer/lifetime → earlier retirement.
 
 For a hang, interrupt GDB with Ctrl-C and inspect **all** threads. If a guest is
@@ -681,7 +746,8 @@ issues but cannot validate audio. A successful build, report, headless startup o
 nonzero frame counter alone does not prove rendered gameplay or a complete port.
 
 After changing discovery/emission/runtime behavior, run the focused checks for
-that change and any affected game's reproduction. Check the final diff too:
+that change and any affected game's reproduction. Run `tools/format.sh`, regenerate the browsable projects with
+`python3 tools/msvc_solution.py`, and check the final diff:
 
 ```sh
 git diff --check

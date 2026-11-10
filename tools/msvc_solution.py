@@ -29,12 +29,12 @@ def write_xml(path: Path, document):
     ET.indent(document, space='  ')
     path.parent.mkdir(parents=True, exist_ok=True)
     text = ET.tostring(document, encoding='unicode', xml_declaration=False)
-    path.write_text('<?xml version="1.0" encoding="utf-8"?>\n' + text + '\n', encoding='utf-8', newline='\r\n')
+    path.write_text('<?xml version="1.0" encoding="utf-8"?>\n' + text + '\n', encoding='utf-8', newline='\n')
 
 
 def source_files(root: Path, game: str) -> list[Path]:
     extensions = {'.c', '.cc', '.cpp', '.h', '.hpp', '.inl', '.py', '.toml', '.json', '.cmake', '.ps1', '.sh'}
-    directories = [root / 'games' / game] if game != 'none' else [root / p for p in ('runtime', 'include', 'backends', 'tools', 'cmake')]
+    directories = [root / 'games' / game] if game != 'none' else [root / p for p in ('runtime', 'include', 'backends', 'tools', 'cmake', 'third_party/minicoro')]
     files = {p for directory in directories for p in directory.rglob('*')
              if p.is_file() and (p.suffix in extensions or p.name == 'CMakeLists.txt')
              and '__pycache__' not in p.parts}
@@ -72,10 +72,7 @@ def write_project(root: Path, game: str) -> Path:
         relative = source.relative_to(root)
         include = '$(RecompRoot)' + str(relative).replace('/', '\\')
         tag = 'ClCompile' if source.suffix in {'.c', '.cc', '.cpp'} else 'ClInclude' if source.suffix in {'.h', '.hpp', '.inl'} else 'None'
-        item = element(items, tag, Include=include)
-        if tag == 'ClCompile' and ('debug' in relative.parts or 'release' in relative.parts):
-            excluded = 'Release' if 'debug' in relative.parts else 'Debug'
-            element(item, 'ExcludedFromBuild', 'true', Condition=f"'$(Configuration)'=='{excluded}'")
+        element(items, tag, Include=include)
         category = 'Source Files' if tag == 'ClCompile' or source.suffix in {'.py', '.ps1', '.sh'} else 'Header Files' if tag == 'ClInclude' else 'Configuration'
         within = source.relative_to(root / 'games' / game) if game != 'none' else relative
         group = category if within.parent == Path('.') else category + '\\' + str(within.parent).replace('/', '\\')

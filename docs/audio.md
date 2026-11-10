@@ -37,9 +37,7 @@ The shared adapter verifies its microcode profile and validates RAM spans and
 DSP buffer bounds before synthesis. RE2's data fingerprint covers its complete
 0x230-byte constant prefix; the next bytes contain mutable CPU-owned state.
 Inspect a captured task with `tools/inspect_rsp_task.py REPORT --list-scale 0xa10
---structured`. `games/re2-us-v1/debug/check_musyx.c` contains ROM-free sanitizer
-fixtures and a private snapshot replay mode, with its build command in the source
-header.
+--structured`.
 
 Quake II uses standard NAudio (`RECOMP_AUDIO_NAUDIO`). Its opcode 14 supplies
 the low word of the right-channel volume ramp; it does not execute the filter
@@ -65,32 +63,39 @@ it becomes active, including promotion of a queued successor. SDL receives signe
 16-bit stereo samples; optional WAV capture stores canonical little-endian PCM.
 Synthesis does not play samples directly. A stalled device's queue is bounded to
 avoid seconds of stale sound. Rate changes after output starts remain unsupported.
-Playback starts after an 80 ms reserve (at least three SDL device periods) has
-accumulated. An empty running queue counts as an underrun and pauses the device
-until the reserve is refilled. Disabling output clears and pauses playback.
-`audio_results.json` records `queue_underruns`, `queue_resets` (excess queue),
+Playback starts after a 160 ms reserve (at least three SDL device periods) has
+accumulated; a game's `prebuffer_ms` can select an initial reserve up to 200 ms.
+The playback queue receives the original synthesized PCM at the game's sample
+rate, preserving sample values, frame counts and pitch. An empty running queue
+counts as an underrun and pauses playback until the reserve is refilled; each
+underrun raises the reserve by 40 ms, up to 200 ms (or three device periods if larger).
+Disabling output clears and pauses playback and restores the initial reserve.
+Stalls longer than the available reserve, or repeated stalls that deplete it,
+can still interrupt playback. Guest AI completion timing and WAV capture remain
+independent of device playback buffering.
+Shared audio statistics record `queue_underruns`, `queue_resets` (excess queue),
 `min_queued_bytes`, `max_queued_bytes` and `prebuffer_frames`; the minimum measures
 the running queue before PCM admission, excluding initial buffering.
 
 ```sh
 ./build/sm64-us-release/bin/sm64-us
 ./build/sm64-us-release/bin/sm64-us --mute
-./build/sm64-us-debug/bin/sm64-us --frames 180 --mode jump
+./build/sm64-us-debug/bin/sm64-us --frames 180 --wav /tmp/sm64-audio.wav
 ./build/oot-us-v12-debug/bin/oot-us-v12 --audio-trace /tmp/oot-audio.csv
 # Opt-in timing diagnostics also work in Release and packaged builds:
 RECOMP_AUDIO_TRACE=/tmp/oot-audio.csv ./build/oot-us-v12-release/bin/oot-us-v12
 ```
 
-Interactive output uses wall time from startup. Deterministic gameplay checks
-synthesize during accelerated startup and enable capture/output when Mario becomes
-controllable. `--mute` preserves synthesis and timing. Window close finalizes an
+Both configurations use the same wall-clock startup and frame loop. Debug
+records audio only when `--wav` is supplied. `--mute` preserves synthesis and timing. Window close finalizes an
 enabled WAV capture and audio statistics.
 Rendered apps use absolute presentation deadlines. Ocarina of Time additionally
 runs bounded scheduler batches during the remaining interval, sleeping at most
 1 ms between batches. Its audio manager discards duplicate retrace messages;
 servicing VI/AI and task completions during pacing prevents that coalescing
 from starving playback. Its debug executable supports `--audio-trace PATH` for a CSV of
-host timestamps, admitted frames, sample rate, SDL queue bytes and underruns.
+host timestamps, admitted frames, sample rate, SDL queue bytes, underruns
+and the current reserve target.
 `RECOMP_AUDIO_TRACE=PATH` enables the same CSV for any build whose audio config
 does not specify a trace path. When tracing is enabled, stderr also records the
 SDL audio driver, sample rate, device period, prebuffer size and final buffer/

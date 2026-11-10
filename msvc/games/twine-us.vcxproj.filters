@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\twine-us\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\twine-us\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\twine-us\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\twine-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\twine-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\twine-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\twine-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\twine-us\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\twine-us\run.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\twine-us\run.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\twine-us\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -50,12 +41,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{F6DEECCF-1A5A-57CD-967A-A04BDDE7BB7B}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{7E9C9658-6CFB-5B9F-9E23-54483E3AA411}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{C0A60A8D-610E-557A-BEBC-EBFFE99510AA}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

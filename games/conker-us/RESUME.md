@@ -87,7 +87,8 @@ Raw discovery, without the explicit failing runtime boundaries:
   `build/conker-us-debug/intro-stall.rdram.bin` has `0x800be615 = 2` and frame
   counter halfword `0x800beaa8 = 0xffff`. These observations do not yet prove
   the counter's causal role. `RECOMP_DEBUG_QUEUE=0x800bea10` traces that queue;
-  `RECOMP_CONKER_RAM=PATH` retains RAM after a bounded run. Several subsequent
+  The former bounded-run harness retained RAM with `RECOMP_CONKER_RAM=PATH`;
+  current builds use the shared crash snapshot or GDB. Several subsequent
   replays passed the stall point and reached later checked callback failures.
 - Invalid collision-table access at `0x1510e69c` / `0x40000000` was reproduced
   twice. GDB caught `0x150a3a70` returning S0=8 while its saved FPR0 was zero.
@@ -270,7 +271,7 @@ use independent FR=1 floating-point registers.
 
 ## Adapter details
 
-`conker.c` handles boot TLB, polled ROM reads, guest services and demand paging.
+`main.c` handles boot TLB, polled ROM reads, guest services and demand paging.
 Boot maps `0x10000000` to physical zero, with an absent odd 4 MiB half. Services
 initialize after BSS clear at `0x10022790`. First `osStartThread` retires the host
 boot context and enters the actual scheduler. Main entry is `0x15007830`.
@@ -309,7 +310,6 @@ The shared VI mode service clears its initial BLACK state as the SDK does;
 framebuffer swaps retain explicit blanking. Cartridge bus reads preserve the
 low virtual boot/pager mappings.
 
-`debug/analyze_switches.py` reports candidates for review and never edits profiles.
 Keep runtime artifacts ignored and preserve the matching evidence for any new
 failure. Remove task-created scratch artifacts only after recording findings.
 

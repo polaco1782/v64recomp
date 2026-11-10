@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\oot-us-v12\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
+    <ClInclude Include="$(RecompRoot)games\oot-us-v12\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\controls.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -16,24 +16,15 @@
     <None Include="$(RecompRoot)games\oot-us-v12\controls_analysis.py">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="$(RecompRoot)games\oot-us-v12\debug\analyze_callbacks.py">
-      <Filter>Source Files\debug</Filter>
-    </None>
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\app.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\debug\controls_check.c">
-      <Filter>Source Files\debug</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClInclude Include="$(RecompRoot)games\oot-us-v12\hooks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\jpeg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\oot-us-v12\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\overlays.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,9 +34,6 @@
     <None Include="$(RecompRoot)games\oot-us-v12\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\oot-us-v12\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\oot-us-v12\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -71,12 +59,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{D48DA1DA-5A78-5FC0-9EFB-83AFF5C961DA}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{3E8B6C31-39CB-55A1-A308-CC10BA203F9E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{854A2B5B-06A8-57F8-8235-B3653A53B256}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

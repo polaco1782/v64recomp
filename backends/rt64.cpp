@@ -17,6 +17,7 @@
 #undef Status
 #endif
 #include <array>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdio>
@@ -26,11 +27,23 @@
 #include <thread>
 #include <stdexcept>
 
+extern "C" void recomp_rt64_set_anamorphic_present(bool enabled);
+
+static std::string texture_dump_directory;
+
+void recomp_renderer_configure_texture_dump(const char *directory) {
+    texture_dump_directory = directory ? directory : "";
+}
+
 struct RecompRenderer {
     Runtime *rt;
     uint32_t code = 0, data = 0, list = 0;
     RecompGraphicsHook graphics_hook = nullptr;
     RecompMicrocodeHook microcode_hook = nullptr;
+    void (*fov_hook)(int) = nullptr;
+    bool (*aspect_hook)(void *, float) = nullptr;
+    void *aspect_opaque = nullptr;
+    bool expanded_aspect = false;
     bool custom_gbi = false;
     bool raw_rdp = false, raw_vi = false;
     std::thread::id owner = std::this_thread::get_id();
@@ -59,6 +72,9 @@ struct RecompRenderer {
     SDL_Window *window = nullptr;
     std::unique_ptr<RecompInput, decltype(&recomp_input_destroy)> input{nullptr, recomp_input_destroy};
     bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
+    bool keyboard_c_buttons = false;
+    bool gamepad_camera = false;
+    RecompCameraStick camera_stick{};
     RecompMouseFrame mouse_frame{};
     explicit RecompRenderer(Runtime *runtime) : rt(runtime) {}
     void check_owner() {
@@ -89,8 +105,7 @@ struct RecompRenderer {
         // mode starts at that base, preserving modes with a scanline offset.
         const RT64::VI decoded = app->core.decodeVI();
         const RecompViState guest = recomp_vi_state(rt);
-        if (decoded.visible() && guest.framebuffer &&
-            vi.origin == recomp_ram_address(rt, guest.framebuffer, 1)) {
+        if (decoded.visible() && guest.framebuffer && vi.origin == recomp_ram_address(rt, guest.framebuffer, 1)) {
             const uint32_t rowOffset = vi.origin - decoded.fbAddress();
             if (rowOffset && uint64_t(vi.origin) + rowOffset < rt->rdram_size)
                 vi.origin += rowOffset;
@@ -128,8 +143,7 @@ static int menu_event_filter(void *opaque, SDL_Event *event) {
     // Owner shortcuts must reach the app before RT64 consumes them (notably
     // F4, which otherwise opens the replacements inspector instead of recapturing).
     if (s->mouse_enabled && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) &&
-        (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE ||
-         event->key.keysym.scancode == SDL_SCANCODE_F4 ||
+        (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE || event->key.keysym.scancode == SDL_SCANCODE_F4 ||
          event->key.keysym.scancode == SDL_SCANCODE_F10))
         return 1;
     // F12 must reach the shared menu even when RT64's inspector captures keys.
@@ -248,8 +262,10 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         return nullptr;
     }
     auto s = std::make_unique<RecompRenderer>(rt);
+    const char *deck_setting = std::getenv("RECOMP_STEAM_DECK");
+    const bool steam_deck = deck_setting && !std::strcmp(deck_setting, "1");
     s->window = SDL_CreateWindow(window_title ? window_title : "Native N64 recompilation", SDL_WINDOWPOS_CENTERED,
-                                 SDL_WINDOWPOS_CENTERED, 1280, 960, SDL_WINDOW_RESIZABLE);
+                                 SDL_WINDOWPOS_CENTERED, 1280, steam_deck ? 800 : 960, SDL_WINDOW_RESIZABLE);
     SDL_SysWMinfo wm{};
     SDL_VERSION(&wm.version);
 #ifdef _WIN32
@@ -320,9 +336,11 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         s->app->userConfig.resolutionMultiplier = 4.0;
         s->app->userConfig.antialiasing = RT64::UserConfiguration::Antialiasing::MSAA4X;
         s->app->userConfig.threePointFiltering = false;
-        // Start with the game's original view; F7 can enable expansion.
-        s->app->userConfig.aspectRatio = RT64::UserConfiguration::AspectRatio::Original;
-        s->app->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Original;
+        // Deck packages expand to the built-in 16:10 screen; F7 still toggles it.
+        using AspectRatio = RT64::UserConfiguration::AspectRatio;
+        s->expanded_aspect = steam_deck;
+        s->app->userConfig.aspectRatio = steam_deck ? AspectRatio::Expand : AspectRatio::Original;
+        s->app->userConfig.extAspectRatio = s->app->userConfig.aspectRatio;
         s->app->userConfig.refreshRate = RT64::UserConfiguration::RefreshRate::Manual;
         s->app->userConfig.refreshRateTarget = 60;
         s->app->enhancementConfig.presentation.mode = RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;
@@ -342,6 +360,8 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
             return nullptr;
         }
         s->ready = true;
+        if (steam_deck)
+            std::fprintf(stderr, "Steam Deck display: 1280x800, expanded aspect ratio\n");
         if (const char *path = std::getenv("RECOMP_FRAME_TRACE"); path && *path) {
             s->frame_trace = std::fopen(path, "wx");
             if (!s->frame_trace)
@@ -363,7 +383,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         std::string romTitle(reinterpret_cast<const char *>(rt->rom + 32), 20);
         while (!romTitle.empty() && (romTitle.back() == ' ' || romTitle.back() == '\0'))
             romTitle.pop_back();
-        s->textureFiles.configure(*s->app->textureCache, romTitle, rt->rdram_size);
+        s->textureFiles.configure(*s->app->textureCache, romTitle, rt->rdram_size, texture_dump_directory);
 #ifdef RECOMP_DEBUG
         if (const char *path = std::getenv("RECOMP_TEXTURE_RAW_DUMP"); path && *path) {
             std::filesystem::create_directories(path);
@@ -423,7 +443,8 @@ void recomp_renderer_destroy(RecompRenderer *s) {
     if (!s)
         return;
     s->check_owner();
-    if (s->mouse_captured) SDL_SetRelativeMouseMode(SDL_FALSE);
+    if (s->mouse_captured)
+        SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_SetEventFilter(nullptr, nullptr);
     s->wait_texture_reload();
     s->cheat_menu.reset();
@@ -448,6 +469,7 @@ void recomp_renderer_destroy(RecompRenderer *s) {
 #endif
     SDL_Window *window = s->window;
     s->app.reset();
+    recomp_rt64_set_anamorphic_present(false);
     RT64::SetRenderHooks(nullptr, nullptr, nullptr);
     active_renderer = nullptr;
     if (s->frame_trace && std::fclose(s->frame_trace))
@@ -500,8 +522,8 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
     s->stats.graphics_tasks++;
     return true;
 }
-bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
-                                const RecompViRegisters *registers, uint32_t framebuffer) {
+bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end, const RecompViRegisters *registers,
+                                uint32_t framebuffer) {
     s->check_owner();
     if (!s->ready || s->token || s->raw_rdp || !registers || end <= start || (start & 7) || (end & 7))
         return false;
@@ -519,6 +541,7 @@ bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
     const uint64_t begin = monotonic_ns();
     const uint64_t cpu_begin = s->rt->timing ? recomp_timing_thread_clock() : 0;
     s->app->processDisplayLists(s->rt->rdram, physical, physical + (end - start), false);
+    s->textureFiles.collect(*s->app->textureCache);
     uint64_t elapsed = monotonic_ns() - begin;
     s->stats.submit_ns += elapsed;
     recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
@@ -548,6 +571,18 @@ void recomp_renderer_mouse_mode(RecompRenderer *s, bool enabled, bool gameplay) 
     s->mouse_enabled = enabled;
     s->mouse_gameplay = gameplay;
 }
+void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
+    s->check_owner();
+    s->keyboard_c_buttons = enabled;
+}
+void recomp_renderer_gamepad_camera_mode(RecompRenderer *s, bool enabled) {
+    s->check_owner();
+    s->gamepad_camera = enabled;
+}
+RecompCameraStick recomp_renderer_camera_stick(RecompRenderer *s) {
+    s->check_owner();
+    return s->camera_stick;
+}
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     s->check_owner();
     RecompMouseFrame frame = s->mouse_frame;
@@ -555,17 +590,48 @@ RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     s->mouse_frame.wheel = 0;
     return frame;
 }
+void recomp_renderer_set_fov_hook(RecompRenderer *s, void (*adjust)(int)) {
+    s->check_owner();
+    s->fov_hook = adjust;
+}
+static void update_native_aspect(RecompRenderer *s) {
+    if (!s->aspect_hook)
+        return;
+    int width, height;
+    SDL_GetWindowSize(s->window, &width, &height);
+    float aspect = s->expanded_aspect && height > 0 ? std::max(4.0f / 3.0f, float(width) / height) : 4.0f / 3.0f;
+    recomp_rt64_set_anamorphic_present(s->aspect_hook(s->aspect_opaque, aspect));
+}
+void recomp_renderer_set_aspect_hook(RecompRenderer *s, bool (*update)(void *, float), void *opaque) {
+    s->check_owner();
+    s->aspect_hook = update;
+    s->aspect_opaque = opaque;
+    {
+        const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+        using AspectRatio = RT64::UserConfiguration::AspectRatio;
+        s->app->userConfig.aspectRatio =
+            update ? AspectRatio::Original : (s->expanded_aspect ? AspectRatio::Expand : AspectRatio::Original);
+        s->app->userConfig.extAspectRatio = s->app->userConfig.aspectRatio;
+    }
+    s->app->updateUserConfig(true);
+    recomp_rt64_set_anamorphic_present(false);
+    update_native_aspect(s);
+}
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     s->check_owner();
     s->mouse_frame = {};
+    s->camera_stick = {};
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT)
             return false;
         if (s->mouse_enabled && event.type == SDL_KEYDOWN && !event.key.repeat) {
-            if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) s->mouse_released = s->mouse_captured;
-            if (event.key.keysym.scancode == SDL_SCANCODE_F4) s->mouse_released = false;
-            if (event.key.keysym.scancode == SDL_SCANCODE_F10) return false;
+            if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                s->mouse_released = s->mouse_captured;
+            if (event.key.keysym.scancode == SDL_SCANCODE_F4)
+                s->mouse_released = false;
+            if (event.key.keysym.scancode == SDL_SCANCODE_F10)
+                return false;
         }
         if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
             s->mouse_frame = {};
@@ -577,7 +643,8 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         }
         if (event.type == SDL_MOUSEWHEEL && s->mouse_captured) {
             int64_t detents = event.wheel.y;
-            if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) detents = -detents;
+            if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                detents = -detents;
             s->mouse_frame.wheel = recomp_mouse_wheel_sum(s->mouse_frame.wheel, detents);
         }
         s->cheat_menu->event(event);
@@ -590,6 +657,18 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         }
         if (s->cheat_menu->captures_input())
             continue;
+        if (event.type == SDL_KEYDOWN && s->fov_hook && (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS) &&
+            (event.key.keysym.scancode == SDL_SCANCODE_KP_PLUS || event.key.keysym.scancode == SDL_SCANCODE_KP_MINUS)) {
+            bool keyboard_captured = false;
+#ifdef RECOMP_DEBUG
+            {
+                const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+                keyboard_captured = s->app->presentQueue->inspector && ImGui::GetIO().WantCaptureKeyboard;
+            }
+#endif
+            if (!keyboard_captured)
+                s->fov_hook(event.key.keysym.scancode == SDL_SCANCODE_KP_PLUS ? 1 : -1);
+        }
         if (event.type == SDL_KEYDOWN && !event.key.repeat && event.key.keysym.scancode == SDL_SCANCODE_F5) {
             s->wait_texture_reload();
             s->textureFiles.refreshAndToggle(*s->app->textureCache);
@@ -599,8 +678,8 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
                 const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
                 using AspectRatio = RT64::UserConfiguration::AspectRatio;
                 auto& config = s->app->userConfig;
-                const bool expand = config.aspectRatio != AspectRatio::Expand;
-                config.aspectRatio = expand ? AspectRatio::Expand : AspectRatio::Original;
+                const bool expand = s->expanded_aspect = !s->expanded_aspect;
+                config.aspectRatio = expand && !s->aspect_hook ? AspectRatio::Expand : AspectRatio::Original;
                 config.extAspectRatio = config.aspectRatio;
                 std::fprintf(stderr, "Aspect ratio: %s\n", expand ? "expanded" : "original");
             }
@@ -622,25 +701,28 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         }
 #endif
     }
+    update_native_aspect(s);
     s->cheat_menu->update();
-    bool capture = s->mouse_enabled && s->mouse_gameplay && !s->mouse_released &&
-                   !s->cheat_menu->captures_input() && (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS);
+    bool capture = s->mouse_enabled && s->mouse_gameplay && !s->mouse_released && !s->cheat_menu->captures_input() &&
+                   (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS);
 #ifdef RECOMP_DEBUG
     {
         const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
-        if (s->app->presentQueue->inspector &&
-            (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard)) capture = false;
+        if (s->app->presentQueue->inspector && (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard))
+            capture = false;
     }
 #endif
     if (capture != s->mouse_captured) {
-        if (SDL_SetRelativeMouseMode(capture ? SDL_TRUE : SDL_FALSE) != 0) capture = false;
+        if (SDL_SetRelativeMouseMode(capture ? SDL_TRUE : SDL_FALSE) != 0)
+            capture = false;
         SDL_GetRelativeMouseState(nullptr, nullptr);
         s->mouse_frame = {};
         trace_frame(s, "mouse_capture", capture);
     }
     s->mouse_captured = capture;
     s->mouse_frame.active = capture;
-    if (!capture) s->mouse_frame = {};
+    if (!capture)
+        s->mouse_frame = {};
     *pad = {};
     pad->connected = true;
     if (s->cheat_menu->captures_input())
@@ -658,34 +740,63 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     const Uint8 *keys = SDL_GetKeyboardState(nullptr);
     if (!s->mouse_enabled && keys[SDL_SCANCODE_ESCAPE])
         return false;
+    if (s->keyboard_c_buttons) {
+        if (keys[SDL_SCANCODE_UP])
+            pad->buttons |= 0x0008;
+        if (keys[SDL_SCANCODE_DOWN])
+            pad->buttons |= 0x0004;
+        if (keys[SDL_SCANCODE_LEFT])
+            pad->buttons |= 0x0002;
+        if (keys[SDL_SCANCODE_RIGHT])
+            pad->buttons |= 0x0001;
+    }
+    pad->stick_x = (keys[s->keyboard_c_buttons ? SDL_SCANCODE_D : SDL_SCANCODE_RIGHT] -
+                    keys[s->keyboard_c_buttons ? SDL_SCANCODE_A : SDL_SCANCODE_LEFT]) *
+                   80;
+    pad->stick_y = (keys[s->keyboard_c_buttons ? SDL_SCANCODE_W : SDL_SCANCODE_UP] -
+                    keys[s->keyboard_c_buttons ? SDL_SCANCODE_S : SDL_SCANCODE_DOWN]) *
+                   80;
     if (s->mouse_enabled) {
         // Menus retain directional navigation; WASD in gameplay travels through
         // the game's adapter rather than becoming a second analog stick.
-        if (keys[SDL_SCANCODE_RETURN]) pad->buttons |= 0x8000;
-        if (keys[SDL_SCANCODE_TAB]) pad->buttons |= 0x1000;
-        if (keys[SDL_SCANCODE_E]) pad->buttons |= 0x4000;
-        if (keys[SDL_SCANCODE_Q]) pad->buttons |= 0x8000;
-        if (keys[SDL_SCANCODE_R]) pad->buttons |= 0x4000;
+        if (keys[SDL_SCANCODE_RETURN])
+            pad->buttons |= 0x8000;
+        if (keys[SDL_SCANCODE_TAB])
+            pad->buttons |= 0x1000;
+        if (keys[SDL_SCANCODE_E])
+            pad->buttons |= 0x4000;
+        if (keys[SDL_SCANCODE_Q])
+            pad->buttons |= 0x8000;
+        if (keys[SDL_SCANCODE_R])
+            pad->buttons |= 0x4000;
         if (capture) {
             Uint32 buttons = SDL_GetMouseState(nullptr, nullptr);
-            if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) pad->buttons |= 0x2000;
-            if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) pad->buttons |= 0x0010;
+            if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
+                pad->buttons |= 0x2000;
+            if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT))
+                pad->buttons |= 0x0010;
             s->mouse_frame.move_x = keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A];
             s->mouse_frame.move_y = keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S];
-            if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) s->mouse_frame.actions |= RECOMP_MOUSE_ATTACK;
-            if (keys[SDL_SCANCODE_SPACE]) s->mouse_frame.actions |= RECOMP_MOUSE_JUMP;
-            if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) s->mouse_frame.actions |= RECOMP_MOUSE_SECONDARY_ATTACK;
+            if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
+                s->mouse_frame.actions |= RECOMP_MOUSE_ATTACK;
+            if (keys[SDL_SCANCODE_SPACE])
+                s->mouse_frame.actions |= RECOMP_MOUSE_JUMP;
+            if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT))
+                s->mouse_frame.actions |= RECOMP_MOUSE_SECONDARY_ATTACK;
             if (keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT])
                 s->mouse_frame.actions |= RECOMP_MOUSE_SPEED;
-            if (keys[SDL_SCANCODE_Q]) s->mouse_frame.actions |= RECOMP_MOUSE_NEXT_WEAPON;
-            if (keys[SDL_SCANCODE_R]) s->mouse_frame.actions |= RECOMP_MOUSE_PREVIOUS_WEAPON;
-            if (keys[SDL_SCANCODE_E]) s->mouse_frame.actions |= RECOMP_MOUSE_USE;
-            if (keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL]) s->mouse_frame.actions |= RECOMP_MOUSE_DEFEND;
-            if (keys[SDL_SCANCODE_F]) s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
+            if (keys[SDL_SCANCODE_Q])
+                s->mouse_frame.actions |= RECOMP_MOUSE_NEXT_WEAPON;
+            if (keys[SDL_SCANCODE_R])
+                s->mouse_frame.actions |= RECOMP_MOUSE_PREVIOUS_WEAPON;
+            if (keys[SDL_SCANCODE_E])
+                s->mouse_frame.actions |= RECOMP_MOUSE_USE;
+            if (keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL])
+                s->mouse_frame.actions |= RECOMP_MOUSE_DEFEND;
+            if (keys[SDL_SCANCODE_F])
+                s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
         }
-        pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;
-        pad->stick_y = (keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * 80;
-        recomp_input_poll(s->input.get(), pad);
+        recomp_input_poll(s->input.get(), pad, s->gamepad_camera ? &s->camera_stick : nullptr);
         return true;
     }
     const struct {
@@ -699,13 +810,11 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     for (const auto& binding : bindings)
         if (keys[binding.key])
             pad->buttons |= binding.button;
-    pad->stick_x = (keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]) * 80;
-    pad->stick_y = (keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * 80;
     if (pad->stick_x && pad->stick_y) {
         pad->stick_x = pad->stick_x * 7 / 10;
         pad->stick_y = pad->stick_y * 7 / 10;
     }
-    recomp_input_poll(s->input.get(), pad);
+    recomp_input_poll(s->input.get(), pad, s->gamepad_camera ? &s->camera_stick : nullptr);
     return true;
 }
 #ifdef RECOMP_DEBUG

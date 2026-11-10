@@ -92,7 +92,7 @@ def write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 
 
-def validate_hook_prefix(rom: bytes, offset: int, address: int, available: int, hook: dict) -> int:
+def validate_recomp_prefix(rom: bytes, offset: int, address: int, available: int, hook: dict) -> int:
     """Verify a replacement's explicit entry address and optional ROM fingerprint."""
     if hook.get('vram', address) != address:
         raise RecompError(f"hook address mismatch: {hook['symbol']}")

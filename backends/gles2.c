@@ -30,6 +30,10 @@ static bool authenticate(Runtime *rt, uint32_t address, uint32_t bytes, const ch
         snprintf(hex + i * 2, 3, "%02x", digest[i]);
     return !strcmp(hex, expected);
 }
+void recomp_renderer_configure_texture_dump(const char *directory) {
+    if (directory)
+        recomp_fail("texture dumping is not implemented in GLES2", 0);
+}
 RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data, const char *title) {
     (void)data;
     RecompRenderer *s = calloc(1, sizeof(*s));

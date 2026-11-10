@@ -369,18 +369,18 @@ bool recomp_ai_set_output(Runtime *rt, const RecompAiOutput *output) {
     return true;
 }
 
-void hook_os_ai_get_length(Runtime *rt, MipsContext *ctx) {
+void recomp_os_ai_get_length(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompAiState state = recomp_ai_state(rt);
     mips_set(ctx, 2, state.length);
 }
-void hook_os_ai_get_status(Runtime *rt, MipsContext *ctx) {
+void recomp_os_ai_get_status(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompAiState state = recomp_ai_state(rt);
     mips_set(ctx, 2,
              mips_s32((state.queued ? UINT32_C(0x40000000) : 0) | (state.queued == 2 ? UINT32_C(0x80000000) : 0)));
 }
-void hook_os_ai_set_next_buffer(Runtime *rt, MipsContext *ctx) {
+void recomp_os_ai_set_next_buffer(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     if (!p->initialized)
@@ -410,7 +410,7 @@ void hook_os_ai_set_next_buffer(Runtime *rt, MipsContext *ctx) {
     result(ctx, 0);
 }
 
-void hook_os_ai_set_frequency(Runtime *rt, MipsContext *ctx) {
+void recomp_os_ai_set_frequency(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     if (!p->initialized)
@@ -457,7 +457,7 @@ void hook_os_ai_set_frequency(Runtime *rt, MipsContext *ctx) {
     result(ctx, (int32_t)p->ai.frequency);
 }
 
-void hook_os_initialize(Runtime *rt, MipsContext *ctx) {
+void recomp_os_initialize(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     if (p->initialized)
@@ -487,11 +487,11 @@ void hook_os_initialize(Runtime *rt, MipsContext *ctx) {
     /* Exceptions/TLB/cache operations are replaced at the OS boundary. No
      * emulated exception vector or privileged CPU state is installed. */
 }
-void hook_os_get_mem_size(Runtime *rt, MipsContext *ctx) {
+void recomp_os_get_mem_size(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     result(ctx, (int32_t)rt->rdram_size);
 }
-void hook_leo_drive_exist(Runtime *rt, MipsContext *ctx) {
+void recomp_leo_drive_exist(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     (void)rt;
     result(ctx, 0); /* No 64DD device is attached to the native platform. */
@@ -510,15 +510,15 @@ static void rom_handle(Runtime *rt, MipsContext *ctx, uint32_t handle, bool driv
     }
     result(ctx, (int32_t)handle);
 }
-void hook_os_cart_rom_init(Runtime *rt, MipsContext *ctx) {
+void recomp_os_cart_rom_init(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     rom_handle(rt, ctx, platform(rt)->config.cart_handle, false);
 }
-void hook_os_drive_rom_init(Runtime *rt, MipsContext *ctx) {
+void recomp_os_drive_rom_init(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     rom_handle(rt, ctx, platform(rt)->config.drive_handle, true);
 }
-void hook_os_epi_read_io(Runtime *rt, MipsContext *ctx) {
+void recomp_os_epi_read_io(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t handle = arg(ctx, 0), offset = arg(ctx, 1);
     if (recomp_load(rt, handle + 12, 4) != UINT32_C(0xb0000000) || offset % 4 || !rom_range(rt, &offset, 4)) {
@@ -531,7 +531,7 @@ void hook_os_epi_read_io(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, arg(ctx, 2), value, 4);
     result(ctx, 0);
 }
-void hook_os_epi_start_dma(Runtime *rt, MipsContext *ctx) {
+void recomp_os_epi_start_dma(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     uint32_t handle = arg(ctx, 0), mb = arg(ctx, 1);
@@ -546,7 +546,7 @@ void hook_os_epi_start_dma(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, mb + 20, handle, 4);
     result(ctx, submit_pi(rt, mb));
 }
-void hook_os_create_vi_manager(Runtime *rt, MipsContext *ctx) {
+void recomp_os_create_vi_manager(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     (void)ctx;
     RecompPlatform *p = platform(rt);
@@ -559,7 +559,7 @@ void hook_os_create_vi_manager(Runtime *rt, MipsContext *ctx) {
     p->vi.black = true;
     p->next_vi = now + p->config.vi_period_ticks;
 }
-void hook_os_vi_set_mode(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_set_mode(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     recomp_ram_address(rt, arg(ctx, 0), 80);
@@ -578,19 +578,19 @@ static float vi_scale(MipsContext *ctx) {
         recomp_fail("invalid VI scale factor", ctx->pc);
     return value;
 }
-void hook_os_vi_set_x_scale(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_set_x_scale(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     platform(rt)->vi.x_factor = vi_scale(ctx);
 }
-void hook_os_vi_set_y_scale(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_set_y_scale(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     platform(rt)->vi.y_factor = vi_scale(ctx);
 }
-void hook_os_vi_black(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_black(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     platform(rt)->vi.black = (uint8_t)arg(ctx, 0) != 0;
 }
-void hook_os_vi_set_special_features(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_set_special_features(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     uint32_t flags = arg(ctx, 0), bits[] = {8, 4, 16, UINT32_C(0x10000)};
@@ -605,7 +605,7 @@ void hook_os_vi_set_special_features(Runtime *rt, MipsContext *ctx) {
     if (flags & 0x80)
         p->vi.special_features |= p->mode_ctrl & UINT32_C(0x300);
 }
-void hook_os_vi_set_event(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_set_event(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     p->vi_queue = arg(ctx, 0);
@@ -613,27 +613,27 @@ void hook_os_vi_set_event(Runtime *rt, MipsContext *ctx) {
     p->vi.retrace_count = (uint16_t)arg(ctx, 2);
     p->retrace_phase = 0;
 }
-void hook_os_vi_swap_buffer(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_swap_buffer(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     /* The SDK records the pending pointer even while VI output is black. */
     platform(rt)->vi.framebuffer = arg(ctx, 0);
 }
-void hook_os_vi_get_current_framebuffer(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_get_current_framebuffer(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     result(ctx, (int32_t)platform(rt)->vi.current_framebuffer);
 }
-void hook_os_vi_get_next_framebuffer(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_get_next_framebuffer(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     result(ctx, (int32_t)platform(rt)->vi.framebuffer);
 }
-void hook_os_vi_get_current_mode(Runtime *rt, MipsContext *ctx) {
+void recomp_os_vi_get_current_mode(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t mode = platform(rt)->vi.mode;
     if (!mode)
         recomp_fail("VI mode query before mode selection", ctx->pc);
     result(ctx, (int32_t)recomp_load(rt, mode, 1));
 }
-void hook_os_create_pi_manager(Runtime *rt, MipsContext *ctx) {
+void recomp_os_create_pi_manager(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     if (p->pi_created)
@@ -642,12 +642,12 @@ void hook_os_create_pi_manager(Runtime *rt, MipsContext *ctx) {
     p->pi_queue = arg(ctx, 1);
     p->pi_created = true;
 }
-void hook_os_pi_get_cmd_queue(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pi_get_cmd_queue(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     mips_set(ctx, 2, mips_s32(p->pi_created ? p->pi_queue : 0));
 }
-void hook_os_pi_start_dma(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pi_start_dma(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompPlatform *p = platform(rt);
     if (!p->pi_created || arg(ctx, 2) != 0) {
@@ -671,7 +671,7 @@ void hook_os_pi_start_dma(Runtime *rt, MipsContext *ctx) {
     recomp_store(rt, mb + 16, size, 4);
     result(ctx, submit_pi(rt, mb));
 }
-void hook_os_pi_raw_read_io(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pi_raw_read_io(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t offset = arg(ctx, 0);
     if (offset % 4 || !rom_range(rt, &offset, 4)) {
@@ -685,7 +685,7 @@ void hook_os_pi_raw_read_io(Runtime *rt, MipsContext *ctx) {
     result(ctx, 0);
 }
 
-void hook_os_pi_raw_start_dma(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pi_raw_start_dma(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t direction = arg(ctx, 0), offset = arg(ctx, 1), address = arg(ctx, 2), size = arg(ctx, 3);
     if (direction > 1 || !size) {
@@ -705,7 +705,7 @@ void hook_os_pi_raw_start_dma(Runtime *rt, MipsContext *ctx) {
     result(ctx, 0);
 }
 
-void hook_os_pi_get_status(Runtime *rt, MipsContext *ctx) {
+void recomp_os_pi_get_status(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     /* Native cartridge copies finish before their submitting guest resumes. */
     (void)platform(rt);

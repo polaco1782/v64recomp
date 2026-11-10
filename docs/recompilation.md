@@ -56,18 +56,13 @@ VR4300 branch-and-link instructions write `ra = PC + 8` even when untaken.
 Discovery therefore treats `BLTZAL $zero` as address materialization, without
 following its unreachable destination into possible inline data. Translation
 evaluates the condition before updating `ra` and preserves likely delay-slot
-annulment. The synthetic execution check covers all four link branches, both
-outcomes, delay-slot reads of the link, and a predicate reading the old `ra`:
-`.venv/bin/python tools/check_branch_link.py --build build/re2-us-v1-debug`.
-Use any existing CMake runtime build; the check runs at `-O0` and `-O2` without a ROM.
+annulment.
 
 Word arithmetic right shifts use SSE2 when `USE_INTRISICS=1`; the fallback uses
 unsigned subtraction to extend the sign. Both paths truncate to 32 bits before
-shifting and mask variable counts to five bits. The SM64
-`games/sm64-us/debug/check_physics.py` regression exercises these shifts and
-packed signed physics parameters at optimized and unoptimized settings. It
-guards against an MSVC optimization failure in the former conditional sign-fill
-implementation, which could retain a packed word's sign after `SLL 16; SRA 16`.
+shifting and mask variable counts to five bits. This avoids an MSVC optimization
+failure in the former conditional sign-fill implementation, which could retain
+a packed word's sign after `SLL 16; SRA 16`.
 
 With `USE_INTRISICS=1`, MSVC x64 uses `__emul`/`__emulu` for word
 multiplication and `_mul128`/`_umul128` for doubleword multiplication. Compilers
@@ -75,13 +70,6 @@ with `__int128` use native 128-bit products for doublewords. Word operations
 still ignore the upper input halves and sign-extend each 32-bit HI/LO result;
 doubleword operations retain all 128 product bits. `USE_INTRISICS=0` keeps the
 portable implementations, including the four-limb doubleword product.
-
-Run `python tools/check_multiply.py --cc cl` from a Developer PowerShell, or
-`python3 tools/check_multiply.py --cc clang` on Linux, to check both modes at
-unoptimized and optimized settings. The ROM-free fixtures compare all four
-multiply operations against Python integer products across signed boundaries,
-limb carries, ignored upper word halves, and deterministic random operands.
-They also verify that only HI and LO change.
 
 Signed `ADD`/`ADDI`, `DADD`, and `SUB` use compiler overflow builtins with
 GCC/Clang when `USE_INTRISICS=1`. MSVC x64 uses `_add_overflow_i32`,
@@ -91,11 +79,6 @@ onwards; older MSVC versions and `USE_INTRISICS=0` retain the unsigned
 arithmetic/sign-bit fallback. Overflow still stops through `recomp_fail`
 before the destination register is written. These intrinsics test signed
 overflow, including cases where the unsigned carry/borrow flag differs.
-
-Run `python tools/check_overflow.py --cc cl` from a Developer PowerShell, or
-`python3 tools/check_overflow.py --cc clang` on Linux. Both modes and optimization
-levels are checked against Python integer results and signed limits, including
-the exact failure message/address and preservation of the destination on a trap.
 
 Indirect transfers need additional information. A direct `jal` instruction
 encodes its destination, while `jalr` takes a destination from a register.
@@ -110,10 +93,7 @@ paths to run before every separately loaded module is converted. The taken call
 still uses the compiled registry and its loaded-section checks; an unavailable
 target fails at that call. These declarations do not seed speculative entries or
 authorize native replacements, and complete code inventories cannot use them.
-`coverage.json` lists the retained sites separately. Run
-`tools/check_registered_calls.py --build <existing-build>` to verify untaken
-branches, delay slots, loaded/unloaded dispatch and rejected fingerprints with a
-synthetic ROM. On Windows run it from Developer PowerShell against an MSVC build.
+`coverage.json` lists the retained sites separately.
 
 Handwritten assembly can materialize a local return address before jumping or
 conditionally branching into a shared helper. `discovery.tail_continuations`
@@ -145,8 +125,9 @@ code, function pointers, computed addresses and data that decodes as valid MIPS
 instructions can leave ambiguities. Discovery reports unresolved transfers,
 conflicting instruction ownership and unvisited ranges for review.
 
-[Ocarina of Time's callback analyzer](../games/oot-us-v12/debug/analyze_callbacks.py)
-uses shared pointer and address-materialization scans to propose missing roots.
+[The shared callback inspector](../tools/inspect_callbacks.py) and
+[function candidate inspector](../tools/inspect_function_candidates.py)
+use pointer and address-materialization scans to propose missing roots.
 Proposals retain their source sites and fingerprints for review, followed by
 another discovery pass to validate ownership and indirect transfers.
 
@@ -195,6 +176,24 @@ Guest addresses remain N64 addresses. The runtime maps them into its RDRAM
 buffer, handles supported address aliases and game-specific mappings, and checks
 memory access ranges. Floating-point helpers preserve the required guest
 rounding and register behavior. See [floating point](fpu.md) for details.
+
+On little-endian Release builds, the emitter shares direct-RAM checks across
+consecutive loads/stores with stable base registers. It checks the complete
+access span for each base before using physical RDRAM offsets, retaining the
+original access order, word-swapped layout and overlapping-buffer behavior.
+If any span leaves the first 8 MiB of KSEG0/KSEG1, the whole group uses its
+original helpers, including mapped-address and device callbacks. This retains
+the existing Release assumption of aligned, valid guest RAM accesses; Debug
+keeps the checked helpers and instruction tracking for every access.
+
+Groups contain 4–16 consecutive memory instructions, with at least two accesses
+per base on average and a maximum 256-byte span per base. Calls, arithmetic,
+branches, delay slots, relocated operands, checked continuations, instruction
+gaps and interior entry points split groups. A group cannot modify any of its
+base registers. Live-resume bodies keep their original helpers because every
+instruction can be an entry point. These limits bound duplicated fallback code
+and avoid carrying an address proof across changes to registers or mappings.
+See [GoldenEye timing results](profiling.md#goldeneye-address-specialization-timing-2026-11-04).
 
 ### 4. Connect the compiled game to native services
 

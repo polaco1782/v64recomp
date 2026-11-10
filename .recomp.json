@@ -1,0 +1,28 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "GoldenEye 007",
+  "system": "N64",
+  "type": "recomp",
+  "original": {
+    "region": "USA",
+    "sha1": "a963ea5308a4dda41354bca7751446248302a099"
+  },
+  "project": "v64recomp",
+  "status": "in-progress",
+  "targets": ["Windows", "Linux"],
+  "toolchain": ["V64recomp", "RT64"],
+  "approach": "Static MIPS-to-C recompilation with a shared native runtime and RT64 Vulkan rendering.",
+  "maintainers": [
+    {
+      "name": "polaco1782",
+      "link": "https://github.com/polaco1782"
+    }
+  ],
+  "links": [
+    {
+      "label": "Game support and known gaps",
+      "url": "https://github.com/polaco1782/v64recomp/blob/master/docs/status.md"
+    }
+  ],
+  "notes": "Multi-game N64 recompilation project. This entry describes GoldenEye 007 US: original startup, menus and playable Dam, with a validated live Dam virtual gamepad/rendering check. Linux Debug/Release and Steam Deck builds pass. CPU inventory is partial and remaining unsupported functions fail explicitly; full-game progression remains unverified. Physical Steam Deck controls, broader widescreen transitions, full-range FOV gameplay and the reported Dam performance drop still need validation or investigation. See the repository for other game-specific milestones. Users supply their own game data."
+}

@@ -1,8 +1,7 @@
 #include "fast3d.h"
 #include <string.h>
 
-enum { F3D_DL = 0x06, F3D_ENDDL = 0xb8, F3D_MOVEWORD = 0xbc, F3D_MW_SEGMENT = 0x06,
-       F3D_STACK_SIZE = 32 };
+enum { F3D_DL = 0x06, F3D_ENDDL = 0xb8, F3D_MOVEWORD = 0xbc, F3D_MW_SEGMENT = 0x06, F3D_STACK_SIZE = 32 };
 
 static uint32_t physical_span(Runtime *rt, uint32_t address, size_t bytes) {
     /* Accept only physical RDRAM and its direct cached/uncached aliases.
@@ -41,8 +40,8 @@ static uint32_t word(Runtime *rt, uint32_t physical) {
     return value;
 }
 
-void recomp_fast3d_walk(Runtime *rt, RecompFast3D *state, uint32_t root, uint32_t max_commands,
-                        RecompFast3DSink sink, void *userdata) {
+void recomp_fast3d_walk(Runtime *rt, RecompFast3D *state, uint32_t root, uint32_t max_commands, RecompFast3DSink sink,
+                        void *userdata) {
     if (!sink || !max_commands || !rt->rdram)
         recomp_fail("invalid Fast3D traversal configuration", root);
     uint32_t returns[F3D_STACK_SIZE], depth = 0;

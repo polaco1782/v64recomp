@@ -1,10 +1,10 @@
 # Banjo-Kazooie US revision 0. All offsets below are original cartridge offsets.
 hooks = [
   # Handwritten bkGetSR: used by the VI worker to test the pre-NMI mask.
-  {symbol = "bkGetSR", vram = 0x8025afe0, kind = "replace_function", handler = "hook_banjo_get_sr", expected_words = [0x40026000, 0x03e00008, 0x00000000]},
+  {symbol = "bkGetSR", vram = 0x8025afe0, kind = "replace_function", handler = "recomp_banjo_get_sr", expected_words = [0x40026000, 0x03e00008, 0x00000000]},
   # The native boot does not execute IPL3 on an RSP. Model its two retained
   # memory words at this game-specific hardware boundary, then use guest DMA.
-  {symbol = "banjo_ucode_load", vram = 0x80255c30, kind = "replace_function", handler = "hook_banjo_ucode_load", expected_words = [0x27bdffe8, 0xafbf0014, 0x3c0ea400, 0x8dcf0000, 0x3c028028, 0x2401ffff, 0x24423384, 0x01e1c026, 0x13000006, 0xac580000, 0x3c038028, 0x24633388, 0x24080001, 0x10000004, 0xac680000, 0x3c038028, 0x24633388, 0xac600000, 0x3c09a400, 0x8d2a1000, 0x3c028028, 0x24423380, 0x394b17d7, 0x11600003, 0xac4b0000, 0x10000002, 0x24020002, 0x00001025, 0x8c6d0000, 0x3c048028, 0x24843280, 0x01a27025, 0x15c00005, 0xac6e0000, 0x3c05b000, 0x34a50b70, 0x0c09017c, 0x24060100, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]},
+  {symbol = "banjo_ucode_load", vram = 0x80255c30, kind = "replace_function", handler = "recomp_banjo_ucode_load", expected_words = [0x27bdffe8, 0xafbf0014, 0x3c0ea400, 0x8dcf0000, 0x3c028028, 0x2401ffff, 0x24423384, 0x01e1c026, 0x13000006, 0xac580000, 0x3c038028, 0x24633388, 0x24080001, 0x10000004, 0xac680000, 0x3c038028, 0x24633388, 0xac600000, 0x3c09a400, 0x8d2a1000, 0x3c028028, 0x24423380, 0x394b17d7, 0x11600003, 0xac4b0000, 0x10000002, 0x24020002, 0x00001025, 0x8c6d0000, 0x3c048028, 0x24843280, 0x01a27025, 0x15c00005, 0xac6e0000, 0x3c05b000, 0x34a50b70, 0x0c09017c, 0x24060100, 0x8fbf0014, 0x27bd0018, 0x03e00008, 0x00000000]},
 ]
 [game]
 name = "Banjo-Kazooie (US, revision 0)"
@@ -24,9 +24,107 @@ entry_inventory = "startup-entries.json"
 allow_registered_indirect_calls = true
 regions = [{name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0x4e70}]
 roots = [{name = "core1_main", vram = 0x8023da20}]
+# spawnQueue_reset calls the active fight overlay's entry at a shared address.
+# Intro also has an independent sequence callback at 0x803863f0. Preserve the
+# ROM call and select its uniquely loaded registry entry at runtime.
+registered_direct_calls = [
+  {section = ".core2", pc = 0x802c384c, expected_word = 0x0c0e18fc, target = 0x803863f0},
+]
+function_tables = [
+  # Hitbox collision predicates: 0x8033d410 loops exactly eleven times,
+  # indexes eight-byte records, and compares the callback result to +4.
+  {section = ".core2", pc = 0x8033d4c0, expected_word = 0x0320f809, table_vram = 0x80371dc0, count = 22, indices = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20], sha256 = "0ca7672dad2c14164b999b58482d5ad3ca5bf317d316f64057602693a937771f"},
+  # Marker-model mesh lifecycle. Producer 0x8034bff8 maps mesh UID ranges
+  # 101..999 to constant IDs0..8 and stores the ID byte at vector element +0.
+  # Update/free read that byte; nine three-word constructor/update/free rows.
+  {section = ".core2", pc = 0x8034bf38, expected_word = 0x0320f809, table_vram = 0x80371fc0, count = 27, indices = [0, 3, 6, 9, 12, 15, 18, 21, 24], sha256 = "2884b61bfec8b430c0b4e681c15009dae3ff36eff3480ce96252d3ea339e7e9b"},
+  {section = ".core2", pc = 0x8034c290, expected_word = 0x0320f809, table_vram = 0x80371fc0, count = 27, indices = [1, 4, 7, 10, 13, 16, 19, 22, 25], sha256 = "2884b61bfec8b430c0b4e681c15009dae3ff36eff3480ce96252d3ea339e7e9b"},
+  {section = ".core2", pc = 0x8034bfb8, expected_word = 0x0320f809, table_vram = 0x80371fc0, count = 27, indices = [2, 5, 8, 11, 14, 17, 20, 23, 26], sha256 = "2884b61bfec8b430c0b4e681c15009dae3ff36eff3480ce96252d3ea339e7e9b"},
+  # Six node-property records. Consumers walk [base, base+0x78) in 0x14
+  # strides and call nonnull +8/+0xc; every +0x10 cleanup field is null.
+  {section = ".core2", pc = 0x803223f0, expected_word = 0x0040f809, table_vram = 0x8036de00, count = 30, indices = [2, 7, 12, 17, 22, 27], sha256 = "2a6f0afdc358d4a68b906de2b2fac82425825d62374ad58bc89b887d809131ad"},
+  {section = ".core2", pc = 0x803224d0, expected_word = 0x0040f809, table_vram = 0x8036de00, count = 30, indices = [3, 8, 13], sha256 = "2a6f0afdc358d4a68b906de2b2fac82425825d62374ad58bc89b887d809131ad"},
+  # HUD transition styles: seven 0x18-byte records. The update loop ends
+  # at 0x803697c8; item records select only 0..6 and retain style at +4.
+  {section = ".core2", pc = 0x802fb1f0, expected_word = 0x0320f809, table_vram = 0x80369720, count = 42, indices = [0, 6, 12, 18, 24, 30, 36], sha256 = "3e99fb7e5fdb708691a5038f1981362ee68ddd124ed66993157c7ca96664d375"},
+  {section = ".core2", pc = 0x802fb07c, expected_word = 0x0320f809, table_vram = 0x80369720, count = 42, indices = [1, 7, 13, 19, 25, 31, 37], sha256 = "3e99fb7e5fdb708691a5038f1981362ee68ddd124ed66993157c7ca96664d375"},
+  {section = ".core2", pc = 0x802fb0b0, expected_word = 0x0320f809, table_vram = 0x80369720, count = 42, indices = [2, 8, 14, 20, 26, 32, 38], sha256 = "3e99fb7e5fdb708691a5038f1981362ee68ddd124ed66993157c7ca96664d375"},
+  {section = ".core2", pc = 0x802fb144, expected_word = 0x0320f809, table_vram = 0x80369720, count = 42, indices = [3, 9, 15, 21, 27, 33, 39], sha256 = "3e99fb7e5fdb708691a5038f1981362ee68ddd124ed66993157c7ca96664d375"},
+  {section = ".core2", pc = 0x802fb17c, expected_word = 0x0320f809, table_vram = 0x80369720, count = 42, indices = [4, 10, 16, 22, 28, 34, 40], sha256 = "3e99fb7e5fdb708691a5038f1981362ee68ddd124ed66993157c7ca96664d375"},
+  {section = ".core2", pc = 0x802fb1b4, expected_word = 0x0320f809, table_vram = 0x80369720, count = 42, indices = [5, 11, 17, 23, 29, 35, 41], sha256 = "3e99fb7e5fdb708691a5038f1981362ee68ddd124ed66993157c7ca96664d375"},
+  # HUD item lifecycle: four function columns in 44 six-word records. Each
+  # consumer loops exactly 0x2c times with 0x18-byte stride; +0x10 is data,
+  # +0x14 is the mutable instance pointer and neither is a callback.
+  {section = ".core2", pc = 0x802fa6d4, expected_word = 0x0320f809, table_vram = 0x803692f8, count = 264, indices = [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258], sha256 = "42bb408a7f576854b5c5a208685f9ee8f843ad888d07d84601a997e80bbdec3c"},
+  {section = ".core2", pc = 0x802faafc, expected_word = 0x0320f809, table_vram = 0x803692f8, count = 264, indices = [1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79, 85, 91, 97, 103, 109, 115, 121, 127, 133, 139, 145, 151, 157, 163, 169, 175, 181, 187, 193, 199, 205, 211, 217, 223, 229, 235, 241, 247, 253, 259], sha256 = "42bb408a7f576854b5c5a208685f9ee8f843ad888d07d84601a997e80bbdec3c"},
+  {section = ".core2", pc = 0x802fabfc, expected_word = 0x0320f809, table_vram = 0x803692f8, count = 264, indices = [2, 8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 80, 86, 92, 98, 104, 110, 116, 122, 128, 134, 140, 146, 152, 158, 164, 170, 176, 182, 188, 194, 200, 206, 212, 218, 224, 230, 236, 242, 248, 254, 260], sha256 = "42bb408a7f576854b5c5a208685f9ee8f843ad888d07d84601a997e80bbdec3c"},
+  {section = ".core2", pc = 0x802fac78, expected_word = 0x0320f809, table_vram = 0x803692f8, count = 264, indices = [3, 9, 15, 21, 27, 33, 39, 45, 51, 57, 63, 69, 75, 81, 87, 93, 99, 105, 111, 117, 123, 129, 135, 141, 147, 153, 159, 165, 171, 177, 183, 189, 195, 201, 207, 213, 219, 225, 231, 237, 243, 249, 255, 261], sha256 = "42bb408a7f576854b5c5a208685f9ee8f843ad888d07d84601a997e80bbdec3c"},
+  # Mesh-transform callbacks: 0x8034c6dc selects IDs 0..8 for UIDs
+  # 101..1099. The constructor stores the ID at vector element +6;
+  # update/free reuse that byte. Nine 12-byte init/update/free records.
+  {section = ".core2", pc = 0x8034c430, expected_word = 0x0320f809, table_vram = 0x80372030, count = 27, indices = [0, 3, 6, 9, 12, 15, 18, 21, 24], sha256 = "e918dfbdade8da6bb0aa905cd8caffb2afc238ff7d5a0f1f0f47857e743aa0d1"},
+  {section = ".core2", pc = 0x8034ca40, expected_word = 0x0320f809, table_vram = 0x80372030, count = 27, indices = [1, 4, 7, 10, 13, 16, 19, 22, 25], sha256 = "e918dfbdade8da6bb0aa905cd8caffb2afc238ff7d5a0f1f0f47857e743aa0d1"},
+  {section = ".core2", pc = 0x8034c93c, expected_word = 0x0320f809, table_vram = 0x80372030, count = 27, indices = [2, 5, 8, 11, 14, 17, 20, 23, 26], sha256 = "e918dfbdade8da6bb0aa905cd8caffb2afc238ff7d5a0f1f0f47857e743aa0d1"},
+]
 # IDO sltiu bounds, beqz default, sll index,2, lui/addu/lw/jr.
 # Complete table bytes and every local destination checked against decoded images.
 jump_tables = [
+  # Jiggy-shine sprite selector minus 0x3bb: computed in the range-test
+  # branch delay slot, then guarded by unsigned <8 before table scaling.
+  {section = ".core2", pc = 0x80354af0, expected_word = 0x03200008, table_vram = 0x8037948c, count = 8, sha256 = "0201737c9f7acf8a4ba462e6cbfeaba9c2f2e282aba232cea8bd0b7d15b472b6"},
+  # Node-particle opcode minus 0x29: bound <14 before shift; intervening
+  # FP conversions/stores preserve both the index and bounds predicate.
+  {section = ".core2", pc = 0x803633e8, expected_word = 0x03200008, table_vram = 0x80379b50, count = 14, sha256 = "19aa777b83629c8250f882ee3e3a56653446c712606e313d287d7700ec8cc79a"},
+  # Conga and common actor state-minus-one switches, bounded <8 and <10.
+  {section = ".core2", pc = 0x802db6b0, expected_word = 0x01200008, table_vram = 0x80376e90, count = 10, sha256 = "04d71970435631793a5b465506b567b0908e019becea30518ab049314433e237"},
+  {section = ".MM", pc = 0x80387988, expected_word = 0x01c00008, table_vram = 0x80389ba0, count = 8, sha256 = "89f215e925c2ca8fbe7acf1bc4e34120f0d696fc097421d1bbcdb421692becd1"},
+  # Nested player-state switches: checked subtraction and unsigned bound,
+  # preserved index through the branch delay slot, then four-byte table load.
+  {section = ".core2", pc = 0x80296064, expected_word = 0x01c00008, table_vram = 0x803747e0, count = 6, sha256 = "9499a23fd37dc95d5bce9fc768d7e6fadb8b3430e4de00b3169d0ceaa09d842a"},
+  {section = ".core2", pc = 0x8029630c, expected_word = 0x01e00008, table_vram = 0x803747f8, count = 6, sha256 = "f049892f9e3aee16f3a9f160c2f4b45bddd1d902a51dd15c3b10db29390b880d"},
+  {section = ".core2", pc = 0x8029b490, expected_word = 0x01c00008, table_vram = 0x80374d20, count = 5, sha256 = "b558e78a05dfa61aab78d9c192593fc28066100eda666e7ac89a8bc0107c4ba8"},
+  {section = ".core2", pc = 0x8029baac, expected_word = 0x01c00008, table_vram = 0x80374d38, count = 6, sha256 = "34dfbbf9a09f47fbdbda9cd5e5f5466a5456aee8b4b6b80447e92120e09f3420"},
+  {section = ".core2", pc = 0x802c82ec, expected_word = 0x01c00008, table_vram = 0x803763c4, count = 5, sha256 = "5747316a72490661e2c0db7054fabf31ef19480860d2a70f07840dbf0f5eff1e"},
+  # Basic player behavior and interrupt switches: unsigned bounds verified
+  # before table scaling, including interrupt selector minus four.
+  {section = ".core2", pc = 0x80295658, expected_word = 0x01200008, table_vram = 0x803747b0, count = 10, sha256 = "69439fd08fbbf28ef39e47fc3fad21dd7488b7eeee44a53a26d537efe0f2a400"},
+  {section = ".core2", pc = 0x8029664c, expected_word = 0x01e00008, table_vram = 0x803748a4, count = 52, sha256 = "5144fdd4668509b60febaab96378c75dff39b1c93e5293b5103c087549e9b05d"},
+  {section = ".core2", pc = 0x802a9528, expected_word = 0x01c00008, table_vram = 0x803756dc, count = 6, sha256 = "8319d9c602f2f79955d127a9eba69b703f648cb06f6f20f2268d341be6a6a675"},
+  {section = ".core2", pc = 0x802ada5c, expected_word = 0x01c00008, table_vram = 0x8037582c, count = 5, sha256 = "d609151b4f6d2d5487539413891d4d2a063f4249b63010d5dedb7bcfd9a57165"},
+  {section = ".core2", pc = 0x802b6d90, expected_word = 0x01c00008, table_vram = 0x80375ba0, count = 5, sha256 = "5cc6ba557d5746f534bd6ea97835893b6950ec0af43c35bae371a0818287ae8c"},
+  {section = ".core2", pc = 0x8028ea60, expected_word = 0x01e00008, table_vram = 0x803744a8, count = 6, sha256 = "a354dc2ef925ab74afbcc36617648fcbde8cd427642cb1f37e539053df5fa7d5"},
+  {section = ".core2", pc = 0x802d9244, expected_word = 0x01c00008, table_vram = 0x80376dc0, count = 7, sha256 = "c041e0891cc8fa7ae240de71903f96f97ca5c384ac5a7ac92c2c3d491f48bf7d"},
+  # Actor/player state switches: each sltiu bound applies to the shifted
+  # table index (including the checked state subtraction) before jr.
+  {section = ".core2", pc = 0x8028e9e4, expected_word = 0x01c00008, table_vram = 0x80374490, count = 6, sha256 = "3ecac7bbc62e8a6e094a444afe10aa59d965d73bcbd43b0fa36b091701710f11"},
+  {section = ".core2", pc = 0x802c4f08, expected_word = 0x01200008, table_vram = 0x80376140, count = 6, sha256 = "5abd17b1252740a7949fddfaca7a7d1ec9f318a9e7e7f987b4fdeae63db15814"},
+  {section = ".core2", pc = 0x802c62dc, expected_word = 0x01600008, table_vram = 0x803761d0, count = 15, sha256 = "3fbf6598e6a4089b284d70567461a18dabd5b0e773847823b289fc7545dce75d"},
+  {section = ".core2", pc = 0x802c7edc, expected_word = 0x01200008, table_vram = 0x80376308, count = 24, sha256 = "95cba4e2d812a445b8b9d46830ba6b02158c3d2a97b91fcdc0108656d7ece6bc"},
+  {section = ".core2", pc = 0x802c8160, expected_word = 0x01000008, table_vram = 0x803763b0, count = 5, sha256 = "ddea0ef088d2bc0f1f01c8925766a2f35672e34e185466dff1de3335c2c8bc9d"},
+  {section = ".core2", pc = 0x802cdeb4, expected_word = 0x01e00008, table_vram = 0x80376588, count = 8, sha256 = "b720ee7b0d05c8d08846a0c6c0ba986c4011ac4c1afe5f9461b527ea36c4d550"},
+  {section = ".core2", pc = 0x802cfeb0, expected_word = 0x01c00008, table_vram = 0x803765f0, count = 7, sha256 = "b70e893bf37de5785ed3ace80ae950bb82ac8afaa69998736ad21bc456374e3f"},
+  {section = ".core2", pc = 0x802d1768, expected_word = 0x01c00008, table_vram = 0x80376670, count = 5, sha256 = "5407c2df61774eabca918f6479aa4cce6a1c25176ff3302345ce585f2f076c08"},
+  {section = ".core2", pc = 0x802d1f24, expected_word = 0x01600008, table_vram = 0x803766a8, count = 9, sha256 = "12c9878131b78ec2d6d0e9acc3f6d85dae98e429a0af548665e3a16474d9d6a2"},
+  {section = ".core2", pc = 0x802d85fc, expected_word = 0x01600008, table_vram = 0x80376d80, count = 5, sha256 = "a5d36756ed1ef521455344c3b06bff0a0d7d6cf88c16616aa84cdb1589d5e6e8"},
+  {section = ".core2", pc = 0x802de79c, expected_word = 0x01600008, table_vram = 0x80376f80, count = 5, sha256 = "6af32c0e9839f64757ce3094183ca5136fb70031e89504e765da495a795d591e"},
+  {section = ".core2", pc = 0x802defac, expected_word = 0x03200008, table_vram = 0x80376fa0, count = 5, sha256 = "88a760b07965c4ae8b9a4094db27b32b695590a9772441c8f2e5fd06682fc77e"},
+  {section = ".core2", pc = 0x802e00a4, expected_word = 0x01a00008, table_vram = 0x80377008, count = 9, sha256 = "2dba848176f588e7b9d8c50bb0faf0a84db681913d91deba70da75c4b7cc0354"},
+  {section = ".core2", pc = 0x802e12c0, expected_word = 0x01800008, table_vram = 0x80377054, count = 9, sha256 = "317016223fdd1bb54ee8adb3fd5282419692d3c84140635c8e281148d445ab5b"},
+  {section = ".core2", pc = 0x8031a6b8, expected_word = 0x03200008, table_vram = 0x80378990, count = 6, sha256 = "e36fe1fd3c0513c0828fd3db15a865fe715a254eab14a7538c6f999f0caa55e0"},
+  {section = ".core2", pc = 0x8035ac84, expected_word = 0x01200008, table_vram = 0x8037976c, count = 5, sha256 = "0c47e7ba313f8013ac69d15710b23edaaef9eef4012868cf4e9577659d42c237"},
+  {section = ".core2", pc = 0x8035db70, expected_word = 0x01400008, table_vram = 0x80379878, count = 7, sha256 = "b6f95936386c6d75f1dd6c24d6b88ba500d5b196d8d2a192f695192d16ce3816"},
+  {section = ".core2", pc = 0x80361720, expected_word = 0x03000008, table_vram = 0x80379a90, count = 6, sha256 = "6c5ad80bb72069c96e937841e9fc8200041974c6c3f382904dc4f2723cd9b802"},
+  # Particle-event state minus three, unsigned selector <18 before scaling.
+  {section = ".core2", pc = 0x80362ed0, expected_word = 0x03000008, table_vram = 0x80379ac0, count = 18, sha256 = "dfe8a22693a52e1b7c3e4bdf4595aaf1f4a509e7edef2b2702759fe49a197490"},
+  # Animation/event opcodes: unsigned bounds <5, <7, <7 and <5,
+  # with selector subtraction checked before each scaled table load.
+  {section = ".core2", pc = 0x80288bf0, expected_word = 0x03200008, table_vram = 0x80373e30, count = 5, sha256 = "92975150da3cec7d55bc4e9478e9f67208d475a3f52a6d11fe031982629e92b4"},
+  {section = ".core2", pc = 0x80342344, expected_word = 0x01200008, table_vram = 0x80379000, count = 7, sha256 = "e0f6799d6969e19fa255e3fe01b3bc24e391469ba7081b73046d1f75c4489153"},
+  {section = ".core2", pc = 0x803429f0, expected_word = 0x01600008, table_vram = 0x80379024, count = 7, sha256 = "da5a9b6b4cf23d920afcd1b4fbbaef59fa851ef304fb5740a58a28ee73e95a5f"},
+  {section = ".core2", pc = 0x80342b08, expected_word = 0x01200008, table_vram = 0x80379040, count = 5, sha256 = "5629300b105d06054fec742274efad468fbd7a25164606ab681c9b92ef35562e"},
+  # HUD life-score texture/state switches; each unsigned selector is <5.
+  {section = ".core2", pc = 0x802ff1f4, expected_word = 0x03200008, table_vram = 0x80377418, count = 5, sha256 = "de091fab3ea0abd9db4177a7951716e418d27d2cdf620d7ba5b7f840baf52509"},
+  {section = ".core2", pc = 0x802ffbac, expected_word = 0x01000008, table_vram = 0x80377438, count = 5, sha256 = "bc7f86af58f06ca8e44e480d5f643aa68f9a503a2def4f64bdff80ec89b1cb9e"},
   {section = ".core2", pc = 0x802ba174, expected_word = 0x03000008, table_vram = 0x80375cfc, count = 5, sha256 = "6b19cc532a4fb999cf6619875ee9dc2af370c07c8382a8f831091e6fff6bf435"},
   # NAudio envelope parameter events, bounded selector <17.
   {section = ".core1", pc = 0x80260d1c, expected_word = 0x03200008, table_vram = 0x802787a8, count = 17, sha256 = "f281a1777a83209dd09d92ffa65f4cd81f15dac839592b452bb551daaed66ca8"},
@@ -150,5 +248,13 @@ counter_hz = 46875000
 vi_period_ticks = 781250
 
 [bootstrap.parameters]
+# IPL3 copies ROM [0x4c0,0x768) to physical zero (copy loop 0xa4000498).
+# The perspective path at 0x8024c9c8 checks its retained word at +0x1d8:
+# ROM[0x698] = 0xac2b0010, whose sum with 0x53d4fff0 must be zero.
+0x800001d8 = 0xac2b0010
 0x80000300 = 1
+# Cartridge base and CIC-6103 ID written by IPL3 at 0xa4000708/06dc.
+# baModel_setScale (0x802920fc) quarters the player if the ID differs.
+0x80000308 = 0xb0000000
+0x80000310 = 6103
 0x80000318 = 0x800000

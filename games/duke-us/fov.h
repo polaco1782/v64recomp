@@ -1,5 +1,6 @@
 #pragma once
 #include "runtime.h"
 
-/* Horizontal degrees at the native 4:3 aspect; unset/empty/0 keeps stock. */
-bool duke_fov_configure(const char *setting);
+/* Start at stock; adjustments clamp horizontal degrees to stock..140. */
+void duke_fov_init(void);
+void duke_fov_adjust(int steps);

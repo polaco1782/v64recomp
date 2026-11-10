@@ -13,21 +13,21 @@ cmake --workflow --preset goldeneye-us-debug
 ./build/goldeneye-us-debug/bin/goldeneye-us --help
 ```
 
-`release/` contains the playable app and Release-only sources. `debug/` contains
-the original trace/capture harness and inspection tools. Shared headers, adapters,
-`generate.py`, `profile.toml` and inventories live in this parent directory. Generated C stays under the selected
-build directory, and private ROM/save data stays in `local/`.
+`main.c` contains the shared entry point and lifecycle for Debug and Release.
+Headers, adapters, `generate.py`, `profile.toml`, inventories and maintained
+replay inputs live beside it. Generated code stays under the selected build
+directory; private ROMs and saves stay in `local/`.
 
 `profile.toml` contains the checked `discovery.jump_tables`. `generate.py` resolves
 them from the fingerprinted, decompressed startup data before discovery checks
 their transfer instructions and code targets.
 
-Guest pthreads use the profile's entry-based names: `n64-main`, `n64-idle`,
+Guest fibers use the profile's entry-based diagnostic names: `n64-main`, `n64-idle`,
 `n64-scheduler`, `n64-sound` and `n64-controller`. `n64-sound` runs translated
-sound code; `n64-audio` is the separate native DSP worker. See
+sound code; native DSP synthesis runs synchronously on the main stack. See
 [CPU profiling](../../docs/profiling.md) for thread counters and function samples.
 
-After the first graphics task, both apps service VI/AI deadlines and worker
+After the first graphics task, the common frame loop services VI/AI deadlines and worker
 completions between presentations through `recomp_game_pace`. Generation checks
 the empty idle loop and its `osCreateThread` argument setup before registering
 the idle object with the scheduler. Synthetic-clock bootstrap keeps its bounded
@@ -63,6 +63,155 @@ generations still follows the original fallback and retains the HLE warning.
 The Release executable rebuilt successfully on 2026-10-30. In-game validation
 is left to the user at their request; further testing was waived.
 
+## Combat AI
+
+Shared guard combat now uses the native selector in `ai.c`, enabled by default
+in Debug and Release. Guards choose attacks from distance and line of sight:
+they sprint toward distant targets, favor running fire while advancing, and use
+standing or kneeling fire nearby. Incoming fire can trigger a collision-checked
+sidestep, with a three-second cooldown per guard. Completed idle animations can
+transition into combat; firing, injury and movement animations finish normally.
+The shared attack selector no longer randomly chooses pointing, hops, rolls or
+combat grenades. Weapon accuracy, damage and initial stealth detection retain the
+game's rules.
+
+Ordinary stationary guards now wander along the map's connected navigation
+points at walking speed. They start after a one-to-three-second pause and rest
+for two to five seconds between walks, choosing another direction each time.
+This includes the shared idle-animation list when it returns to ordinary guard
+behavior. A bounded search of up to 64 connected waypoints chooses destinations
+three to fifteen metres away, searching beyond nearby points instead of repeatedly
+selecting the closest point. Failed destinations are retried after one second.
+The original pathfinding handles routes, doors and collision. Roaming guards
+check for Bond while walking; sight, nearby fire, injury and sound investigation
+take priority, including during shared idle behavior. A guard that makes less
+than twenty centimetres of progress in three seconds abandons that route and
+tries another destination; walks also have a thirty-second limit. Existing
+patrols and mission-owned movement keep their assigned routes.
+
+Idle ordinary guards have a separate sneeze timer: the first opportunity is
+after four to eight simulation seconds, followed by ten to fifteen seconds
+between opportunities. Busy animations delay the sneeze until they finish.
+Guards can also sneeze while waiting at an investigated sound's destination.
+The original idle-animation selections remain available.
+
+Guard bullets can damage other guards. A surviving ordinary guard that takes
+bullet damage from another guard finishes its injury reaction, then targets the
+shooter instead of Bond. It can pursue the shooter, returning to normal behavior
+when the shooter dies, leaves the shared guard behavior or stays out of sight
+for ten seconds. Mission-owned and invincible actors keep their original AI.
+
+Weapon noise now uses an eight-metre base range plus 2.5 times the original
+weapon radius, scaled by each guard's hearing. This fixes the previous multiplier
+leaving a suppressed PP7 audible at only about two metres. Bullet impacts create
+fourteen-metre alerts and enlarged explosions 135-metre alerts (forty-five metres
+with original explosion settings); the small explosion effects used for impacts
+retain the shorter range. Ordinary guards, including the shared deaf-guard list,
+interrupt idle activity and investigate a saved snapshot
+of the sound's position and navigation tile. Moving Bond afterward does not move
+that destination. On arrival, guards wait at the sound location until they see
+Bond, hear another sound or the ten-second memory expires. The replacement owns
+this investigation instead of letting the original hearing scripts redirect it
+to Bond. Silence generates no alert; footstep sounds remain unchanged.
+
+Random scenery gunfire has been removed. Idle guards with a free hand can still
+lob grenades toward ordinary crates, cardboard boxes or bins. Tagged mission
+props, attached, destroyed, protected and gunfire-immune objects are excluded.
+The first grenade opportunity is after twenty to forty simulation seconds;
+suitable targets are checked every two seconds while ready. The scan
+chooses among all visible allowed objects ahead within two to twelve metres
+and 1.5 metres of the guard's height. This avoids picking a box first and then
+rejecting the throw when another suitable target was available. Successful
+throws have a random delay of 75 to 125 seconds per guard. Both random
+delays are five times their previous values. The original animation, fuse,
+fixed launch speed, collision and explosion behavior
+handle the grenade; its turning tracks the saved scenery position. These throws
+happen during idle scenery activity, after combat and investigation have ended.
+
+Shared pursuit follows the last seen or heard position for up to ten simulation
+seconds, using the game's sprint mode and collision/navigation checks. It keeps
+an active route and limits replanning to once per second. Guards can reacquire
+Bond while investigating instead of finishing the entire route first. The
+persistent combat list uses the same decisions, removing its random stop/start
+loop. Decisions run at most ten times per simulation second, independently of
+rendering FPS.
+
+Ordinary scientists start attacking when Bond is visible within six metres.
+Unarmed scientists use the original shared TT33 routine to turn, draw a pistol
+and fire; armed scientists enter the shared combat selector immediately. The
+reaction latches so approaching and retreating cannot repeatedly restart the
+draw animation. Dr. Doak stays friendly and keeps his decoder interaction.
+Scientists still count toward the game's civilian-casualty objectives.
+
+Other mission scripts, vehicles and characters observed with invincibility
+retain their translated behavior. Menus, cutscenes, watch, tank gameplay and
+multiplayer also retain the original AI. Set `RECOMP_GOLDENEYE_AI=0` before
+launching to use the original AI throughout, including for comparisons.
+
+Explosions use three times the original visual size and blast/damage radius,
+with the original active duration and fade time. Expansion speed is tripled
+so growing explosions reach the intended larger size over the original lifetime.
+Bullet-impact puffs and debris-only effects retain their original definitions.
+This explosion change also applies outside the AI adapter's on-foot mode; set
+`RECOMP_GOLDENEYE_EXPLOSIONS=0` before launching for original explosion settings.
+
+The wrappers cover `ai` (`0x7f035484`), `ailistFindById` (`0x7f035398`), the
+weapon-noise scan (`0x7f022eec`), prop impacts (`0x7f06441c`), explosion creation
+(`0x7f09c250`), the legacy hearing alert (`0x7f029c00`), target resolution
+(`0x7f032c78`), guard firing (`0x7f02d734`), bullet damage (`0x7f02727c`)
+and the throw's facing-angle helper (`0x7f032bd8`).
+The list lookup catches an attack-list transition inside the interpreter,
+preserves its caller's return list and resumes it after the native decision.
+The firing wrapper cancels retaliation bursts whose guard target becomes invalid.
+The checked weapon-scan alert call is suppressed for adapted guards: its original
+body copies Bond's current coordinates into the shared last-position fields.
+Mission actors retain that original alert. Sound investigation uses its own
+coordinates and restores them before requesting a route.
+Sneezes use the original animation helper (`0x7f033700`) with animation ID,
+frames, sound flags and interpolation read from the ROM-checked idle script.
+Its six o32 arguments use a private outgoing stack area. Bullet retaliation is
+attributed only at the checked guard-fire damage call, after actual health damage.
+Guard targets retain their prop, model and character identity so reused slots cannot inherit
+a grudge. The grenade angle wrapper redirects only the checked turning call
+during an owned scenery throw; it does not change Bond's prop or position.
+Wandering uses the checked nearest-waypoint helper (`0x7f027cd4`), pad distance
+(`0x7f032e48`) and walking helper (`0x7f02abb4`). The connected-neighbour search
+(`0x7f033834`) and tile-waypoint scan (`0x7f027bf4`) bind the graph pointer,
+record size, pad/neighbor fields and negative-pad terminator to the ROM. The
+adapter bounds the active table before following indices, searches connected
+points without changing character pad presets, and retries other candidates
+when the original walking helper rejects a route.
+`profile.toml` pins complete function bodies, the self-switch call/delay pair,
+structure operands, simulation clock and decompressed script/table bytes.
+Generation verifies these and emits `goldeneye_ai_config.h`; reference source
+is not a build dependency. Semantic names were traced from the pinned
+[interpreter](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chrai.c),
+[shared scripts](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraidata.c),
+[actions](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/chraction.c)
+and [explosions](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/explosion.c),
+then checked against the supplied ROM SHA-1
+`a963ea5308a4dda41354bca7751446248302a099`.
+The scientist body IDs are checked against the native body/model table; the
+shared draw script is checked against global list 16. Doak's Facility identity
+and initial script come from the pinned
+[Facility setup](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/assets/obseg/setup/UsetuparkZ.c).
+Explosion definitions, table addressing, field operands and complete creation,
+tick and damage bodies are pinned. Generated value changes accept either the
+native or already adjusted definition, avoiding repeated multiplication across
+explosions and stage transitions.
+
+The preceding noise/scenery revision passed Linux Debug/Release builds and
+temporary ASan/UBSan checks for hearing ranges, register preservation,
+self-noise suppression, protected targets, visibility, weapon restrictions,
+target resolution and burst cancellation. Changed function, field, global,
+script and model-allowlist evidence was rejected by generation. The subsequent
+sound-destination, scientist, explosion, sneeze, friendly-fire, wandering and
+idle-grenade changes have not been tested here. The current sneeze timer,
+wandering, connected-waypoint selection, stuck-route recovery and longer grenade
+delays are awaiting gameplay confirmation. Builds
+and testing are left to the user at their request.
+Broader combat balance and mission progression still require playtesting.
+
 ## Mouse and keyboard
 
 Single-player on-foot gameplay uses mouse-look and WASD by default. Mouse motion
@@ -74,6 +223,8 @@ the selected style afterwards. Settings and saves retain the selected control st
 | --- | --- |
 | Mouse / WASD | Look / move and strafe |
 | Left / right mouse | Fire / original aim mode |
+| Mouse in the mission menus | Move the target cursor |
+| Left / right mouse in menus | Confirm / back |
 | Scroll up / down | Previous / next weapon |
 | E or R / Q | Use or reload / change weapon |
 | Tab | Start / watch menu |
@@ -81,12 +232,15 @@ the selected style afterwards. Settings and saves retain the selected control st
 | Esc / F4 | Toggle mouse capture / recapture after release or focus loss |
 | F10 | Quit |
 
-Capture releases in menus, during watch transitions and when the window loses
-focus. Tank, multiplayer, death and scripted-camera states fall back to the
-original controller path. A gamepad remains available; release mouse capture to
-use its original look/movement controls. Original aiming restrictions still apply.
+Mouse capture stays active in the front-end menus so mouse movement controls the
+original target cursor. Arrows and gamepads remain available alongside the mouse.
+Esc releases the mouse; F4 recaptures it. Capture releases during watch transitions
+and when the window loses focus. Tank, multiplayer, death and scripted-camera
+states fall back to the original controller path. Release mouse capture to use
+the dual-stick gamepad controls below. Original aiming restrictions still apply.
 
-Set `RECOMP_GOLDENEYE_MOUSE=0` to restore the legacy keyboard/controller mapping.
+Set `RECOMP_GOLDENEYE_MOUSE=0` to disable mouse controls and retain the shared
+keyboard mapping. `RECOMP_GOLDENEYE_GAMEPAD=0` also restores legacy stick mapping.
 `RECOMP_MOUSE_SENSITIVITY` sets degrees per mouse count (default `0.08`, range
 `0.001..10`); `RECOMP_MOUSE_INVERT_Y=1` inverts vertical movement. These environment
 settings apply at launch in Debug and Release.
@@ -99,6 +253,14 @@ guest update and rebuilds orientation with the original angle helper before
 movement. Wheel detents are queued and mapped to the original A / A+Z weapon
 cycling actions. The shared transport and original-preserving wrappers are
 described in [native hooks](../../docs/native-hooks.md).
+
+The front-end cursor adapter wraps `frontUpdateControlStickPosition` at
+`0x7F009B84`. In the title/menu stage it consumes mouse motion once, moving the
+original cursor by half a menu pixel per mouse count before the original routine
+adds keyboard/gamepad movement and clamps it to the viewport. Menu movement is
+independent of gameplay look sensitivity and pitch inversion. The wrapper's full
+body fingerprint and cursor globals (`0x8002A908`, `0x8002A90C`) are verified during
+generation. Left/right clicks use the original confirm/back button paths.
 
 `input_analysis.py` is a required generation dependency. It verifies function
 fingerprints, call sites, player offsets and state globals declared in
@@ -113,6 +275,10 @@ was also confirmed through user playtesting. The later recapture and wheel
 changes were built in both configurations; gameplay testing was left to the user.
 Tank, multiplayer and full-game progression remain unverified.
 
+The menu mouse change was confirmed working through user playtesting on
+2026-11-02. Debug and Release builds passed; a bounded Debug desktop smoke run
+also rendered startup and exited successfully.
+
 Debug retains optional `RECOMP_GOLDENEYE_INPUT_TRACE` CSV output and
 `RECOMP_GOLDENEYE_MOUSE_REPLAY` input for future investigations. Replay rows are
 `eligible_update dx dy move_x move_y active` with increasing update indices.
@@ -121,47 +287,130 @@ after recording their findings here.
 
 ## Field of view
 
-Set `RECOMP_FOV` before launching to choose a horizontal FOV in degrees
-at 4:3 (`60..120`, including fractional values). Unset, empty or `0` preserves
-the original camera, normally 60 degrees vertically (about 75.2 horizontally).
-The setting works in Debug and Release independently of mouse controls.
+Use keypad `+` / `-` to adjust FOV live, one horizontal degree per keydown;
+holding a key repeats. The range is the exact original view (60 degrees
+vertically, about 75.2 horizontally at 4:3) through 140 degrees. The original
+view is the default each launch. Lowering to the minimum restores the original
+FOV path. No FOV environment variable is read. The current angle is printed to
+the console when it changes.
 
-```powershell
-$env:RECOMP_FOV = '100'
-.\build\msvc\goldeneye-us\release\bin\Release\goldeneye-us.exe
-```
+This works in Debug and Release independently of mouse capture. Native weapon
+zoom retains its optical magnification ratio. The override applies to active
+single-player gameplay; menus, watch, death, locked controls, scripted cameras
+and multiplayer retain original behavior. F7 widescreen is independent of FOV.
 
-Restore the original with `$env:RECOMP_FOV = '0'`. Changes require a
-restart. Native weapon zoom scales with the chosen FOV, preserving its optical
-magnification ratio. The override applies to active single-player gameplay;
-menus, watch, death, locked controls, scripted cameras and multiplayer retain
-their original FOV. RT64's F7 aspect expansion can widen the displayed view
-further than the 4:3 reference angle.
+The original `viSetFovY` body remains translated and updates VI projection and
+player camera scaling together. Full bodies, caller/delay pairs, player offsets
+and the native 60-degree literal are checked against the ROM by `generate.py`
+and `input_analysis.py`; generation emits `fov-hooks.json` and `input-hooks.json`.
+See the [investigation guide](../../docs/field-of-view.md).
 
-`fov.c` wraps the fingerprinted `viSetFovY` at `0x70004544`, scoped to the
-viewport, zoom and level-render calls returning to `0x7f086fcc`, `0x7f07e730`
-and `0x7f0be510`. The original setter updates both the VI projection and the
-player's perspective/scale values used by CPU culling and screen calculations.
-The native player FOV/zoom fields remain unchanged, so repeated updates cannot
-compound the override. The conversion scales the tangent of each incoming
-vertical half-angle rather than replacing zoomed views with a fixed angle.
+The setter is at `0x70004544`, scoped to viewport, zoom and level-render returns
+`0x7f086fcc`, `0x7f07e730` and `0x7f0be510`. Native player FOV/zoom fields remain
+unchanged, preventing compounding across updates. The
+[pinned camera reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/bondview.c)
+guided identification; all runtime addresses and operands were checked against
+this ROM independently.
 
-The [pinned camera reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/bondview.c)
-guided identification; full ROM bodies, call/delay pairs, player offsets and
-the original 60-degree literal are verified independently by `generate.py`
-and `input_analysis.py` against `profile.toml`. Generation writes
-`fov-hooks.json` alongside `input-hooks.json`.
+Earlier FOV versions passed ROM/translation checks and the user's gameplay test.
+Linux Debug/Release builds also passed on 2026-11-03. Full-range keypad adjustment
+and broader aiming/zoom transitions remain unverified.
 
-On 2026-10-31, ROM/translation checks, Debug/Release builds and the synthetic
-Debug check passed. To rerun the wrapper checks without opening a game window:
+## Dual-stick gamepad and widescreen
 
-```powershell
-$env:RECOMP_GOLDENEYE_CHECK_FOV = '1'
-.\build\msvc\goldeneye-us\debug\bin\Debug\goldeneye-us.exe --frames 1
-Remove-Item Env:RECOMP_GOLDENEYE_CHECK_FOV
-```
+Single-player on-foot controls use the left stick for movement/strafe and the
+right stick for horizontal/vertical look. LT fires; RT or RB aims; A changes
+weapons, X uses/reloads and Start opens the watch. Menus retain native navigation.
+Steam Deck packages enable these controls and disable mouse capture by default.
+On PC, release mouse capture with Escape before using the gamepad. Set
+`RECOMP_GOLDENEYE_GAMEPAD=0` to use the saved native controller style instead.
 
-These checks cover defaults, range validation, zoom ratios, repeat updates,
-call scope and state gates; they do not execute the paged camera routines.
-The user confirmed that the FOV works well in game. Broader aiming, zoom
-transitions and combined widescreen behavior remain unverified.
+The adapter temporarily selects native 2.2 Galore (index 5) inside the verified
+`MoveBond` input call, routing primary axes to look and the checked secondary
+`joyGetStickX/Y` reads to movement. The original functions still execute once.
+Primary R becomes secondary Z for native aiming. The selected control style is
+restored after the call, without changing the save or exposing another player.
+Watch, death, tank, scripted cameras and multiplayer retain the native path;
+controller/mouse replays do not inherit physical gamepad look.
+
+GoldenEye's backgrounds are CPU-projected RDP triangles. Independent RT64
+projection expansion left these clipped to the old central region. F7 now uses
+the native player/VI aspect setters (`0x7f09b224`, `0x70004590`) at the four
+ROM-checked viewport call sites. Both CPU visibility/scale and GPU projection
+receive the same native aspect, scaled for the window and the watch's existing
+4:3/16:9 choice. Native top/bottom letterboxing and zoom are retained. RT64 then
+stretches the completed anamorphic framebuffer at scanout, with projection
+expansion disabled. Other games retain their existing RT64 aspect behavior.
+Menus, watch and excluded cameras retain original presentation. The HUD follows
+the native framebuffer layout, so it stretches horizontally in wide gameplay.
+
+ROM fingerprints, call/delay words and field operands pass generation checks.
+Linux Debug/Release and the Debian 12 Steam Deck build pass. A live Dam virtual
+gamepad test verified right-stick turning/pitch without movement and left-stick
+strafing/walking without turning, with control-style restoration. Widescreen
+screenshots at 16:10 and 16:9 show background coverage at both edges, and F7
+reset/watch return were exercised. Broader level/portal transitions,
+weapon zoom and physical Deck control acceptance remain to be tested.
+
+## Performance investigation
+
+A confirmed 25-second slow-Dam capture on 2026-11-03 measured 45.7% of one
+logical CPU in `n64-main` and 37.8% in the owner, with about 19,000 voluntary
+switches/second on each. GPU busy samples averaged 38.2%, with median 8% and
+brief 100% spikes. The workload is serialized between guest and owner, so low
+average utilization does not establish spare execution time. The earlier
+33.9% total-CPU capture had an unconfirmed scene and is not the comparison.
+
+`runtime.checkpoint_interval = 512` batches ordinary guest backedges instead of
+using the shared default 64. Explicit polling-loop yields and priority
+preemption retain their immediate paths; the VI clock and 60 Hz presentation
+deadline stay unchanged. This reduces repeated context serialization and
+device polling in GoldenEye's CPU render/visibility work.
+
+Equivalent desktop Release title-sequence runs at seconds 25..40 measured
+CPU consumption of 0.193 versus 0.149 logical cores (about 23% lower), and
+6,538 versus 1,055 scheduler dispatches/second (about 84% fewer). Display
+callbacks remained about 60/second. These are callback/CPU measurements, not
+unique game-frame or compositor FPS. Debug/Release and Deck builds pass;
+the user still observed drops below 40 FPS on Deck after this change.
+
+A second confirmed 25-second Dam capture measured 46.7% of one logical CPU in
+`n64-main`, 26.8% in the owner, and roughly 4,500/5,100 voluntary switches/second
+respectively. GPU busy averaged 28.4% (median 5%). The Deck's gamescope FPS limit,
+dynamic refresh and reported display refresh were all 60. The two captures did
+not lock the camera to identical coordinates, so they establish reduced
+scheduler overhead and a remaining bottleneck, not a gameplay FPS gain.
+
+In the second CPU sample, `mips_fp_binary` accounted for 17.63% of user CPU
+samples directly. The background portal routine at `0x7f0b7f84` accounted for
+13.12% including its callees; those costs overlap. The exact-US-address
+[background reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/bg.c)
+identifies portal traversal. The
+[collision reference](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/src/game/stan.c)
+identifies other sampled routines `0x7f0b0e24` (`stanTestLineUnobstructed`) and
+`0x7f0b18b8` (`stanTestVolume`). These observations support a CPU geometry and
+visibility bottleneck; low aggregate CPU/GPU utilization does not rule it out.
+The checked ROM remains the US image declared in `profile.toml`.
+
+With `RECOMP_OPTIMIZE_SIZE=OFF`, Release enables link-time optimization for
+GoldenEye and its runtime when the toolchain supports it. Clang also specializes
+the binary FP helper at translated call sites, where the operation, format and
+register indices are constants. The default size policy keeps FP helpers shared
+and uses the common compact CPU compilation settings; see the
+[Release size audit](../../docs/code-expansion.md#release-build-policy).
+Strict floating-point flags, rounding, exceptions and host-state restoration
+remain enabled. Debug and other games retain the ordinary helper. This targets
+arithmetic overhead without changing portal visibility or collision behavior.
+A temporary differential check matched 1,520,000 arithmetic/conversion/compare
+cases and 647,970 traps with Clang 22 and the Debian Clang 14 Deck compiler,
+including all rounding modes and MXCSR/x87/errno restoration. A 40-million-call
+normal-operand arithmetic microbenchmark with Clang 14 took 1.053 seconds before
+and 0.729 seconds after specialization on the desktop CPU. This is not a Deck
+FPS measurement; the title sequence changed little. The Deck itself passed
+600 frames with its embedded pack and the same 1,520,000-case differential check,
+preserving the player's save byte-for-byte. Its single arithmetic benchmark
+used 1.459 versus 1.306 seconds of CPU time (about 10% lower). The specialized
+build is installed, but the remaining slow Dam view still requires gameplay
+comparison.
+
+See [frame timing capture](../../docs/profiling.md#frame-pacing-and-stutter).

@@ -31,6 +31,7 @@ struct RecompAudio {
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile;
     unsigned prebuffer_ms;
+    unsigned device_period;
     jmp_buf skip_task;
     bool hle_active;
 };
@@ -93,9 +94,8 @@ void HleWarnMessage(void *opaque, const char *message, ...) {
     vsnprintf(detail, sizeof(detail), message, args);
     va_end(args);
     snprintf(warning, sizeof(warning), "audio HLE: %s", detail);
-    uint32_t pc = a->debug.command_index
-                      ? a->debug.history[(a->debug.command_index - 1) % RECOMP_AUDIO_HISTORY].address
-                      : a->debug.list;
+    uint32_t pc = a->debug.command_index ? a->debug.history[(a->debug.command_index - 1) % RECOMP_AUDIO_HISTORY].address
+                                         : a->debug.list;
     skip_audio_task(a, warning, pc);
 }
 int HleForwardTask(void *opaque) {
@@ -457,12 +457,58 @@ static bool open_device(RecompAudio *a, unsigned frequency) {
     a->stats.prebuffer_frames = frequency * a->prebuffer_ms / 1000;
     if (a->stats.prebuffer_frames < 3u * have.samples)
         a->stats.prebuffer_frames = 3u * have.samples;
+    a->device_period = have.samples;
     a->stats.device_open = true;
     snprintf(a->stats.driver, sizeof(a->stats.driver), "%s", SDL_GetCurrentAudioDriver());
     if (a->trace)
         fprintf(stderr, "Audio trace: driver=%s rate=%d device_period=%u prebuffer_frames=%u\n", a->stats.driver,
                 have.freq, have.samples, a->stats.prebuffer_frames);
     return true;
+}
+static void reset_playback(RecompAudio *a) {
+    SDL_PauseAudioDevice(a->device, 1);
+    a->stats.playback_running = false;
+}
+static bool queue_playback(RecompAudio *a, const int16_t *pcm, unsigned frames) {
+    unsigned queued = SDL_GetQueuedAudioSize(a->device), rate = a->stats.frequency;
+    if (a->stats.playback_running) {
+        if (queued < a->stats.min_queued_bytes)
+            a->stats.min_queued_bytes = queued;
+        if (!queued) {
+            a->stats.queue_underruns++;
+            reset_playback(a);
+            /* Repeated stalls need more headroom than the initial reserve.
+             * Retain the larger target until output is disabled or destroyed. */
+            unsigned ceiling = rate / 5;
+            if (ceiling < 3u * a->device_period)
+                ceiling = 3u * a->device_period;
+            unsigned reserve = a->stats.prebuffer_frames + rate / 25;
+            a->stats.prebuffer_frames = reserve < ceiling ? reserve : ceiling;
+        }
+    }
+    /* Bound latency if the device stalls; never accumulate seconds of old sound. */
+    unsigned limit = rate;
+    if (limit < (a->stats.prebuffer_frames + a->device_period) * 4)
+        limit = (a->stats.prebuffer_frames + a->device_period) * 4;
+    if (queued > limit) {
+        reset_playback(a);
+        SDL_ClearQueuedAudio(a->device);
+        a->stats.queue_resets++;
+    }
+    /* Preserve synthesized samples and their original rate at SDL admission.
+     * Buffer reserves absorb jitter without changing the waveform or pitch. */
+    bool okay = SDL_QueueAudio(a->device, pcm, frames * 4) == 0;
+    if (okay) {
+        a->stats.playback_frames += frames;
+        queued = SDL_GetQueuedAudioSize(a->device);
+        if (queued > a->stats.max_queued_bytes)
+            a->stats.max_queued_bytes = queued;
+        if (!a->stats.playback_running && queued >= a->stats.prebuffer_frames * 4) {
+            SDL_PauseAudioDevice(a->device, 0);
+            a->stats.playback_running = true;
+        }
+    }
+    return okay;
 }
 static bool ai_start(Runtime *rt, void *opaque, uint32_t guest, unsigned bytes, unsigned clock, unsigned divisor) {
     RecompAudio *a = opaque;
@@ -496,42 +542,14 @@ static bool ai_start(Runtime *rt, void *opaque, uint32_t guest, unsigned bytes, 
         okay = fwrite(wav, 1, bytes, a->wav) == bytes;
     if (a->playback) {
         okay = okay && open_device(a, rate);
-        if (okay) {
-            unsigned queued = SDL_GetQueuedAudioSize(a->device);
-            if (a->stats.playback_running) {
-                if (queued < a->stats.min_queued_bytes)
-                    a->stats.min_queued_bytes = queued;
-                if (!queued) {
-                    a->stats.queue_underruns++;
-                    SDL_PauseAudioDevice(a->device, 1);
-                    a->stats.playback_running = false;
-                }
-            }
-            /* Bound latency if the device stalls; never accumulate seconds of old sound. */
-            if (queued > rate * 4 / 4) {
-                SDL_PauseAudioDevice(a->device, 1);
-                a->stats.playback_running = false;
-                SDL_ClearQueuedAudio(a->device);
-                a->stats.queue_resets++;
-            }
-            okay = SDL_QueueAudio(a->device, pcm, bytes) == 0;
-            if (okay) {
-                a->stats.playback_frames += bytes / 4;
-                queued = SDL_GetQueuedAudioSize(a->device);
-                if (queued > a->stats.max_queued_bytes)
-                    a->stats.max_queued_bytes = queued;
-                if (!a->stats.playback_running && queued >= a->stats.prebuffer_frames * 4) {
-                    SDL_PauseAudioDevice(a->device, 0);
-                    a->stats.playback_running = true;
-                }
-            }
-        }
+        if (okay)
+            okay = queue_playback(a, pcm, bytes / 4);
     }
     a->stats.frames += bytes / 4;
     a->stats.ai_buffers++;
     if (a->trace)
-        fprintf(a->trace, "%" PRIu64 ",%u,%u,%u,%" PRIu64 "\n", timer_ns(), bytes / 4, rate,
-                a->device ? SDL_GetQueuedAudioSize(a->device) : 0, a->stats.queue_underruns);
+        fprintf(a->trace, "%" PRIu64 ",%u,%u,%u,%" PRIu64 ",%u\n", timer_ns(), bytes / 4, rate,
+                a->device ? SDL_GetQueuedAudioSize(a->device) : 0, a->stats.queue_underruns, a->stats.prebuffer_frames);
     free(pcm);
     free(wav);
     return okay;
@@ -568,7 +586,7 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
     a->enabled = config->output_enabled;
     a->microcode = config->microcode;
     a->task_profile = config->task_profile;
-    a->prebuffer_ms = config->prebuffer_ms ? config->prebuffer_ms : 80;
+    a->prebuffer_ms = config->prebuffer_ms ? config->prebuffer_ms : 160;
     a->stats.min_queued_bytes = UINT32_MAX;
     a->hle.dram = rt->rdram;
     a->hle.dmem = a->dmem;
@@ -591,7 +609,7 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
             free(a);
             return NULL;
         }
-        fputs("host_ns,frames,rate,queued_bytes,underruns\n", a->trace);
+        fputs("host_ns,frames,rate,queued_bytes,underruns,prebuffer_frames\n", a->trace);
     }
     RecompAiOutput output = {.start = ai_start, .opaque = a};
     if (!recomp_ai_set_output(rt, &output)) {
@@ -642,9 +660,11 @@ void recomp_audio_set_output_enabled(RecompAudio *a, bool enabled) {
             recomp_fail("SDL audio device unavailable", 0);
     }
     if (!enabled && a->device) {
-        SDL_PauseAudioDevice(a->device, 1);
-        a->stats.playback_running = false;
+        reset_playback(a);
         SDL_ClearQueuedAudio(a->device);
+        a->stats.prebuffer_frames = a->stats.frequency * a->prebuffer_ms / 1000;
+        if (a->stats.prebuffer_frames < 3u * a->device_period)
+            a->stats.prebuffer_frames = 3u * a->device_period;
     }
     a->enabled = enabled;
 }
@@ -684,12 +704,6 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
     if (!a->task_done)
         recomp_fail("audio DSP task did not finish", list);
     a->stats.tasks++;
-}
-void recomp_audio_execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
-    owner(a);
-    if (a->microcode == RECOMP_AUDIO_MUSYX_V1)
-        recomp_fail("MusyX requires subframe descriptors, not ABI1 commands", list);
-    execute_abi1(a, list, bytes);
 }
 static void execute_musyx(RecompAudio *a, uint32_t list, uint32_t count) {
     if (!count || count > 64)

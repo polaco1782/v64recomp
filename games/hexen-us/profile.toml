@@ -201,18 +201,28 @@ bindings = [
 
 # World perspective and conservative CPU angle-to-screen visibility setup.
 [fov_adapter]
+# World rendering reuses the fixed matrix saved by projection_setup. Live FOV
+# changes scale its X/Y diagonal from native bytes; depth and perspective norm
+# remain native. guMtxF2L verifies the split 16.16 matrix representation.
 functions = [
   {name = "projection_setup", vram = 0x8004e820, size = 0x174, sha256 = "2b05395ffdc66b05c7d56ec8a9a143f41361bbbf60814671dbf6f5f3e5fb1f16"},
   {name = "guPerspectiveF", vram = 0x800557c0, size = 0x230, sha256 = "0b1ac3b032d18252c975a80085a68070baa41b78a40742ec2da9e12eb359f6da"},
   {name = "guPerspective", vram = 0x800559f0, size = 0x58, sha256 = "207672d36cc7f914362839dae53025b6a18d818d1aec2003b8059a42b7b4b85b"},
+  {name = "guMtxF2L", vram = 0x8005dd70, size = 0x100, sha256 = "766ecf1975b0b289ca1034155d694cc04c33d95ea7f69907505b4173ed0ed7d8"},
+  {name = "world_projection_select", vram = 0x801127f4, size = 0x21c, sha256 = "cf8d3cfbe810cfb4061facca36453cb5101f253bcb7483aa17ded195b314c402"},
   {name = "visibility_setup", vram = 0x803bba90, size = 0x2b4, sha256 = "56033a78f2b1cf36885cb848215601fa8cdf3feff596bebcc5d6168595473296"},
 ]
 bindings = [
   {name = "projection_return", value = 0x8004e85c, kind = "return", pcs = [0x8004e854, 0x8004e858], words = [0x0c01567c, 0xe7a00018]},
   {name = "projection_matrix", value = 0x80084c78, kind = "address", pcs = [0x8004e830, 0x8004e844], words = [0x3c048008, 0x24844c78]},
+  {name = "world_projection_matrix", value = 0x80084c78, kind = "address", pcs = [0x80112828, 0x80112834], words = [0x3c0b8008, 0x256b4c78]},
   {name = "vertical_bits", value = 0x42870000, kind = "upper_bits", pcs = [0x8004e84c], words = [0x3c064287]},
   {name = "aspect_bits", value = 0x3fd097b4, kind = "literal_bits", pcs = [0x8004e838, 0x8004e83c], words = [0x3c073fd0, 0x34e797b4]},
   {name = "cull_angle", value = 0x803d1a48, kind = "address", pcs = [0x803bbb5c, 0x803bbb60], words = [0x3c01803d, 0xc4261a48]},
   {name = "cull_bits", value = 0x449c81c7, kind = "data_word", pcs = [0x803d1a48], words = [0x449c81c7]},
   {name = "fine_angles", value = 8192, kind = "double_high", pcs = [0x803bbad0], words = [0x3c0140c0]},
+  {name = "visibility_table", value = 0x80144bf8, kind = "address", pcs = [0x803bbbc8, 0x803bbbdc], words = [0x3c028014, 0x24424bf8]},
+  {name = "clip_angle", value = 0x80144bdc, kind = "address", pcs = [0x803bbce0, 0x803bbce8], words = [0x3c018014, 0xac2c4bdc]},
+  {name = "screen_center_bits", value = 0x47200000, kind = "upper_bits", pcs = [0x803bbb94], words = [0x3c014720]},
+  {name = "screen_max_bits", value = 0x47a00080, kind = "data_word", pcs = [0x803d1a50], words = [0x47a00080]},
 ]

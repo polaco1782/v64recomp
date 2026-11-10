@@ -12,6 +12,9 @@ boot_sections = [".boot"]
 [discovery]
 entry_inventory = "startup-entries.json"
 allow_registered_indirect_calls = true
+# The workflow reviews bounded table and root batches when the checked profile
+# or runtime missing-call evidence changes. Accepted entries are saved below.
+auto_candidate_review = true
 regions = [
   {name = ".boot", vram = 0x80000480, rom_offset = 0x1000, size = 0x13420},
   {name = ".main", vram = 0x80018a80, rom_offset = 0x4000000, size = 0x11e310},
@@ -25,6 +28,21 @@ regions = [
 # Counts are the unsigned SLTIU bounds before the checked JR, after any
 # index bias. Each digest covers the entire table, including default entries.
 jump_tables = [
+  # The three direct callees of callback 0x8008d8a4 use adjacent unsigned
+  # SLTIU bounds (<5, <12, <14) before local JR dispatches.
+  {pc = 0x8008df9c, expected_word = 0x00400008, table_vram = 0x800b9f18, count = 5, sha256 = "d178e2ef36dd16fbbbbdb4f1bed0a18019b3c04c1f49a154cc357930e5303503"},
+  # A second local switch in 0x8008def4 subtracts 0x23 and checks unsigned <12.
+  {pc = 0x8008dffc, expected_word = 0x00400008, table_vram = 0x800b9f30, count = 12, sha256 = "fc38419a88905567bf623c0eb2f0ac5c613de35c3e123f80d2c39626fff05f7c"},
+  {pc = 0x8008e304, expected_word = 0x00400008, table_vram = 0x800b9f68, count = 12, sha256 = "7d34533349040ba8ccbbd231c17eace5a5b3b2a422a974bb0eb63852677db01a"},
+  {pc = 0x8008f110, expected_word = 0x00400008, table_vram = 0x800b9f98, count = 14, sha256 = "0fb45df5f6473cf942926f7fdbea3ce54ad9164ec9e08496bbdd9a64868897c4"},
+  # Decoder 0x80091a70 checks the unsigned argument against 20 before JR.
+  {pc = 0x80091a8c, expected_word = 0x00400008, table_vram = 0x800ba068, count = 20, sha256 = "53a758f428cdd5b3c76463f3c4bceb26c30b0f8802226b3fe5f6675e3ded97b4"},
+  # 0x8008d8a4's state byte is bounded by unsigned <5 at 0x8008d8cc;
+  # all five targets remain in that framed function and return at 0x8008deec.
+  {pc = 0x8008d8e8, expected_word = 0x00400008, table_vram = 0x800b9f00, count = 5, sha256 = "bb2a789cb915e2ee6f198a884932c5fe59c786ca3c457a4bea3f41c13623e8f0"},
+  # State byte at 0x8012bf9a is bounded by unsigned <21 at 0x80094dd8;
+  # all 21 slots dispatch within this function and return at 0x80095278.
+  {pc = 0x80094df4, expected_word = 0x00400008, table_vram = 0x800ba100, count = 21, sha256 = "9ee8e5cd7d865b11ac808e79573eb99013f53c7c7058fdbf2012770955f3cf6e"},
   # Unsigned room state <6 at 0x8007489c.
   {pc = 0x800748bc, expected_word = 0x00400008, table_vram = 0x800b99d0, count = 6, sha256 = "f7f422cd5ca9342062a1c6aab0cb57f8c223a8581426e432758c52fa3056ade9"},
   # Enemy slot variants: local switches use the adjacent unsigned SLTIU.
@@ -132,6 +150,8 @@ jump_tables = [
   {pc = 0x8002d5b4, expected_word = 0x00400008, table_vram = 0x800b6ec0, count = 5, sha256 = "5f07013a35ddd17f447f748ecdabed1bdc28fc089d9f1019592a19d2d054d4d9"},
   {pc = 0x8004b108, expected_word = 0x00400008, table_vram = 0x800b8a48, count = 7, sha256 = "3c76341528a97b2855be9cf99714a2d6b86d0e9999f7d4bd5ed509e4924f7629"},
   {pc = 0x8004bcb8, expected_word = 0x00400008, table_vram = 0x800b8a68, count = 17, sha256 = "d2f3e87df9dc0fcce7cdbbc0bfb788dbbd5ba1563edfaff6af78b486ae20970d"},
+  # 0x8005b4d8's bit index is bounded by unsigned <7 at 0x8005b504.
+  {pc = 0x8005b520, expected_word = 0x00400008, table_vram = 0x800b9090, count = 7, sha256 = "3e81388ea8f3497cc4570d6debb635f631741d42b4c7d62f81d200311ca35561"},
   {pc = 0x80088194, expected_word = 0x00400008, table_vram = 0x800b9dd0, count = 8, sha256 = "909a85293c8f15ee5284c7ac442b8ae9dd3949772e4996e211073589f87ae604"},
   {pc = 0x800a7bd0, expected_word = 0x00400008, table_vram = 0x800ba780, count = 6, sha256 = "f06f68c92a3ead2708499a29fdd1495851c55bc5c9d714ceaca3a199d57231b9"},
   {pc = 0x8000246c, expected_word = 0x00400008, table_vram = 0x800116b8, count = 10, sha256 = "eeebe3c31310bae2007de71afb1f0ed186af4ec72ba9cc2f43b6312ec5fd1162"},
@@ -234,7 +254,223 @@ transfers = [
   {pc = 0x800b6808, expected_word = 0x0160f809, kind = "call", targets = [0x800b682c, 0x800b6844, 0x800b6854, 0x800b686c]},
   {pc = 0x800b6818, expected_word = 0x0160f809, kind = "call", targets = [0x800b682c, 0x800b6844, 0x800b6854, 0x800b686c]},
 ]
-roots = [{name = "system_main", vram = 0x8004d344}]
+roots = [
+  {name = "system_main", vram = 0x8004d344},
+  # Slot 3 of the callback array at 0x8012f914 names this separate frame;
+  # 0x8008d6a0 loads/calls from that array. Prior body returns at 0x8008d89c.
+  {name = "reviewed_8008d8a4", vram = 0x8008d8a4, section = ".main"},
+  # Pointer slot 0x8012fe14 names the separate framed body after 0x80094db4's return.
+  {name = "live_80094dbc", vram = 0x80094dbc, section = ".main"},
+  # Functions promoted from verified live modules.
+  {name = "live_80039ba0", vram = 0x80039ba0, section = ".main"},
+  {name = "live_80039c34", vram = 0x80039c34, section = ".main"},
+  {name = "live_8003a21c", vram = 0x8003a21c, section = ".main"},
+  {name = "live_8003a364", vram = 0x8003a364, section = ".main"},
+  {name = "live_8003b5e4", vram = 0x8003b5e4, section = ".main"},
+  {name = "live_800558fc", vram = 0x800558fc, section = ".main"},
+  # Thread entry from nine-record table 0x8010b2e0, selected at 0x80099c5c;
+  # separate frame after the preceding return, with direct callee 0x8008ccbc.
+  {name = "reviewed_8008b794", vram = 0x8008b794, section = ".main"},
+  # 0x8005cb0c calls the slot at 0x801110e8 through JALR; this entry follows
+  # the 0x8005d2c4 return and closes at 0x8005d6f8.
+  {name = "reviewed_8005d2cc", vram = 0x8005d2cc, section = ".main"},
+  # ROM-verified function roots.
+  {name = "live_80039da4", vram = 0x80039da4, section = ".main"},
+  {name = "live_80039f34", vram = 0x80039f34, section = ".main"},
+  {name = "live_8003a154", vram = 0x8003a154, section = ".main"},
+  {name = "live_8003a578", vram = 0x8003a578, section = ".main"},
+  {name = "live_8003ad94", vram = 0x8003ad94, section = ".main"},
+  {name = "live_8003bfb4", vram = 0x8003bfb4, section = ".main"},
+  {name = "live_8003c418", vram = 0x8003c418, section = ".main"},
+  {name = "live_8003c4e8", vram = 0x8003c4e8, section = ".main"},
+  {name = "live_8005cb0c", vram = 0x8005cb0c, section = ".main"},
+  {name = "live_8005cb40", vram = 0x8005cb40, section = ".main"},
+  {name = "live_8005cf60", vram = 0x8005cf60, section = ".main"},
+  {name = "live_8005d87c", vram = 0x8005d87c, section = ".main"},
+  {name = "live_8005db08", vram = 0x8005db08, section = ".main"},
+  {name = "live_8005f1d0", vram = 0x8005f1d0, section = ".main"},
+  # Published 0x8009b670 calls this separate closed function at 0x8009b6dc.
+  {name = "live_8007898c", vram = 0x8007898c, section = ".main"},
+  {name = "live_80178c44", vram = 0x80178c44, section = ".overlay39"},
+  {name = "live_80179688", vram = 0x80179688, section = ".overlay39"},
+  # ROM-verified function roots.
+  # ROM-verified table-backed roots at 0x800eb9b0. Eight owned JALR consumers and 96
+  # contiguous ROM pointer words; only the closed distinct entries are seeded. The script-
+  # byte selector bound remains unresolved.
+  {name = "table_80039d0c", vram = 0x80039d0c, section = ".main"},
+  {name = "table_80039d6c", vram = 0x80039d6c, section = ".main"},
+  {name = "table_80039f08", vram = 0x80039f08, section = ".main"},
+  {name = "table_80039fc4", vram = 0x80039fc4, section = ".main"},
+  {name = "table_8003a128", vram = 0x8003a128, section = ".main"},
+  {name = "table_8003aa3c", vram = 0x8003aa3c, section = ".main"},
+  {name = "table_8003ae00", vram = 0x8003ae00, section = ".main"},
+  {name = "table_8003aef8", vram = 0x8003aef8, section = ".main"},
+  {name = "table_8003af10", vram = 0x8003af10, section = ".main"},
+  {name = "table_8003b14c", vram = 0x8003b14c, section = ".main"},
+  {name = "table_8003b1b8", vram = 0x8003b1b8, section = ".main"},
+  {name = "table_8003b238", vram = 0x8003b238, section = ".main"},
+  {name = "table_8003b2a4", vram = 0x8003b2a4, section = ".main"},
+  {name = "table_8003b2dc", vram = 0x8003b2dc, section = ".main"},
+  {name = "table_8003b640", vram = 0x8003b640, section = ".main"},
+  {name = "table_8003b66c", vram = 0x8003b66c, section = ".main"},
+  {name = "table_8003b780", vram = 0x8003b780, section = ".main"},
+  {name = "table_8003b8c8", vram = 0x8003b8c8, section = ".main"},
+  {name = "table_8003ba1c", vram = 0x8003ba1c, section = ".main"},
+  {name = "table_8003bac8", vram = 0x8003bac8, section = ".main"},
+  {name = "table_8003bbd4", vram = 0x8003bbd4, section = ".main"},
+  {name = "table_8003bd84", vram = 0x8003bd84, section = ".main"},
+  {name = "table_8003be38", vram = 0x8003be38, section = ".main"},
+  {name = "table_8003bfc8", vram = 0x8003bfc8, section = ".main"},
+  {name = "table_8003c114", vram = 0x8003c114, section = ".main"},
+  {name = "table_8003c170", vram = 0x8003c170, section = ".main"},
+  {name = "table_8003c188", vram = 0x8003c188, section = ".main"},
+  {name = "table_8003c1d8", vram = 0x8003c1d8, section = ".main"},
+  {name = "table_8003c260", vram = 0x8003c260, section = ".main"},
+  {name = "table_8003c32c", vram = 0x8003c32c, section = ".main"},
+  {name = "table_8003c3c0", vram = 0x8003c3c0, section = ".main"},
+  {name = "table_8003c568", vram = 0x8003c568, section = ".main"},
+  {name = "table_8003c8d4", vram = 0x8003c8d4, section = ".main"},
+  {name = "table_8003d144", vram = 0x8003d144, section = ".main"},
+  {name = "table_8003d178", vram = 0x8003d178, section = ".main"},
+  {name = "table_8003d200", vram = 0x8003d200, section = ".main"},
+  {name = "table_8003d2a8", vram = 0x8003d2a8, section = ".main"},
+  {name = "table_8003d454", vram = 0x8003d454, section = ".main"},
+  {name = "table_8003d48c", vram = 0x8003d48c, section = ".main"},
+  {name = "table_8003d560", vram = 0x8003d560, section = ".main"},
+  {name = "table_8003d79c", vram = 0x8003d79c, section = ".main"},
+  {name = "table_8003d920", vram = 0x8003d920, section = ".main"},
+  {name = "table_8003da98", vram = 0x8003da98, section = ".main"},
+  {name = "table_8003dadc", vram = 0x8003dadc, section = ".main"},
+  {name = "table_8003daf4", vram = 0x8003daf4, section = ".main"},
+  {name = "table_8003dbe0", vram = 0x8003dbe0, section = ".main"},
+  {name = "table_8003dd1c", vram = 0x8003dd1c, section = ".main"},
+  {name = "table_8003dd8c", vram = 0x8003dd8c, section = ".main"},
+  {name = "table_8003ddc4", vram = 0x8003ddc4, section = ".main"},
+  {name = "table_8003deec", vram = 0x8003deec, section = ".main"},
+  {name = "table_8003dfe4", vram = 0x8003dfe4, section = ".main"},
+  {name = "table_8003e0b4", vram = 0x8003e0b4, section = ".main"},
+  {name = "table_8003e3f4", vram = 0x8003e3f4, section = ".main"},
+  {name = "table_8003e6f0", vram = 0x8003e6f0, section = ".main"},
+  {name = "table_8003e9dc", vram = 0x8003e9dc, section = ".main"},
+  {name = "table_8003eb98", vram = 0x8003eb98, section = ".main"},
+  {name = "table_8003ecb8", vram = 0x8003ecb8, section = ".main"},
+  {name = "table_8003ed0c", vram = 0x8003ed0c, section = ".main"},
+  {name = "table_8003edf4", vram = 0x8003edf4, section = ".main"},
+  {name = "table_8003efbc", vram = 0x8003efbc, section = ".main"},
+  {name = "table_8003f0a0", vram = 0x8003f0a0, section = ".main"},
+  {name = "table_8003f4fc", vram = 0x8003f4fc, section = ".main"},
+  {name = "table_8003f644", vram = 0x8003f644, section = ".main"},
+  {name = "table_8003f814", vram = 0x8003f814, section = ".main"},
+  {name = "table_8003f978", vram = 0x8003f978, section = ".main"},
+  {name = "table_80040454", vram = 0x80040454, section = ".main"},
+  {name = "table_800404d8", vram = 0x800404d8, section = ".main"},
+  {name = "table_80040524", vram = 0x80040524, section = ".main"},
+  {name = "table_80040794", vram = 0x80040794, section = ".main"},
+  {name = "table_80040878", vram = 0x80040878, section = ".main"},
+  {name = "table_80040880", vram = 0x80040880, section = ".main"},
+  {name = "table_80040888", vram = 0x80040888, section = ".main"},
+  {name = "table_80040890", vram = 0x80040890, section = ".main"},
+  {name = "table_80040898", vram = 0x80040898, section = ".main"},
+  {name = "table_800408a0", vram = 0x800408a0, section = ".main"},
+  {name = "table_800408a8", vram = 0x800408a8, section = ".main"},
+  {name = "table_800408b0", vram = 0x800408b0, section = ".main"},
+  # ROM-verified function roots.
+  # ROM-verified table-backed roots at 0x8011b6c0. Owned JALR consumer and exact ROM pointer
+  # slots in a sparse 36-word block; only the closed distinct entries are seeded. The
+  # object-byte selector bound remains unresolved.
+  {name = "table_80081018", vram = 0x80081018, section = ".main"},
+  {name = "table_8008103c", vram = 0x8008103c, section = ".main"},
+  {name = "table_80081058", vram = 0x80081058, section = ".main"},
+  {name = "table_8008107c", vram = 0x8008107c, section = ".main"},
+  {name = "table_800810a0", vram = 0x800810a0, section = ".main"},
+  {name = "table_800811f4", vram = 0x800811f4, section = ".main"},
+  {name = "table_80081378", vram = 0x80081378, section = ".main"},
+  {name = "table_800813f0", vram = 0x800813f0, section = ".main"},
+  {name = "table_800814cc", vram = 0x800814cc, section = ".main"},
+  {name = "table_800815e4", vram = 0x800815e4, section = ".main"},
+  {name = "table_800816ac", vram = 0x800816ac, section = ".main"},
+  {name = "table_800816d0", vram = 0x800816d0, section = ".main"},
+  {name = "table_800816ec", vram = 0x800816ec, section = ".main"},
+  {name = "table_80081710", vram = 0x80081710, section = ".main"},
+  {name = "table_80081734", vram = 0x80081734, section = ".main"},
+  {name = "table_8008173c", vram = 0x8008173c, section = ".main"},
+  {name = "table_80081744", vram = 0x80081744, section = ".main"},
+  {name = "table_8008174c", vram = 0x8008174c, section = ".main"},
+  {name = "table_80081754", vram = 0x80081754, section = ".main"},
+  {name = "table_800818c8", vram = 0x800818c8, section = ".main"},
+  {name = "table_800818d0", vram = 0x800818d0, section = ".main"},
+  {name = "table_800818d8", vram = 0x800818d8, section = ".main"},
+  {name = "table_800819b8", vram = 0x800819b8, section = ".main"},
+  # ROM-verified function roots.
+  # ROM-verified table-backed roots at 0x80111078. Owned JALR consumer and 26 ROM pointer
+  # words before a separate table; only the closed distinct entries are seeded. The masked
+  # selector bound remains unresolved.
+  {name = "table_8005c5ac", vram = 0x8005c5ac, section = ".main"},
+  {name = "table_8005cad8", vram = 0x8005cad8, section = ".main"},
+  {name = "table_8005dac0", vram = 0x8005dac0, section = ".main"},
+  {name = "table_8005dc24", vram = 0x8005dc24, section = ".main"},
+  {name = "table_8005dd40", vram = 0x8005dd40, section = ".main"},
+  {name = "table_8005de80", vram = 0x8005de80, section = ".main"},
+  {name = "table_8005df98", vram = 0x8005df98, section = ".main"},
+  {name = "table_8005e0f8", vram = 0x8005e0f8, section = ".main"},
+  {name = "table_8005e2d8", vram = 0x8005e2d8, section = ".main"},
+  {name = "table_8005e530", vram = 0x8005e530, section = ".main"},
+  {name = "table_8005e8d0", vram = 0x8005e8d0, section = ".main"},
+  {name = "table_8005ea10", vram = 0x8005ea10, section = ".main"},
+  {name = "table_8005eb50", vram = 0x8005eb50, section = ".main"},
+  {name = "table_8005eb98", vram = 0x8005eb98, section = ".main"},
+  {name = "table_8005ecb4", vram = 0x8005ecb4, section = ".main"},
+  {name = "table_8005ecbc", vram = 0x8005ecbc, section = ".main"},
+  {name = "table_8005ee20", vram = 0x8005ee20, section = ".main"},
+  {name = "table_8005ef08", vram = 0x8005ef08, section = ".main"},
+  {name = "table_8005efc4", vram = 0x8005efc4, section = ".main"},
+  {name = "table_8005f39c", vram = 0x8005f39c, section = ".main"},
+  {name = "table_8005f4cc", vram = 0x8005f4cc, section = ".main"},
+  # ROM-verified function roots.
+  # ROM-verified table-backed roots at 0x8011102c. 2 owned JALR consumer(s), exact ROM
+  # pointer slots, and distinct closed bodies. Selector bounds remain unproved, so these are
+  # roots rather than a function_tables declaration.
+  {name = "table_8005d874", vram = 0x8005d874, section = ".main"},
+  {name = "table_8005d8a0", vram = 0x8005d8a0, section = ".main"},
+  {name = "table_8005d8c4", vram = 0x8005d8c4, section = ".main"},
+  {name = "table_8005d8cc", vram = 0x8005d8cc, section = ".main"},
+  {name = "table_8005d8f0", vram = 0x8005d8f0, section = ".main"},
+  {name = "table_8005d914", vram = 0x8005d914, section = ".main"},
+  {name = "table_8005d938", vram = 0x8005d938, section = ".main"},
+  {name = "table_8005d95c", vram = 0x8005d95c, section = ".main"},
+  {name = "table_8005d980", vram = 0x8005d980, section = ".main"},
+  {name = "table_8005d9a4", vram = 0x8005d9a4, section = ".main"},
+  {name = "table_8005d9c8", vram = 0x8005d9c8, section = ".main"},
+  {name = "table_8005da58", vram = 0x8005da58, section = ".main"},
+  {name = "table_8005da7c", vram = 0x8005da7c, section = ".main"},
+  {name = "table_8005da84", vram = 0x8005da84, section = ".main"},
+  {name = "table_8005da8c", vram = 0x8005da8c, section = ".main"},
+  {name = "table_8005da94", vram = 0x8005da94, section = ".main"},
+  {name = "table_8005dab8", vram = 0x8005dab8, section = ".main"},
+  # ROM-verified function roots.
+  # ROM-verified table-backed roots at 0x8012be14. 1 owned JALR consumer(s), exact ROM
+  # pointer slots, and distinct closed bodies. Selector bounds remain unproved, so these are
+  # roots rather than a function_tables declaration.
+  {name = "table_8008bb10", vram = 0x8008bb10, section = ".main"},
+  {name = "table_8008d370", vram = 0x8008d370, section = ".main"},
+  {name = "table_8008d634", vram = 0x8008d634, section = ".main"},
+  {name = "table_80091eb4", vram = 0x80091eb4, section = ".main"},
+  {name = "table_80091fcc", vram = 0x80091fcc, section = ".main"},
+  {name = "table_80092650", vram = 0x80092650, section = ".main"},
+  {name = "table_800926a0", vram = 0x800926a0, section = ".main"},
+  {name = "table_800928ec", vram = 0x800928ec, section = ".main"},
+  {name = "table_800948ac", vram = 0x800948ac, section = ".main"},
+  {name = "table_80094b68", vram = 0x80094b68, section = ".main"},
+  # ROM-verified function roots.
+  # ROM-verified table-backed roots at 0x80110fd8. 1 owned JALR consumer(s), exact ROM
+  # pointer slots, and distinct closed bodies. Selector bounds remain unproved, so these are
+  # roots rather than a function_tables declaration.
+  {name = "table_8005c578", vram = 0x8005c578, section = ".main"},
+  {name = "table_80061274", vram = 0x80061274, section = ".main"},
+  {name = "table_80061c98", vram = 0x80061c98, section = ".main"},
+  {name = "table_80062150", vram = 0x80062150, section = ".main"},
+  {name = "table_80062520", vram = 0x80062520, section = ".main"},
+]
 
 # Startup 0x80000598 selects record 1 through 0x80001180 and inflates it.
 # These are cartridge offsets; the .main discovery offset is in the prepared image.
@@ -352,7 +588,7 @@ counter_hz = 46875000
 symbol = "re2_disable_watch"
 vram = 0x800004f0
 kind = "replace_function"
-handler = "hook_re2_disable_watch"
+handler = "recomp_re2_disable_watch"
 expected_words = [0x40849000, 0x40809800, 0x03e00008, 0]
 
 # Retire the synthetic IPL thread after the first real priority-zero thread starts.
@@ -360,7 +596,7 @@ expected_words = [0x40849000, 0x40809800, 0x03e00008, 0]
 symbol = "re2_start_thread"
 vram = 0x8000db90
 kind = "replace_function"
-handler = "hook_re2_start_thread"
+handler = "recomp_re2_start_thread"
 expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc001cb8, 0xafb10014, 0x96030010, 0x409021, 0x24020001, 0x10620008, 0x24020008, 0x1462001e, 0x24020002, 0xa6020010, 0x3c048001, 0x24842948, 0x800370d, 0x2002821, 0x8e020008, 0x50400006, 0x24020002, 0x3c118001, 0x26312948, 0x14510007, 0x2002821, 0x24020002, 0xa6020010, 0x3c048001, 0x24842948, 0x800370d, 0x2002821, 0x8e040008, 0x24020008, 0xc0003c2, 0xa6020010, 0x8e040008, 0xc0003d4, 0x0, 0x2202021, 0x402821, 0xc0003c2, 0x0, 0x3c048001, 0x8c842950, 0x14800005, 0x0, 0xc0003d8, 0x0, 0x8003722, 0x0, 0x3c028001, 0x8c422948, 0x8c830004, 0x8c420004, 0x62182a, 0x10600005, 0x24020002, 0xa4820010, 0x3c048001, 0xc000375, 0x24842948, 0xc001cc0, 0x2402021, 0x8fbf001c, 0x8fb20018, 0x8fb10014, 0x8fb00010, 0x3e00008, 0x27bd0020]
 
 # Custom audio-buffer cache-line allocation; complete seven-instruction body.
@@ -368,5 +604,5 @@ expected_words = [0x27bdffe0, 0xafb00010, 0x808021, 0xafbf001c, 0xafb20018, 0xc0
 symbol = "re2_cache_allocate"
 vram = 0x80135cb0
 kind = "replace_function"
-handler = "hook_re2_cache_allocate"
+handler = "recomp_re2_cache_allocate"
 expected_words = [0x00041025, 0x24420010, 0x0045082b, 0x1420fffd, 0xbc4dfff0, 0x03e00008, 0]

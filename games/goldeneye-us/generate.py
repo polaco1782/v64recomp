@@ -1,6 +1,6 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
-import hashlib, json, struct, zlib
+import hashlib, json, math, struct, zlib
 import re
 from common import RecompError
 from input_analysis import verify_input_analysis
@@ -79,12 +79,18 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'#define BOOT_GAME_SECTION {game_section["id"]}')
     for name,value in profile.get('inspection',{}).items():
         if type(value) is int:lines.append(f'#define GE_INSPECT_{name.upper()} UINT32_C(0x{value:x})')
-    (output / 'goldeneye_boot_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))
     analysis = profile['input_analysis']
     constants = {'CURRENT_PLAYER': analysis['current_player']['address'],
-                 'PROCESS_RETURN': profile['input_adapter']['process_return']}
+                 'PROCESS_RETURN': profile['input_adapter']['process_return'],
+                 'DUAL_STYLE': profile['input_adapter']['dual_style'],
+                 'STAGE_ADDRESS': profile['inspection']['stage_address'],
+                 'TITLE_STAGE': profile['inspection']['title_stage']}
     constants.update({f['name'].upper(): f['offset'] for f in analysis['player_fields']})
     constants.update({g['name'].upper(): g['address'] for g in profile['input_adapter']['globals']})
+    for name, target in [('X', 0x7000c0ec), ('Y', 0x7000c1fc), ('BUTTONS', 0x7000c30c)]:
+        call = next(c for c in analysis['calls'] if c['owner'] == 'bondviewProcessInput' and c['target'] == target)
+        constants[f'SECONDARY_{name}_RETURN'] = call['pc'] + 8
     angle = next(f for f in analysis['functions'] if f['name'] == 'bondviewApplyVertaTheta')
     entry = next(f for f in metadata['functions'] if f['vram'] == angle['vram'])
     lines = ['/* Verified GoldenEye input addresses; generated from profile.toml. */']
@@ -96,11 +102,175 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
                  'STAGE_ADDRESS': profile['inspection']['stage_address'],
                  'TITLE_STAGE': profile['inspection']['title_stage']}
     constants.update({f'{c["name"].upper()}_RETURN': c['pc'] + 8 for c in fov['calls']
-                      if c['name'] in ('viewport', 'zoom', 'render')})
+                      if c['name'] in ('viewport', 'zoom', 'render', 'player_aspect_wide', 'player_aspect_normal',
+                                       'vi_aspect_wide', 'vi_aspect_normal')})
     constants.update({f['name'].upper(): f['offset'] for f in fov['player_fields']})
     lines = ['/* Verified GoldenEye FOV addresses; generated from profile.toml. */']
     lines.extend(f'#define GE_FOV_{name} UINT32_C(0x{value:x})' for name, value in constants.items())
     (output / 'goldeneye_fov_config.h').write_text('\n'.join(lines) + '\n')
+    ai = verify_ai_analysis(Path(game['rom']).read_bytes(), profile, metadata)
+    lines = ['/* ROM-checked GoldenEye combat AI ABI; generated from profile.toml. */']
+    lines.extend(f'#define GE_AI_{name.upper()} UINT32_C(0x{value:x})' for name, value in ai.items())
+    models = profile['ai_analysis']['scenery_models']
+    lines.append('static const uint16_t ge_ai_scenery_models[] = {' + ','.join(str(i) for i in models) + '};')
+    # Native definitions control both damage/collision radius and rendered size.
+    # Scale spatial growth with the radius while keeping the original timing.
+    data = startup_data(Path(game['rom']).read_bytes(), boot)
+    block = next(b for b in profile['ai_analysis']['data'] if b['name'] == 'explosion_types')
+    lines.append('static const uint32_t ge_explosion_changes[][3] = {')
+    for index in range(21):
+        address = block['address'] + index * 64
+        row = data[address - boot['data_address']:address - boot['data_address'] + 64]
+        if struct.unpack_from('>f', row, ai['EXPLOSION_DAMAGE'])[0] <= 0:
+            continue # Bullet impacts and debris-only effects keep their timing.
+        for name, scale in [
+            ('hrange', 3), ('vrange', 3), ('hchange', 3), ('vchange', 3),
+            ('size', 3), ('range', 3), ('damage_range', 3),
+            # ('flare_speed', 5), # Disabled: keep the original fade timing.
+        ]:
+            offset = ai['EXPLOSION_' + name.upper()]
+            value = struct.unpack_from('>f', row, offset)[0]
+            if not math.isfinite(value) or value < 0:
+                raise RecompError('GoldenEye explosion: invalid native definition')
+            before = struct.unpack_from('>I', row, offset)[0]
+            after = int.from_bytes(struct.pack('>f', value * scale), 'big')
+            if before != after:
+                lines.append(f'    {{UINT32_C(0x{address + offset:x}), UINT32_C(0x{before:x}), UINT32_C(0x{after:x})}},')
+        # Disabled: keep the original explosion duration.
+        # offset = ai['EXPLOSION_DURATION']
+        # duration, rate = struct.unpack_from('>hh', row, offset)
+        # if not 0 < duration <= 32767 // 5 or rate <= 0:
+        #     raise RecompError('GoldenEye explosion: invalid native lifetime')
+        # before, after = duration << 16 | rate, duration * 5 << 16 | rate
+        # lines.append(f'    {{UINT32_C(0x{address + offset:x}), UINT32_C(0x{before:x}), UINT32_C(0x{after:x})}},')
+    lines.append('};')
+    (output / 'goldeneye_ai_config.h').write_text('\n'.join(lines) + '\n')
+
+
+def verify_ai_analysis(rom, profile, metadata=None):
+    """Bind the native combat selector to complete bodies, operands and scripts."""
+    spec = profile['ai_analysis']
+    region = next(r for r in profile['discovery']['regions'] if r['name'] == spec['section'])
+
+    def require(ok, message):
+        if not ok:
+            raise RecompError('GoldenEye AI: ' + message)
+
+    def raw(address, size):
+        offset = region['rom_offset'] + address - region['vram']
+        require(region['vram'] <= address and address + size <= region['vram'] + region['size'],
+                'code outside mapped section')
+        return rom[offset:offset + size]
+
+    require(len(rom) == profile['game']['rom_size'] and
+            hashlib.sha1(rom).hexdigest() == profile['game']['rom_sha1'], 'ROM identity mismatch')
+    constants = {'STAGE': profile['inspection']['stage_address']}
+    owned = set()
+    for function in spec['functions']:
+        address, size = function['vram'], function['size']
+        require(hashlib.sha256(raw(address, size)).hexdigest() == function['sha256'],
+                function['name'] + ' body fingerprint mismatch')
+        constants[function['name'].upper()] = address
+        if metadata:
+            sections = {s['id'] for s in metadata['sections'] if s['name'] == spec['section']}
+            matches = [f for f in metadata['functions'] if f['vram'] == address and f['section'] in sections]
+            require(len(matches) == 1 and matches[0]['size'] == size and
+                    matches[0]['sha256'] == function['sha256'], function['name'] + ' metadata mismatch')
+            owned.update(matches[0]['instruction_addresses'])
+
+    def words(pc, expected):
+        require(raw(pc, 4 * len(expected)) == b''.join(w.to_bytes(4, 'big') for w in expected),
+                f'instruction mismatch at {pc:#x}')
+        if metadata:
+            require(set(range(pc, pc + 4 * len(expected), 4)) <= owned, 'unowned ABI evidence')
+
+    for field in spec['fields']:
+        word = field['expected_word']
+        words(field['pc'], [word])
+        require(word >> 26 in (32, 33, 35, 36, 37, 40, 41, 43, 49, 57) and
+                (word >> 21) & 31 != 29, 'field evidence is not an object-relative memory operand')
+        constants[field['name'].upper()] = word & 65535
+    for global_ in spec['globals']:
+        words(global_['pc'], global_['expected_words'])
+        hi, lo = global_['expected_words']
+        require(hi >> 26 == 15 and lo >> 26 == 9 and (hi >> 16) & 31 == (lo >> 21) & 31 and
+                (lo >> 16) & 31 == (hi >> 16) & 31, 'global is not LUI/ADDIU')
+        constants[global_['name'].upper()] = ((hi & 65535) << 16) + struct.unpack('>h', struct.pack('>H', lo & 65535))[0]
+    words(spec['waypoint_stride_pc'], spec['waypoint_stride_words'])
+    words(spec['waypoint_scan_pc'], spec['waypoint_scan_words'])
+    require(spec['waypoint_stride_words'] == [0x00117900] and
+            spec['waypoint_scan_words'] == [0x24630010, 0x0481fff5, 0] and
+            constants['WAYPOINT_PAD'] == 0 and constants['WAYPOINT_NEIGHBOURS'] == 4 and
+            constants['WAYPOINTS'] == 0x80075d00 and constants['NEAREST_WAYPOINT'] == 0x7f027cd4,
+            'waypoint graph layout/termination mismatch')
+    constants['WAYPOINT_SIZE'] = spec['waypoint_scan_words'][0] & 65535
+    words(spec['set_self_pc'], spec['set_self_words'])
+    require(spec['set_self_words'] == [0x0fc0d4e6, 0x00009025] and
+            constants['FIND_LIST'] == 0x7f035398, 'SetChrAiList self-call ABI mismatch')
+    constants['SET_SELF_RETURN'] = spec['set_self_pc'] + 8
+    words(spec['noise_pc'], spec['noise_words'])
+    require(spec['noise_words'] == [0x0fc08bbb, 0xc7ac00e4] and constants['HEAR_SOUND'] == 0x7f022eec,
+            'weapon-noise call/F12 argument mismatch')
+    constants['NOISE_RETURN'] = spec['noise_pc'] + 8
+    words(spec['noise_alert_pc'], spec['noise_alert_words'])
+    require(spec['noise_alert_words'] == [0x0fc0a700, 0x02302021] and constants['ALERT'] == 0x7f029c00,
+            'weapon-noise alert caller mismatch')
+    constants['NOISE_ALERT_RETURN'] = spec['noise_alert_pc'] + 8
+    words(spec['guard_hit_pc'], spec['guard_hit_words'])
+    require(spec['guard_hit_words'] == [0x8df80014, 0x2405000f, 0x8fa80274, 0x33190040,
+            0x53200021, 0x8fac0264, 0x8c640004, 0x81070080, 0xafa00010, 0x0fc09c9f, 0x27a60220] and
+            constants['HIT'] == 0x7f02727c, 'guard-hit permission/call ABI mismatch')
+    constants['GUARD_HIT_RETURN'] = spec['guard_hit_pc'] + 44
+    words(spec['grenade_turn_pc'], spec['grenade_turn_words'])
+    require(spec['grenade_turn_words'] == [0x0fc0caf6, 0x24450008] and
+            constants['GRENADE_ANGLE'] == 0x7f032bd8, 'grenade turn angle-call ABI mismatch')
+    constants['GRENADE_TURN_RETURN'] = spec['grenade_turn_pc'] + 8
+    words(spec['clock_pc'], spec['clock_words'])
+    require(spec['clock_words'] == [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c], 'clock operand mismatch')
+    constants['CLOCK'] = 0x80050000 - 0x7c84
+    words(spec['explosion_pc'], spec['explosion_words'])
+    require(spec['explosion_words'] == [0x3c198004, 0xafb10020, 0x27390284, 0x000fc180],
+            'explosion table pointer/64-byte stride mismatch')
+    data = startup_data(rom, profile['bootstrap'])
+    blocks = {}
+    for block in spec['data']:
+        offset = block['address'] - profile['bootstrap']['data_address']
+        require(0 <= offset and offset + block['size'] <= len(data), 'data outside initialized RAM')
+        body = data[offset:offset + block['size']]
+        require(hashlib.sha256(body).hexdigest() == block['sha256'], block['name'] + ' data mismatch')
+        blocks[block['name']] = (block['address'], body)
+    require(blocks['explosion_types'][0] == 0x80040284 and len(blocks['explosion_types'][1]) == 21 * 64,
+            'explosion type table bounds mismatch')
+    table = blocks['global_lists'][1]
+    require(len(table) == 19 * 8 and table[-8:] == bytes(8), 'global-list table bounds mismatch')
+    for name, index in [('standard', 2), ('idle', 3), ('deaf', 5), ('simple', 7), ('attack', 6), ('chase', 8),
+                        ('persistent', 13), ('draw', 16)]:
+        pointer, identifier = struct.unpack_from('>II', table, index * 8)
+        require(identifier == index and pointer == blocks[name][0], name + ' script selector mismatch')
+        constants[name.upper() + '_LIST'] = pointer
+    idle = blocks['idle'][1]
+    require(len(idle) == 96 and idle[0] == 0x33 and idle[65:68] == bytes([0x35, 250, 3]) and
+            idle[81:90] == bytes.fromhex('0a009f000000891810'), 'idle sneeze selector/animation mismatch')
+    for name, value in zip(('ANIMATION', 'START', 'END', 'FLAGS', 'INTERPOLATION'),
+                           struct.unpack('>HHHBB', idle[82:90])):
+        constants['SNEEZE_' + name] = value
+    bodies = blocks['bodies'][1]
+    require(len(bodies) == 43 * 20, 'body table bounds mismatch')
+    for name, index, filename in [('scientist_female', 28, b'CtechwomanZ\0'),
+                                  ('scientist_male', 35, b'CtechmanZ\0')]:
+        pointer = struct.unpack_from('>I', bodies, index * 20 + 4)[0]
+        offset = pointer - profile['bootstrap']['data_address']
+        require(data[offset:offset + len(filename)] == filename, name + ' model mismatch')
+        constants[name.upper() + '_BODY'] = index
+    pointer = struct.unpack_from('>I', blocks['setup_names'][1], 34 * 4)[0]
+    offset = pointer - profile['bootstrap']['data_address']
+    facility_name = b'UsetuparkZ\0'
+    require(data[offset:offset + len(facility_name)] == facility_name, 'Facility stage selector mismatch')
+    constants['FACILITY_STAGE'] = 34
+    models = spec['scenery_models']
+    require(models and len(set(models)) == len(models) and all(type(i) is int and 0 <= i < 341 for i in models),
+            'invalid scenery model allowlist')
+    return constants
 
 
 def verify_fov_analysis(rom, profile, metadata=None, coverage=None):
@@ -197,6 +367,7 @@ def validate_inspection(rom: bytes, profile: dict) -> None:
 
 
 def prepare(rom, profile, output):
+    verify_ai_analysis(rom, profile)
     verify_input_analysis(rom, profile)
     verify_fov_analysis(rom, profile)
     validate_idle_loop(rom,profile)
@@ -209,6 +380,7 @@ def write_report(rom, profile, metadata, coverage, output):
     from common import write_json
     write_json(output / 'input-hooks.json', verify_input_analysis(rom, profile, metadata, coverage))
     write_json(output / 'fov-hooks.json', verify_fov_analysis(rom, profile, metadata, coverage))
+    verify_ai_analysis(rom, profile, metadata)
 
 
 def configure_translation(rom, metadata, profile, output):

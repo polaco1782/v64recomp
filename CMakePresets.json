@@ -424,6 +424,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "banjo-kazooie-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/banjo-kazooie-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "banjo-kazooie-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "banjo-kazooie-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/banjo-kazooie-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "banjo-kazooie-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -433,9 +454,25 @@
       "jobs": 4
     },
     {
+      "name": "media-player-debug-promote",
+      "configurePreset": "media-player-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "media-player-release",
       "configurePreset": "media-player-release",
       "jobs": 4
+    },
+    {
+      "name": "media-player-release-promote",
+      "configurePreset": "media-player-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "bad-apple-debug",
@@ -443,9 +480,25 @@
       "jobs": 4
     },
     {
+      "name": "bad-apple-debug-promote",
+      "configurePreset": "bad-apple-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "bad-apple-release",
       "configurePreset": "bad-apple-release",
       "jobs": 4
+    },
+    {
+      "name": "bad-apple-release-promote",
+      "configurePreset": "bad-apple-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     { "name": "windows-msvc-release", "configurePreset": "windows-msvc-release", "configuration": "Release", "jobs": 4 },
     { "name": "windows-msvc-debug", "configurePreset": "windows-msvc-debug", "configuration": "Debug", "jobs": 4 },
@@ -455,9 +508,25 @@
       "jobs": 4
     },
     {
+      "name": "sm64-us-release-promote",
+      "configurePreset": "sm64-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "sm64-us-debug",
       "configurePreset": "sm64-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "sm64-us-debug-promote",
+      "configurePreset": "sm64-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "goldeneye-us-release",
@@ -465,9 +534,25 @@
       "jobs": 4
     },
     {
+      "name": "goldeneye-us-release-promote",
+      "configurePreset": "goldeneye-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "goldeneye-us-debug",
       "configurePreset": "goldeneye-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "goldeneye-us-debug-promote",
+      "configurePreset": "goldeneye-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "shadowman-us-release",
@@ -475,9 +560,25 @@
       "jobs": 4
     },
     {
+      "name": "shadowman-us-release-promote",
+      "configurePreset": "shadowman-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "shadowman-us-debug",
       "configurePreset": "shadowman-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "shadowman-us-debug-promote",
+      "configurePreset": "shadowman-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "quake-us-release",
@@ -485,9 +586,25 @@
       "jobs": 4
     },
     {
+      "name": "quake-us-release-promote",
+      "configurePreset": "quake-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "quake-us-debug",
       "configurePreset": "quake-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "quake-us-debug-promote",
+      "configurePreset": "quake-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "duke-us-release",
@@ -495,9 +612,25 @@
       "jobs": 4
     },
     {
+      "name": "duke-us-release-promote",
+      "configurePreset": "duke-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "duke-us-debug",
       "configurePreset": "duke-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "duke-us-debug-promote",
+      "configurePreset": "duke-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "nightmare-us-release",
@@ -505,9 +638,25 @@
       "jobs": 4
     },
     {
+      "name": "nightmare-us-release-promote",
+      "configurePreset": "nightmare-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "nightmare-us-debug",
       "configurePreset": "nightmare-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "nightmare-us-debug-promote",
+      "configurePreset": "nightmare-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "oot-us-v12-release",
@@ -515,9 +664,25 @@
       "jobs": 4
     },
     {
+      "name": "oot-us-v12-release-promote",
+      "configurePreset": "oot-us-v12-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "oot-us-v12-debug",
       "configurePreset": "oot-us-v12-debug",
       "jobs": 4
+    },
+    {
+      "name": "oot-us-v12-debug-promote",
+      "configurePreset": "oot-us-v12-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "perfectdark-us-v11-release",
@@ -525,9 +690,25 @@
       "jobs": 4
     },
     {
+      "name": "perfectdark-us-v11-release-promote",
+      "configurePreset": "perfectdark-us-v11-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "perfectdark-us-v11-debug",
       "configurePreset": "perfectdark-us-v11-debug",
       "jobs": 4
+    },
+    {
+      "name": "perfectdark-us-v11-debug-promote",
+      "configurePreset": "perfectdark-us-v11-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "conker-us-release",
@@ -535,9 +716,25 @@
       "jobs": 4
     },
     {
+      "name": "conker-us-release-promote",
+      "configurePreset": "conker-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "conker-us-debug",
       "configurePreset": "conker-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "conker-us-debug-promote",
+      "configurePreset": "conker-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "duke-zero-hour-us-release",
@@ -545,9 +742,25 @@
       "jobs": 4
     },
     {
+      "name": "duke-zero-hour-us-release-promote",
+      "configurePreset": "duke-zero-hour-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "duke-zero-hour-us-debug",
       "configurePreset": "duke-zero-hour-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "duke-zero-hour-us-debug-promote",
+      "configurePreset": "duke-zero-hour-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "hexen-us-release",
@@ -555,9 +768,25 @@
       "jobs": 4
     },
     {
+      "name": "hexen-us-release-promote",
+      "configurePreset": "hexen-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "hexen-us-debug",
       "configurePreset": "hexen-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "hexen-us-debug-promote",
+      "configurePreset": "hexen-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "rayman2-us-release",
@@ -565,9 +794,25 @@
       "jobs": 4
     },
     {
+      "name": "rayman2-us-release-promote",
+      "configurePreset": "rayman2-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "rayman2-us-debug",
       "configurePreset": "rayman2-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "rayman2-us-debug-promote",
+      "configurePreset": "rayman2-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "quake2-us-release",
@@ -575,9 +820,25 @@
       "jobs": 4
     },
     {
+      "name": "quake2-us-release-promote",
+      "configurePreset": "quake2-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "quake2-us-debug",
       "configurePreset": "quake2-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "quake2-us-debug-promote",
+      "configurePreset": "quake2-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "re2-us-v1-release",
@@ -585,9 +846,25 @@
       "jobs": 4
     },
     {
+      "name": "re2-us-v1-release-promote",
+      "configurePreset": "re2-us-v1-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "re2-us-v1-debug",
       "configurePreset": "re2-us-v1-debug",
       "jobs": 4
+    },
+    {
+      "name": "re2-us-v1-debug-promote",
+      "configurePreset": "re2-us-v1-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "turok-us-v12-release",
@@ -595,9 +872,25 @@
       "jobs": 4
     },
     {
+      "name": "turok-us-v12-release-promote",
+      "configurePreset": "turok-us-v12-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "turok-us-v12-debug",
       "configurePreset": "turok-us-v12-debug",
       "jobs": 4
+    },
+    {
+      "name": "turok-us-v12-debug-promote",
+      "configurePreset": "turok-us-v12-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "1080-us-release",
@@ -605,9 +898,25 @@
       "jobs": 4
     },
     {
+      "name": "1080-us-release-promote",
+      "configurePreset": "1080-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "1080-us-debug",
       "configurePreset": "1080-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "1080-us-debug-promote",
+      "configurePreset": "1080-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     },
     {
       "name": "twine-us-release",
@@ -615,9 +924,51 @@
       "jobs": 4
     },
     {
+      "name": "twine-us-release-promote",
+      "configurePreset": "twine-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
       "name": "twine-us-debug",
       "configurePreset": "twine-us-debug",
       "jobs": 4
+    },
+    {
+      "name": "twine-us-debug-promote",
+      "configurePreset": "twine-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
+      "name": "banjo-kazooie-us-release",
+      "configurePreset": "banjo-kazooie-us-release",
+      "jobs": 4
+    },
+    {
+      "name": "banjo-kazooie-us-release-promote",
+      "configurePreset": "banjo-kazooie-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
+      "name": "banjo-kazooie-us-debug",
+      "configurePreset": "banjo-kazooie-us-debug",
+      "jobs": 4
+    },
+    {
+      "name": "banjo-kazooie-us-debug-promote",
+      "configurePreset": "banjo-kazooie-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
     }
   ],
   "workflowPresets": [
@@ -630,6 +981,10 @@
         },
         {
           "type": "build",
+          "name": "media-player-debug-promote"
+        },
+        {
+          "type": "build",
           "name": "media-player-debug"
         }
       ]
@@ -640,6 +995,10 @@
         {
           "type": "configure",
           "name": "media-player-release"
+        },
+        {
+          "type": "build",
+          "name": "media-player-release-promote"
         },
         {
           "type": "build",
@@ -656,6 +1015,10 @@
         },
         {
           "type": "build",
+          "name": "bad-apple-debug-promote"
+        },
+        {
+          "type": "build",
           "name": "bad-apple-debug"
         }
       ]
@@ -666,6 +1029,10 @@
         {
           "type": "configure",
           "name": "bad-apple-release"
+        },
+        {
+          "type": "build",
+          "name": "bad-apple-release-promote"
         },
         {
           "type": "build",
@@ -682,6 +1049,10 @@
         },
         {
           "type": "build",
+          "name": "sm64-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "sm64-us-release"
         }
       ]
@@ -692,6 +1063,10 @@
         {
           "type": "configure",
           "name": "sm64-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "sm64-us-debug-promote"
         },
         {
           "type": "build",
@@ -708,6 +1083,10 @@
         },
         {
           "type": "build",
+          "name": "goldeneye-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "goldeneye-us-release"
         }
       ]
@@ -718,6 +1097,10 @@
         {
           "type": "configure",
           "name": "goldeneye-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "goldeneye-us-debug-promote"
         },
         {
           "type": "build",
@@ -734,6 +1117,10 @@
         },
         {
           "type": "build",
+          "name": "shadowman-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "shadowman-us-release"
         }
       ]
@@ -744,6 +1131,10 @@
         {
           "type": "configure",
           "name": "shadowman-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "shadowman-us-debug-promote"
         },
         {
           "type": "build",
@@ -760,6 +1151,10 @@
         },
         {
           "type": "build",
+          "name": "quake-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "quake-us-release"
         }
       ]
@@ -770,6 +1165,10 @@
         {
           "type": "configure",
           "name": "quake-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "quake-us-debug-promote"
         },
         {
           "type": "build",
@@ -786,6 +1185,10 @@
         },
         {
           "type": "build",
+          "name": "duke-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "duke-us-release"
         }
       ]
@@ -796,6 +1199,10 @@
         {
           "type": "configure",
           "name": "duke-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "duke-us-debug-promote"
         },
         {
           "type": "build",
@@ -812,6 +1219,10 @@
         },
         {
           "type": "build",
+          "name": "nightmare-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "nightmare-us-release"
         }
       ]
@@ -822,6 +1233,10 @@
         {
           "type": "configure",
           "name": "nightmare-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "nightmare-us-debug-promote"
         },
         {
           "type": "build",
@@ -838,6 +1253,10 @@
         },
         {
           "type": "build",
+          "name": "oot-us-v12-release-promote"
+        },
+        {
+          "type": "build",
           "name": "oot-us-v12-release"
         }
       ]
@@ -848,6 +1267,10 @@
         {
           "type": "configure",
           "name": "oot-us-v12-debug"
+        },
+        {
+          "type": "build",
+          "name": "oot-us-v12-debug-promote"
         },
         {
           "type": "build",
@@ -864,6 +1287,10 @@
         },
         {
           "type": "build",
+          "name": "perfectdark-us-v11-release-promote"
+        },
+        {
+          "type": "build",
           "name": "perfectdark-us-v11-release"
         }
       ]
@@ -874,6 +1301,10 @@
         {
           "type": "configure",
           "name": "perfectdark-us-v11-debug"
+        },
+        {
+          "type": "build",
+          "name": "perfectdark-us-v11-debug-promote"
         },
         {
           "type": "build",
@@ -890,6 +1321,10 @@
         },
         {
           "type": "build",
+          "name": "conker-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "conker-us-release"
         }
       ]
@@ -900,6 +1335,10 @@
         {
           "type": "configure",
           "name": "conker-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "conker-us-debug-promote"
         },
         {
           "type": "build",
@@ -916,6 +1355,10 @@
         },
         {
           "type": "build",
+          "name": "duke-zero-hour-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "duke-zero-hour-us-release"
         }
       ]
@@ -926,6 +1369,10 @@
         {
           "type": "configure",
           "name": "duke-zero-hour-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "duke-zero-hour-us-debug-promote"
         },
         {
           "type": "build",
@@ -942,6 +1389,10 @@
         },
         {
           "type": "build",
+          "name": "hexen-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "hexen-us-release"
         }
       ]
@@ -952,6 +1403,10 @@
         {
           "type": "configure",
           "name": "hexen-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "hexen-us-debug-promote"
         },
         {
           "type": "build",
@@ -968,6 +1423,10 @@
         },
         {
           "type": "build",
+          "name": "rayman2-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "rayman2-us-release"
         }
       ]
@@ -978,6 +1437,10 @@
         {
           "type": "configure",
           "name": "rayman2-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "rayman2-us-debug-promote"
         },
         {
           "type": "build",
@@ -994,6 +1457,10 @@
         },
         {
           "type": "build",
+          "name": "quake2-us-release-promote"
+        },
+        {
+          "type": "build",
           "name": "quake2-us-release"
         }
       ]
@@ -1004,6 +1471,10 @@
         {
           "type": "configure",
           "name": "quake2-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "quake2-us-debug-promote"
         },
         {
           "type": "build",
@@ -1020,6 +1491,10 @@
         },
         {
           "type": "build",
+          "name": "re2-us-v1-release-promote"
+        },
+        {
+          "type": "build",
           "name": "re2-us-v1-release"
         }
       ]
@@ -1030,6 +1505,10 @@
         {
           "type": "configure",
           "name": "re2-us-v1-debug"
+        },
+        {
+          "type": "build",
+          "name": "re2-us-v1-debug-promote"
         },
         {
           "type": "build",
@@ -1046,6 +1525,10 @@
         },
         {
           "type": "build",
+          "name": "turok-us-v12-release-promote"
+        },
+        {
+          "type": "build",
           "name": "turok-us-v12-release"
         }
       ]
@@ -1059,6 +1542,10 @@
         },
         {
           "type": "build",
+          "name": "turok-us-v12-debug-promote"
+        },
+        {
+          "type": "build",
           "name": "turok-us-v12-debug"
         }
       ]
@@ -1066,15 +1553,35 @@
     {
       "name": "1080-us-release",
       "steps": [
-        {"type": "configure", "name": "1080-us-release"},
-        {"type": "build", "name": "1080-us-release"}
+        {
+          "type": "configure",
+          "name": "1080-us-release"
+        },
+        {
+          "type": "build",
+          "name": "1080-us-release-promote"
+        },
+        {
+          "type": "build",
+          "name": "1080-us-release"
+        }
       ]
     },
     {
       "name": "1080-us-debug",
       "steps": [
-        {"type": "configure", "name": "1080-us-debug"},
-        {"type": "build", "name": "1080-us-debug"}
+        {
+          "type": "configure",
+          "name": "1080-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "1080-us-debug-promote"
+        },
+        {
+          "type": "build",
+          "name": "1080-us-debug"
+        }
       ]
     },
     {
@@ -1083,6 +1590,10 @@
         {
           "type": "configure",
           "name": "twine-us-release"
+        },
+        {
+          "type": "build",
+          "name": "twine-us-release-promote"
         },
         {
           "type": "build",
@@ -1099,7 +1610,45 @@
         },
         {
           "type": "build",
+          "name": "twine-us-debug-promote"
+        },
+        {
+          "type": "build",
           "name": "twine-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "banjo-kazooie-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "banjo-kazooie-us-release"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-release-promote"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-release"
+        }
+      ]
+    },
+    {
+      "name": "banjo-kazooie-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "banjo-kazooie-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-debug-promote"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-debug"
         }
       ]
     }

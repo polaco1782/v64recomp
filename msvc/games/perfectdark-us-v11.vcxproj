@@ -24,18 +24,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\audio.h" />
     <None Include="$(RecompRoot)games\perfectdark-us-v11\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\audio.h" />
     <None Include="$(RecompRoot)games\perfectdark-us-v11\generate.py" />
-    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\perfectdark.c" />
-    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\perfectdark.h" />
+    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\main.c" />
     <None Include="$(RecompRoot)games\perfectdark-us-v11\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\perfectdark-us-v11\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\perfectdark-us-v11\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\perfectdark-us-v11\functions.c" Condition="Exists('$(RecompBuildDir)\generated\perfectdark-us-v11\functions.c')" />

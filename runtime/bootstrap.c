@@ -13,6 +13,7 @@ bool recomp_rom_attach(Runtime *rt, const uint8_t *rom, size_t size, const uint8
         return false;
     rt->rom = rom;
     rt->rom_size = size;
+    memcpy(rt->rom_sha1, sha1, 20);
     RECOMP_LOG("game", "verified ROM title=%.20s bytes=%zu entry=0x%08" PRIx32 " country=0x%02x revision=%u",
                (const char *)rom + 0x20, size,
                (uint32_t)rom[8] << 24 | (uint32_t)rom[9] << 16 | (uint32_t)rom[10] << 8 | rom[11], rom[0x3e],

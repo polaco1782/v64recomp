@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\turok-us-v12\audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\turok-us-v12\CMakeLists.txt">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\debug\app.c">
-      <Filter>Source Files\debug</Filter>
+    <ClInclude Include="$(RecompRoot)games\turok-us-v12\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\turok-us-v12\controls.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\turok-us-v12\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\turok-us-v12\controls_analysis.py">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="$(RecompRoot)games\turok-us-v12\generate.py">
       <Filter>Source Files</Filter>
     </None>
@@ -19,21 +25,15 @@
     <ClInclude Include="$(RecompRoot)games\turok-us-v12\graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\turok-us-v12\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <None Include="$(RecompRoot)games\turok-us-v12\profile.toml">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\release\app.c">
-      <Filter>Source Files\release</Filter>
-    </ClCompile>
     <None Include="$(RecompRoot)games\turok-us-v12\rnc.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\turok-us-v12\run.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok-us-v12\run.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\turok-us-v12\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>
@@ -59,12 +59,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{321F5DE8-13A9-5E2F-AFC6-9DB92B45DFD0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\debug">
-      <UniqueIdentifier>{F11D7310-ADD0-576E-A425-BD65B57EE2BB}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\release">
-      <UniqueIdentifier>{34C283BE-A7B7-5C31-B1E2-E2C10BA52531}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

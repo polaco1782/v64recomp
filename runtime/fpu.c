@@ -8,6 +8,11 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#if defined(RECOMP_FPU_SPECIALIZE) && defined(__clang__)
+#define RECOMP_FPU_INLINE __attribute__((always_inline))
+#else
+#define RECOMP_FPU_INLINE
+#endif
 #if (defined(__x86_64__) && defined(__SSE2__)) || defined(_M_X64)
 #define RECOMP_FP_SSE USE_INTRISICS
 #elif defined(__aarch64__) && defined(__linux__)
@@ -188,8 +193,8 @@ static uint64_t result(MipsContext *ctx, uint64_t bits, enum MipsFpFormat fmt, u
     return bits;
 }
 
-void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enum MipsFpFormat fmt,
-                    enum MipsFpOperation op) {
+RECOMP_FPU_INLINE void mips_fp_binary(MipsContext *ctx, unsigned fd, unsigned fs, unsigned ft, enum MipsFpFormat fmt,
+                                      enum MipsFpOperation op) {
     uint64_t a = read_bits(ctx, fs, fmt), b = read_bits(ctx, ft, fmt), bits;
     unsigned flags = operand_flags(a, fmt) | operand_flags(b, fmt);
     if (flags) {
@@ -438,7 +443,7 @@ void mips_fp_compare(MipsContext *ctx, unsigned fs, unsigned ft, enum MipsFpForm
     bool unordered = nan_bits(a, fmt) || nan_bits(b, fmt), equal = false, less = false;
     unsigned flags = unordered && ((predicate & 8) || signaling(a, fmt) || signaling(b, fmt)) ? FP_V : 0;
     if (!unordered) {
-#if USE_INTRISICS
+#if RECOMP_FP_SSE
         /* Non-NaN encodings are ordered by magnitude, reversed for negatives.
          * Treat both signed zeros as equal. Integer comparisons also preserve
          * denormals without changing host rounding, exception flags or DAZ. */

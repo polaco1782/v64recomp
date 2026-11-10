@@ -1,12 +1,27 @@
+#define _GNU_SOURCE
 #include "runtime.h"
 #include "runtime_debug.h"
 #include "timing.h"
 
 #ifdef _WIN32
 #include <windows.h>
+#ifdef RECOMP_DEBUG
+#include <dbghelp.h>
+#endif
 #else
 #include <execinfo.h>
 #include <unwind.h>
+#if defined(RECOMP_DEBUG) && defined(__linux__)
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <link.h>
+#include <poll.h>
+#include <signal.h>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <unistd.h>
+extern char **environ;
+#endif
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,18 +58,142 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *op
     return _URC_NO_REASON;
 }
 #endif
+/* Resolve return PCs at the calling instruction, rather than the next line.
+ * Batch each ELF image into one addr2line invocation. link_map.l_addr is zero
+ * for non-PIE executables and the relocation bias for PIE/shared libraries. */
+static void resolve_trace(RecompFailureInfo *info) {
+#if defined(RECOMP_DEBUG) && (defined(__linux__) || defined(_WIN32))
+    /* Reports are consumed synchronously, including forwarding from guest threads. */
+    static _Thread_local char sources[64][1024];
+    memset(sources, 0, sizeof(sources));
+#endif
+#if defined(RECOMP_DEBUG) && defined(__linux__)
+    bool resolved[64] = {0};
+    for (size_t first = 0; first < info->native_frame_count; first++) {
+        if (resolved[first])
+            continue;
+        Dl_info image;
+        struct link_map *map = NULL;
+        uintptr_t pc = (uintptr_t)info->native_frames[first] - 1;
+        if (!dladdr1((void *)pc, &image, (void **)&map, RTLD_DL_LINKMAP) || !map)
+            continue;
+        char addresses[64][32];
+        char *args[69] = {RECOMP_ADDR2LINE, "-e", (char *)image.dli_fname};
+        size_t indices[64], count = 0;
+        for (size_t i = first; i < info->native_frame_count; i++) {
+            Dl_info other;
+            uintptr_t address = (uintptr_t)info->native_frames[i] - 1;
+            if (resolved[i] || !dladdr((void *)address, &other) || other.dli_fbase != image.dli_fbase)
+                continue;
+            resolved[i] = true;
+            indices[count] = i;
+            snprintf(addresses[count], sizeof(addresses[count]), "0x%lx",
+                     (unsigned long)(address - (uintptr_t)map->l_addr));
+            args[3 + count] = addresses[count];
+            count++;
+        }
+        int output[2];
+        if (pipe(output))
+            continue;
+        posix_spawn_file_actions_t actions;
+        if (posix_spawn_file_actions_init(&actions)) {
+            close(output[0]);
+            close(output[1]);
+            continue;
+        }
+        int error = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO);
+        error |= posix_spawn_file_actions_addclose(&actions, output[0]);
+        error |= posix_spawn_file_actions_addclose(&actions, output[1]);
+        error |= posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+        pid_t child;
+        if (!error)
+            error = posix_spawn(&child, RECOMP_ADDR2LINE, &actions, NULL, args, environ);
+        posix_spawn_file_actions_destroy(&actions);
+        close(output[1]);
+        if (error) {
+            close(output[0]);
+            continue;
+        }
+        /* A missing/broken resolver must never prevent the crash report. */
+        size_t row = 0, column = 0;
+        bool complete = false;
+        struct timespec start, now;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        while (row < count) {
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            long remaining = 5000 - (now.tv_sec - start.tv_sec) * 1000 - (now.tv_nsec - start.tv_nsec) / 1000000;
+            struct pollfd ready = {.fd = output[0], .events = POLLIN};
+            if (remaining <= 0 || poll(&ready, 1, (int)remaining) <= 0)
+                break;
+            char buffer[1024];
+            ssize_t bytes = read(output[0], buffer, sizeof(buffer));
+            if (bytes <= 0) {
+                complete = bytes == 0;
+                break;
+            }
+            for (ssize_t i = 0; i < bytes && row < count; i++) {
+                char *source = sources[indices[row]];
+                if (buffer[i] == '\n') {
+                    source[column] = 0;
+                    const char *line = strrchr(source, ':');
+                    if (source[0] == '?' || !line || !strtoul(line + 1, NULL, 10))
+                        source[0] = 0;
+                    info->native_sources[indices[row]] = source[0] ? source : NULL;
+                    row++;
+                    column = 0;
+                } else if (column + 1 < sizeof(sources[0])) {
+                    source[column++] = buffer[i];
+                }
+            }
+        }
+        close(output[0]);
+        if (!complete) {
+            /* All output may have arrived before EOF; kill is harmless then. */
+            (void)kill(child, SIGKILL);
+        }
+        (void)waitpid(child, NULL, 0);
+    }
+#elif defined(RECOMP_DEBUG) && defined(_WIN32)
+    HANDLE process = GetCurrentProcess();
+    SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES);
+    if (!SymInitialize(process, NULL, TRUE))
+        return;
+    for (size_t i = 0; i < info->native_frame_count; i++) {
+        IMAGEHLP_LINE64 line = {.SizeOfStruct = sizeof(line)};
+        DWORD displacement;
+        if (SymGetLineFromAddr64(process, (DWORD64)(uintptr_t)info->native_frames[i] - 1, &displacement, &line))
+            snprintf(sources[i], sizeof(sources[i]), "%s:%lu", line.FileName, (unsigned long)line.LineNumber);
+        if (sources[i][0])
+            info->native_sources[i] = sources[i];
+    }
+    SymCleanup(process);
+#else
+    (void)info;
+#endif
+}
 static void capture_trace(RecompFailureInfo *info) {
 #ifdef _WIN32
     info->native_frame_count = CaptureStackBackTrace(1, 64, info->native_frames, NULL);
 #else
     (void)_Unwind_Backtrace(trace_frame, info);
 #endif
+    resolve_trace(info);
     fputs("Native call stack:\n", stderr);
-#ifdef _WIN32
-    for (size_t i = 0; i < info->native_frame_count; i++)
-        fprintf(stderr, "  %p\n", info->native_frames[i]);
-#else
-    backtrace_symbols_fd(info->native_frames, (int)info->native_frame_count, 2);
+#ifndef _WIN32
+    char **symbols = backtrace_symbols(info->native_frames, (int)info->native_frame_count);
+#endif
+    for (size_t i = 0; i < info->native_frame_count; i++) {
+#ifndef _WIN32
+        if (symbols)
+            fprintf(stderr, "  %s\n", symbols[i]);
+        else
+#endif
+            fprintf(stderr, "  %p\n", info->native_frames[i]);
+        if (info->native_sources[i])
+            fprintf(stderr, "    at %s\n", info->native_sources[i]);
+    }
+#ifndef _WIN32
+    free(symbols);
 #endif
 }
 
@@ -226,6 +365,7 @@ void recomp_runtime_destroy(Runtime *rt) {
     if (rt->destroy_clock)
         rt->destroy_clock(rt);
     recomp_timing_destroy(rt);
+    recomp_live_destroy(rt);
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);
@@ -259,11 +399,27 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
             result = entry->function;
         }
     }
+    if (!result && first == rt->function_count)
+        result = recomp_live_lookup(rt, address);
     if (!result)
         recomp_fail("unregistered or unloaded function", address);
     if (rt->prepare_call)
         rt->prepare_call(rt, address);
     return result;
+}
+
+bool recomp_has_function(Runtime *rt, uint32_t address) {
+    address = recomp_canonical_function_address(rt, address);
+    if (!rt->function_lookup)
+        return false;
+    size_t slot = function_hash(address) & rt->function_lookup_mask;
+    while (rt->function_lookup[slot]) {
+        size_t index = rt->function_lookup[slot] - 1;
+        if (rt->function_index[index]->address == address)
+            return true;
+        slot = (slot + 1) & rt->function_lookup_mask;
+    }
+    return false;
 }
 
 static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write) {
@@ -332,7 +488,7 @@ void recomp_map_pages(Runtime *rt, unsigned index, uint32_t mask, uint32_t addre
 void recomp_unmap_pages(Runtime *rt) {
     memset(rt->page_mappings, 0, sizeof(rt->page_mappings));
 }
-void hook_os_map_tlb(Runtime *rt, MipsContext *ctx) {
+void recomp_os_map_tlb(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t stack = (uint32_t)ctx->gpr[29];
     if (recomp_load(rt, stack + 20, 4) != UINT32_MAX)
@@ -340,7 +496,7 @@ void hook_os_map_tlb(Runtime *rt, MipsContext *ctx) {
     recomp_map_pages(rt, (uint32_t)ctx->gpr[4], (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], (uint32_t)ctx->gpr[7],
                      (uint32_t)recomp_load(rt, stack + 16, 4));
 }
-void hook_os_unmap_tlb_all(Runtime *rt, MipsContext *ctx) {
+void recomp_os_unmap_tlb_all(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     (void)ctx;
     recomp_unmap_pages(rt);
@@ -355,8 +511,7 @@ uint64_t recomp_load(Runtime *rt, uint32_t address, unsigned bytes) {
 #endif
     uint32_t device_bus = recomp_direct_address(address) ? address & UINT32_C(0x1fffffff) : address;
     uint64_t device_value;
-    if (device_bus >= rt->rdram_size && rt->device_read &&
-        rt->device_read(rt, device_bus, bytes, &device_value))
+    if (device_bus >= rt->rdram_size && rt->device_read && rt->device_read(rt, device_bus, bytes, &device_value))
         return device_value;
     /* Some audio managers inline osAiGetLength. Use the same native DMA
      * state as the SDK hook for this read-only register, including polling
@@ -462,8 +617,7 @@ void recomp_store(Runtime *rt, uint32_t address, uint64_t value, unsigned bytes)
         fail_ram("unaligned store", address, bytes);
 #endif
     uint32_t device_bus = recomp_direct_address(address) ? address & UINT32_C(0x1fffffff) : address;
-    if (device_bus >= rt->rdram_size && rt->device_write &&
-        rt->device_write(rt, device_bus, bytes, value))
+    if (device_bus >= rt->rdram_size && rt->device_write && rt->device_write(rt, device_bus, bytes, value))
         return;
     uint32_t p = recomp_ram_address_write_slow(rt, address, bytes);
 #if RECOMP_LITTLE_ENDIAN_HOST
@@ -594,17 +748,17 @@ static void fill_guest(Runtime *rt, uint32_t dest, uint8_t value, uint32_t bytes
     }
 }
 
-void hook_os_memcpy(Runtime *rt, MipsContext *ctx) {
+void recomp_os_memcpy(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t dest = (uint32_t)ctx->gpr[4];
     copy_guest(rt, dest, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], false);
     mips_set(ctx, 2, mips_s32(dest));
 
     if (LOG_NATIVE_MEMORY_CALLS)
-        fprintf(stderr, "hook_os_memcpy called: dest=0x%08x, src=0x%08x, bytes=%u\n", dest, (uint32_t)ctx->gpr[5],
+        fprintf(stderr, "recomp_os_memcpy called: dest=0x%08x, src=0x%08x, bytes=%u\n", dest, (uint32_t)ctx->gpr[5],
                 (uint32_t)ctx->gpr[6]);
 }
-void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
+void recomp_os_bcopy(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t src = (uint32_t)ctx->gpr[4], dest = (uint32_t)ctx->gpr[5], bytes = (uint32_t)ctx->gpr[6];
     /* Verified SDK variants return the original destination in v0, even though
@@ -613,18 +767,18 @@ void hook_os_bcopy(Runtime *rt, MipsContext *ctx) {
         copy_guest(rt, dest, src, bytes, mips_i32(dest) >= mips_i32(src) && mips_i32(dest) < mips_i32(src) + bytes);
     mips_set(ctx, 2, mips_s32(dest));
 }
-void hook_os_memset(Runtime *rt, MipsContext *ctx) {
+void recomp_os_memset(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t dest = (uint32_t)ctx->gpr[4];
     fill_guest(rt, dest, (uint8_t)ctx->gpr[5], (uint32_t)ctx->gpr[6]);
     mips_set(ctx, 2, mips_s32(dest));
 }
-void hook_os_bzero(Runtime *rt, MipsContext *ctx) {
+void recomp_os_bzero(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     if (mips_i32(ctx->gpr[5]) > 0)
         fill_guest(rt, (uint32_t)ctx->gpr[4], 0, (uint32_t)ctx->gpr[5]);
 }
-void hook_os_bcmp(Runtime *rt, MipsContext *ctx) {
+void recomp_os_bcmp(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t a = (uint32_t)ctx->gpr[4], b = (uint32_t)ctx->gpr[5];
     for (int64_t i = 0, bytes = mips_i32(ctx->gpr[6]); i < bytes; i++) {
@@ -636,14 +790,14 @@ void hook_os_bcmp(Runtime *rt, MipsContext *ctx) {
     }
     mips_set(ctx, 2, 0);
 }
-void hook_os_strlen(Runtime *rt, MipsContext *ctx) {
+void recomp_os_strlen(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t start = (uint32_t)ctx->gpr[4], address = start;
     while (recomp_load(rt, address, 1))
         address++;
     mips_set(ctx, 2, mips_s32(address - start));
 }
-void hook_os_strchr(Runtime *rt, MipsContext *ctx) {
+void recomp_os_strchr(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     uint32_t address = (uint32_t)ctx->gpr[4];
     uint8_t wanted = (uint8_t)ctx->gpr[5];

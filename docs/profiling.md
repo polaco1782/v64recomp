@@ -123,23 +123,30 @@ frame-exact diagnostic runs.
 | Games | Pacing policy, Debug and Release |
 | --- | --- |
 | Quake, Ocarina of Time, Nightmare Creatures | Shared `recomp_game_pace` |
-| Hexen, Duke Nukem: Zero Hour | Shared helper through their parent-folder adapters |
+| Hexen, Duke Nukem: Zero Hour | Shared helper in `main.c` |
 | Perfect Dark, Conker, GoldenEye | Shared helper after the first-graphics wall-clock handoff; synthetic bootstrap retained |
-| Duke Nukem 64 | Retains calibration-aware draining, detection of the game's clock-poll loop, and Debug sleep accounting |
-| Super Mario 64 | Retains queue-aware draining and frame-exact Debug routes; those paths require the existing scheduler return and frame-count behavior |
+| Duke Nukem 64 | Retains calibration-aware draining and detection of the game's clock-poll loop |
+| Super Mario 64 | Uses queue-aware draining and the same presentation loop in both builds |
 | Shadow Man | Retains its existing loop pending verification of an idle-thread object; a default scheduler drain could otherwise spin on its idle thread |
 
 The additional game migrations were checked by compilation/static review;
 gameplay validation is left to the user. They do not establish a measured
 performance gain for those games. Keep game-specific startup calibration,
-input/replay boundaries, captures and presentation deadline policies in the
-game adapter.
+input mapping and presentation deadline policies in `main.c` or its independent
+adapters. Use the shared game layer for replay and optional captures.
 
 GoldenEye configures its ROM-verified priority-zero idle object so the helper
 can wait without dispatching the empty idle loop. Once its clock follows wall
 time, the app runs a small scheduler batch before presentation and services
 the remaining guest work within the pacing deadline. Synthetic-clock startup
 uses a separate drain capped at 4096 scheduler resumes.
+
+GoldenEye batches 512 ordinary backedges per checkpoint instead of the shared
+default 64. This reduces guest/owner handoffs in its CPU render loops; explicit
+polling loops and priority preemption still yield immediately. A desktop A/B
+run measured fewer dispatches and lower CPU use at the same display-callback
+rate. The Deck's reported slow Dam view still requires gameplay comparison;
+see the [game's investigation notes](../games/goldeneye-us/README.md#performance-investigation).
 
 ## External capture with perf
 
@@ -267,11 +274,12 @@ locks or GPU presentation may require separate scheduling/GPU measurements.
 
 The host thread is named `goldeneye-us`. Its Release frame loop drains guest
 scheduling, services audio/graphics completion, updates input, presents and waits
-for the next frame. Guest pthread names come from the entry-address labels in
-the game profile, with `n64-<guest ID>` as a fallback for unknown entries.
-GoldenEye uses `n64-main` (formerly `n64-3`), `n64-idle` (`n64-1`),
-`n64-scheduler` (`n64-2`), `n64-sound` (`n64-4`) and `n64-controller` (`n64-5`).
-The old suffix identified a guest thread, not a host CPU number. Graphics HLE,
+for the next frame. Guest threads are stackful fibers on that same OS thread,
+so CPU profiles attribute their execution to `goldeneye-us`. The profile's
+entry-address labels (`n64-main`, `n64-idle`, `n64-scheduler`, `n64-sound` and
+`n64-controller`) identify logical guest threads in diagnostics, with
+`n64-<guest ID>` as the fallback. Older captures with separate guest pthreads
+retain their original native thread names. Graphics HLE,
 audio synthesis and presentation preparation now run synchronously on the main
 host thread while guest execution is parked. The adapter no longer creates
 `n64-video` or `n64-audio` threads. RT64 retains its own workload, texture, buffer
@@ -279,8 +287,9 @@ and presentation threads; SDL retains its playback thread.
 
 A busy main thread can reflect HLE processing, guest context serialization,
 device services or scheduling. Use sampled call trees to distinguish these from
-translated game computation. Voluntary context switches can reflect scheduler
-handoffs or ordinary waits; inspect stacks rather than assuming useful work.
+translated game computation. Guest fiber switches do not contribute to OS
+context-switch counters. Remaining voluntary switches can reflect frame pacing,
+I/O or backend waits; inspect stacks to identify their cause.
 
 The historical captures below predate synchronous HLE and describe the former
 snapshot/worker implementation. Their timings are not current-path benchmarks.
@@ -390,6 +399,102 @@ Release and Debug runtime builds passed. Evidence is under
 `build/profiles/inline-loads/`. GoldenEye Release also completed an 1,800-frame
 startup run with the intro visibly rendered and no runtime failure; full
 gameplay performance remains unmeasured.
+
+### GoldenEye address specialization timing, 2026-11-04
+
+A focused experiment compared complete generated GoldenEye routines against
+copies with direct 32-bit RAM accesses. On an AMD Ryzen 7 5700X with Clang
+22.1.8, the fixed-address routines `0x7000aedc` (two global loads and stores)
+and `0x7f0009e0` (three global stores) compiled to byte-identical machine code
+in both versions. Both measured approximately 1.35 ns/call. The existing inline
+helpers already let the compiler resolve those addresses and remove dispatch.
+
+The four-word copy at `0x7f0b5d58` takes source/destination pointers at runtime:
+
+| Extracted routine variant | Median CPU ns/call | Function bytes |
+| --- | --- | --- |
+| Current generated helpers | 4.492 | 405 |
+| Direct RAM, assuming both pointers are valid | 2.062 | 158 |
+| Check both 16-byte spans once, otherwise use original routine | 2.481 | 220 |
+
+The hand-written guarded variant reduced this routine's time by 44.8%. Its checks admit
+only complete spans in the first 8 MiB of KSEG0/KSEG1; other addresses retain
+the original routine. This experiment motivated the emitter implementation
+below; its timings are not measurements of that implementation. The unchecked
+variant is only a comparison for known RAM inputs.
+
+Timings are medians of nine 20-million-call runs after warmup, rotating variant
+order, pinned to logical CPU 0, using thread CPU time and warm buffers. The
+extracted functions use Release `-O3`, frame pointers and strict FP flags in a
+separate translation unit, without LTO; the harness cannot inline the calls.
+Fallback stubs abort if reached, so these timings cover direct RAM only.
+The production executable uses ThinLTO; its disassembly also retains repeated
+address checks in this copy routine. These extracted-function sizes and timings
+are not whole-executable size or performance measurements.
+
+There were 1,024 matching context/RAM comparisons across the fixed-address
+functions and both copy variants, including KSEG0/KSEG1 aliases and overlapping
+copies. They validate the exercised RAM inputs, not arbitrary mappings or an
+emitter transformation. Temporary sources, binaries and captures were removed
+after recording these results.
+
+A separate, unmodified Release run completed 2,700 presentations with title
+sequence captures visually checked. Sampling seconds 20..40 measured 32.7% of
+one logical CPU for the process and 1.94% for `n64-main`, with 2,925 samples,
+zero ring drops and 240 timer overruns at 499 Hz. This light title workload and
+sampling overhead do not establish Dam gameplay performance. No full-game A/B
+or FPS gain was measured. The run used a temporary save copy; its final hash
+matched the original save.
+
+The shared emitter now groups consecutive accesses with stable bases, within
+the [documented control-flow and size limits](recompilation.md#3-translate-mips-semantics-into-c).
+GoldenEye contains 2,896 groups covering 17,591 accesses. Summing the ELF sizes
+of its 2,908 translated functions gives 22,156,053 bytes before and 22,478,553
+after, an increase of 1.46%. This counts translated-function code, not the
+whole executable or embedded texture pack.
+
+For the same extracted `0x7f0b5d58` copy, the actual emitted implementation
+measured **4.515 ns/call before and 3.375 ns/call after (25.3% less CPU time)**.
+It groups the seven accesses before the return, leaving the delay-slot store
+on its original helper. Unlike the earlier hand-written experiment, this
+preserves the emitter's conservative delay-slot boundary. The measurement uses
+the same host/compiler and nine rotating 20-million-call runs after warmup,
+with separately compiled functions and no LTO.
+
+Validation compared 61 pairs of old/new generated functions over 12,200 cases
+per configuration, checking context, touched RAM, callback order and counts.
+Release and Debug passed AddressSanitizer/UndefinedBehaviorSanitizer; forced
+portable-fallback compilation also passed. Cases include every ordinary
+integer/FP load/store width, negative offsets, KSEG aliases, overlapping copies,
+segment/wrap edges, observable mock pager/device callbacks, changed RAM backing,
+forward branches, branch-likely annulment and base-register updates. One million
+span checks per configuration matched an independent interval calculation.
+Emitter checks also cover relocated operands, interior labels, group limits,
+delay slots and live-resume bodies. The mock fallback checks do not constitute
+hardware or full-game acceptance. GoldenEye Debug/Release and SM64 Release
+builds passed.
+
+A before/after/after/before desktop comparison completed 2,700 presentations
+per run, using temporary saves, the embedded texture pack, 1x resolution,
+1x MSAA, 60 Hz presentation, and shared timing/frame traces without CPU sampling.
+The seconds 25..40 title-sequence windows measured:
+
+| Run | Process CPU, logical cores | Display callbacks/s | Display interval p99 |
+| --- | --- | --- | --- |
+| Before 1 | 0.2680 | 59.93 | 17.59 ms |
+| After 1 | 0.3983 | 59.87 | 17.65 ms |
+| After 2 | 0.2640 | 59.94 | 17.37 ms |
+| Before 2 | 0.2654 | 59.94 | 17.38 ms |
+
+Captures confirmed the same sequence; no measured display interval exceeded
+50 ms. The elevated CPU usage in the first optimized run did not recur in the
+second, and these runs do not demonstrate a consistent whole-game CPU saving.
+Display callbacks are not unique game-frame or compositor FPS. Dam gameplay
+performance remains unmeasured. Separate unprofiled 600-presentation GoldenEye
+and SM64 runs exited normally with their intros/title screens visually checked.
+All runs used disposable saves, and GoldenEye save copies matched the original
+after the comparison. Temporary test programs, baseline binary, traces and
+captures were removed after recording the results.
 
 References: [perf record](https://man7.org/linux/man-pages/man1/perf-record.1.html),
 [perf report](https://man7.org/linux/man-pages/man1/perf-report.1.html),

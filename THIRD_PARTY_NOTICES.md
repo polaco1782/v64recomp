@@ -3,6 +3,13 @@
 v64recomp is distributed under GNU GPL version 2; see [LICENSE](LICENSE).
 Third-party components retain their original copyright and license notices.
 
+## minicoro
+
+Guest CPU threads use stackful fibers from [minicoro](https://github.com/edubart/minicoro),
+revision `02dad0f8b7cbb12fe6e216ae7a76db15ca55cd7b`. The unmodified header is in
+`third_party/minicoro/` and retains its original dual license. This project uses
+the MIT No Attribution option, preserved in [licenses/minicoro.txt](licenses/minicoro.txt).
+
 ## N64 Media Player target
 
 The optional `media-player` target translates decoder instructions from

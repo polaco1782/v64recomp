@@ -26,7 +26,7 @@ typedef struct RecompAudioConfig {
     bool output_enabled;  /* Disable during accelerated startup; synthesis continues. */
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile; /* Game-owned static recognition data; required for submit. */
-    unsigned prebuffer_ms;                      /* Zero uses 80 ms; a game may request up to 200 ms. */
+    unsigned prebuffer_ms;                      /* Initial reserve; zero uses 160 ms, maximum 200 ms. */
     const char *trace_path;                     /* Optional CSV of AI admission and playback queue timing. */
 } RecompAudioConfig;
 typedef struct RecompAudioStats {
@@ -53,9 +53,6 @@ RecompAudio *recomp_audio_create(Runtime *, const RecompAudioConfig *);
 void recomp_audio_destroy(RecompAudio *);
 void recomp_audio_set_output_enabled(RecompAudio *, bool);
 bool recomp_audio_submit(RecompAudio *, const RecompTask *);
-/* Explicit ABI1 DSP entry point, without microcode recognition or task receipts.
- * Useful for independent signal fixtures. Normal game tasks use submit(). */
-void recomp_audio_execute_abi1(RecompAudio *, uint32_t commands, uint32_t bytes);
 RecompAudioStats recomp_audio_stats(RecompAudio *);
 RecompAudioSnapshot recomp_audio_snapshot(const RecompAudio *);
 #ifdef __cplusplus

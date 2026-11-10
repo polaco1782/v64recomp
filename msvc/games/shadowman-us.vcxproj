@@ -24,19 +24,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\Recomp.props" />
   <ItemGroup>
-    <ClInclude Include="$(RecompRoot)games\shadowman-us\audio.h" />
     <None Include="$(RecompRoot)games\shadowman-us\CMakeLists.txt" />
-    <ClCompile Include="$(RecompRoot)games\shadowman-us\debug\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\shadowman-us\audio.h" />
     <None Include="$(RecompRoot)games\shadowman-us\generate.py" />
-    <ClInclude Include="$(RecompRoot)games\shadowman-us\hooks.h" />
+    <ClCompile Include="$(RecompRoot)games\shadowman-us\main.c" />
     <ClCompile Include="$(RecompRoot)games\shadowman-us\pager.c" />
     <ClInclude Include="$(RecompRoot)games\shadowman-us\pager.h" />
     <None Include="$(RecompRoot)games\shadowman-us\profile.toml" />
-    <ClCompile Include="$(RecompRoot)games\shadowman-us\release\app.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </ClCompile>
     <None Include="$(RecompRoot)games\shadowman-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\shadowman-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\shadowman-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\shadowman-us\functions.c')" />

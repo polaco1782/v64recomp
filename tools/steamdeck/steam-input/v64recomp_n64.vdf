@@ -1,14 +1,14 @@
 "controller_mappings"
 {
     "version" "3"
-    "revision" "1"
+    "revision" "2"
     "title" "v64recomp - N64"
-    "description" "Analog movement; A=N64 A, X=N64 B, left trigger=Z, right trigger=R, right stick=C-buttons. Back buttons: L4=C-up, R4=C-down, L5=C-left, R5=C-right. Hold View for 1.5 seconds to exit."
+    "description" "Left stick=movement; OoT Deck package: right stick=camera, D-pad=C-buttons. Other games: right stick=C-buttons, D-pad=N64 D-pad. A=N64 A, X=N64 B, left trigger=Z, right trigger=R. Back buttons: L4=C-up, R4=C-down, L5=C-left, R5=C-right. Hold View for 1.5 seconds to exit."
     "url" "template://v64recomp_n64.vdf"
     "export_type" "template"
     "controller_type" "controller_neptune"
     "major_revision" "0"
-    "minor_revision" "1"
+    "minor_revision" "2"
     "Timestamp" "0"
     "group"
     {

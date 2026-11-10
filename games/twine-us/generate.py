@@ -34,4 +34,4 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},'
                  for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
-    (output / 'twine_config.h').write_text('\n'.join(lines))
+    (output / 'game_config.h').write_text('\n'.join(lines))

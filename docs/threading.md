@@ -1,30 +1,37 @@
 # Native threading
 
 See the [thread ownership graph and blocking-receive sequence](process-flow.md#thread-ownership-and-concurrency)
-for the scheduler, guest pthreads, synchronous HLE and RT64 presentation flow.
+for the scheduler, guest fibers, synchronous HLE and RT64 presentation flow.
 
-Each libultra thread has a named pthread, a native stack and its own
-`MipsContext`. A scheduler mutex and condition variables transfer an execution
-token between the host and one guest thread. Priorities, FIFO ordering among
-ready threads of equal priority, message queues and guest OSThread structures
-remain managed by the shared runtime. Host scheduling priorities are not used
-to implement libultra priorities.
+Each libultra thread has a stackful fiber, a native C stack and its own
+`MipsContext`. The scheduler resumes one fiber at a time on the main owner OS
+thread; blocking and checkpoints switch back to the scheduler's main stack.
+Guest scheduling does not create pthreads, acquire a scheduler mutex or wait on
+condition variables. Priorities, FIFO ordering among ready threads of equal
+priority, message queues and guest OSThread structures remain managed by the
+shared runtime.
+
+The pinned minicoro implementation performs the stack switches. Each fiber
+reserves an 8 MiB virtual stack by default, with physical pages allocated as
+used; `native_stack_size` can select another size. Suspended or retired fibers
+release their stack when destroyed. The owner and each fiber retain separate
+host floating-point environments in addition to their guest FCR31/FPR state.
 
 Games can provide an entry-address-to-name table through
 `RecompSchedulerConfig.thread_names` and `thread_name_count`. Names must fit
-Linux's 15-byte limit; the table and strings must outlive the scheduler. The
-name is applied when the pthread starts, in both Release and Debug. Matching
-uses the original guest entry address, so guest IDs remain available to the
+15 bytes; the table and strings must outlive the scheduler. These are logical
+guest-thread labels used in diagnostics, rather than native OS thread names.
+Matching uses the original guest entry address, so guest IDs remain available to the
 emulated OS and diagnostics. Unknown entries retain the `n64-<id>` fallback.
 GoldenEye emits its checked profile's labels as `n64-main`, `n64-idle`,
 `n64-scheduler`, `n64-sound` and `n64-controller`. The translated sound thread
-builds audio lists; native DSP synthesis runs on the main host thread. Rebuild
-and restart to see new names in `top -H` or perf; existing processes retain
-their original names.
+builds audio lists; native DSP synthesis runs on the main stack. All guest CPU
+samples now belong to the main OS thread in `top -H` and perf; generated function
+names still identify the guest code being sampled.
 
-Blocking queue operations and stopped threads park their pthread without losing
-the translated C call stack. Destroying a parked thread wakes it for exit and
-joins it before releasing its storage. Generated checkpoints still provide safe
+Blocking queue operations and stopped threads suspend their fiber without losing
+the translated C call stack. Destroying a parked thread discards its suspended
+stack without resuming its guest code. Generated checkpoints still provide safe
 guest preemption boundaries; disabled interrupts suppress checkpoint yields.
 Device services poll on the host between dispatches, rather than making a host
 round trip at every translated backedge. The default interval is 64 checkpoints.
@@ -55,14 +62,19 @@ Logical CPU interrupt enable and SDK interrupt masks belong to each guest
 thread. Dispatch restores them, and blocking/preemption saves them before
 another thread runs. A blocking receive inside a critical section must resume
 with interrupts still disabled without disabling the next thread's checkpoints
-and device polling. `tools/check_thread_interrupts.c` covers that transition,
-including a higher-priority receiver preempting its sender.
+and device polling, including when a higher-priority receiver preempts its sender.
 
-Creating a new entry in a stopped thread object retires and joins its old native
+Configure `idle_thread` only when that thread has completed initialization.
+Games that start their initialization thread at priority zero can call
+`recomp_scheduler_set_idle_thread` at the verified handoff to the main thread.
+This keeps its startup work intact and leaves the guest thread runnable while
+letting the owner wait for hardware deadlines instead of executing its busy loop.
+
+Creating a new entry in a stopped thread object retires and destroys its old native
 stack before resetting its context. This supports reusable loader slots such as
 RE2's; a runnable thread, the current thread, or a stopped queue waiter cannot
-be overwritten. `tools/check_thread_recreate.c` verifies that a recreated thread
-starts with its new argument and that the abandoned call stack never resumes.
+be overwritten. A recreated thread starts with its new argument; the abandoned
+call stack never resumes.
 
 Saved register contexts use a serialized-word cache for direct KSEG0/KSEG1 RAM
 on little-endian hosts. A running thread refreshes its cache at synchronization;
@@ -75,8 +87,9 @@ fields retain their existing ownership. Mapped objects, invalid spans and other
 host byte orders use the original checked stores. Thread metadata, queue links
 and event ordering continue through the existing synchronization paths.
 
-`recomp_on_host` parks the guest while the main thread executes task-submission
-and AI-output callbacks. SDL input, window creation, event handling and audio
+`recomp_on_host` yields the guest fiber while the scheduler executes task-submission
+and AI-output callbacks on its main stack. Calls already on the main stack execute
+directly. SDL input, window creation, event handling and audio
 queue admission stay on that thread. This preserves application callback state
 and SDL's main-thread requirements.
 
@@ -100,7 +113,8 @@ delivers queued guest events during polling, in SP-before-DP order. A split list
 without DP full sync still retires after SP. HLE tasks finish at whole-list
 boundaries; a late yield first polls their queued completion.
 
-Fatal HLE failures now occur on the owner and use the shared crash reporter.
+Guest and HLE failures occur on the owner and use its shared crash reporter.
+Diagnostic unwinding stops at the guest fiber's entry stack boundary.
 Backends must be destroyed before the runtime. Four-MiB games retain an eight-MiB
 host allocation for RT64's physical address window and RAM dump; guest bounds
 and Expansion Pak detection still use the configured four-MiB logical size.

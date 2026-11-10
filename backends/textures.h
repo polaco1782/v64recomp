@@ -12,7 +12,7 @@ class RecompTextureFiles {
 
 public:
     uint64_t pngsWritten = 0, replacementFiles = 0;
-    void configure(RT64::TextureCache& cache, const std::string& title, size_t rdramSize);
+    void configure(RT64::TextureCache& cache, const std::string& title, size_t rdramSize, const std::string& dumpPath);
     void reload(RT64::TextureCache& cache);
     void refreshAndToggle(RT64::TextureCache& cache);
     void collect(RT64::TextureCache& cache);

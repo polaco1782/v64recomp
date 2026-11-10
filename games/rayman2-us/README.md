@@ -12,6 +12,71 @@ reaches the title and rendered language selection and exits cleanly. Rendered
 gameplay is not yet verified. The checked callback inventory remains partial; unknown paths fail
 explicitly rather than silently executing an unverified target.
 
+## Keyboard, mouse and field of view
+
+Both builds include these controls by default:
+
+| Input | Action |
+| --- | --- |
+| WASD | Move; hold Shift to walk |
+| Space / E | A: jump, swim or confirm |
+| Left mouse button | B: shoot/charge |
+| Mouse left/right | Turn the native third-person camera |
+| Hold right mouse button + move mouse | Native C-up look mode, horizontal and vertical look |
+| Ctrl | Z: strafe |
+| F / down arrow | C-down: recenter camera |
+| Q / R / left/right arrows | C-left / C-right camera controls |
+| Up arrow | C-up look mode |
+| Enter / Tab | Confirm / Start (pause) |
+| Escape / F4 | Release mouse / recapture mouse |
+| F10 | Quit |
+| Keypad + / − | Widen / narrow horizontal FOV, original (~85.94°) through 140° |
+
+Third-person mouse turning uses the game's original C-button camera actions;
+vertical mouse look uses its native look mode while holding right click.
+Any horizontal movement now reaches the next guest input update immediately,
+without a movement threshold or queued turns. Turning uses the native digital
+camera speed and stops requesting turns when the mouse stops; it is not a
+proportional free-orbit camera.
+Camera collision, pitch limits and scripted control restrictions remain under
+the original game logic. WASD and arrow-key C-buttons remain available with the
+mouse released. Mouse capture requires the active world camera, running scene
+phase 9 and live controller mode; menus and the game's recorded demos release it.
+Native gamepads remain available. Set `RECOMP_RAYMAN2_MOUSE=0` for the original
+shared keyboard/gamepad mapping. Debug `--input` replay disables live overrides.
+`RECOMP_MOUSE_SENSITIVITY` scales right-click analog look (default `0.08`, range
+`0.001..10`). `RECOMP_MOUSE_INVERT_X=1` reverses horizontal mouse control in both
+modes; `RECOMP_MOUSE_INVERT_Y=1` reverses look-mode pitch. These settings avoid
+source edits when changing direction. Mouse deltas collected before a right-click
+mode change are discarded so they cannot turn the other mode.
+
+FOV starts at the exact original path every launch. Lowering to the minimum
+restores that path. The override scales the tangent of the native horizontal
+angle, preserving native zoom, and affects only the first active world camera
+with perspective type 103. Separate menu cameras retain their original view.
+F7 aspect expansion remains independent.
+
+The ROM-bound wrapper at `0x8009989c` temporarily widens camera `+0x64` before
+the original setup runs once, rebuilding focal length `+0x74`, projection
+scales `+0x78/+0x7c`, clipping planes `+0x98..+0xd4` and the fixed GPU matrix.
+Sphere visibility at `0x800894ac` reads those same planes; the plane transform
+at `0x80089810` uses them too. The `guPerspective` call at `0x80099edc` takes
+vertical radians converted to degrees and viewport aspect. The native source
+angles `+0x64/+0x68` are restored afterward to avoid compounding script zoom.
+World projection scales and CPU visibility therefore change together.
+
+Camera initialization at `0x8002d5b0` establishes horizontal 1.5 radians and
+vertical/horizontal ratio 0.75. Camera records at `0x800e5fc4` distinguish the
+world camera from the separate menu camera at `0x800e5fc0`. Input is injected
+after the original dispatcher at `0x8009ff70`, before the original deadzone and
+button processing in `0x800a3bb0`. Full bodies and decoded operands are checked
+by `controls_analysis.py` during generation; `controls-hooks.json` in the build
+directory reports static verification and does not claim gameplay acceptance.
+
+The pre-change bounded Debug desktop replay reached the rendered opening
+sequence. Gameplay movement, camera direction/look-mode behavior, scene edges,
+pause return and combined F7/FOV behavior need user testing with these changes.
+
 From the repository root:
 
 ```sh

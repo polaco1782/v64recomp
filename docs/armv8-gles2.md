@@ -106,7 +106,7 @@ using `tools/import_rom.py`. No external renderer sources/assets are build input
 Configure Debug in a separate tree with the same renderer flags, then run:
 
 ```sh
-./build/sm64-gles2-debug/bin/sm64-us --frames 60 --mode move --mute
+./build/sm64-gles2-debug/bin/sm64-us --frames 60 --mute
 ```
 
 For interactive Debug play, configure with `-DRECOMP_OPTIMIZE_DEBUG=ON` to
@@ -136,6 +136,17 @@ startup/Mario-face run averaged 1.7 ms across 282 graphics tasks. These are
 different workloads, not a Debug/Release comparison or a Pi performance claim.
 The existing `RECOMP_TIMING` framework retains overall graphics and calling-thread
 CPU measurements.
+
+## Master integration (2026-11-10)
+
+Merged master through `18ffbd4`. SM64 uses the shared `main.c` and Debug
+replay/capture options, with its GLES2 identity/interpolation binding retained.
+Both GLES2 Debug (optimized) and Release built and completed 360-presentation
+desktop startup runs with temporary saves. The Debug capture showed the Mario
+head/title and the task log recorded SP/DP completion without pending tasks.
+These muted startup checks do not establish gameplay, listening quality or
+ARM hardware behavior. PIE checks now use only enabled compiler languages;
+the input adapter follows the current shared controller API.
 
 ## ARM foundation
 

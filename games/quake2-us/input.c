@@ -27,19 +27,20 @@ static void write_float(Runtime *rt, uint32_t address, float value) {
     memcpy(&bits, &value, sizeof(bits));
     recomp_store32(rt, address, bits);
 }
-bool quake2_input_enabled(void) { return enabled; }
+bool quake2_input_enabled(void) {
+    return enabled;
+}
 bool quake2_input_playable(Runtime *rt) {
-    if (!enabled || recomp_load32(rt, Q2_INPUT_PHASE) != 1 ||
-        recomp_load32(rt, Q2_INPUT_MODE) == 2 || recomp_load32(rt, Q2_INPUT_PLAYER_COUNT) != 1 ||
-        recomp_load32(rt, Q2_INPUT_INTERMISSION)) return false;
+    if (!enabled || recomp_load32(rt, Q2_INPUT_PHASE) != 1 || recomp_load32(rt, Q2_INPUT_MODE) == 2 ||
+        recomp_load32(rt, Q2_INPUT_PLAYER_COUNT) != 1 || recomp_load32(rt, Q2_INPUT_INTERMISSION))
+        return false;
     uint32_t client = recomp_load32(rt, Q2_INPUT_CLIENTS);
     uint32_t entities = recomp_load32(rt, Q2_INPUT_ENTITIES);
-    if (!valid_span(rt, client, Q2_INPUT_CLIENT_SIZE) ||
-        !valid_span(rt, entities, Q2_INPUT_ENTITY_SIZE * 2)) return false;
+    if (!valid_span(rt, client, Q2_INPUT_CLIENT_SIZE) || !valid_span(rt, entities, Q2_INPUT_ENTITY_SIZE * 2))
+        return false;
     uint32_t entity = entities + Q2_INPUT_ENTITY_SIZE; // Entity zero is the world.
     uint32_t flags = recomp_load32(rt, entity + Q2_INPUT_ENTITY_FLAGS);
-    return recomp_load32(rt, entity + Q2_INPUT_ENTITY_CLIENT) == client &&
-           (flags & 1) && !(flags & 0x40) &&
+    return recomp_load32(rt, entity + Q2_INPUT_ENTITY_CLIENT) == client && (flags & 1) && !(flags & 0x40) &&
            !(recomp_load32(rt, entity + Q2_INPUT_ENTITY_MOVE_FLAGS) & 0x2000);
 }
 void quake2_input_init(void (*poll)(Runtime *, void *)) {
@@ -47,7 +48,8 @@ void quake2_input_init(void (*poll)(Runtime *, void *)) {
     const char *setting = getenv("RECOMP_QUAKE2_MOUSE");
     enabled = !setting || strcmp(setting, "0");
 #ifdef RECOMP_DEBUG
-    if (getenv("RECOMP_QUAKE2_INPUT")) enabled = false;
+    if (recomp_game_replaying())
+        enabled = false;
 #endif
     sensitivity = 0.08;
     setting = getenv("RECOMP_MOUSE_SENSITIVITY");
@@ -62,7 +64,9 @@ void quake2_input_init(void (*poll)(Runtime *, void *)) {
     current_client = 0;
     recomp_mouse_clear(&mouse);
 }
-void quake2_input_submit(RecompMouseFrame frame) { recomp_mouse_submit(&mouse, frame); }
+void quake2_input_submit(RecompMouseFrame frame) {
+    recomp_mouse_submit(&mouse, frame);
+}
 
 void quake2_input_dispatch_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     uint32_t previous = current_client;
@@ -70,10 +74,12 @@ void quake2_input_dispatch_hook(Runtime *rt, MipsContext *ctx, RecompFunction or
     if ((uint32_t)ctx->gpr[31] == Q2_INPUT_DISPATCH_RETURN && quake2_input_playable(rt) &&
         (uint32_t)ctx->gpr[4] == recomp_load32(rt, Q2_INPUT_CLIENTS))
         current_client = (uint32_t)ctx->gpr[4];
-    else recomp_mouse_clear(&mouse);
+    else
+        recomp_mouse_clear(&mouse);
     original(rt, ctx);
     // Start/pause can bypass command construction. Never carry motion through it.
-    if (!quake2_input_playable(rt)) recomp_mouse_clear(&mouse);
+    if (!quake2_input_playable(rt))
+        recomp_mouse_clear(&mouse);
     current_client = previous;
 }
 void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
@@ -90,7 +96,10 @@ void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
     if (poll_live_input)
         recomp_on_host(rt, poll_live_input, NULL);
     RecompMouseFrame frame = recomp_mouse_consume(&mouse);
-    if (!frame.active) { original(rt, ctx); return; }
+    if (!frame.active) {
+        original(rt, ctx);
+        return;
+    }
     float pitch = read_float(rt, command + Q2_INPUT_PITCH);
     float yaw = read_float(rt, command + Q2_INPUT_YAW);
     uint32_t previous = recomp_load32(rt, command + Q2_INPUT_HELD);
@@ -103,7 +112,8 @@ void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
     // before the caller enters guest movement, collision and weapon processing.
     original(rt, ctx);
     yaw = (float)fmod(yaw - frame.dx * sensitivity, 360.0);
-    if (yaw < 0) yaw += 360;
+    if (yaw < 0)
+        yaw += 360;
     pitch = (float)fmax(-89, fmin(89, pitch + frame.dy * sensitivity * vertical));
     write_float(rt, command + Q2_INPUT_YAW, yaw);
     write_float(rt, command + Q2_INPUT_PITCH, pitch);
@@ -118,11 +128,16 @@ void quake2_input_command_hook(Runtime *rt, MipsContext *ctx, RecompFunction ori
     bool jump = (frame.actions & (RECOMP_MOUSE_JUMP | RECOMP_MOUSE_SECONDARY_ATTACK)) != 0;
     recomp_store32(rt, command + Q2_INPUT_UP, jump ? magnitude : 0);
     uint32_t flags = 0;
-    if (frame.actions & RECOMP_MOUSE_ATTACK) flags |= 1;
-    if (frame.actions & RECOMP_MOUSE_NEXT_WEAPON) flags |= 4;
-    if (frame.actions & (RECOMP_MOUSE_PREVIOUS_WEAPON | RECOMP_MOUSE_USE)) flags |= 8;
-    if (frame.actions & RECOMP_MOUSE_STATUS) flags |= 0x10;
-    if (speed) flags |= 0x40;
+    if (frame.actions & RECOMP_MOUSE_ATTACK)
+        flags |= 1;
+    if (frame.actions & RECOMP_MOUSE_NEXT_WEAPON)
+        flags |= 4;
+    if (frame.actions & (RECOMP_MOUSE_PREVIOUS_WEAPON | RECOMP_MOUSE_USE))
+        flags |= 8;
+    if (frame.actions & RECOMP_MOUSE_STATUS)
+        flags |= 0x10;
+    if (speed)
+        flags |= 0x40;
     if (frame.wheel) {
         // One fresh edge per queued detent, even on adjacent guest updates.
         flags = (flags & ~0xcu) | (frame.wheel > 0 ? 8 : 4);

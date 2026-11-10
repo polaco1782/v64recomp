@@ -1,3 +1,12 @@
+function_wrappers = [
+  {section = ".main", vram = 0x8000a044, size = 0xb20, sha256 = "6ed50f2874eeb1fcece5ec8f1477360f5a775bb2eac9f8ed83da37b938fc01e0", handler = "turok_update_hook"},
+  {section = ".main", vram = 0x80010ecc, size = 0x2f0, sha256 = "fed1df53b22c8cf076077016cf73ab013cb81d09d9d82e521a9a5be17ddb975b", handler = "turok_controller_hook"},
+  {section = ".main", vram = 0x80052c6c, size = 0x1efc, sha256 = "dc4d97d4628371bc9dd71625e334f2355637e71d4a134f260d77bbcd26995152", handler = "turok_movement_hook"},
+  {section = ".main", vram = 0x800135d8, size = 0x98, sha256 = "c548385be6be89bdc81b82bcbcf824432f2fbe67959025b723e9e24c5a43a7d9", handler = "turok_pitch_hook"},
+  {section = ".main", vram = 0x80051fb8, size = 0x544, sha256 = "16499e1a514f96af871371a1a3177a196d2147b5cb5cd73f628688832188efe5", handler = "turok_action_hook"},
+  {section = ".main", vram = 0x800a1d10, size = 0x230, sha256 = "bee0a02736eb7850172d04d3dfb6294d71ecadace86015e8ab6492304671ba5f", handler = "turok_projection_hook"},
+]
+
 [game]
 name = "Turok: Dinosaur Hunter (US v1.2)"
 rom = "../../local/turok.us.v12.z64"
@@ -215,5 +224,139 @@ final_rom = 0x800ee580
 symbol = "turok_boot_rom_read"
 vram = 0x80000450
 kind = "replace_function"
-handler = "hook_turok_rom_read"
+handler = "recomp_turok_rom_read"
 expected_words = [0x3c0e8000, 0x8dce0308, 0x67882, 0x3c09a460, 0x1e03025, 0x35290010, 0xa01825, 0x1203825, 0x1e04025, 0x1c41025, 0x10c00010, 0x24c6ffff, 0x8d380000, 0xc04025, 0x33190003, 0x53200006, 0x8c4c0000, 0x8cea0000, 0x314b0003, 0x5560fffe, 0x8cea0000, 0x8c4c0000, 0x24630004, 0x24420004, 0xac6cfffc, 0x14c0fff2, 0x24c6ffff, 0x3e00008, 0x0]
+
+# Retail instruction evidence was reviewed against the pinned source reference.
+# Camera_Update feeds both the CPU float and GPU fixed projection. Its saved
+# fov/aspect locals subsequently build the five-corner CPU visibility volume.
+[controls]
+reference = "https://github.com/Abhisheksinha1506/Turok-N64-Source-code"
+reference_revision = "f6ac62a9b9fc799bdb023dddaa440480814f9af6"
+reference_scope = "camera.c, tmove.c, tcontrol.c and tengine.c supplied semantic hypotheses; retail bodies, arguments, fields, call/delay pairs and CPU consumers were checked locally. No reference assets or source are build dependencies."
+functions = [
+  {name = "gameproc", vram = 0x8000167c, size = 0x28, sha256 = "e1e6dca7c329e633963a2a7ada33912db1cff46ed5c4f16aed1e77d15be46d7a"},
+  {name = "CEngineApp__Main", vram = 0x80008690, size = 0x136c, sha256 = "ed4616e0e2f1c6620cf7c2f3cd33259985330a2bddad3fe451cb4fb738a6aff5"},
+  {name = "CEngineApp__UpdateGAME", vram = 0x8000a044, size = 0xb20, sha256 = "6ed50f2874eeb1fcece5ec8f1477360f5a775bb2eac9f8ed83da37b938fc01e0"},
+  {name = "CEngineApp__InitializeGameVars", vram = 0x80001860, size = 0x314, sha256 = "d1f4b057069682af64a8c059ae4059f86946d7f9963409ec6fa18581f95026f6"},
+  {name = "CTControl__CTControl", vram = 0x80050390, size = 0xdd4, sha256 = "e494f20ef3d35dd894b01fc4947cd18647db9f73f82c63ec9daf037d523f3543"},
+  {name = "CTMove__CTMove", vram = 0x80052524, size = 0x184, sha256 = "4c6c454a4aad1fbcea316c653e2a7daba959f2d892396535f86709c818031f7d"},
+  {name = "CTMove__Turn", vram = 0x8005778c, size = 0x46c, sha256 = "d6171b6d732ff6953f19489a4bd99f9863f5d4177cc3e1d78d240703beecdb75"},
+  {name = "CCamera__Construct", vram = 0x800379b0, size = 0x124, sha256 = "d50191aeb036828db9ca4e717b12ea43540ac9b314f2e53120ca8a1db3dea845"},
+  {name = "CAttractDemo__Active", vram = 0x80050328, size = 0x2c, sha256 = "689e6e5c14deffe54689c18754b03df7596a6918dced3afc5cf620650773fd5e"},
+  {name = "CCamera__Update", vram = 0x80037f3c, size = 0xca8, sha256 = "a4378d856061c064ff66d373fa09b4ebb20d16df5d44b5600a7d8d2ae9a60536"},
+  {name = "CEngineApp__GetScreenCoordinates", vram = 0x8000ae64, size = 0x78, sha256 = "e5c727455f15ac0c3673a012b347eb9553bb868f8a8e2285a3f538f8956784c3"},
+  {name = "CCamera__InCinemaMode", vram = 0x80039be8, size = 0x8, sha256 = "1ac44655e0f53c0e47616442825604a4bc61b0de6857fde216122cd8da10023e"},
+  {name = "ProcessPlayerController", vram = 0x80010ecc, size = 0x2f0, sha256 = "fed1df53b22c8cf076077016cf73ab013cb81d09d9d82e521a9a5be17ddb975b"},
+  {name = "CTMove__UpdateTurokInstance", vram = 0x80052c6c, size = 0x1efc, sha256 = "dc4d97d4628371bc9dd71625e334f2355637e71d4a134f260d77bbcd26995152"},
+  {name = "NormalizeRotation", vram = 0x800135d8, size = 0x98, sha256 = "c548385be6be89bdc81b82bcbcf824432f2fbe67959025b723e9e24c5a43a7d9"},
+  {name = "CTControl__Action", vram = 0x80051fb8, size = 0x544, sha256 = "16499e1a514f96af871371a1a3177a196d2147b5cb5cd73f628688832188efe5"},
+  {name = "guPerspectiveF", vram = 0x800a1d10, size = 0x230, sha256 = "bee0a02736eb7850172d04d3dfb6294d71ecadace86015e8ab6492304671ba5f"},
+  {name = "fire query", vram = 0x80051164, size = 0x30, sha256 = "a74a2d2d617dc80ecd5ebc628a2fb834597a0b5edb24bbeeb59fec926294edef"},
+  {name = "forward query", vram = 0x80051194, size = 0x30, sha256 = "969efc5cca2fef7238c801f864d94da20b083c0d89bd38942b3c3ce261ef6ad8"},
+  {name = "backward query", vram = 0x800511c4, size = 0x30, sha256 = "0d565b9e051e4a1d55ef7a3ea1e28328fa1e0cceb70fff2ed94023483e1207bb"},
+  {name = "turn_left query", vram = 0x800511f4, size = 0x30, sha256 = "224a47497cede4464b3d563d0b39d8b94a00b1fd9151c6a070208ba2b484e519"},
+  {name = "turn_right query", vram = 0x80051224, size = 0x30, sha256 = "cc28fcb34fdf48cf87256f9f5cbdc83527f93e72eae71e4548fc76aa0aed2117"},
+  {name = "jump query", vram = 0x80051254, size = 0x30, sha256 = "b2eabc5df0a12bf909456fbe274219d3efc91e516159199588bf1aec9fd6c37a"},
+  {name = "weapon_previous query", vram = 0x800512e4, size = 0x30, sha256 = "94466c24ab5f73167919e0684f951205676fbda0f61d5389447322c306868151"},
+  {name = "weapon_next query", vram = 0x80051314, size = 0x30, sha256 = "d6bc1149ed4becc5a50f29407b00e768ffc5ef90df5c966ed754313a40b1d930"},
+  {name = "side_left query", vram = 0x800513a4, size = 0x30, sha256 = "0e3338c8fc4866cc8cf5854314b4dd4698ebab70b68365dfad0727e40b93d09c"},
+  {name = "side_right query", vram = 0x800513d4, size = 0x30, sha256 = "7b3c2a96de6e9fcd406dceb1d3fe7741d52178d43fb325a9f92a48dd965a86cc"},
+  {name = "roll_left query", vram = 0x80051404, size = 0x30, sha256 = "edccf57114dd9647c62b0e16f644e531d84246827ee79ec7c8647d42fcc77284"},
+  {name = "roll_right query", vram = 0x80051434, size = 0x30, sha256 = "02c4b43b87bfd48bce29d84331f7a5a6cec48c345271eb72e3a9caf667563ae0"},
+  {name = "look_up query", vram = 0x800514f4, size = 0x30, sha256 = "c97c89a0dd894cc4d5a8bd661a97e1ffb885e68101116a38844deb12a3fceec2"},
+  {name = "look_down query", vram = 0x80051524, size = 0x30, sha256 = "b23941f5ca8495070cae67eacad418738f4ea8be573db2c385d07411cf21ddc8"},
+  {name = "look_left query", vram = 0x80051554, size = 0x30, sha256 = "f3721454b49263f5da4c8e6e2b7252d782d6ef01b028bdb6158473a0b8f38933"},
+  {name = "look_right query", vram = 0x80051584, size = 0x30, sha256 = "e9d972a71f7ade8365a130540cc9493e8bf4ce7c399335ccee52846ae4a846aa"},
+  {name = "run_backward query", vram = 0x800515b4, size = 0x30, sha256 = "b7e9447879f679395c384245c9f31b448df89c1d1bcacba664c32a912c63668e"},
+  {name = "run_forward query", vram = 0x800515e4, size = 0x30, sha256 = "6effd9df1e2748040babcd4ee5acdf2fc9abf4b440aff21d6c831b552f28e0e6"},
+  {name = "run_toggle query", vram = 0x80051794, size = 0x30, sha256 = "2b286bf5f6700f633f68a908be915c7f2eb26b2954250fb60bfff2f48a480f2a"},
+  {name = "swim_forward query", vram = 0x800517f4, size = 0x30, sha256 = "a0dc4f2cf88725cdeba302bd7fcad30d083449547f90e884710dc79823c863f2"},
+  {name = "swim_backward query", vram = 0x80051824, size = 0x30, sha256 = "bca7908e6801be02104dc9ffe0a2c11353414dfad41bb5ffcb7de548f8252cb0"},
+  {name = "swim_left query", vram = 0x80051854, size = 0x30, sha256 = "cf5e5165a3347873714ffeac5a4e7749875bed3bdb564e1b896db549900f4d63"},
+  {name = "swim_right query", vram = 0x80051884, size = 0x30, sha256 = "591896688953b03bed7175ba2c668da42e482ee31cb205b704b7c3cf6fdc5140"},
+  {name = "swim_up query", vram = 0x800518b4, size = 0x30, sha256 = "5aa02245f07fdc0ff65b4ef674696ebf3abba786b95ee514a27275b0862aa170"},
+  {name = "start_jump query", vram = 0x800519d4, size = 0x30, sha256 = "02baf83f087cefa6124e62160b8b2e06583a19832537843f91dee5cc562c1965"},
+  {name = "climb_up query", vram = 0x80051b24, size = 0x30, sha256 = "3281833743de3354656ee3cdfd40c78f729d7250e238ad1f126e3587d93fa744"},
+  {name = "climb_left query", vram = 0x80051b84, size = 0x30, sha256 = "55d2727f891de7f5e92e2e9c8eb2b86cefe4cfe3e226d7dd4f7e0708817ef839"},
+  {name = "climb_right query", vram = 0x80051bb4, size = 0x30, sha256 = "1cd957301facbad3fa5c77f7ca903c1d580bfb4a43fe6d6663ae0421ddcdfa53"},
+  {name = "map query", vram = 0x80051f14, size = 0x30, sha256 = "35267d64bce560e6b5a1faee8ca5b0f950f9d90c7d2f326118183c8fc275fff9"},
+  {name = "map_left query", vram = 0x80051914, size = 0x30, sha256 = "e4d64e94deb661a9f386c7a46fc231560006c5b587bb50305dca14a3d38e0395"},
+  {name = "map_right query", vram = 0x80051944, size = 0x30, sha256 = "795616ca58c5f6fe3ea7971ea1793078e2b9374538739f7b66d84cb4e0ad1599"},
+  {name = "map_up query", vram = 0x80051974, size = 0x30, sha256 = "843e97a0915e14b6ae6c8aab927d77e4f4f806cf064d7bb1df7217c9c9693e8b"},
+  {name = "map_down query", vram = 0x800519a4, size = 0x30, sha256 = "609d597b4d751a33920af1b299714cd900c5f8445bc77e176aff8a0f65185b7c"},
+]
+bindings = [
+  {name = "engine", kind = "address", pcs = [0x80001688, 0x80001690], words = [0x3c048010, 0x24849fb0], value = 0x800f9fb0},
+  {name = "mode", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x800089b4], words = [0x3c010001, 0x34218000, 0x8e2b76d4], value = 0x1f6d4},
+  {name = "pause", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aa9c], words = [0x3c010001, 0x34218000, 0x8d4f788c], value = 0x1f88c},
+  {name = "warp", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aaa8], words = [0x3c010001, 0x34218000, 0x8d587904], value = 0x1f904},
+  {name = "death", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aab4], words = [0x3c010001, 0x34218000, 0x8d597928], value = 0x1f928},
+  {name = "training", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aac0], words = [0x3c010001, 0x34218000, 0x8d4d786c], value = 0x1f86c},
+  {name = "player", kind = "offset_pair", pcs = [0x80057798, 0x8005779c], words = [0x24a37fff, 0x8c63010d], value = 0x810c},
+  {name = "camera", kind = "derived_address", pcs = [0x8000aaec, 0x8000aaf0], words = [0x3c010001, 0x34218d08], value = 0x80112cb8, base = "engine"},
+  {name = "camera_mode", kind = "field", pcs = [0x80037f68], words = [0x860f0008], value = 0x8},
+  {name = "cinema", kind = "field", pcs = [0x80039bec], words = [0x8c820010], value = 0x10},
+  {name = "attract", kind = "address", pcs = [0x80050328, 0x8005032c], words = [0x3c028013, 0x8c4289f0], value = 0x801289f0},
+  {name = "attract_record", kind = "address", pcs = [0x8005033c, 0x80050340], words = [0x3c028013, 0x8c4289f4], value = 0x801289f4},
+  {name = "movement", kind = "address", pcs = [0x80052524, 0x80052528], words = [0x3c038013, 0x24638cc0], value = 0x80128cc0},
+  {name = "control", kind = "address", pcs = [0x80050390, 0x80050394], words = [0x3c038013, 0x24638aa0], value = 0x80128aa0},
+  {name = "health", kind = "field", pcs = [0x80052d68], words = [0x854301dc], value = 0x1dc},
+  {name = "yaw", kind = "field", pcs = [0x8005798c], words = [0xc4640064], value = 0x64},
+  {name = "pitch", kind = "field", pcs = [0x8005381c], words = [0x26040070], value = 0x70},
+  {name = "target_pitch", kind = "field", pcs = [0x800537d4], words = [0xe6100068], value = 0x68},
+  {name = "turn_speed", kind = "field", pcs = [0x8005782c], words = [0xe4e80004], value = 0x4},
+  {name = "actual_turn_speed", kind = "field", pcs = [0x80057934], words = [0xe4e60008], value = 0x8},
+  {name = "move_mode", kind = "field", pcs = [0x80053608], words = [0x920f02bc], value = 0x2bc},
+  {name = "controller_return", kind = "return", pcs = [0x8000aa54, 0x8000aa58], words = [0xc0043b3, 0xafaa0018], value = 0x8000aa5c},
+  {name = "movement_return", kind = "return", pcs = [0x8000aad8, 0x8000aadc], words = [0xc014b1b, 0x8cc69ee4], value = 0x8000aae0},
+  {name = "pitch_return", kind = "return", pcs = [0x80053818, 0x8005381c], words = [0xc004d76, 0x26040070], value = 0x80053820},
+  {name = "projection_return", kind = "return", pcs = [0x80038684, 0x80038688], words = [0xc028744, 0xe7aa0014], value = 0x8003868c},
+  {name = "vertical_bits", kind = "upper_bits", pcs = [0x80001934], words = [0x3c01423e], value = 0x423e0000},
+  {name = "screen_width", kind = "float_upper", pcs = [0x8003861c], words = [0x3c0143a0], value = 0x140},
+  {name = "screen_height", kind = "float_upper", pcs = [0x8003862c], words = [0x3c014370], value = 0xf0},
+  {name = "persp_norm", kind = "field", pcs = [0x80038654], words = [0x26050028], value = 0x28},
+  {name = "projection_stack", kind = "field", pcs = [0x80038650], words = [0x27a401d0], value = 0x1d0},
+  {name = "camera_stack_size", kind = "frame_size", pcs = [0x80037f3c], words = [0x27bdfb70], value = 0x490},
+  {name = "camera_fov", kind = "field", pcs = [0x80038644], words = [0xe60c0034], value = 0x34},
+  {name = "cpu_fov_stack", kind = "field", pcs = [0x80038674], words = [0xe7ac00b0], value = 0xb0},
+  {name = "fire_return", kind = "return", pcs = [0x8005117c, 0x80051180], words = [0xc0147ee, 0xafae0010], value = 0x80051184},
+  {name = "forward_return", kind = "return", pcs = [0x800511ac, 0x800511b0], words = [0xc0147ee, 0xafae0010], value = 0x800511b4},
+  {name = "backward_return", kind = "return", pcs = [0x800511dc, 0x800511e0], words = [0xc0147ee, 0xafae0010], value = 0x800511e4},
+  {name = "turn_left_return", kind = "return", pcs = [0x8005120c, 0x80051210], words = [0xc0147ee, 0xafae0010], value = 0x80051214},
+  {name = "turn_right_return", kind = "return", pcs = [0x8005123c, 0x80051240], words = [0xc0147ee, 0xafae0010], value = 0x80051244},
+  {name = "jump_return", kind = "return", pcs = [0x8005126c, 0x80051270], words = [0xc0147ee, 0xafae0010], value = 0x80051274},
+  {name = "weapon_previous_return", kind = "return", pcs = [0x800512fc, 0x80051300], words = [0xc0147ee, 0xafae0010], value = 0x80051304},
+  {name = "weapon_next_return", kind = "return", pcs = [0x8005132c, 0x80051330], words = [0xc0147ee, 0xafae0010], value = 0x80051334},
+  {name = "side_left_return", kind = "return", pcs = [0x800513bc, 0x800513c0], words = [0xc0147ee, 0xafae0010], value = 0x800513c4},
+  {name = "side_right_return", kind = "return", pcs = [0x800513ec, 0x800513f0], words = [0xc0147ee, 0xafae0010], value = 0x800513f4},
+  {name = "roll_left_return", kind = "return", pcs = [0x8005141c, 0x80051420], words = [0xc0147ee, 0xafae0010], value = 0x80051424},
+  {name = "roll_right_return", kind = "return", pcs = [0x8005144c, 0x80051450], words = [0xc0147ee, 0xafae0010], value = 0x80051454},
+  {name = "look_up_return", kind = "return", pcs = [0x8005150c, 0x80051510], words = [0xc0147ee, 0xafae0010], value = 0x80051514},
+  {name = "look_down_return", kind = "return", pcs = [0x8005153c, 0x80051540], words = [0xc0147ee, 0xafae0010], value = 0x80051544},
+  {name = "look_left_return", kind = "return", pcs = [0x8005156c, 0x80051570], words = [0xc0147ee, 0xafae0010], value = 0x80051574},
+  {name = "look_right_return", kind = "return", pcs = [0x8005159c, 0x800515a0], words = [0xc0147ee, 0xafae0010], value = 0x800515a4},
+  {name = "run_backward_return", kind = "return", pcs = [0x800515cc, 0x800515d0], words = [0xc0147ee, 0xafae0010], value = 0x800515d4},
+  {name = "run_forward_return", kind = "return", pcs = [0x800515fc, 0x80051600], words = [0xc0147ee, 0xafae0010], value = 0x80051604},
+  {name = "run_toggle_return", kind = "return", pcs = [0x800517ac, 0x800517b0], words = [0xc0147ee, 0xafae0010], value = 0x800517b4},
+  {name = "swim_forward_return", kind = "return", pcs = [0x8005180c, 0x80051810], words = [0xc0147ee, 0xafae0010], value = 0x80051814},
+  {name = "swim_backward_return", kind = "return", pcs = [0x8005183c, 0x80051840], words = [0xc0147ee, 0xafae0010], value = 0x80051844},
+  {name = "swim_left_return", kind = "return", pcs = [0x8005186c, 0x80051870], words = [0xc0147ee, 0xafae0010], value = 0x80051874},
+  {name = "swim_right_return", kind = "return", pcs = [0x8005189c, 0x800518a0], words = [0xc0147ee, 0xafae0010], value = 0x800518a4},
+  {name = "swim_up_return", kind = "return", pcs = [0x800518cc, 0x800518d0], words = [0xc0147ee, 0xafae0010], value = 0x800518d4},
+  {name = "start_jump_return", kind = "return", pcs = [0x800519ec, 0x800519f0], words = [0xc0147ee, 0xafae0010], value = 0x800519f4},
+  {name = "climb_up_return", kind = "return", pcs = [0x80051b3c, 0x80051b40], words = [0xc0147ee, 0xafae0010], value = 0x80051b44},
+  {name = "climb_left_return", kind = "return", pcs = [0x80051b9c, 0x80051ba0], words = [0xc0147ee, 0xafae0010], value = 0x80051ba4},
+  {name = "climb_right_return", kind = "return", pcs = [0x80051bcc, 0x80051bd0], words = [0xc0147ee, 0xafae0010], value = 0x80051bd4},
+  {name = "map_return", kind = "return", pcs = [0x80051f2c, 0x80051f30], words = [0xc0147ee, 0xafae0010], value = 0x80051f34},
+  {name = "map_left_return", kind = "return", pcs = [0x8005192c, 0x80051930], words = [0xc0147ee, 0xafae0010], value = 0x80051934},
+  {name = "map_right_return", kind = "return", pcs = [0x8005195c, 0x80051960], words = [0xc0147ee, 0xafae0010], value = 0x80051964},
+  {name = "map_up_return", kind = "return", pcs = [0x8005198c, 0x80051990], words = [0xc0147ee, 0xafae0010], value = 0x80051994},
+  {name = "map_down_return", kind = "return", pcs = [0x800519bc, 0x800519c0], words = [0xc0147ee, 0xafae0010], value = 0x800519c4},
+]
+# Further camera instructions bound by the full Camera_Update body above:
+# 386a8/386bc: multiply view/projection into engine+0x1f794; 386d8: fixed GPU copy.
+# 38a1c..38b08: saved fov*aspect drives far-plane x/y corners and animation radius.
+# 38b18: transform all five corners; 38b74: build view_volume; 38b88: enclose X/Z.
+# Particles use oriented 3D vertices; GetScreenCoordinates consumes that same
+# combined float projection. There is no separate depth-only billboard scale.

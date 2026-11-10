@@ -6,7 +6,23 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".game", vram = 0x7f02727c, size = 0x588, sha256 = "16380499e3fb5ef7b13cb5a51516ad9d0e3943b4ec2d70677f3b40471cd40d90", handler = "goldeneye_ai_hit_hook"},
+  {section = ".game", vram = 0x7f032bd8, size = 0x74, sha256 = "6d1da440f0cbf4192a878298cdc99b6ff76d446ecd750740bebe8e63dbae3533", handler = "goldeneye_ai_grenade_angle_hook"},
+  {section = ".game", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a", handler = "goldeneye_ai_alert_hook"},
+  {section = ".game", vram = 0x7f02d734, size = 0xb38, sha256 = "ec668e47336a9e5fca08a9501fdd79c8959416dc7a20a663766f53a509b0145d", handler = "goldeneye_ai_fire_hook"},
+  {section = ".game", vram = 0x7f032c78, size = 0xf8, sha256 = "4a5f32ff833cfcc82021a3f1529d88902d3c28623166ed2219e1558dfc86849c", handler = "goldeneye_ai_target_hook"},
+  {section = ".game", vram = 0x7f09c250, size = 0x55c, sha256 = "f3228bfe30edf7a2b72dbaacc07ba866869c62953b5d649d8dc21ede814aa764", handler = "goldeneye_ai_explosion_hook"},
+  {section = ".game", vram = 0x7f06441c, size = 0x304, sha256 = "c263f5d1ad14e4d2af4445d2dd0761fb8041497063fc159cb16b877d325bbfa1", handler = "goldeneye_ai_impact_hook"},
+  {section = ".game", vram = 0x7f022eec, size = 0xdc, sha256 = "da8b2e0611c67f526e290fb2db9a87fd29842aa32c92a9e0537b10ef512b63ae", handler = "goldeneye_ai_noise_hook"},
+  {section = ".game", vram = 0x7f035484, size = 0x4dbc, sha256 = "2e52864c8bff532a50dc2b3ce18b5230ca5e15f20343260259d5667201905cae", handler = "goldeneye_ai_hook"},
+  {section = ".game", vram = 0x7f035398, size = 0x9c, sha256 = "a8473ce020468fb6961fe97b02210eec2fce2d3af8d50ff24b30aaf29afc8bba", handler = "goldeneye_ai_list_hook"},
+  {section = ".lib", vram = 0x7000c0ec, size = 0x88, sha256 = "265b273a41288b1a8e572c51355eb9c288ce878f1f1120591250855c163ef6ea", handler = "goldeneye_input_stick_x_hook"},
+  {section = ".lib", vram = 0x7000c1fc, size = 0x88, sha256 = "bf728b6203c4674b1758344a8bbf1ceb882273f4aa612725c1ee7aa8d0d6d4b2", handler = "goldeneye_input_stick_y_hook"},
+  {section = ".lib", vram = 0x7000c30c, size = 0xa0, sha256 = "e45ee3ddd0f852410e544e7b25eb6d6b7a45fc023b4a36be75f4e2db696dbaf6", handler = "goldeneye_input_buttons_hook"},
+  {section = ".game", vram = 0x7f009b84, size = 0x384, sha256 = "9b94e88ebd4ef9db72ebc433464d4dbd18ef9acc9a0b0cc9716e364162dd6dcc", handler = "goldeneye_input_menu_hook"},
   {section = ".lib", vram = 0x70004544, size = 0x4c, sha256 = "af46a44737c33db1923e0beba3107cdb818b54d9a1ace9b9eb6c1931553ca2e3", handler = "goldeneye_fov_hook"},
+  {section = ".lib", vram = 0x70004590, size = 0x4c, sha256 = "08fa9e648119740ecc1019bbba89a88a4575fdb903a75cb198d4ebefa6ca0ac6", handler = "goldeneye_aspect_hook"},
+  {section = ".game", vram = 0x7f09b224, size = 0x10, sha256 = "a47ff64144a90a652db8ed6b874af77cd9e24e78079ce5319a1f90c2ee6aa488", handler = "goldeneye_aspect_hook"},
   {section = ".lib", vram = 0x70002424, size = 0x1b4, sha256 = "537587229e186714f1cfa141395889bad59b066ed36367c0087abf26ee27590d", handler = "goldeneye_audio_dma_hook"},
   {section = ".lib", vram = 0x7000bd0c, size = 0x7c, sha256 = "c0e8344bbcadd3894686f4403c1162896985863ba6cb6256d543f7e045a1bc47", handler = "goldeneye_input_samples_hook"},
   {section = ".lib", vram = 0x7000bd88, size = 0x364, sha256 = "f7086f28a24e3debf14e607d430487eb8e36635b5b406d84a1a890070c744921", handler = "goldeneye_input_poll_hook"},
@@ -15,24 +31,24 @@ function_wrappers = [
   {section = ".game", vram = 0x7f084648, size = 0x2348, sha256 = "432577fae515642bf6e7d62916b73e9a0e08ae0554a04d27e3af5b66d8ff3509", handler = "goldeneye_input_move_hook"},
 ]
 hooks = [
-  {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "hook_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
-  {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "hook_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0xe00008]},
-  {symbol = "initTLBPrepareContext", vram = 0x70001bb0, kind = "replace_function", handler = "hook_ge_prepare_context", expected_words = [0x24080002, 0x40883000, 0x24080000]},
-  {symbol = "osPiRawStartDma", vram = 0x7000cf90, kind = "replace_function", handler = "hook_ge_pi_raw_dma", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
-  {symbol = "osPiGetStatus", vram = 0x7000d070, kind = "replace_function", handler = "hook_ge_pi_status", expected_words = [0x3c0ea460, 0x3e00008, 0x8dc20010]},
-  {symbol = "osInitialize", vram = 0x7000d080, kind = "replace_function", handler = "hook_ge_os_initialize", expected_words = [0x27bdffc0, 0xafbf001c, 0x240e0001]},
-  {symbol = "osInvalICache", vram = 0x7000d350, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x0, 0x240b4000]},
-  {symbol = "osUnmapTLB", vram = 0x7000d3d0, kind = "replace_function", handler = "hook_ge_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000]},
-  {symbol = "osViRepeatLine", vram = 0x7000e260, kind = "replace_function", handler = "hook_ge_vi_repeat_line", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xc00617c, 0xafb00018, 0x93ae002b, 0x408025, 0x11c00007, 0x0, 0x3c0f8003, 0x8def8044, 0x95f80000, 0x37190040]},
-  {symbol = "__osGetTLBHi", vram = 0x7000e880, kind = "replace_function", handler = "hook_ge_tlb_hi", expected_words = [0x40840000, 0x0, 0x42000001]},
-  {symbol = "osSetIntMask", vram = 0x7000dd30, kind = "replace_function", handler = "hook_ge_int_mask", expected_words = [0x400c6000, 0x3182ff01, 0x3c088002]},
-  {symbol = "osInvalDCache", vram = 0x70010b20, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a0001f, 0x0, 0x240b2000]},
-  {symbol = "osWritebackDCache", vram = 0x70010bd0, kind = "replace_function", handler = "hook_ge_cache", expected_words = [0x18a00011, 0x0, 0x240b2000]},
-  {symbol = "osDpGetCounters", vram = 0x7000e3c0, kind = "replace_function", handler = "hook_ge_dp_counters", expected_words = [0x3c0ea410, 0x8dcf0010, 0x3c18a410]},
-  {symbol = "osDpSetStatus", vram = 0x7000e4e0, kind = "replace_function", handler = "hook_ge_dp_status", expected_words = [0x3c0ea410, 0x3e00008, 0xadc4000c]},
-  {symbol = "osViGetCurrentFramebuffer", vram = 0x7000e410, kind = "replace_function", handler = "hook_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0xc00617c]},
-  {symbol = "osViGetNextFramebuffer", vram = 0x7000e450, kind = "replace_function", handler = "hook_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0xc00617c]},
-  {symbol = "__osSetCompare", vram = 0x7001f8e0, kind = "replace_function", handler = "hook_ge_set_compare", expected_words = [0x40845800, 0x3e00008, 0x0]},
+  {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "recomp_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
+  {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "recomp_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0xe00008]},
+  {symbol = "initTLBPrepareContext", vram = 0x70001bb0, kind = "replace_function", handler = "recomp_ge_prepare_context", expected_words = [0x24080002, 0x40883000, 0x24080000]},
+  {symbol = "osPiRawStartDma", vram = 0x7000cf90, kind = "replace_function", handler = "recomp_ge_pi_raw_dma", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028]},
+  {symbol = "osPiGetStatus", vram = 0x7000d070, kind = "replace_function", handler = "recomp_ge_pi_status", expected_words = [0x3c0ea460, 0x3e00008, 0x8dc20010]},
+  {symbol = "osInitialize", vram = 0x7000d080, kind = "replace_function", handler = "recomp_ge_os_initialize", expected_words = [0x27bdffc0, 0xafbf001c, 0x240e0001]},
+  {symbol = "osInvalICache", vram = 0x7000d350, kind = "replace_function", handler = "recomp_ge_cache", expected_words = [0x18a00011, 0x0, 0x240b4000]},
+  {symbol = "osUnmapTLB", vram = 0x7000d3d0, kind = "replace_function", handler = "recomp_ge_unmap_tlb", expected_words = [0x40085000, 0x40840000, 0x3c098000]},
+  {symbol = "osViRepeatLine", vram = 0x7000e260, kind = "replace_function", handler = "recomp_ge_vi_repeat_line", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xc00617c, 0xafb00018, 0x93ae002b, 0x408025, 0x11c00007, 0x0, 0x3c0f8003, 0x8def8044, 0x95f80000, 0x37190040]},
+  {symbol = "__osGetTLBHi", vram = 0x7000e880, kind = "replace_function", handler = "recomp_ge_tlb_hi", expected_words = [0x40840000, 0x0, 0x42000001]},
+  {symbol = "osSetIntMask", vram = 0x7000dd30, kind = "replace_function", handler = "recomp_ge_int_mask", expected_words = [0x400c6000, 0x3182ff01, 0x3c088002]},
+  {symbol = "osInvalDCache", vram = 0x70010b20, kind = "replace_function", handler = "recomp_ge_cache", expected_words = [0x18a0001f, 0x0, 0x240b2000]},
+  {symbol = "osWritebackDCache", vram = 0x70010bd0, kind = "replace_function", handler = "recomp_ge_cache", expected_words = [0x18a00011, 0x0, 0x240b2000]},
+  {symbol = "osDpGetCounters", vram = 0x7000e3c0, kind = "replace_function", handler = "recomp_ge_dp_counters", expected_words = [0x3c0ea410, 0x8dcf0010, 0x3c18a410]},
+  {symbol = "osDpSetStatus", vram = 0x7000e4e0, kind = "replace_function", handler = "recomp_ge_dp_status", expected_words = [0x3c0ea410, 0x3e00008, 0xadc4000c]},
+  {symbol = "osViGetCurrentFramebuffer", vram = 0x7000e410, kind = "replace_function", handler = "recomp_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0xc00617c]},
+  {symbol = "osViGetNextFramebuffer", vram = 0x7000e450, kind = "replace_function", handler = "recomp_ge_vi_framebuffer", expected_words = [0x27bdffd8, 0xafbf001c, 0xc00617c]},
+  {symbol = "__osSetCompare", vram = 0x7001f8e0, kind = "replace_function", handler = "recomp_ge_set_compare", expected_words = [0x40845800, 0x3e00008, 0x0]},
 ]
 checkpoints = [
   {pc = 0x7000071c, expected_word = 0x1000ffff, kind = "yield", reason = "Yield the original GoldenEye idle loop"},
@@ -242,6 +258,10 @@ idle_words = [0xafa40000, 0x1000ffff, 0x0]
 0x80000318 = 0x400000
 
 [runtime]
+# Batch ordinary backedges; explicit polling loops and priority preemption
+# still yield immediately. The default 64 causes excessive host handoffs in
+# GoldenEye's CPU visibility/projection loops on the Steam Deck.
+checkpoint_interval = 512
 thread_tail = 0x80027720
 # func_70000738 creates this priority-zero thread with idleproc as its entry.
 idle_thread = 0x8005d490
@@ -292,13 +312,14 @@ difficulty_words = [0x3c028005, 0x3e00008, 0x8c428384]
 dam_stage = 0x21
 title_stage = 0x5a
 
-# Reviewed input integration candidates, NOT active replacement hooks.
+# Reviewed native bodies and operands used by the input adapters.
 # Full spans include padding; individual evidence sites must also be owned by
 # their discovered function. See README.md for the adapter and validation notes.
 [input_analysis]
 reference = "https://github.com/n64decomp/007"
 reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
 functions = [
+  {name = "frontUpdateControlStickPosition", section = ".game", vram = 0x7f009b84, size = 0x384, sha256 = "9b94e88ebd4ef9db72ebc433464d4dbd18ef9acc9a0b0cc9716e364162dd6dcc"},
   {name = "getPlayerCount", section = ".game", vram = 0x7f09a464, size = 0x58, sha256 = "2d45ab256c1f08e0f2899accd7aca7bceef8a658812c7f80b292d4cde90bfa90"},
   {name = "getControlStyle", section = ".game", vram = 0x7f0a4dc0, size = 0x10, sha256 = "5d7c6ab0dafc90ff3b968b1dca99f36f2cb146f6d8a4a1b6ae18f7cdc64e6166"},
   {name = "getControlsLocked", section = ".game", vram = 0x7f0bfc04, size = 0xc, sha256 = "e4752f5ccf5bd97a87df8a6e3fccc544c32604340c13b0e2300e709b0c68e429"},
@@ -307,6 +328,7 @@ functions = [
   {name = "joyPoll", section = ".lib", vram = 0x7000bd88, size = 0x364, sha256 = "f7086f28a24e3debf14e607d430487eb8e36635b5b406d84a1a890070c744921"},
   {name = "joyGetStickX", section = ".lib", vram = 0x7000c0ec, size = 0x88, sha256 = "265b273a41288b1a8e572c51355eb9c288ce878f1f1120591250855c163ef6ea"},
   {name = "joyGetStickY", section = ".lib", vram = 0x7000c1fc, size = 0x88, sha256 = "bf728b6203c4674b1758344a8bbf1ceb882273f4aa612725c1ee7aa8d0d6d4b2"},
+  {name = "joyGetButtons", section = ".lib", vram = 0x7000c30c, size = 0xa0, sha256 = "e45ee3ddd0f852410e544e7b25eb6d6b7a45fc023b4a36be75f4e2db696dbaf6"},
   {name = "bondviewApplyVertaTheta", section = ".game", vram = 0x7f081790, size = 0x1e4, sha256 = "1bfa11ecd5fd7e9b8b26fdf8a7b7efe7cdccbfc4ad908bff851ca7ff6f2574a8"},
   {name = "bondviewProcessInput", section = ".game", vram = 0x7f081974, size = 0x2654, sha256 = "7430db6f9b1da0a4d25f7583a9bc4a8007848149d4003b21e23ae78d63c66222"},
   {name = "MoveBond", section = ".game", vram = 0x7f084648, size = 0x2348, sha256 = "432577fae515642bf6e7d62916b73e9a0e08ae0554a04d27e3af5b66d8ff3509"},
@@ -319,6 +341,7 @@ calls = [
   {owner = "joyPoll", pc = 0x7000bed4, target = 0x70014e34, expected_words = [0x0c00538d, 0xafa30040]},
   {owner = "bondviewProcessInput", pc = 0x7f081bdc, target = 0x7000c0ec, expected_words = [0x0c00303b, 0x000c2603]},
   {owner = "bondviewProcessInput", pc = 0x7f081c00, target = 0x7000c1fc, expected_words = [0x0c00307f, 0x000f2603]},
+  {owner = "bondviewProcessInput", pc = 0x7f081c28, target = 0x7000c30c, expected_words = [0x0c0030c3, 0x00192603]},
   {owner = "MoveBond", pc = 0x7f084780, target = 0x7f081974, expected_words = [0x0fc2065d, 0x97a703c6]},
   {owner = "MoveBond", pc = 0x7f08525c, target = 0x7f081790, expected_words = [0x0fc205e4, 0x00000000]},
   {owner = "bondviewFrozenMoveBond", pc = 0x7f086a50, target = 0x7f081974, expected_words = [0x0fc2065d, 0x00003825]},
@@ -346,7 +369,12 @@ expected_words = [0x3c108008, 0x2610a0b0, 0x8e020000]
 
 [input_adapter]
 process_return = 0x7f084788
+dual_style = 5 # Native 2.2 Galore: primary look, secondary movement.
+# The selected-style gate and native 2.2 axis assignments, including delays.
+dual_gate = {owner = "bondviewProcessInput", pc = 0x7f081b90, expected_words = [0x24010005, 0x50410007, 0x97af01ce]}
 globals = [
+  {name = "menu_x", address = 0x8002a908, owner = "frontUpdateControlStickPosition", pc = 0x7f009d10, expected_words = [0x3c018003, 0xc432a908]},
+  {name = "menu_y", address = 0x8002a90c, owner = "frontUpdateControlStickPosition", pc = 0x7f009e60, expected_words = [0x3c018003, 0xc42aa90c]},
   {name = "players", address = 0x80079ee0, owner = "getPlayerCount", pc = 0x7f09a464, expected_words = [0x3c0e8008, 0x8dce9ee0]},
   {name = "controls_locked", address = 0x80048370, owner = "getControlsLocked", pc = 0x7f0bfc04, expected_words = [0x3c028005, 0x03e00008, 0x8c428370]},
   {name = "tank", address = 0x80036448, owner = "bondviewProcessInput", pc = 0x7f081cd8, expected_words = [0x3c198003, 0x8f396448]},
@@ -361,6 +389,8 @@ reference = "https://github.com/n64decomp/007"
 reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
 functions = [
   {name = "viSetFovY", section = ".lib", vram = 0x70004544, size = 0x4c, sha256 = "af46a44737c33db1923e0beba3107cdb818b54d9a1ace9b9eb6c1931553ca2e3"},
+  {name = "viSetAspect", section = ".lib", vram = 0x70004590, size = 0x4c, sha256 = "08fa9e648119740ecc1019bbba89a88a4575fdb903a75cb198d4ebefa6ca0ac6"},
+  {name = "set_cur_player_aspect", section = ".game", vram = 0x7f09b224, size = 0x10, sha256 = "a47ff64144a90a652db8ed6b874af77cd9e24e78079ce5319a1f90c2ee6aa488"},
   {name = "currentPlayerSetPerspective", section = ".game", vram = 0x7f077c30, size = 0x2c, sha256 = "f92ad88d78bbbfde67686ad6abf14e5381421886f6cb507a78f6e26cce3cb077"},
   {name = "currentPlayerSetCameraScale", section = ".game", vram = 0x7f077c5c, size = 0x290, sha256 = "9c1e37c330f1fd98ba9887452fd77483569f866a37c6b79747abf32eb2bb1ac3"},
   {name = "bondviewUpdateWatchZoomIn", section = ".game", vram = 0x7f07e62c, size = 0x114, sha256 = "4a3df864a37691cadbebc8415bdc940c3213d80a0564acfffa34039eee379912"},
@@ -370,6 +400,12 @@ functions = [
 calls = [
   {name = "perspective", owner = "viSetFovY", pc = 0x70004570, target = 0x7f077c30, expected_words = [0x0fc1df0c, 0x8c46000c]},
   {name = "scale", owner = "viSetFovY", pc = 0x70004578, target = 0x7f077c5c, expected_words = [0x0fc1df17, 0x00000000]},
+  {name = "aspect_perspective", owner = "viSetAspect", pc = 0x700045bc, target = 0x7f077c30, expected_words = [0x0fc1df0c, 0x8c46000c]},
+  {name = "aspect_scale", owner = "viSetAspect", pc = 0x700045c4, target = 0x7f077c5c, expected_words = [0x0fc1df17, 0x00000000]},
+  {name = "player_aspect_wide", owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f087110, target = 0x7f09b224, expected_words = [0x0fc26c89, 0x00000000]},
+  {name = "vi_aspect_wide", owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f08715c, target = 0x70004590, expected_words = [0x0c001164, 0x00000000]},
+  {name = "player_aspect_normal", owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f087190, target = 0x7f09b224, expected_words = [0x0fc26c89, 0x46089303]},
+  {name = "vi_aspect_normal", owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f0871bc, target = 0x70004590, expected_words = [0x0c001164, 0x46048303]},
   {name = "zoom", owner = "bondviewUpdateWatchZoomIn", pc = 0x7f07e728, target = 0x70004544, expected_words = [0x0c001151, 0xc72c11c4]},
   {name = "viewport", owner = "bondviewMovePlayerUpdateViewport", pc = 0x7f086fc4, target = 0x70004544, expected_words = [0x0c001151, 0x00000000]},
   {name = "render", owner = "lvlRender", pc = 0x7f0be508, target = 0x70004544, expected_words = [0x0c001151, 0xc5cc11d0]},
@@ -381,6 +417,7 @@ player_fields = [
   {name = "scale_y", offset = 0x10b8, owner = "currentPlayerSetCameraScale", pc = 0x7f077cd8, expected_word = 0xe45210b8},
   {name = "zoom_fovy", offset = 0x11c4, owner = "bondviewUpdateWatchZoomIn", pc = 0x7f07e72c, expected_word = 0xc72c11c4},
   {name = "native_fovy", offset = 0x11d0, owner = "lvlRender", pc = 0x7f0be50c, expected_word = 0xc5cc11d0},
+  {name = "native_aspect", offset = 0x11d4, owner = "set_cur_player_aspect", pc = 0x7f09b230, expected_word = 0xe5cc11d4},
 ]
 
 [fov_analysis.current_player]
@@ -394,3 +431,179 @@ owner = "bondviewMovePlayerUpdateViewport"
 pc = 0x7f086fbc
 expected_words = [0x3c014270, 0x44816000]
 value = 60.0
+
+[ai_analysis]
+# Semantic reference only; all addresses and bytes are checked against the supplied ROM.
+reference = "https://github.com/n64decomp/007"
+reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
+section = ".game"
+functions = [
+  {name = "play_animation", vram = 0x7f033700, size = 0x60, sha256 = "bc8280734e12447f50d536456023707c12bef05531739cc6ad368dd526bc1efd"},
+  {name = "nearest_waypoint", vram = 0x7f027cd4, size = 0xdc, sha256 = "8de9965b6870aff177a22d526d20c0e58b4cb59675dc6a6f256c6910e135df16"},
+  {name = "tile_waypoint", vram = 0x7f027bf4, size = 0x6c, sha256 = "d536bf83295a3056e828886792cc05a7e8468c4a4f0855c568d0491eece37216"},
+  {name = "wander_neighbour", vram = 0x7f033834, size = 0x164, sha256 = "2c7e40a4b2de0bcac898761f8246a2eabd4bab9078d8bbd8bc312e94000b7230"},
+  {name = "walk_to_pad", vram = 0x7f02abb4, size = 0x1a0, sha256 = "bb3c617cab382d00961255ebd90a546a028b3367d99c771795405b939dac978d"},
+  {name = "pad_distance", vram = 0x7f032e48, size = 0xb4, sha256 = "c14fa331e6d0d47c61fa23b4e1627bc2116a769f3e7a3b8cd05a7ea73eefd6cc"},
+  {name = "resolve_pad", vram = 0x7f032f94, size = 0x18, sha256 = "86f9d90da833ed3c27ed8b0cd570050cf23348e35b4441f1a84a9ecd45c4a797"},
+  {name = "hit", vram = 0x7f02727c, size = 0x588, sha256 = "16380499e3fb5ef7b13cb5a51516ad9d0e3943b4ec2d70677f3b40471cd40d90"},
+  {name = "grenade_angle", vram = 0x7f032bd8, size = 0x74, sha256 = "6d1da440f0cbf4192a878298cdc99b6ff76d446ecd750740bebe8e63dbae3533"},
+  {name = "turn", vram = 0x7f02c2b0, size = 0x210, sha256 = "3cfce8fd0788f208ede501143e8586cb6db68a4b89b8411d6b2ea1216f139a61"},
+  {name = "give_weapon", vram = 0x7f0523d4, size = 0x24, sha256 = "735402ed48fb93b72b2255006ed346b03b133a78e9523fe950c3eb43cc9ef2c0"},
+  {name = "throw_grenade", vram = 0x7f024238, size = 0xfc, sha256 = "a4aa1a9363d60d6298e0bf43b0eee3e6e7badd79f930376c9819c7feb657fca7"},
+  {name = "grenade_tick", vram = 0x7f02f3f8, size = 0x1ac, sha256 = "5d1fa5b5d75dc2af8dd244f48a5d7ae2877c9892ca728d7b65482377f665195e"},
+  {name = "grenade_selector", vram = 0x7f03457c, size = 0x180, sha256 = "ed3976e14689fd0355438c18ea3db283509dc23db254d3be62d981fbf040add0"},
+  {name = "stop", vram = 0x7f0335d4, size = 0x3c, sha256 = "dea2654684e42435b226aa5a5f0f52099de2ae674ec54cd31a96eb73206d662c"},
+  {name = "armed_prop", vram = 0x7f02303c, size = 0x50, sha256 = "86cbaf2df53dc9963a743471f54393669cf7bfaa89d5a00d138e71dfdb04567c"},
+  {name = "resolve_target", vram = 0x7f032c78, size = 0xf8, sha256 = "4a5f32ff833cfcc82021a3f1529d88902d3c28623166ed2219e1558dfc86849c"},
+  {name = "active_props", vram = 0x7f03a424, size = 0xc, sha256 = "6948d996b2f9e5440cd48e356e840c8cb168288fd51ed832c583dd64bc20c20e"},
+  {name = "visible_position", vram = 0x7f0295d0, size = 0xcc, sha256 = "dad91972cfe878b108321b5ffd49483540479ca6e313d3ea5d88bba3737e6cc3"},
+  {name = "explosion", vram = 0x7f09c250, size = 0x55c, sha256 = "f3228bfe30edf7a2b72dbaacc07ba866869c62953b5d649d8dc21ede814aa764"},
+  {name = "explosion_tick", vram = 0x7f09cee8, size = 0x604, sha256 = "4b203c90bc11a36cec341946ee3372d7b41f1cd0f4e7338058d5216835a68d4b"},
+  {name = "explosion_damage_function", vram = 0x7f09c9d8, size = 0x510, sha256 = "0f43df815adbf7ac097d97dfbab2357d39cb377d77dfa5763e25267e7be8520b"},
+  {name = "prop_impact", vram = 0x7f06441c, size = 0x304, sha256 = "c263f5d1ad14e4d2af4445d2dd0761fb8041497063fc159cb16b877d325bbfa1"},
+  {name = "line_test", vram = 0x7f0b0e24, size = 0x5ec, sha256 = "b0cf79c31efe3e76dc0e739231a7dc4836599c0f58d3ce4379def00fb44c0a89"},
+  {name = "fire_weapon", vram = 0x7f02d734, size = 0xb38, sha256 = "ec668e47336a9e5fca08a9501fdd79c8959416dc7a20a663766f53a509b0145d"},
+  {name = "prop_sort", vram = 0x7f03a240, size = 0x1c4, sha256 = "3590294b381a711c39b41827d18cb38d89539b395b6f32017ffe78bc5e12f9c8"},
+  {name = "prop_allocate", vram = 0x7f03a430, size = 0x54, sha256 = "ea5588bd2848e41593bd254951b8a352b6446a98611f51e75d1e91f6cbda4844"},
+  {name = "object_init", vram = 0x7f04054c, size = 0x1ac, sha256 = "487bca03604e4bffd3e19135a0a83db4f89269b9d94d445d5fc410b97934c56e"},
+  {name = "object_model_lookup", vram = 0x7f04071c, size = 0x38, sha256 = "450e02bb8fe17963a9281eff09eebfd31752d69981b2f6c41f91a7b7699a781a"},
+  {name = "object_destroyed", vram = 0x7f03ffc0, size = 0x38, sha256 = "7c8964e00897bb66f3d188a54adec19f7ed75d714f8f8f15081b5ef6cf8c5f92"},
+  {name = "equipped_weapon", vram = 0x7f02302c, size = 0x10, sha256 = "65a0044584b967c90a5c5f0eb2da09b7c80aedb8f35485986161525992e3bb42"},
+  {name = "object_runtime", vram = 0x7f042eb4, size = 0x64, sha256 = "29a0c9d534d539b813bf1dce5c7cdad6a943e3f997a25ed07918ccb00d8019c8"},
+  {name = "player_prop", vram = 0x7f089798, size = 0x10, sha256 = "bde9a2d680ddb1ef8786cff337764c9855e163a3ae626da3913c3f023af68b75"},
+  {name = "hear_sound", vram = 0x7f022eec, size = 0xdc, sha256 = "da8b2e0611c67f526e290fb2db9a87fd29842aa32c92a9e0537b10ef512b63ae"},
+  {name = "alert", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a"},
+  {name = "movement_speed", vram = 0x7f02f690, size = 0x1f8, sha256 = "a1f5c464a197b04ca31fe76620ed6e1feebd7e81a4b545ec3518f138c7300be5"},
+  {name = "player_input", vram = 0x7f081974, size = 0x2654, sha256 = "7430db6f9b1da0a4d25f7583a9bc4a8007848149d4003b21e23ae78d63c66222"},
+  {name = "interpreter", vram = 0x7f035484, size = 0x4dbc, sha256 = "2e52864c8bff532a50dc2b3ce18b5230ca5e15f20343260259d5667201905cae"},
+  {name = "find_list", vram = 0x7f035398, size = 0x9c, sha256 = "a8473ce020468fb6961fe97b02210eec2fce2d3af8d50ff24b30aaf29afc8bba"},
+  {name = "can_see", vram = 0x7f0294bc, size = 0x114, sha256 = "ccaa176872dec9a58d6e39c29bd10a3c46df1cb306e72291142154678a248643"},
+  {name = "remember", vram = 0x7f029bb0, size = 0x50, sha256 = "bdde0425f6c30996e106f0f7a79b307eb3a01e5413a7a5b58a4cdc5ee27af8f2"},
+  {name = "ready", vram = 0x7f029c5c, size = 0x114, sha256 = "0756aa7e0f0408457939e8efc0d4d6d1b6423c731c763fba77a1bd52c3a7fd3b"},
+  {name = "step", vram = 0x7f02a2c8, size = 0x160, sha256 = "7b316e9d26f7e7da0413e97f96c1e45afcbe0b970329c841671eccfabfb5f1a5"},
+  {name = "walk_fire", vram = 0x7f02a704, size = 0xf4, sha256 = "d2735775a1243116328f122309433f1b48924eafd2e3e6b81cfecd74154a4f1b"},
+  {name = "run_fire", vram = 0x7f02a7f8, size = 0xf4, sha256 = "f8b0f30cd816955562cca572daca6fc40e5c8b7a19fd67140dee41060fb931ad"},
+  {name = "stand_fire", vram = 0x7f02aa1c, size = 0x6c, sha256 = "b34606e2e4b851503b27194896fa7ae2fbf7f50daf8f546a92ba254bcf507fbd"},
+  {name = "kneel_fire", vram = 0x7f02aa88, size = 0x6c, sha256 = "d840bc1aa346fd6f768bb1db49bf1411a4a4efa5eec72adfec29a1bfe9b68857"},
+  {name = "navigate", vram = 0x7f028ddc, size = 0x1d0, sha256 = "c233f36b6f852950b85668e16e994711e171695762599dd954088782c349208b"},
+  {name = "distance", vram = 0x7f032de4, size = 0x64, sha256 = "e4cc8ecddc9dc78e8a00aa36e43090ab8c1f2809d8797a2c129f8d6c050ec3d9"},
+  {name = "recent", vram = 0x7f032b68, size = 0x38, sha256 = "c215433d9892eeec9eb275aa6030fc8dcfb432888a0b425973850f00ebbd3bf7"},
+  {name = "set_flags2", vram = 0x7f033218, size = 0x14, sha256 = "9184879fe52ff3cf39c77ec91f4c65ed044628ee968ceba572714f6ad0ca61f2"},
+]
+fields = [
+  {name = "waypoint_pad", pc = 0x7f033900, expected_word = 0x8e620000},
+  {name = "waypoint_neighbours", pc = 0x7f0338f8, expected_word = 0x8e6e0004},
+  {name = "damage", pc = 0x7f0276e8, expected_word = 0xe61000fc},
+  {name = "attack_entity", pc = 0x7f02c338, expected_word = 0x8ce60050},
+  {name = "body", pc = 0x7f038d68, expected_word = 0x8045000f},
+  {name = "explosion_hrange", pc = 0x7f09cfb8, expected_word = 0xc6b00000},
+  {name = "explosion_vrange", pc = 0x7f09cfbc, expected_word = 0xc6a60004},
+  {name = "explosion_hchange", pc = 0x7f09cfac, expected_word = 0xc6b20008},
+  {name = "explosion_vchange", pc = 0x7f09cfb0, expected_word = 0xc6a8000c},
+  {name = "explosion_size", pc = 0x7f09d198, expected_word = 0xc6b20010},
+  {name = "explosion_range", pc = 0x7f09d2a0, expected_word = 0xc6a00014},
+  {name = "explosion_damage_range", pc = 0x7f09d2a4, expected_word = 0xc6b20018},
+  {name = "explosion_duration", pc = 0x7f09cf98, expected_word = 0x86a2001c},
+  {name = "explosion_flare_speed", pc = 0x7f09d470, expected_word = 0xc6b00020},
+  {name = "explosion_damage", pc = 0x7f09cb68, expected_word = 0xc6da003c},
+  {name = "hearing", pc = 0x7f022f68, expected_word = 0xc72600ec},
+  {name = "hidden", pc = 0x7f029c18, expected_word = 0x948e0012},
+  {name = "weapons", pc = 0x7f023038, expected_word = 0x8de20160},
+  {name = "prop_data", pc = 0x7f02d760, expected_word = 0x8c4f0004},
+  {name = "prop_position", pc = 0x7f029bd0, expected_word = 0xc4440008},
+  {name = "prop_tile", pc = 0x7f029be8, expected_word = 0x8c4f0014},
+  {name = "prop_flags", pc = 0x7f03a268, expected_word = 0x90ae0001},
+  {name = "prop_prev", pc = 0x7f03a288, expected_word = 0x8ca50024},
+  {name = "prop_parent", pc = 0x7f03a45c, expected_word = 0xac60001c},
+  {name = "object_state", pc = 0x7f03ffc0, expected_word = 0x908e0002},
+  {name = "object_type", pc = 0x7f040588, expected_word = 0x920e0003},
+  {name = "object_model_id", pc = 0x7f040724, expected_word = 0x848e0004},
+  {name = "object_flags", pc = 0x7f0405c4, expected_word = 0x8e0f0008},
+  {name = "object_flags2", pc = 0x7f038580, expected_word = 0x8c4a000c},
+  {name = "object_prop", pc = 0x7f04060c, expected_word = 0xae110010},
+  {name = "object_model", pc = 0x7f040608, expected_word = 0x8e0c0014},
+  {name = "object_runtime_flags", pc = 0x7f042ebc, expected_word = 0x8c8e0064},
+  {name = "weapon_item", pc = 0x7f02d7bc, expected_word = 0x81840080},
+  {name = "attack_target_type", pc = 0x7f02d78c, expected_word = 0x8ca3004c},
+  {name = "prop_type", pc = 0x7f02e070, expected_word = 0x90620000},
+  {name = "last_heard", pc = 0x7f029c28, expected_word = 0xac9800f0},
+  {name = "action", pc = 0x7f029c68, expected_word = 0x80820007},
+  {name = "prop", pc = 0x7f032dec, expected_word = 0x8c830018},
+  {name = "model", pc = 0x7f035988, expected_word = 0x8c4c001c},
+  {name = "number", pc = 0x7f038d6c, expected_word = 0x84470000},
+  {name = "flags", pc = 0x7f0382b0, expected_word = 0x8ee90014},
+  {name = "list", pc = 0x7f035520, expected_word = 0x8ef60104},
+  {name = "offset", pc = 0x7f03551c, expected_word = 0x96f20108},
+  {name = "return_list", pc = 0x7f035718, expected_word = 0x86e4010a},
+  {name = "last_seen", pc = 0x7f029bcc, expected_word = 0xac8e00d4},
+  {name = "last_position", pc = 0x7f029bd4, expected_word = 0xe48400d8},
+  {name = "target_tile", pc = 0x7f029bec, expected_word = 0xac8f00e4},
+  {name = "flags2", pc = 0x7f03321c, expected_word = 0x908f010e},
+]
+globals = [
+  {name = "waypoints", pc = 0x7f033908, expected_words = [0x3c128007, 0x26525d00]},
+  {name = "last_hit_prop", pc = 0x7f0b1018, expected_words = [0x3c178008, 0x26f7ba04]},
+]
+# Neighbour index * 16, and the native negative-pad sentinel scan's increment/branch.
+waypoint_stride_pc = 0x7f033924
+waypoint_stride_words = [0x00117900]
+waypoint_scan_pc = 0x7f027c48
+waypoint_scan_words = [0x24630010, 0x0481fff5, 0x00000000]
+noise_pc = 0x7f082d30
+noise_words = [0x0fc08bbb, 0xc7ac00e4]
+# JAL set-heard-Bond helper; ADDU a0,s1,s0 in the weapon scan.
+noise_alert_pc = 0x7f022f80
+noise_alert_words = [0x0fc0a700, 0x02302021]
+# Native guard-hit gate and complete o32 call, including isPlayer = false.
+guard_hit_pc = 0x7f02e108
+guard_hit_words = [0x8df80014, 0x2405000f, 0x8fa80274, 0x33190040, 0x53200021, 0x8fac0264, 0x8c640004, 0x81070080, 0xafa00010, 0x0fc09c9f, 0x27a60220]
+# Turning outside ACT_ATTACK/STAND normally asks for the angle to Bond.
+grenade_turn_pc = 0x7f02c394
+grenade_turn_words = [0x0fc0caf6, 0x24450008]
+set_self_pc = 0x7f035664
+set_self_words = [0x0fc0d4e6, 0x00009025]
+# LUI t6,0x8005; intervening branch/delay slot; LW t6,-0x7c84(t6).
+clock_pc = 0x7f032b6c
+clock_words = [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c]
+# LUI/ADDIU table base, then SLL type,6 for the native 64-byte definition.
+explosion_pc = 0x7f09c25c
+explosion_words = [0x3c198004, 0xafb10020, 0x27390284, 0x000fc180]
+data = [
+  {name = "idle", address = 0x800370dc, size = 0x60, sha256 = "ab550fc6ba5082faa007eaaaecf4be6630710082580f780111d83d2b6085bfe1"},
+  {name = "explosion_types", address = 0x80040284, size = 0x540, sha256 = "00faf0d7884c4915cebe468aa85b46471ba613a766c9a7c84c03894a75a47909"},
+  {name = "draw", address = 0x800373e8, size = 0x5c, sha256 = "e79286b042e8b36bfc3aaa6d245476df296ff26e2bf39af62001f6ec335c328f"},
+  {name = "bodies", address = 0x8003de10, size = 0x35c, sha256 = "eaabf09c06c46f44958c5d87c25b5d6f5d31a6a99450f18b6db17071cbe993be"},
+  {name = "setup_names", address = 0x800374e4, size = 0xec, sha256 = "d1235f8424683d1049302dd9b5c94fe5818c887ef37c1a1fef7c0a1751901b42"},
+  {name = "deaf", address = 0x8003717c, size = 0x38, sha256 = "a404059cdb36fbeb4913c554af0c4ac97e8a6059857fc4e9d5333fcce2876359"},
+  {name = "standard", address = 0x80037084, size = 0x58, sha256 = "ee89d3873098214e70e4a849ab3b2595cb8c0213944ef10eb5dba8faf297e6a9"},
+  {name = "simple", address = 0x80037250, size = 0x30, sha256 = "bbcac172d950fa025c42cf91d105d930200820c02434f16d120fc3a3a8c96095"},
+  {name = "global_lists", address = 0x8003744c, size = 0x98, sha256 = "f5bd1b46e8f79826c9c178187f7423e947d64b9a2e8f26a51bcad760322e19c2"},
+  {name = "attack", address = 0x800371b4, size = 0x58, sha256 = "2278a7bc8ffbf0c378ce9af28bb2840254ea5c85274856c2159dadcae5cd3a30"},
+  {name = "chase", address = 0x8003720c, size = 0x18, sha256 = "e25ef474ebb494e5acbe285560f863da35d20dd3514fae9f40f1785abc389580"},
+  {name = "persistent", address = 0x800372e0, size = 0xf0, sha256 = "49973df5625cce34789e6807420a78b01ea1a4fd973c6447ce344ef470914f6b"},
+]
+
+# Grenade scenery only; tagged/attached/protected instances are excluded at runtime.
+scenery_models = [
+  3, # PROP_AMMO_CRATE1
+  4, # PROP_AMMO_CRATE2
+  5, # PROP_AMMO_CRATE3
+  6, # PROP_AMMO_CRATE4
+  7, # PROP_AMMO_CRATE5
+  8, # PROP_BIN1
+  18, # PROP_CARD_BOX1
+  19, # PROP_CARD_BOX2
+  20, # PROP_CARD_BOX3
+  21, # PROP_CARD_BOX4_LG
+  22, # PROP_CARD_BOX5_LG
+  23, # PROP_CARD_BOX6_LG
+  51, # PROP_METAL_CRATE1
+  52, # PROP_METAL_CRATE2
+  54, # PROP_METAL_CRATE4
+  79, # PROP_WOOD_LG_CRATE1
+  80, # PROP_WOOD_LG_CRATE2
+  81, # PROP_WOOD_MD_CRATE3
+  82, # PROP_WOOD_SM_CRATE4
+  83, # PROP_WOOD_SM_CRATE5
+  84, # PROP_WOOD_SM_CRATE6
+]

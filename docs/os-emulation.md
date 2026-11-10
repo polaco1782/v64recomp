@@ -9,7 +9,7 @@ The shared runtime implements the OS and device behavior that the translated
 game uses, including blocking, completion messages and guest-visible state.
 
 This is **high-level emulation** at verified OS/library boundaries. A recognized
-guest function is bound to a native C handler such as `hook_os_recv_mesg`.
+guest function is bound to a native C handler such as `recomp_os_recv_mesg`.
 The handler receives `Runtime *` and `MipsContext *`, reads arguments from the
 guest registers and stack, accesses guest RAM through checked helpers, and
 writes results back using the MIPS calling convention. Guest addresses and
@@ -68,9 +68,9 @@ configuration. Gameplay save/load acceptance remains to be tested.
 
 ## Preserving scheduling and completion behavior
 
-Each guest thread has a host pthread, native stack and `MipsContext`. The
-scheduler grants an execution token to one guest CPU thread at a time and
-implements libultra priorities itself. Blocking operations park that pthread
+Each guest thread has a stackful fiber, native C stack and `MipsContext`. The
+scheduler resumes one fiber at a time on the main owner OS thread and
+implements libultra priorities itself. Blocking operations suspend that fiber
 with its translated C call stack intact. Generated checkpoints provide safe
 preemption boundaries, and disabled guest interrupts suppress checkpoint
 yields.

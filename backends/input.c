@@ -58,7 +58,21 @@ static void axis_button(RecompInput *input, float value, uint16_t bit) {
     else if (value <= 0.4f)
         input->held_axes &= (uint16_t)~bit;
 }
-void recomp_input_poll(RecompInput *input, RecompPad *pad) {
+static RecompCameraStick stick(RecompInput *input, SDL_GameControllerAxis horizontal, SDL_GameControllerAxis vertical) {
+    RecompCameraStick result = {.active = true};
+    const float deadzone = 0.12f;
+    float x = axis(input, horizontal), y = axis(input, vertical);
+    float radius = sqrtf(x * x + y * y);
+    if (radius > deadzone) {
+        float travel = (fminf(radius, 1.0f) - deadzone) / (1.0f - deadzone);
+        result.x = travel * x / radius;
+        result.y = travel * y / radius;
+    }
+    return result;
+}
+void recomp_input_poll(RecompInput *input, RecompPad *pad, RecompCameraStick *camera) {
+    if (camera)
+        *camera = (RecompCameraStick){0};
     if (!input)
         return;
     SDL_GameControllerUpdate();
@@ -81,28 +95,32 @@ void recomp_input_poll(RecompInput *input, RecompPad *pad) {
                     {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, 0x0020},
                     {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, 0x0010},
                     {SDL_CONTROLLER_BUTTON_RIGHTSTICK, 0x0008}};
-    for (unsigned i = 0; i < sizeof(bindings) / sizeof(*bindings); i++)
+    for (unsigned i = 0; i < sizeof(bindings) / sizeof(*bindings); i++) {
+        uint16_t target = bindings[i].target;
+        if (camera && (target & 0x0f00))
+            target >>= 8; // D-pad directions become the corresponding C-buttons.
         if (SDL_GameControllerGetButton(input->controller, bindings[i].source))
-            pad->buttons |= bindings[i].target;
+            pad->buttons |= target;
+    }
     axis_button(input, axis(input, SDL_CONTROLLER_AXIS_TRIGGERLEFT), 0x2000);
     axis_button(input, axis(input, SDL_CONTROLLER_AXIS_TRIGGERRIGHT), 0x0010);
-    float right_x = axis(input, SDL_CONTROLLER_AXIS_RIGHTX), right_y = axis(input, SDL_CONTROLLER_AXIS_RIGHTY);
-    axis_button(input, -right_y, 0x0008);
-    axis_button(input, right_y, 0x0004);
-    axis_button(input, -right_x, 0x0002);
-    axis_button(input, right_x, 0x0001);
+    if (camera) {
+        input->held_axes &= (uint16_t)~0x000f;
+        *camera = stick(input, SDL_CONTROLLER_AXIS_RIGHTX, SDL_CONTROLLER_AXIS_RIGHTY);
+    } else {
+        float right_x = axis(input, SDL_CONTROLLER_AXIS_RIGHTX), right_y = axis(input, SDL_CONTROLLER_AXIS_RIGHTY);
+        axis_button(input, -right_y, 0x0008);
+        axis_button(input, right_y, 0x0004);
+        axis_button(input, -right_x, 0x0002);
+        axis_button(input, right_x, 0x0001);
+    }
     pad->buttons |= input->held_axes;
 
     /* A radial 12% deadzone preserves direction and rescales the remaining
      * travel continuously. Use a nominal 80-unit radius like keyboard input;
      * diagonal magnitude stays within rounding error of the same range. */
-    const float deadzone = 0.12f;
-    float x = axis(input, SDL_CONTROLLER_AXIS_LEFTX), y = -axis(input, SDL_CONTROLLER_AXIS_LEFTY);
-    float radius = sqrtf(x * x + y * y);
-    if (radius <= deadzone)
-        return;
-    float travel = (fminf(radius, 1.0f) - deadzone) / (1.0f - deadzone);
-    int sx = (int)lroundf(80.0f * travel * x / radius), sy = (int)lroundf(80.0f * travel * y / radius);
+    RecompCameraStick left = stick(input, SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTY);
+    int sx = (int)lroundf(80.0f * left.x), sy = (int)lroundf(-80.0f * left.y);
     if (sx * sx + sy * sy > pad->stick_x * pad->stick_x + pad->stick_y * pad->stick_y) {
         pad->stick_x = (int8_t)sx;
         pad->stick_y = (int8_t)sy;

@@ -10,6 +10,7 @@ import sys
 
 
 def source_location(frame: dict) -> tuple[str,str]:
+    if frame.get('source'):return frame.get('symbol') or '?',frame['source']
     module=frame.get('module')
     if not module or not Path(module).is_file():return frame.get('symbol') or '?','?'
     with Path(module).open('rb') as stream:header=stream.read(18)
@@ -65,6 +66,7 @@ def inspect_crash(path: Path, resolve: bool = True) -> dict:
     for frame in report['native_stack']:
         if not resolve:
             print(f"  {frame.get('symbol') or '?'} at {frame['address']} ({frame.get('module') or '?'})")
+            if frame.get('source'):print(f"    at {frame['source']}")
             continue
         symbol,location=source_location(frame)
         print(f"  {symbol} at {location}")

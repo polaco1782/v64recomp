@@ -45,19 +45,19 @@ typedef struct RecompThreadSnapshot {
 size_t recomp_thread_snapshots(Runtime *, RecompThreadSnapshot *, size_t capacity);
 /* Optional native stack boundary for diagnostic unwinding. */
 void recomp_set_trace_ceiling(uintptr_t);
-/* Execute an owner-thread callback while the calling guest pthread is parked.
- * Owner callers execute directly. Callbacks must not block/yield guest threads. */
+/* Execute a callback on the owner's main stack while the guest fiber is parked.
+ * Main-stack callers execute directly. Callbacks must not block/yield guest threads. */
 void recomp_on_host(Runtime *, void (*callback)(Runtime *, void *), void *);
 
 typedef struct RecompThreadName {
     uint32_t entry;   /* Original guest entry address, independent of guest ID. */
-    const char *name; /* Native pthread name: 1..15 bytes, excluding the NUL. */
+    const char *name; /* Logical guest-thread diagnostic label: 1..15 bytes, excluding the NUL. */
 } RecompThreadName;
 
 typedef struct RecompSchedulerConfig {
     uint32_t thread_tail;                                          /* Guest address of an eight-byte tail sentinel. */
     uint32_t run_queue, active_queue, running_thread, event_table; /* Optional guest globals. */
-    size_t native_stack_size;                                      /* Zero uses the pthread stack default. */
+    size_t native_stack_size;                                      /* Fiber stack; zero reserves 8 MiB on demand. */
     unsigned checkpoint_interval;                                  /* Backedges per yield; zero selects 64. */
     uint32_t stop_before_entry; /* Debugger stop before a thread's first instruction. */
     const uint32_t *stop_before_entries;
@@ -68,11 +68,14 @@ typedef struct RecompSchedulerConfig {
     size_t thread_name_count;
 } RecompSchedulerConfig;
 
-/* Runtime access is serialized between the owner and one guest pthread. Guest code must
+/* Guest fibers and host callbacks execute serially on the owner's OS thread. Guest code must
  * reach checkpoints/hooks to yield; max_resumes is not an instruction budget.
  * Destroy backends and drain their RT64 queues before destroying the runtime. */
 bool recomp_scheduler_init(Runtime *, const RecompSchedulerConfig *);
 void recomp_scheduler_destroy(Runtime *);
+/* Arm idle detection after a priority-zero thread finishes its startup work.
+ * The thread stays runnable in guest RAM; only its host busy loop is skipped. */
+void recomp_scheduler_set_idle_thread(Runtime *, uint32_t object);
 RecompRunResult recomp_scheduler_run(Runtime *, size_t max_resumes);
 void recomp_thread_create(Runtime *, uint32_t object, int32_t id, uint32_t entry, uint32_t argument, uint32_t stack,
                           int32_t priority);
@@ -114,6 +117,9 @@ bool recomp_timer_stop(Runtime *, uint32_t timer);
 uint64_t recomp_clock_next_deadline(Runtime *); /* UINT64_MAX if none. */
 uint32_t recomp_clock_timer_sentinel(Runtime *);
 uint64_t recomp_clock_frequency(Runtime *);
+/* Freeze the guest counter while a live code repair blocks execution. */
+void recomp_clock_pause(Runtime *);
+void recomp_clock_resume(Runtime *);
 
 typedef struct RecompBootLoad {
     uint32_t section, vram, rom_offset, size;
@@ -168,14 +174,14 @@ typedef struct RecompAiOutput {
     void *opaque;
 } RecompAiOutput;
 bool recomp_ai_set_output(Runtime *, const RecompAiOutput *);
-void hook_os_ai_set_frequency(Runtime *, MipsContext *);
-void hook_os_ai_set_next_buffer(Runtime *, MipsContext *);
-void hook_os_ai_get_length(Runtime *, MipsContext *);
-void hook_os_ai_get_status(Runtime *, MipsContext *);
-void hook_os_pi_get_cmd_queue(Runtime *, MipsContext *);
-void hook_os_virtual_to_physical(Runtime *, MipsContext *);
-void hook_os_disable_int(Runtime *, MipsContext *);
-void hook_os_restore_int(Runtime *, MipsContext *);
+void recomp_os_ai_set_frequency(Runtime *, MipsContext *);
+void recomp_os_ai_set_next_buffer(Runtime *, MipsContext *);
+void recomp_os_ai_get_length(Runtime *, MipsContext *);
+void recomp_os_ai_get_status(Runtime *, MipsContext *);
+void recomp_os_pi_get_cmd_queue(Runtime *, MipsContext *);
+void recomp_os_virtual_to_physical(Runtime *, MipsContext *);
+void recomp_os_disable_int(Runtime *, MipsContext *);
+void recomp_os_restore_int(Runtime *, MipsContext *);
 
 typedef struct RecompPad {
     bool connected;
@@ -188,6 +194,9 @@ typedef struct RecompIOConfig {
     const char *eeprom_path; /* NULL keeps an in-memory device. Copied at init. */
     /* SI completion delay; zero completes at the next scheduler poll. */
     uint64_t si_transfer_ticks;
+    /* Optional ROM-linked queue created by osContInit itself. */
+    uint32_t cont_init_queue, cont_init_messages;
+    int32_t cont_init_queue_capacity;
     uint8_t pak_mask;         /* One 32 KiB Controller Pak per selected port. */
     const char *pak_paths[4]; /* NULL keeps that Pak in memory. Copied at init. */
 } RecompIOConfig;
@@ -204,65 +213,65 @@ bool recomp_io_init(Runtime *, const RecompIOConfig *);
 void recomp_io_destroy(Runtime *);
 bool recomp_input_set(Runtime *, unsigned, const RecompPad *);
 RecompIOStats recomp_io_stats(Runtime *);
-void hook_os_cont_init(Runtime *, MipsContext *);
-void hook_os_cont_reset(Runtime *, MipsContext *);
-void hook_os_cont_start_read(Runtime *, MipsContext *);
-void hook_os_cont_get_read(Runtime *, MipsContext *);
-void hook_os_cont_start_query(Runtime *, MipsContext *);
-void hook_os_cont_get_query(Runtime *, MipsContext *);
-void hook_os_eeprom_probe(Runtime *, MipsContext *);
-void hook_os_eeprom_long_read(Runtime *, MipsContext *);
-void hook_os_eeprom_long_write(Runtime *, MipsContext *);
-void hook_os_eeprom_read(Runtime *, MipsContext *);
-void hook_os_eeprom_write(Runtime *, MipsContext *);
+void recomp_os_cont_init(Runtime *, MipsContext *);
+void recomp_os_cont_reset(Runtime *, MipsContext *);
+void recomp_os_cont_start_read(Runtime *, MipsContext *);
+void recomp_os_cont_get_read(Runtime *, MipsContext *);
+void recomp_os_cont_start_query(Runtime *, MipsContext *);
+void recomp_os_cont_get_query(Runtime *, MipsContext *);
+void recomp_os_eeprom_probe(Runtime *, MipsContext *);
+void recomp_os_eeprom_long_read(Runtime *, MipsContext *);
+void recomp_os_eeprom_long_write(Runtime *, MipsContext *);
+void recomp_os_eeprom_read(Runtime *, MipsContext *);
+void recomp_os_eeprom_write(Runtime *, MipsContext *);
 
-void hook_os_initialize(Runtime *, MipsContext *);
-void hook_os_get_mem_size(Runtime *, MipsContext *);
-void hook_os_cart_rom_init(Runtime *, MipsContext *);
-void hook_os_drive_rom_init(Runtime *, MipsContext *);
-void hook_os_epi_read_io(Runtime *, MipsContext *);
-void hook_os_epi_start_dma(Runtime *, MipsContext *);
-void hook_leo_drive_exist(Runtime *, MipsContext *);
-void hook_os_get_count(Runtime *, MipsContext *);
-void hook_os_get_time(Runtime *, MipsContext *);
-void hook_os_set_time(Runtime *, MipsContext *);
-void hook_os_set_timer(Runtime *, MipsContext *);
-void hook_os_stop_timer(Runtime *, MipsContext *);
-void hook_os_create_vi_manager(Runtime *, MipsContext *);
-void hook_os_vi_set_mode(Runtime *, MipsContext *);
-void hook_os_vi_set_x_scale(Runtime *, MipsContext *);
-void hook_os_vi_set_y_scale(Runtime *, MipsContext *);
-void hook_os_vi_black(Runtime *, MipsContext *);
-void hook_os_vi_set_special_features(Runtime *, MipsContext *);
-void hook_os_vi_set_event(Runtime *, MipsContext *);
-void hook_os_vi_swap_buffer(Runtime *, MipsContext *);
-void hook_os_vi_get_current_framebuffer(Runtime *, MipsContext *);
-void hook_os_vi_get_next_framebuffer(Runtime *, MipsContext *);
-void hook_os_vi_get_current_mode(Runtime *, MipsContext *);
-void hook_os_set_int_mask(Runtime *, MipsContext *);
-void hook_os_set_int_mask_global(Runtime *, MipsContext *);
-void hook_os_pfs_init_pak(Runtime *, MipsContext *);
-void hook_os_pfs_is_plug(Runtime *, MipsContext *);
-void hook_os_pfs_get_status(Runtime *, MipsContext *);
-void hook_os_cont_ram_read(Runtime *, MipsContext *);
-void hook_os_cont_ram_write(Runtime *, MipsContext *);
-void hook_os_cont_set_ch(Runtime *, MipsContext *);
-void hook_os_motor_init(Runtime *, MipsContext *);
-void hook_os_motor_start(Runtime *, MipsContext *);
-void hook_os_motor_stop(Runtime *, MipsContext *);
-void hook_os_create_pi_manager(Runtime *, MipsContext *);
-void hook_os_pi_start_dma(Runtime *, MipsContext *);
-void hook_os_pi_raw_read_io(Runtime *, MipsContext *);
-void hook_os_pi_raw_start_dma(Runtime *, MipsContext *);
-void hook_os_pi_get_status(Runtime *, MipsContext *);
+void recomp_os_initialize(Runtime *, MipsContext *);
+void recomp_os_get_mem_size(Runtime *, MipsContext *);
+void recomp_os_cart_rom_init(Runtime *, MipsContext *);
+void recomp_os_drive_rom_init(Runtime *, MipsContext *);
+void recomp_os_epi_read_io(Runtime *, MipsContext *);
+void recomp_os_epi_start_dma(Runtime *, MipsContext *);
+void recomp_leo_drive_exist(Runtime *, MipsContext *);
+void recomp_os_get_count(Runtime *, MipsContext *);
+void recomp_os_get_time(Runtime *, MipsContext *);
+void recomp_os_set_time(Runtime *, MipsContext *);
+void recomp_os_set_timer(Runtime *, MipsContext *);
+void recomp_os_stop_timer(Runtime *, MipsContext *);
+void recomp_os_create_vi_manager(Runtime *, MipsContext *);
+void recomp_os_vi_set_mode(Runtime *, MipsContext *);
+void recomp_os_vi_set_x_scale(Runtime *, MipsContext *);
+void recomp_os_vi_set_y_scale(Runtime *, MipsContext *);
+void recomp_os_vi_black(Runtime *, MipsContext *);
+void recomp_os_vi_set_special_features(Runtime *, MipsContext *);
+void recomp_os_vi_set_event(Runtime *, MipsContext *);
+void recomp_os_vi_swap_buffer(Runtime *, MipsContext *);
+void recomp_os_vi_get_current_framebuffer(Runtime *, MipsContext *);
+void recomp_os_vi_get_next_framebuffer(Runtime *, MipsContext *);
+void recomp_os_vi_get_current_mode(Runtime *, MipsContext *);
+void recomp_os_set_int_mask(Runtime *, MipsContext *);
+void recomp_os_set_int_mask_global(Runtime *, MipsContext *);
+void recomp_os_pfs_init_pak(Runtime *, MipsContext *);
+void recomp_os_pfs_is_plug(Runtime *, MipsContext *);
+void recomp_os_pfs_get_status(Runtime *, MipsContext *);
+void recomp_os_cont_ram_read(Runtime *, MipsContext *);
+void recomp_os_cont_ram_write(Runtime *, MipsContext *);
+void recomp_os_cont_set_ch(Runtime *, MipsContext *);
+void recomp_os_motor_init(Runtime *, MipsContext *);
+void recomp_os_motor_start(Runtime *, MipsContext *);
+void recomp_os_motor_stop(Runtime *, MipsContext *);
+void recomp_os_create_pi_manager(Runtime *, MipsContext *);
+void recomp_os_pi_start_dma(Runtime *, MipsContext *);
+void recomp_os_pi_raw_read_io(Runtime *, MipsContext *);
+void recomp_os_pi_raw_start_dma(Runtime *, MipsContext *);
+void recomp_os_pi_get_status(Runtime *, MipsContext *);
 
-void hook_os_memcpy(Runtime *, MipsContext *);
-void hook_os_memset(Runtime *, MipsContext *);
-void hook_os_bcopy(Runtime *, MipsContext *);
-void hook_os_bzero(Runtime *, MipsContext *);
-void hook_os_bcmp(Runtime *, MipsContext *);
-void hook_os_strlen(Runtime *, MipsContext *);
-void hook_os_strchr(Runtime *, MipsContext *);
+void recomp_os_memcpy(Runtime *, MipsContext *);
+void recomp_os_memset(Runtime *, MipsContext *);
+void recomp_os_bcopy(Runtime *, MipsContext *);
+void recomp_os_bzero(Runtime *, MipsContext *);
+void recomp_os_bcmp(Runtime *, MipsContext *);
+void recomp_os_strlen(Runtime *, MipsContext *);
+void recomp_os_strchr(Runtime *, MipsContext *);
 
 typedef enum RecompTaskCompletion { RECOMP_SP_DONE, RECOMP_SP_YIELDED, RECOMP_DP_DONE } RecompTaskCompletion;
 enum {
@@ -308,35 +317,35 @@ bool recomp_task_complete(Runtime *, uint64_t, RecompTaskCompletion);
 bool recomp_task_finish_without_dp(Runtime *, uint64_t);
 RecompTaskStats recomp_task_stats(Runtime *);
 bool recomp_task_snapshot(Runtime *, RecompTask *);
-void hook_os_sp_task_load(Runtime *, MipsContext *);
-void hook_os_sp_task_start_go(Runtime *, MipsContext *);
-void hook_os_sp_task_yield(Runtime *, MipsContext *);
-void hook_os_sp_task_yielded(Runtime *, MipsContext *);
+void recomp_os_sp_task_load(Runtime *, MipsContext *);
+void recomp_os_sp_task_start_go(Runtime *, MipsContext *);
+void recomp_os_sp_task_yield(Runtime *, MipsContext *);
+void recomp_os_sp_task_yielded(Runtime *, MipsContext *);
 
 /* Native replacements share the generated-function ABI. */
-void hook_os_create_thread(Runtime *, MipsContext *);
-void hook_os_start_thread(Runtime *, MipsContext *);
-void hook_os_stop_thread(Runtime *, MipsContext *);
-void hook_os_destroy_thread(Runtime *, MipsContext *);
-void hook_os_yield_thread(Runtime *, MipsContext *);
-void hook_os_get_thread_pri(Runtime *, MipsContext *);
-void hook_os_get_thread_id(Runtime *, MipsContext *);
-void hook_os_set_thread_pri(Runtime *, MipsContext *);
-void hook_os_create_mesg_queue(Runtime *, MipsContext *);
-void hook_os_send_mesg(Runtime *, MipsContext *);
-void hook_os_jam_mesg(Runtime *, MipsContext *);
-void hook_os_recv_mesg(Runtime *, MipsContext *);
-void hook_os_set_event_mesg(Runtime *, MipsContext *);
-void hook_os_writeback_dcache_all(Runtime *, MipsContext *);
-void hook_os_cache_range(Runtime *, MipsContext *);
-void hook_os_dp_set_status(Runtime *, MipsContext *);
-void hook_os_dp_get_status(Runtime *, MipsContext *);
-void hook_os_dp_get_counters(Runtime *, MipsContext *);
+void recomp_os_create_thread(Runtime *, MipsContext *);
+void recomp_os_start_thread(Runtime *, MipsContext *);
+void recomp_os_stop_thread(Runtime *, MipsContext *);
+void recomp_os_destroy_thread(Runtime *, MipsContext *);
+void recomp_os_yield_thread(Runtime *, MipsContext *);
+void recomp_os_get_thread_pri(Runtime *, MipsContext *);
+void recomp_os_get_thread_id(Runtime *, MipsContext *);
+void recomp_os_set_thread_pri(Runtime *, MipsContext *);
+void recomp_os_create_mesg_queue(Runtime *, MipsContext *);
+void recomp_os_send_mesg(Runtime *, MipsContext *);
+void recomp_os_jam_mesg(Runtime *, MipsContext *);
+void recomp_os_recv_mesg(Runtime *, MipsContext *);
+void recomp_os_set_event_mesg(Runtime *, MipsContext *);
+void recomp_os_writeback_dcache_all(Runtime *, MipsContext *);
+void recomp_os_cache_range(Runtime *, MipsContext *);
+void recomp_os_dp_set_status(Runtime *, MipsContext *);
+void recomp_os_dp_get_status(Runtime *, MipsContext *);
+void recomp_os_dp_get_counters(Runtime *, MipsContext *);
 /* Global libultra page pairs. ASID mappings and privileged instructions are unsupported. */
 void recomp_map_pages(Runtime *, unsigned, uint32_t, uint32_t, uint32_t, uint32_t);
 void recomp_unmap_pages(Runtime *);
-void hook_os_map_tlb(Runtime *, MipsContext *);
-void hook_os_unmap_tlb_all(Runtime *, MipsContext *);
+void recomp_os_map_tlb(Runtime *, MipsContext *);
+void recomp_os_unmap_tlb_all(Runtime *, MipsContext *);
 
 #ifdef __cplusplus
 }

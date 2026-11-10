@@ -1,7 +1,7 @@
 # Finding and changing a game's field of view
 
-This is the investigation procedure used for Hexen, GoldenEye, Duke Nukem 64
-and Ocarina of Time.
+This is the investigation procedure used for Hexen, GoldenEye, Duke Nukem 64,
+Ocarina of Time and Quake 64.
 It is intended for an agent extending another game in this repository. Run the
 commands from the repository root, substitute the game ID and use metadata from
 that exact ROM. On Linux, replace `.venv/Scripts/python.exe` with
@@ -15,7 +15,7 @@ weapon zoom may depend on the original FOV.
 ## 1. Establish the existing implementation
 
 Read `AGENTS.md`, `SKILL.md`, the game's README, `profile.toml`, `generate.py`,
-both `app.c` entry points and any existing graphics/input adapters. Preserve the
+the shared `main.c` entry point and any existing graphics/input adapters. Preserve the
 working tree and private ROM/save files. Do not assume two games use the same
 addresses, engine or ABI.
 
@@ -135,17 +135,23 @@ The existing implementations illustrate different boundaries:
 
 | Game | Projection boundary | CPU visibility handling |
 | --- | --- | --- |
-| Hexen US | `guPerspective`, restricted to the world return PC and matrix | Temporarily supplies a wider conservative scalar to the original angle-to-screen initializer, then restores it |
+| Hexen US | `guPerspective`, restricted to the world return PC and matrix | Saves native CPU angle-to-screen/clip tables, rebuilds them for wider live views, restores saved bytes at the minimum |
 | GoldenEye US | Gameplay calls to `viSetFovY` | Original setter updates VI projection and player perspective/scale together |
 | Duke Nukem 64 US | World calls reaching `guPerspectiveF`, both directly and through `guPerspective` | Both CPU float and GPU fixed matrices change; widen the initial sector window and correct depth-derived world billboard sizes |
 | Ocarina of Time US V1.2 | Gameplay view FOV after `Camera_Update`, before view matrices are built | Shared CPU/GPU view-projection path; preserve native camera FOV/zoom and exclude fixed backgrounds |
+| Quake 64 US | Saved fixed `guFrustum` matrix selected at world render, scale X/Y diagonals only | Temporarily reduce right/up basis vectors during original four-plane construction; retain distances, sign bits and conservative coverage |
 
 ## 5. Choose conversion and scope
 
-Use the shared environment variable `RECOMP_FOV` in both Debug and Release.
-State the setting's convention explicitly. These ports use horizontal degrees
-at a documented reference aspect, accept `60..120`, and keep the exact original
-path when the environment variable is unset, empty or `0`.
+Use the shared keypad `+` / `-` controls in both Debug and Release. Bind the
+game's adjustment callback with `recomp_renderer_set_fov_hook`. The renderer
+delivers one-degree keydown steps (including repeat) on the owner thread, with
+guest execution parked. It ignores these shortcuts when keyboard input is
+captured by the shared menu or Debug inspector, or the window lacks focus.
+The shared `fov_control` service clamps horizontal degrees at a documented
+reference aspect between the exact original angle and 140. Start at the original
+each launch and preserve its exact guest path when lowering to the minimum.
+There is no FOV environment lookup or startup parser.
 
 For a fixed horizontal setting `h` and aspect `a`, the vertical angle is:
 
@@ -180,12 +186,13 @@ Keep all game-specific work under `games/<game>/`:
    Check full bodies, decoded operands, metadata ownership/boundaries and
    translated coverage. Emit constants into a generated header and a
    `fov-hooks.json` report under the selected build directory.
-4. Implement parsing/math/wrappers in parent-folder `fov.c`/`fov.h` (or the
-   game's combined control adapter, as in OoT). Parse once
-   at startup in both apps. Reject malformed, nonfinite and out-of-range values.
-   With the setting disabled, pass straight through to the original.
-5. Add the adapter to `RECOMP_GAME_SOURCES`; use `RECOMP_GAME_DEBUG_SOURCES` for any
-   maintained focused check. Regenerate the game's MSVC browse project using
+4. Implement game math/wrappers in parent-folder `fov.c`/`fov.h` (or the
+   game's combined control adapter, as in OoT). Initialize shared `RecompFov`
+   state with the checked native vertical angle/aspect in `main.c` for both builds. Bind the
+   adjustment callback after creating the renderer. Recompute projection,
+   zoom, sprite and visibility scalars together; keep exact original behavior
+   at the minimum. If CPU tables are cached, rebuild them live too.
+5. Add the adapter to `RECOMP_GAME_SOURCES`. Regenerate the game's MSVC browse project using
    `tools/msvc_solution.py`'s `write_project` interface. Do not edit generated C.
 
 A hash binds reviewed semantics to bytes; it does not establish those semantics
@@ -194,20 +201,17 @@ evidence. Look at the existing game modules for the current schemas and APIs.
 
 ## 7. Validate and hand off
 
-Build Debug and Release. Verify unset/empty/zero preserves original projection
-bytes. Exercise range endpoints, scope exclusions, repeated updates and zoom
-ratios where applicable. Prefer actual translated projection math when it can
-run in isolation. Clearly label observer-based visibility checks as synthetic;
-they cannot establish portal traversal or edge visibility in a live level.
+Build Debug and Release unless the user requests source-only work. Verify launch
+and lowering to the minimum preserve original projection bytes. Exercise keypad
+clamping through 140 degrees, scope exclusions, repeated updates and zoom
+ratios where applicable. ROM evidence alone cannot establish portal traversal
+or edge visibility in a live level.
 
 For Duke on Windows:
 
 ```powershell
 .\tools\build_msvc_project.ps1 -Game duke-us -Configuration Debug
 .\tools\build_msvc_project.ps1 -Game duke-us -Configuration Release
-$env:RECOMP_DUKE_CHECK_FOV = '1'
-.\build\msvc\duke-us\debug\bin\Debug\duke-us.exe --frames 1
-Remove-Item Env:RECOMP_DUKE_CHECK_FOV
 git -c diff.ignoreSubmodules=all diff --check
 ```
 
@@ -256,9 +260,9 @@ gameplay acceptance. Follow the README for current build/test results.
 The first FOV change omitted the separate billboard size path. The user reported
 larger-looking aliens at FOV 110. Disassembly showed the depth-derived sizes
 above; the correction now applies the same focal ratio as the actual translated
-projection matrix, about 0.54 at 110 degrees. Debug checks cover that angle,
-both world callers, unchanged anchors and HUD exclusion. They establish the
-argument scaling; the user subsequently confirmed the corrected FOV and input
+projection matrix, about 0.54 at 110 degrees. Earlier isolated runs verified
+argument scaling for both world callers, unchanged anchors and HUD exclusion.
+The user subsequently confirmed the corrected FOV and input
 work well in game. Broader camera and portal cases remain unverified.
 
 ## Ocarina of Time investigation record
@@ -299,9 +303,96 @@ normal mode dispatched to `Camera_Normal1`, yielding to native Z-targeting.
 Check the exact RAM offsets in the profile; for example `PauseContext.state` is
 at `PlayState + 0x10934`, not the pause-context base `+0x10760`.
 
-The maintained Debug check uses synthetic camera/play state and a collision
-observer. It verifies parsing, original-return preservation, horizontal FOV
-conversion, native zoom ratios, action mapping, delta consumption and state
-gates. It does not execute the original projection or collision geometry and
-cannot establish movement, aiming or camera-transition acceptance. Follow the
+ROM fingerprints establish the reviewed boundaries; movement, aiming, collision
+geometry and complete camera transitions require gameplay acceptance. Follow the
 game's README for the build command and current validation limits.
+
+## Hexen live visibility update
+
+The original visibility initializer at `0x803bba90` allocates a temporary
+4096-entry tangent table, builds fixed-point screen positions and a clip angle,
+then frees the temporary buffer. Its fixed +/-2 tangent branches at
+`0x803bbbf4`/`0x803bbc00` truncate coverage beyond `atan(2)`, about 63.4 degrees
+on each side. Merely raising the FOV setting to 140 would leave missing edges.
+
+The live adapter lets the original initializer run normally and saves its
+finished 4096 words at `0x80144bf8` plus clip angle at `0x80144bdc`. The profile
+checks the table-address LUI/ADDIU, clip-address LUI/SW, fixed-point screen center
+(`0x47200000`, 40960) and upper bound (`0x47a00080`, 81921), as well as the full
+initializer body. No additional ROM entry or instruction patch is needed.
+
+Above the native conservative span, compute a focal scale from the selected
+half-angle plus one degree, sample angles `(i - 2048 + 0.5) * 2*pi / 8192`, and
+rebuild `ceil(center - tan(angle) * focal)` clamped to `[-1, 81921]`. The first
+negative entry defines the original binary-angle clip formula
+`(index << 19) - 0x40000000`. The screen bounds replace the fixed +/-2 branches,
+so 140-degree views retain coverage. Host math can differ slightly from the
+guest's trigonometric approximations; angular overscan keeps clipping
+conservative. Returning to the minimum copies the exact saved native words back.
+
+Key changes update only these CPU tables and projection scalars, with the guest
+parked. They never re-enter the guest allocator. Hexen also caches its fixed
+world projection at `0x80084c78`: changing a future `guPerspective` argument
+does not update the current view. Save the native matrix after the scoped call,
+then scale its split 16.16 X/Y diagonal by
+`tan(original_horizontal/2) / tan(selected_horizontal/2)` on every adjustment.
+Always start from the saved matrix and restore all 64 bytes at the minimum.
+The checked `guMtxF2L` body verifies the packing; the world renderer at
+`0x801127f4` selects the cached matrix and derives its pitched view from it.
+Keep depth terms and perspective normalization unchanged.
+
+The live matrix correction passes Linux Debug/Release builds and generation
+verification. The user confirmed the live controls work after rebuilding;
+full-range geometry/edge visibility and combined F7 behavior still need acceptance.
+
+## Quake 64 investigation record
+
+US revision 0 has SHA-1 `25a7fe0342490d3c23328040bb34f8748995537a`.
+Its `.main` maps VRAM `0x80000400`, ROM `0x1000`, size `0x77080`.
+The SDK inspector found `guFrustum` at `0x800574f0`, not `guPerspective`.
+The [pinned PC engine reference](https://github.com/id-Software/Quake/tree/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake)
+provided structural hypotheses only; the N64 layout and addresses came from
+local disassembly. See the game's controller guide and complete `profile.toml`
+for fingerprints and decoded operands.
+
+| Evidence | Interpretation |
+| --- | --- |
+| `0x80028584` calls `guFrustum` | Left/right `-4/+4`, bottom/top `-3/+3`, near 4, far 4096, scale 1; original horizontal FOV is 90 degrees |
+| `0x80028574` constructs `0x80078160` | Fixed world projection is initialized separately from per-frame view/culling work |
+| `0x80027740`/`0x80027744` emit a matrix load | GPU task reads that global matrix later; restoring it at the end of a host wrapper would restore too early |
+| `0x80028378` calls camera setup, plane setup and world drawing | Scope the chosen projection at this render boundary, preserving native views when gameplay is inactive |
+| `0x80027378` constructs `forward +/- right` and `forward +/- up` planes | CPU clipping does not use the GPU matrix; widening only the matrix would clip newly visible geometry |
+| `0x800274ac` calls the plane sign-bit helper | Let the original recalculate distances/types/sign bits, rather than editing plane normals afterward |
+| `0x800260f0` loops over four planes | Confirms the CPU visibility consumer and exact plane span |
+| `0x8002db24` emits Vtx/triangle geometry for effects | Effects follow the 3D projection; no independent Duke-style screen-size correction was identified |
+
+Save the original 64 matrix bytes when the verified world `guFrustum` call
+returns. For selected horizontal angle `h`, scale only fixed-point diagonal
+entries 0 and 5 by `1/tan(h/2)`; keep the native depth terms. At minimum,
+restore the original bytes exactly. Keep the selected matrix resident until a
+later render boundary chooses another view, so the submitted RSP task sees it.
+
+For CPU culling, temporarily scale right by `1/tan(h/2 + 1 degree)` and up by
+`1/max(1, tan(atan(0.75*tan(h/2)) + 1 degree))`. The original vertical planes
+already cover a conservative 90-degree span, wider than the native 73.74-degree
+vertical projection; never narrow that span. Run the original plane constructor
+once, then restore all six basis-component words. Rendering and billboard
+orientation must see the original camera basis afterward.
+
+The same game-owned adapter injects mouse/WASD after the controller dispatcher
+at `0x800469d8`, restricted to gameplay return `0x8003b528`. This avoids changing
+menu pad reads or replacing physics. See
+[Quake's controller guide](../games/quake-us/controller.md) for command fields,
+state gates, native speeds and weapon-edge behavior.
+
+Do not treat `0x8006caa0` as a gameplay-mode flag. It is the difficulty selector,
+initialized to 1 (Normal), with menu labels Easy/Normal/Hard/Nightmare. The first
+adapter incorrectly required zero, disabling capture, injection and FOV on
+Normal and higher difficulties. The gate was removed; difficulty is independent
+of gameplay eligibility. Its address and original default are retained in the
+ROM evidence as `skill` and `default_skill`.
+
+Generation retained four translated originals with 1,402 ready functions and 58
+SDK hooks. This is static evidence only: no standalone tests were added, and
+MSVC Debug compiles and links. Release has not been rebuilt and the game has not
+been launched. Gameplay and combined F7 acceptance remain.

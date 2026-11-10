@@ -10,11 +10,20 @@ player, libdragon RSPQ/RDPQ menu and microcode are not executed.
 
 ## ROM and build
 
-Obtain `MediaPlayer_64.z64` from the [official V2 release](https://github.com/lewilou22/N64-Media-Player/releases/tag/V2)
-and import it with `tools/import_rom.py --profile games/media-player/profile.toml --rom PATH`.
-The pinned file is 524288 bytes, SHA-1 `e453629d68936382266bd85bc47962078638e818`.
-The importer places it at `local/media-player.z64`. The ROM and music stay
-external; no downloads happen during builds and embedding is disabled.
+Building this target automatically downloads `MediaPlayer_64.z64` from the
+[official V2 release](https://github.com/lewilou22/N64-Media-Player/releases/tag/V2)
+into ignored `local/media-player.z64`. The shared download helper used by Bad
+Apple verifies the pinned size and SHA-256 before atomically caching the file.
+Later builds verify and reuse that cache without network access. Failed downloads
+are removed, and an existing mismatched ROM is rejected without overwriting it.
+
+- Size: 524288 bytes
+- SHA-1: `e453629d68936382266bd85bc47962078638e818`
+- SHA-256: `5260dde362cb03b239c5d4cc446af9a1a1689797fe5b23aebc8ed4fed7dd7fc1`
+
+For offline setup, import the pinned ROM with
+`tools/import_rom.py --profile games/media-player/profile.toml --rom PATH`
+before building. The ROM and music stay external; embedding is disabled.
 
 ```powershell
 .\tools\build_msvc_project.ps1 -Game media-player -Configuration Release
@@ -92,13 +101,10 @@ existing audio, while interactive playback continues. Set
 
 ```powershell
 .\tools\build_msvc_project.ps1 -Game media-player -Configuration Debug
-.\.venv\Scripts\python.exe games/media-player/debug/validate_audio.py `
-  --exe build/msvc/media-player/debug/bin/Debug/media-player.exe `
-  --ffmpeg PATH/TO/ffmpeg.exe --output build/media-player-validation
+$env:RECOMP_MEDIA_FILE = "C:\Music\example.mp3"
+.\build\msvc\media-player\debug\bin\Debug\media-player.exe --frames 120 --wav capture.wav
 ```
 
-The fixture generates original transient/tonal stereo CBR, mono MPEG-2 and
-stereo VBR MP3s, compares captured PCM against FFmpeg, and checks playback
-underruns. `tools/check_teq.py` separately executes synthetic trap, 64-bit
-comparison, delay-slot and likely-branch annulment cases without a ROM.
-Run the latter from Developer PowerShell for MSVC.
+`main.c` contains the SDL player and its small Debug PCM-capture blocks.
+`codec.c` contains the independent ROM decoder adapter. Both configurations
+compile the same files; standalone audio-validation fixtures have been removed.
