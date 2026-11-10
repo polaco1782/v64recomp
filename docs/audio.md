@@ -63,9 +63,16 @@ it becomes active, including promotion of a queued successor. SDL receives signe
 16-bit stereo samples; optional WAV capture stores canonical little-endian PCM.
 Synthesis does not play samples directly. A stalled device's queue is bounded to
 avoid seconds of stale sound. Rate changes after output starts remain unsupported.
-Playback starts after an 80 ms reserve (at least three SDL device periods) has
-accumulated. An empty running queue counts as an underrun and pauses the device
-until the reserve is refilled. Disabling output clears and pauses playback.
+Playback starts after a 160 ms reserve (at least three SDL device periods) has
+accumulated; a game's `prebuffer_ms` can select an initial reserve up to 200 ms.
+The playback queue receives the original synthesized PCM at the game's sample
+rate, preserving sample values, frame counts and pitch. An empty running queue
+counts as an underrun and pauses playback until the reserve is refilled; each
+underrun raises the reserve by 40 ms, up to 200 ms (or three device periods if larger).
+Disabling output clears and pauses playback and restores the initial reserve.
+Stalls longer than the available reserve, or repeated stalls that deplete it,
+can still interrupt playback. Guest AI completion timing and WAV capture remain
+independent of device playback buffering.
 Shared audio statistics record `queue_underruns`, `queue_resets` (excess queue),
 `min_queued_bytes`, `max_queued_bytes` and `prebuffer_frames`; the minimum measures
 the running queue before PCM admission, excluding initial buffering.
@@ -87,7 +94,8 @@ runs bounded scheduler batches during the remaining interval, sleeping at most
 1 ms between batches. Its audio manager discards duplicate retrace messages;
 servicing VI/AI and task completions during pacing prevents that coalescing
 from starving playback. Its debug executable supports `--audio-trace PATH` for a CSV of
-host timestamps, admitted frames, sample rate, SDL queue bytes and underruns.
+host timestamps, admitted frames, sample rate, SDL queue bytes, underruns
+and the current reserve target.
 `RECOMP_AUDIO_TRACE=PATH` enables the same CSV for any build whose audio config
 does not specify a trace path. When tracing is enabled, stderr also records the
 SDL audio driver, sample rate, device period, prebuffer size and final buffer/

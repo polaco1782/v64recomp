@@ -1,12 +1,14 @@
 #define _GNU_SOURCE 1
-#include <pthread.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
+#define MINICORO_IMPL
+#define MCO_USE_VMEM_ALLOCATOR
+#define MCO_DEFAULT_STACK_SIZE (8 * 1024 * 1024)
+#define MCO_NO_DEBUG
+#include "minicoro.h"
 
 #include "runtime.h"
 #include "runtime_debug.h"
 #include "timing.h"
+#include <fenv.h>
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -17,9 +19,11 @@ typedef struct NativeQueue NativeQueue;
 typedef struct NativeThread {
     struct NativeThread *next;
     Runtime *runtime;
-    pthread_t native;
-    pthread_cond_t resume;
-    bool native_live, running, exiting;
+    mco_coro *fiber;
+    bool running;
+    fenv_t host_fenv;
+    uintptr_t trace_ceiling;
+    char name[16];
     MipsContext context;
     RecompFunction entry;
     uint32_t object, key;
@@ -49,7 +53,7 @@ struct RecompScheduler {
     RecompSchedulerConfig config;
     NativeThread *threads, *current;
     /* Reused by loop checkpoints while runnable state is unchanged. Access
-     * follows the same execution-token ownership as the thread list. */
+     * stays on the scheduler's owner thread. */
     int32_t ready_priority;
     bool ready_priority_valid;
     NativeQueue *queues;
@@ -62,9 +66,7 @@ struct RecompScheduler {
     uint32_t pending[PENDING_EVENTS];
     unsigned pending_first, pending_count;
     bool polling;
-    pthread_t owner;
-    pthread_mutex_t mutex;
-    pthread_cond_t returned;
+    const void *owner;
     void (*host_callback)(Runtime *, void *);
     void *host_userdata;
 #ifdef RECOMP_DEBUG
@@ -74,6 +76,8 @@ struct RecompScheduler {
 };
 
 static _Thread_local NativeThread *guest_thread;
+/* A TLS address identifies the host thread without involving the OS scheduler. */
+static _Thread_local char owner_identity;
 
 #ifdef RECOMP_DEBUG
 RecompDebugStats recomp_debug_stats(Runtime *rt) {
@@ -150,49 +154,36 @@ static void debug_status(Runtime *rt) {
 static RecompScheduler *scheduler(Runtime *rt) {
     if (!rt->scheduler)
         recomp_fail("scheduler not initialized", 0);
+    if (rt->scheduler->owner != &owner_identity)
+        recomp_fail("scheduler accessed outside owner thread", 0);
     return rt->scheduler;
 }
 void recomp_on_host(Runtime *rt, void (*callback)(Runtime *, void *), void *userdata) {
     RecompScheduler *s = rt->scheduler;
-    if (!s || pthread_equal(pthread_self(), s->owner)) {
+    if (s && s->owner != &owner_identity)
+        recomp_fail("host callback outside owner thread", 0);
+    if (!s || !guest_thread) {
         uint64_t timing = recomp_timing_begin(rt);
         callback(rt, userdata);
         recomp_timing_end(rt, RECOMP_TIMING_HOST_CALLBACK, timing);
         return;
     }
-    if (!guest_thread || guest_thread != s->current)
+    if (guest_thread != s->current || s->host_callback)
         recomp_fail("host callback outside guest/owner thread", 0);
-    /* The execution token owns mutex throughout translated code. The host
-     * acquires it only while this thread is parked on its condition variable. */
+    /* Return to the main stack for SDL/backend work, then resume this exact
+     * translated C continuation. No OS thread handoff is involved. */
     s->host_callback = callback;
     s->host_userdata = userdata;
-    pthread_cond_signal(&s->returned);
-    while (s->host_callback)
-        pthread_cond_wait(&guest_thread->resume, &s->mutex);
+    if (mco_yield(guest_thread->fiber) != MCO_SUCCESS)
+        recomp_fail("host callback fiber yield failed", s->current->object);
 }
 
-static void report_guest_failure(Runtime *rt, void *opaque) {
-    (void)rt;
-    const RecompFailureInfo *info = opaque;
-    if (info->warning)
-        recomp_dispatch_warning(info);
-    else
-        recomp_dispatch_failure(info);
-}
-static void guest_failure(const RecompFailureInfo *info, void *opaque) {
-    recomp_on_host(opaque, report_guest_failure, (void *)info);
-}
-
-static void join_thread(RecompScheduler *s, NativeThread *t) {
-    if (!t->native_live)
+static void destroy_fiber(NativeThread *t) {
+    if (!t->fiber)
         return;
-    t->exiting = true;
-    pthread_cond_signal(&t->resume);
-    pthread_mutex_unlock(&s->mutex);
-    if (pthread_join(t->native, NULL))
-        recomp_fail("pthread join failed", t->object);
-    pthread_mutex_lock(&s->mutex);
-    t->native_live = false;
+    if (mco_destroy(t->fiber) != MCO_SUCCESS)
+        recomp_fail("guest fiber destruction failed", t->object);
+    t->fiber = NULL;
 }
 
 size_t recomp_thread_snapshots(Runtime *rt, RecompThreadSnapshot *out, size_t capacity) {
@@ -254,6 +245,13 @@ static NativeThread *best(RecompScheduler *s, RecompThreadState state, NativeQue
 
 static bool host_idle(RecompScheduler *s, const NativeThread *t) {
     return t && s->config.idle_thread && t->object == s->config.idle_thread && t->priority == 0;
+}
+
+void recomp_scheduler_set_idle_thread(Runtime *rt, uint32_t object) {
+    NativeThread *t = thread(rt, object);
+    if (!object || t->priority != 0 || t->state == RECOMP_DEAD)
+        recomp_fail("idle thread must be a live priority-zero thread", object);
+    scheduler(rt)->config.idle_thread = object;
 }
 
 static void save_context_checked(Runtime *rt, NativeThread *t) {
@@ -403,6 +401,8 @@ static void ready(RecompScheduler *s, NativeThread *t) {
 static void suspend(Runtime *rt, RecompThreadState state) {
     RecompScheduler *s = scheduler(rt);
     NativeThread *t = thread(rt, 0);
+    if (guest_thread != t)
+        recomp_fail("guest suspension outside its fiber", t->object);
     RECOMP_LOG_SAMPLED(
         "thread", "suspend id=%" PRId32 " thread=0x%08" PRIx32 " state=%s queue=0x%08" PRIx32 " pc=0x%08" PRIx32, t->id,
         t->object, debug_state_name(state), t->wait_queue ? t->wait_queue->object : 0, t->context.pc);
@@ -413,13 +413,8 @@ static void suspend(Runtime *rt, RecompThreadState state) {
     t->order = ticket(s);
     sync_guest(rt);
     t->running = false;
-    pthread_cond_signal(&s->returned);
-    while (!t->running && !t->exiting)
-        pthread_cond_wait(&t->resume, &s->mutex);
-    if (t->exiting) {
-        pthread_mutex_unlock(&s->mutex);
-        pthread_exit(NULL);
-    }
+    if (mco_yield(t->fiber) != MCO_SUCCESS)
+        recomp_fail("guest fiber yield failed", t->object);
 }
 
 static bool preemption_due(RecompScheduler *s) {
@@ -459,46 +454,23 @@ static void retire(NativeThread *t) {
     recomp_store(t->runtime, t->object + 0x10, RECOMP_OS_STOPPED, 2);
 }
 
-static void *enter(void *opaque) {
-    NativeThread *t = opaque;
+static void enter(mco_coro *fiber) {
+    unsigned char trace_boundary;
+    NativeThread *t = mco_get_user_data(fiber);
     RecompScheduler *s = scheduler(t->runtime);
-    guest_thread = t;
-    recomp_set_failure_handler(guest_failure, t->runtime);
-    char name[16];
-    snprintf(name, sizeof(name), "n64-%d", t->id);
-    for (size_t i = 0; i < s->config.thread_name_count; i++) {
-        if (s->config.thread_names[i].entry == t->context.pc) {
-            snprintf(name, sizeof(name), "%s", s->config.thread_names[i].name);
-            break;
-        }
-    }
-#ifdef _WIN32
-    wchar_t wide_name[16] = {0};
-    for (size_t i = 0; i < strlen(name); i++)
-        wide_name[i] = (unsigned char)name[i];
-    SetThreadDescription(GetCurrentThread(), wide_name);
-#else
-    pthread_setname_np(pthread_self(), name);
-#endif
-    pthread_mutex_lock(&s->mutex);
-    RECOMP_LOG("thread", "entered pthread id=%" PRId32 " entry=0x%08" PRIx32, t->id, t->context.pc);
-    while (!t->running && !t->exiting)
-        pthread_cond_wait(&t->resume, &s->mutex);
-    if (!t->exiting) {
-        const RecompSchedulerConfig *config = &s->config;
-        bool stop = config->stop_before_entry == t->context.pc;
-        for (size_t i = 0; i < config->stop_before_count; i++)
-            if (config->stop_before_entries[i] == t->context.pc)
-                stop = true;
-        if (stop)
-            suspend(t->runtime, RECOMP_STOPPED);
-        t->entry(t->runtime, &t->context);
-        retire(t);
-    }
+    t->trace_ceiling = (uintptr_t)&trace_boundary;
+    recomp_set_trace_ceiling(t->trace_ceiling);
+    RECOMP_LOG("thread", "entered fiber id=%" PRId32 " name=%s entry=0x%08" PRIx32, t->id, t->name, t->context.pc);
+    const RecompSchedulerConfig *config = &s->config;
+    bool stop = config->stop_before_entry == t->context.pc;
+    for (size_t i = 0; i < config->stop_before_count; i++)
+        if (config->stop_before_entries[i] == t->context.pc)
+            stop = true;
+    if (stop)
+        suspend(t->runtime, RECOMP_STOPPED);
+    t->entry(t->runtime, &t->context);
+    retire(t);
     t->running = false;
-    pthread_cond_signal(&s->returned);
-    pthread_mutex_unlock(&s->mutex);
-    return NULL;
 }
 
 static void lock_pending(RecompScheduler *s) {
@@ -567,8 +539,8 @@ static bool checkpoint_due(Runtime *rt, bool force_yield) {
     RecompScheduler *s = scheduler(rt);
     if (!guest_thread)
         return true;
-    /* The host polls between dispatches. Avoid a kernel rendezvous at every
-     * backedge; the configured interval bounds service/preemption latency. */
+    /* The owner polls between fiber dispatches. The configured interval bounds
+     * service/preemption latency without switching stacks at every backedge. */
     unsigned interval = s->config.checkpoint_interval ? s->config.checkpoint_interval : 64;
     if (force_yield || ++s->current->checkpoints >= interval) {
         s->current->checkpoints = 0;
@@ -578,8 +550,8 @@ static bool checkpoint_due(Runtime *rt, bool force_yield) {
 }
 
 static void checkpoint(Runtime *rt) {
-    /* The decision and this action execute under the same guest execution
-     * token. Generated code flushes its registers between the two calls. */
+    /* Generated code flushes its registers between the checkpoint decision
+     * and this action, which run in the same guest fiber. */
     recomp_timing_add(rt, RECOMP_TIMING_CHECKPOINT, 0, 1);
     if (!guest_thread)
         poll(rt);
@@ -618,16 +590,7 @@ bool recomp_scheduler_init(Runtime *rt, const RecompSchedulerConfig *config) {
     RecompScheduler *s = calloc(1, sizeof(*s));
     if (!s)
         return false;
-    s->owner = pthread_self();
-    if (pthread_mutex_init(&s->mutex, NULL)) {
-        free(s);
-        return false;
-    }
-    if (pthread_cond_init(&s->returned, NULL)) {
-        pthread_mutex_destroy(&s->mutex);
-        free(s);
-        return false;
-    }
+    s->owner = &owner_identity;
     s->config = *config;
     s->pending_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     rt->scheduler = s;
@@ -647,13 +610,13 @@ void recomp_scheduler_destroy(Runtime *rt) {
     RecompScheduler *s = rt->scheduler;
     if (!s)
         return;
-    if (s->current)
-        recomp_fail("cannot destroy scheduler inside a guest thread", s->current->object);
-    pthread_mutex_lock(&s->mutex);
+    if (s->owner != &owner_identity)
+        recomp_fail("scheduler destruction outside owner thread", 0);
+    if (s->current || guest_thread)
+        recomp_fail("cannot destroy scheduler inside a guest thread", s->current ? s->current->object : 0);
     for (NativeThread *t = s->threads; t;) {
         NativeThread *next = t->next;
-        join_thread(s, t);
-        pthread_cond_destroy(&t->resume);
+        destroy_fiber(t);
         free(t);
         t = next;
     }
@@ -662,9 +625,6 @@ void recomp_scheduler_destroy(Runtime *rt) {
         free(q);
         q = next;
     }
-    pthread_mutex_unlock(&s->mutex);
-    pthread_cond_destroy(&s->returned);
-    pthread_mutex_destroy(&s->mutex);
     free(s);
     rt->scheduler = NULL;
     rt->destroy_scheduler = NULL;
@@ -674,9 +634,8 @@ void recomp_scheduler_destroy(Runtime *rt) {
 
 RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
     RecompScheduler *s = scheduler(rt);
-    if (!pthread_equal(pthread_self(), s->owner) || s->current || !max_resumes)
+    if (guest_thread || s->current || !max_resumes)
         recomp_fail("invalid or nested scheduler run", 0);
-    pthread_mutex_lock(&s->mutex);
     bool owner_interrupts_disabled = rt->interrupts_disabled;
     uint32_t owner_interrupt_mask = rt->interrupt_mask;
 #ifdef RECOMP_DEBUG
@@ -703,18 +662,30 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         rt->interrupt_mask = t->interrupt_mask;
         t->running = true;
         recomp_timing_add(rt, RECOMP_TIMING_DISPATCH, 0, 1);
-        pthread_cond_signal(&t->resume);
         while (t->running) {
             uint64_t timing = recomp_timing_begin(rt);
-            pthread_cond_wait(&s->returned, &s->mutex);
-            recomp_timing_end(rt, RECOMP_TIMING_GUEST_WAIT, timing);
+            /* Fibers share an OS thread; retain the floating-point environment
+             * isolation previously supplied by guest pthreads. */
+            fenv_t owner_fenv;
+            if (fegetenv(&owner_fenv) || fesetenv(&t->host_fenv))
+                recomp_fail("cannot restore guest fiber floating-point environment", t->object);
+            guest_thread = t;
+            recomp_set_trace_ceiling(t->trace_ceiling);
+            mco_result result = mco_resume(t->fiber);
+            guest_thread = NULL;
+            recomp_set_trace_ceiling(0);
+            if (fegetenv(&t->host_fenv) || fesetenv(&owner_fenv))
+                recomp_fail("cannot restore owner floating-point environment", t->object);
+            recomp_timing_end(rt, RECOMP_TIMING_GUEST_RUN, timing);
+            if (result != MCO_SUCCESS)
+                recomp_fail("guest fiber resume failed", t->object);
             if (s->host_callback) {
                 timing = recomp_timing_begin(rt);
                 s->host_callback(rt, s->host_userdata);
                 recomp_timing_end(rt, RECOMP_TIMING_HOST_CALLBACK, timing);
                 s->host_callback = NULL;
-                pthread_cond_signal(&t->resume);
-            }
+            } else if (t->running)
+                recomp_fail("guest fiber returned without yielding or retiring", t->object);
         }
         t->interrupts_disabled = rt->interrupts_disabled;
         t->interrupt_mask = rt->interrupt_mask;
@@ -722,14 +693,13 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
         rt->interrupt_mask = owner_interrupt_mask;
         s->current = NULL;
         if (t->state == RECOMP_RUNNING)
-            recomp_fail("pthread returned without a state transition", t->object);
+            recomp_fail("guest fiber returned without a state transition", t->object);
         if (t->state == RECOMP_DEAD)
-            join_thread(s, t);
+            destroy_fiber(t);
         sync_guest(rt);
     }
     NativeThread *next = best(s, RECOMP_READY, NULL, NULL);
     recomp_timing_poll(rt);
-    pthread_mutex_unlock(&s->mutex);
     if (next)
         return host_idle(s, next) ? RECOMP_RUN_WAITING : RECOMP_RUN_BUDGET;
     bool stopped = false;
@@ -763,12 +733,7 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
             if (t->state != RECOMP_DEAD)
                 retire(t);
             *link = t->next;
-            if (!guest_thread)
-                pthread_mutex_lock(&s->mutex);
-            join_thread(s, t);
-            if (!guest_thread)
-                pthread_mutex_unlock(&s->mutex);
-            pthread_cond_destroy(&t->resume);
+            destroy_fiber(t);
             free(t);
             break;
         }
@@ -792,23 +757,20 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     t->context.gpr[31] = mips_s32(UINT32_C(0xf0000000));
     t->context.fcr31 = UINT32_C(0x01000800);
     t->context.fpu_fr1 = s->config.fpu_fr1;
-    if (pthread_cond_init(&t->resume, NULL)) {
+    if (fegetenv(&t->host_fenv))
+        recomp_fail("cannot initialize guest fiber floating-point environment", object);
+    snprintf(t->name, sizeof(t->name), "n64-%d", t->id);
+    for (size_t i = 0; i < s->config.thread_name_count; i++)
+        if (s->config.thread_names[i].entry == entry) {
+            snprintf(t->name, sizeof(t->name), "%s", s->config.thread_names[i].name);
+            break;
+        }
+    mco_desc description = mco_desc_init(enter, s->config.native_stack_size);
+    description.user_data = t;
+    if (mco_create(&t->fiber, &description) != MCO_SUCCESS) {
         free(t);
-        recomp_fail("pthread condition allocation failed", object);
+        recomp_fail("guest fiber allocation failed", object);
     }
-    pthread_attr_t attributes;
-    if (pthread_attr_init(&attributes))
-        recomp_fail("pthread attribute allocation failed", object);
-    if (s->config.native_stack_size && pthread_attr_setstacksize(&attributes, s->config.native_stack_size))
-        recomp_fail("invalid pthread stack size", object);
-    int created = pthread_create(&t->native, &attributes, enter, t);
-    pthread_attr_destroy(&attributes);
-    if (created) {
-        pthread_cond_destroy(&t->resume);
-        free(t);
-        recomp_fail("pthread allocation failed", object);
-    }
-    t->native_live = true;
     t->next = s->threads;
     s->threads = t;
     for (unsigned i = 0; i < bytes; i++)
@@ -818,9 +780,9 @@ void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t ent
     recomp_store(rt, object + 0x128, 0x3f, 4);
     sync_guest(rt);
     RECOMP_LOG("thread",
-               "created pthread id=%" PRId32 " thread=0x%08" PRIx32 " entry=0x%08" PRIx32 " arg=0x%08" PRIx32
+               "created fiber id=%" PRId32 " name=%s thread=0x%08" PRIx32 " entry=0x%08" PRIx32 " arg=0x%08" PRIx32
                " stack=0x%08" PRIx32 " priority=%" PRId32,
-               id, object, entry, argument, stack, priority);
+               id, t->name, object, entry, argument, stack, priority);
 }
 
 void recomp_thread_start(Runtime *rt, uint32_t object) {
@@ -866,12 +828,7 @@ void recomp_thread_destroy(Runtime *rt, uint32_t object) {
         suspend(rt, RECOMP_DEAD);
         recomp_fail("destroyed thread was resumed", t->object);
     } else {
-        RecompScheduler *s = scheduler(rt);
-        if (!guest_thread)
-            pthread_mutex_lock(&s->mutex);
-        join_thread(s, t);
-        if (!guest_thread)
-            pthread_mutex_unlock(&s->mutex);
+        destroy_fiber(t);
         sync_guest(rt);
     }
 }

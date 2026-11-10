@@ -6,6 +6,8 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".game", vram = 0x7f02727c, size = 0x588, sha256 = "16380499e3fb5ef7b13cb5a51516ad9d0e3943b4ec2d70677f3b40471cd40d90", handler = "goldeneye_ai_hit_hook"},
+  {section = ".game", vram = 0x7f032bd8, size = 0x74, sha256 = "6d1da440f0cbf4192a878298cdc99b6ff76d446ecd750740bebe8e63dbae3533", handler = "goldeneye_ai_grenade_angle_hook"},
   {section = ".game", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a", handler = "goldeneye_ai_alert_hook"},
   {section = ".game", vram = 0x7f02d734, size = 0xb38, sha256 = "ec668e47336a9e5fca08a9501fdd79c8959416dc7a20a663766f53a509b0145d", handler = "goldeneye_ai_fire_hook"},
   {section = ".game", vram = 0x7f032c78, size = 0xf8, sha256 = "4a5f32ff833cfcc82021a3f1529d88902d3c28623166ed2219e1558dfc86849c", handler = "goldeneye_ai_target_hook"},
@@ -436,6 +438,20 @@ reference = "https://github.com/n64decomp/007"
 reference_revision = "c4356466796c697dfd298010b9bed261f9ed8c6a"
 section = ".game"
 functions = [
+  {name = "play_animation", vram = 0x7f033700, size = 0x60, sha256 = "bc8280734e12447f50d536456023707c12bef05531739cc6ad368dd526bc1efd"},
+  {name = "nearest_waypoint", vram = 0x7f027cd4, size = 0xdc, sha256 = "8de9965b6870aff177a22d526d20c0e58b4cb59675dc6a6f256c6910e135df16"},
+  {name = "tile_waypoint", vram = 0x7f027bf4, size = 0x6c, sha256 = "d536bf83295a3056e828886792cc05a7e8468c4a4f0855c568d0491eece37216"},
+  {name = "wander_neighbour", vram = 0x7f033834, size = 0x164, sha256 = "2c7e40a4b2de0bcac898761f8246a2eabd4bab9078d8bbd8bc312e94000b7230"},
+  {name = "walk_to_pad", vram = 0x7f02abb4, size = 0x1a0, sha256 = "bb3c617cab382d00961255ebd90a546a028b3367d99c771795405b939dac978d"},
+  {name = "pad_distance", vram = 0x7f032e48, size = 0xb4, sha256 = "c14fa331e6d0d47c61fa23b4e1627bc2116a769f3e7a3b8cd05a7ea73eefd6cc"},
+  {name = "resolve_pad", vram = 0x7f032f94, size = 0x18, sha256 = "86f9d90da833ed3c27ed8b0cd570050cf23348e35b4441f1a84a9ecd45c4a797"},
+  {name = "hit", vram = 0x7f02727c, size = 0x588, sha256 = "16380499e3fb5ef7b13cb5a51516ad9d0e3943b4ec2d70677f3b40471cd40d90"},
+  {name = "grenade_angle", vram = 0x7f032bd8, size = 0x74, sha256 = "6d1da440f0cbf4192a878298cdc99b6ff76d446ecd750740bebe8e63dbae3533"},
+  {name = "turn", vram = 0x7f02c2b0, size = 0x210, sha256 = "3cfce8fd0788f208ede501143e8586cb6db68a4b89b8411d6b2ea1216f139a61"},
+  {name = "give_weapon", vram = 0x7f0523d4, size = 0x24, sha256 = "735402ed48fb93b72b2255006ed346b03b133a78e9523fe950c3eb43cc9ef2c0"},
+  {name = "throw_grenade", vram = 0x7f024238, size = 0xfc, sha256 = "a4aa1a9363d60d6298e0bf43b0eee3e6e7badd79f930376c9819c7feb657fca7"},
+  {name = "grenade_tick", vram = 0x7f02f3f8, size = 0x1ac, sha256 = "5d1fa5b5d75dc2af8dd244f48a5d7ae2877c9892ca728d7b65482377f665195e"},
+  {name = "grenade_selector", vram = 0x7f03457c, size = 0x180, sha256 = "ed3976e14689fd0355438c18ea3db283509dc23db254d3be62d981fbf040add0"},
   {name = "stop", vram = 0x7f0335d4, size = 0x3c, sha256 = "dea2654684e42435b226aa5a5f0f52099de2ae674ec54cd31a96eb73206d662c"},
   {name = "armed_prop", vram = 0x7f02303c, size = 0x50, sha256 = "86cbaf2df53dc9963a743471f54393669cf7bfaa89d5a00d138e71dfdb04567c"},
   {name = "resolve_target", vram = 0x7f032c78, size = 0xf8, sha256 = "4a5f32ff833cfcc82021a3f1529d88902d3c28623166ed2219e1558dfc86849c"},
@@ -475,6 +491,10 @@ functions = [
   {name = "set_flags2", vram = 0x7f033218, size = 0x14, sha256 = "9184879fe52ff3cf39c77ec91f4c65ed044628ee968ceba572714f6ad0ca61f2"},
 ]
 fields = [
+  {name = "waypoint_pad", pc = 0x7f033900, expected_word = 0x8e620000},
+  {name = "waypoint_neighbours", pc = 0x7f0338f8, expected_word = 0x8e6e0004},
+  {name = "damage", pc = 0x7f0276e8, expected_word = 0xe61000fc},
+  {name = "attack_entity", pc = 0x7f02c338, expected_word = 0x8ce60050},
   {name = "body", pc = 0x7f038d68, expected_word = 0x8045000f},
   {name = "explosion_hrange", pc = 0x7f09cfb8, expected_word = 0xc6b00000},
   {name = "explosion_vrange", pc = 0x7f09cfbc, expected_word = 0xc6a60004},
@@ -521,13 +541,25 @@ fields = [
   {name = "flags2", pc = 0x7f03321c, expected_word = 0x908f010e},
 ]
 globals = [
+  {name = "waypoints", pc = 0x7f033908, expected_words = [0x3c128007, 0x26525d00]},
   {name = "last_hit_prop", pc = 0x7f0b1018, expected_words = [0x3c178008, 0x26f7ba04]},
 ]
+# Neighbour index * 16, and the native negative-pad sentinel scan's increment/branch.
+waypoint_stride_pc = 0x7f033924
+waypoint_stride_words = [0x00117900]
+waypoint_scan_pc = 0x7f027c48
+waypoint_scan_words = [0x24630010, 0x0481fff5, 0x00000000]
 noise_pc = 0x7f082d30
 noise_words = [0x0fc08bbb, 0xc7ac00e4]
 # JAL set-heard-Bond helper; ADDU a0,s1,s0 in the weapon scan.
 noise_alert_pc = 0x7f022f80
 noise_alert_words = [0x0fc0a700, 0x02302021]
+# Native guard-hit gate and complete o32 call, including isPlayer = false.
+guard_hit_pc = 0x7f02e108
+guard_hit_words = [0x8df80014, 0x2405000f, 0x8fa80274, 0x33190040, 0x53200021, 0x8fac0264, 0x8c640004, 0x81070080, 0xafa00010, 0x0fc09c9f, 0x27a60220]
+# Turning outside ACT_ATTACK/STAND normally asks for the angle to Bond.
+grenade_turn_pc = 0x7f02c394
+grenade_turn_words = [0x0fc0caf6, 0x24450008]
 set_self_pc = 0x7f035664
 set_self_words = [0x0fc0d4e6, 0x00009025]
 # LUI t6,0x8005; intervening branch/delay slot; LW t6,-0x7c84(t6).
@@ -537,6 +569,7 @@ clock_words = [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c]
 explosion_pc = 0x7f09c25c
 explosion_words = [0x3c198004, 0xafb10020, 0x27390284, 0x000fc180]
 data = [
+  {name = "idle", address = 0x800370dc, size = 0x60, sha256 = "ab550fc6ba5082faa007eaaaecf4be6630710082580f780111d83d2b6085bfe1"},
   {name = "explosion_types", address = 0x80040284, size = 0x540, sha256 = "00faf0d7884c4915cebe468aa85b46471ba613a766c9a7c84c03894a75a47909"},
   {name = "draw", address = 0x800373e8, size = 0x5c, sha256 = "e79286b042e8b36bfc3aaa6d245476df296ff26e2bf39af62001f6ec335c328f"},
   {name = "bodies", address = 0x8003de10, size = 0x35c, sha256 = "eaabf09c06c46f44958c5d87c25b5d6f5d31a6a99450f18b6db17071cbe993be"},
@@ -550,7 +583,7 @@ data = [
   {name = "persistent", address = 0x800372e0, size = 0xf0, sha256 = "49973df5625cce34789e6807420a78b01ea1a4fd973c6447ce344ef470914f6b"},
 ]
 
-# Ordinary scenery only; tagged/attached/protected instances are excluded at runtime.
+# Grenade scenery only; tagged/attached/protected instances are excluded at runtime.
 scenery_models = [
   3, # PROP_AMMO_CRATE1
   4, # PROP_AMMO_CRATE2

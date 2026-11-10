@@ -896,6 +896,72 @@
       ],
       "preLaunchTask": "Build Release: 007: The World Is Not Enough US",
       "miDebuggerPath": "/usr/bin/gdb"
+    },
+    {
+      "name": "Debug: Banjo-Kazooie US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/banjo-kazooie-us/debug/bin/Debug/banjo-kazooie-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Banjo-Kazooie US"
+    },
+    {
+      "name": "Release: Banjo-Kazooie US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/banjo-kazooie-us/release/bin/Release/banjo-kazooie-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Banjo-Kazooie US"
+    },
+    {
+      "name": "Debug: Banjo-Kazooie US (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/banjo-kazooie-us-debug/bin/banjo-kazooie-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Banjo-Kazooie US"
+    },
+    {
+      "name": "Release: Banjo-Kazooie US (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/banjo-kazooie-us-release/bin/banjo-kazooie-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Release: Banjo-Kazooie US",
+      "miDebuggerPath": "/usr/bin/gdb"
     }
   ]
 }

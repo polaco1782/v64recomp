@@ -68,9 +68,9 @@ configuration. Gameplay save/load acceptance remains to be tested.
 
 ## Preserving scheduling and completion behavior
 
-Each guest thread has a host pthread, native stack and `MipsContext`. The
-scheduler grants an execution token to one guest CPU thread at a time and
-implements libultra priorities itself. Blocking operations park that pthread
+Each guest thread has a stackful fiber, native C stack and `MipsContext`. The
+scheduler resumes one fiber at a time on the main owner OS thread and
+implements libultra priorities itself. Blocking operations suspend that fiber
 with its translated C call stack intact. Generated checkpoints provide safe
 preemption boundaries, and disabled guest interrupts suppress checkpoint
 yields.

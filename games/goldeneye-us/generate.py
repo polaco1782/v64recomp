@@ -196,6 +196,14 @@ def verify_ai_analysis(rom, profile, metadata=None):
         require(hi >> 26 == 15 and lo >> 26 == 9 and (hi >> 16) & 31 == (lo >> 21) & 31 and
                 (lo >> 16) & 31 == (hi >> 16) & 31, 'global is not LUI/ADDIU')
         constants[global_['name'].upper()] = ((hi & 65535) << 16) + struct.unpack('>h', struct.pack('>H', lo & 65535))[0]
+    words(spec['waypoint_stride_pc'], spec['waypoint_stride_words'])
+    words(spec['waypoint_scan_pc'], spec['waypoint_scan_words'])
+    require(spec['waypoint_stride_words'] == [0x00117900] and
+            spec['waypoint_scan_words'] == [0x24630010, 0x0481fff5, 0] and
+            constants['WAYPOINT_PAD'] == 0 and constants['WAYPOINT_NEIGHBOURS'] == 4 and
+            constants['WAYPOINTS'] == 0x80075d00 and constants['NEAREST_WAYPOINT'] == 0x7f027cd4,
+            'waypoint graph layout/termination mismatch')
+    constants['WAYPOINT_SIZE'] = spec['waypoint_scan_words'][0] & 65535
     words(spec['set_self_pc'], spec['set_self_words'])
     require(spec['set_self_words'] == [0x0fc0d4e6, 0x00009025] and
             constants['FIND_LIST'] == 0x7f035398, 'SetChrAiList self-call ABI mismatch')
@@ -208,6 +216,15 @@ def verify_ai_analysis(rom, profile, metadata=None):
     require(spec['noise_alert_words'] == [0x0fc0a700, 0x02302021] and constants['ALERT'] == 0x7f029c00,
             'weapon-noise alert caller mismatch')
     constants['NOISE_ALERT_RETURN'] = spec['noise_alert_pc'] + 8
+    words(spec['guard_hit_pc'], spec['guard_hit_words'])
+    require(spec['guard_hit_words'] == [0x8df80014, 0x2405000f, 0x8fa80274, 0x33190040,
+            0x53200021, 0x8fac0264, 0x8c640004, 0x81070080, 0xafa00010, 0x0fc09c9f, 0x27a60220] and
+            constants['HIT'] == 0x7f02727c, 'guard-hit permission/call ABI mismatch')
+    constants['GUARD_HIT_RETURN'] = spec['guard_hit_pc'] + 44
+    words(spec['grenade_turn_pc'], spec['grenade_turn_words'])
+    require(spec['grenade_turn_words'] == [0x0fc0caf6, 0x24450008] and
+            constants['GRENADE_ANGLE'] == 0x7f032bd8, 'grenade turn angle-call ABI mismatch')
+    constants['GRENADE_TURN_RETURN'] = spec['grenade_turn_pc'] + 8
     words(spec['clock_pc'], spec['clock_words'])
     require(spec['clock_words'] == [0x3c0e8005, 0x58400009, 0x00001025, 0x8dce837c], 'clock operand mismatch')
     constants['CLOCK'] = 0x80050000 - 0x7c84
@@ -226,11 +243,17 @@ def verify_ai_analysis(rom, profile, metadata=None):
             'explosion type table bounds mismatch')
     table = blocks['global_lists'][1]
     require(len(table) == 19 * 8 and table[-8:] == bytes(8), 'global-list table bounds mismatch')
-    for name, index in [('standard', 2), ('deaf', 5), ('simple', 7), ('attack', 6), ('chase', 8),
+    for name, index in [('standard', 2), ('idle', 3), ('deaf', 5), ('simple', 7), ('attack', 6), ('chase', 8),
                         ('persistent', 13), ('draw', 16)]:
         pointer, identifier = struct.unpack_from('>II', table, index * 8)
         require(identifier == index and pointer == blocks[name][0], name + ' script selector mismatch')
         constants[name.upper() + '_LIST'] = pointer
+    idle = blocks['idle'][1]
+    require(len(idle) == 96 and idle[0] == 0x33 and idle[65:68] == bytes([0x35, 250, 3]) and
+            idle[81:90] == bytes.fromhex('0a009f000000891810'), 'idle sneeze selector/animation mismatch')
+    for name, value in zip(('ANIMATION', 'START', 'END', 'FLAGS', 'INTERPOLATION'),
+                           struct.unpack('>HHHBB', idle[82:90])):
+        constants['SNEEZE_' + name] = value
     bodies = blocks['bodies'][1]
     require(len(bodies) == 43 * 20, 'body table bounds mismatch')
     for name, index, filename in [('scientist_female', 28, b'CtechwomanZ\0'),

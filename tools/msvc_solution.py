@@ -34,7 +34,7 @@ def write_xml(path: Path, document):
 
 def source_files(root: Path, game: str) -> list[Path]:
     extensions = {'.c', '.cc', '.cpp', '.h', '.hpp', '.inl', '.py', '.toml', '.json', '.cmake', '.ps1', '.sh'}
-    directories = [root / 'games' / game] if game != 'none' else [root / p for p in ('runtime', 'include', 'backends', 'tools', 'cmake')]
+    directories = [root / 'games' / game] if game != 'none' else [root / p for p in ('runtime', 'include', 'backends', 'tools', 'cmake', 'third_party/minicoro')]
     files = {p for directory in directories for p in directory.rglob('*')
              if p.is_file() and (p.suffix in extensions or p.name == 'CMakeLists.txt')
              and '__pycache__' not in p.parts}

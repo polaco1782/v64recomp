@@ -34,7 +34,7 @@ workers: 1.0 means one logical CPU's worth of work, not 1% machine usage. On a
 | `dispatch` | Guest scheduler resumptions; count only. |
 | `checkpoint` | Due checkpoint actions, not skipped loop checks; count only. |
 | `context_sync` | Wall time serializing guest thread contexts and queues. |
-| `guest_wait` | Owner thread waiting for the guest to yield or request a callback, including OS handoff latency. This is **not** guest CPU time. |
+| `guest_run` | Wall time executing a guest fiber until it yields or requests a main-stack callback, including local stack-switch overhead. This is **not** isolated guest CPU time. |
 | `host_callback` | Native services invoked through the guest-to-owner callback path. |
 | `graphics` | Display-list processing and submission, including internal RT64/GPU waits and texture collection. This is **not** GPU execution time. |
 | `graphics_cpu` | Calling-thread CPU time during graphics submission; excludes blocked time, render workers and GPU execution. Windows CPU accounting is coarse, so compare multi-second totals. A zero count means no valid CPU sample. |
@@ -44,7 +44,7 @@ workers: 1.0 means one logical CPU's worth of work, not 1% machine usage. On a
 | `display` | Completed swap-chain draws, including interpolation; count only. |
 
 Categories overlap: graphics/audio can be inside host callbacks, and guest-side
-context synchronization can be inside `guest_wait`. Do not sum them as exclusive
+context synchronization can be inside `guest_run`. Do not sum them as exclusive
 frame costs. Long spans are charged when they finish, so a window can exceed
 1000 ms in a category. Display counts are sampled on the owner during presentation;
 the last asynchronous draws at shutdown may not be included. Games with custom

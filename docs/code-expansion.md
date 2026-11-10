@@ -279,7 +279,7 @@ built on this Linux host. Reports are under the ignored
 ## Scheduling and function size audit, 2026-11-08
 
 The current emitter does not put an instruction budget or a general resumption
-state machine in ordinary generated functions. Guest pthreads retain the native
+state machine in ordinary generated functions. Guest fibers retain the native
 C stack across blocking OS calls. `recomp_scheduler_run(max_resumes)` bounds
 scheduler handoffs in shared runtime code; it does not decrement a counter at
 every translated instruction. Its compiled body occupied 1,127–1,219 bytes in

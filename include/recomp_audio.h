@@ -26,7 +26,7 @@ typedef struct RecompAudioConfig {
     bool output_enabled;  /* Disable during accelerated startup; synthesis continues. */
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile; /* Game-owned static recognition data; required for submit. */
-    unsigned prebuffer_ms;                      /* Zero uses 80 ms; a game may request up to 200 ms. */
+    unsigned prebuffer_ms;                      /* Initial reserve; zero uses 160 ms, maximum 200 ms. */
     const char *trace_path;                     /* Optional CSV of AI admission and playback queue timing. */
 } RecompAudioConfig;
 typedef struct RecompAudioStats {

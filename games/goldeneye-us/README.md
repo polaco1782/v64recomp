@@ -22,9 +22,9 @@ directory; private ROMs and saves stay in `local/`.
 them from the fingerprinted, decompressed startup data before discovery checks
 their transfer instructions and code targets.
 
-Guest pthreads use the profile's entry-based names: `n64-main`, `n64-idle`,
+Guest fibers use the profile's entry-based diagnostic names: `n64-main`, `n64-idle`,
 `n64-scheduler`, `n64-sound` and `n64-controller`. `n64-sound` runs translated
-sound code; `n64-audio` is the separate native DSP worker. See
+sound code; native DSP synthesis runs synchronously on the main stack. See
 [CPU profiling](../../docs/profiling.md) for thread counters and function samples.
 
 After the first graphics task, the common frame loop services VI/AI deadlines and worker
@@ -72,8 +72,34 @@ standing or kneeling fire nearby. Incoming fire can trigger a collision-checked
 sidestep, with a three-second cooldown per guard. Completed idle animations can
 transition into combat; firing, injury and movement animations finish normally.
 The shared attack selector no longer randomly chooses pointing, hops, rolls or
-grenades. Weapon accuracy, damage and initial stealth detection retain the
+combat grenades. Weapon accuracy, damage and initial stealth detection retain the
 game's rules.
+
+Ordinary stationary guards now wander along the map's connected navigation
+points at walking speed. They start after a one-to-three-second pause and rest
+for two to five seconds between walks, choosing another direction each time.
+This includes the shared idle-animation list when it returns to ordinary guard
+behavior. A bounded search of up to 64 connected waypoints chooses destinations
+three to fifteen metres away, searching beyond nearby points instead of repeatedly
+selecting the closest point. Failed destinations are retried after one second.
+The original pathfinding handles routes, doors and collision. Roaming guards
+check for Bond while walking; sight, nearby fire, injury and sound investigation
+take priority, including during shared idle behavior. A guard that makes less
+than twenty centimetres of progress in three seconds abandons that route and
+tries another destination; walks also have a thirty-second limit. Existing
+patrols and mission-owned movement keep their assigned routes.
+
+Idle ordinary guards have a separate sneeze timer: the first opportunity is
+after four to eight simulation seconds, followed by ten to fifteen seconds
+between opportunities. Busy animations delay the sneeze until they finish.
+Guards can also sneeze while waiting at an investigated sound's destination.
+The original idle-animation selections remain available.
+
+Guard bullets can damage other guards. A surviving ordinary guard that takes
+bullet damage from another guard finishes its injury reaction, then targets the
+shooter instead of Bond. It can pursue the shooter, returning to normal behavior
+when the shooter dies, leaves the shared guard behavior or stays out of sight
+for ten seconds. Mission-owned and invincible actors keep their original AI.
 
 Weapon noise now uses an eight-metre base range plus 2.5 times the original
 weapon radius, scaled by each guard's hearing. This fixes the previous multiplier
@@ -88,14 +114,19 @@ Bond, hear another sound or the ten-second memory expires. The replacement owns
 this investigation instead of letting the original hearing scripts redirect it
 to Bond. Silence generates no alert; footstep sounds remain unchanged.
 
-Idle ordinary guards occasionally fire short bursts at visible crates, cardboard
-boxes or bins within two to twelve metres. Selection varies per guard, with a
-three-to-seven-second initial delay and six-to-twelve-second cooldown. Normal
-weapon animations, bullet collision and object damage perform the shooting.
-Only ordinary bullet weapons are eligible. Tagged mission props, attached,
-destroyed, protected and gunfire-immune objects are excluded. Fresh nearby noise
-cancels an ambient burst and takes priority; guards ignore their own impact
-alerts. Active combat takes priority over scenery shooting.
+Random scenery gunfire has been removed. Idle guards with a free hand can still
+lob grenades toward ordinary crates, cardboard boxes or bins. Tagged mission
+props, attached, destroyed, protected and gunfire-immune objects are excluded.
+The first grenade opportunity is after twenty to forty simulation seconds;
+suitable targets are checked every two seconds while ready. The scan
+chooses among all visible allowed objects ahead within two to twelve metres
+and 1.5 metres of the guard's height. This avoids picking a box first and then
+rejecting the throw when another suitable target was available. Successful
+throws have a random delay of 75 to 125 seconds per guard. Both random
+delays are five times their previous values. The original animation, fuse,
+fixed launch speed, collision and explosion behavior
+handle the grenade; its turning tracks the saved scenery position. These throws
+happen during idle scenery activity, after combat and investigation have ended.
 
 Shared pursuit follows the last seen or heard position for up to ten simulation
 seconds, using the game's sprint mode and collision/navigation checks. It keeps
@@ -127,15 +158,29 @@ This explosion change also applies outside the AI adapter's on-foot mode; set
 The wrappers cover `ai` (`0x7f035484`), `ailistFindById` (`0x7f035398`), the
 weapon-noise scan (`0x7f022eec`), prop impacts (`0x7f06441c`), explosion creation
 (`0x7f09c250`), the legacy hearing alert (`0x7f029c00`), target resolution
-(`0x7f032c78`) and guard firing (`0x7f02d734`).
+(`0x7f032c78`), guard firing (`0x7f02d734`), bullet damage (`0x7f02727c`)
+and the throw's facing-angle helper (`0x7f032bd8`).
 The list lookup catches an attack-list transition inside the interpreter,
 preserves its caller's return list and resumes it after the native decision.
-The scenery selector supplies an owned prop position to the native aiming path;
-the firing wrapper cancels expired bursts or targets that become invalid.
+The firing wrapper cancels retaliation bursts whose guard target becomes invalid.
 The checked weapon-scan alert call is suppressed for adapted guards: its original
 body copies Bond's current coordinates into the shared last-position fields.
 Mission actors retain that original alert. Sound investigation uses its own
 coordinates and restores them before requesting a route.
+Sneezes use the original animation helper (`0x7f033700`) with animation ID,
+frames, sound flags and interpolation read from the ROM-checked idle script.
+Its six o32 arguments use a private outgoing stack area. Bullet retaliation is
+attributed only at the checked guard-fire damage call, after actual health damage.
+Guard targets retain their prop, model and character identity so reused slots cannot inherit
+a grudge. The grenade angle wrapper redirects only the checked turning call
+during an owned scenery throw; it does not change Bond's prop or position.
+Wandering uses the checked nearest-waypoint helper (`0x7f027cd4`), pad distance
+(`0x7f032e48`) and walking helper (`0x7f02abb4`). The connected-neighbour search
+(`0x7f033834`) and tile-waypoint scan (`0x7f027bf4`) bind the graph pointer,
+record size, pad/neighbor fields and negative-pad terminator to the ROM. The
+adapter bounds the active table before following indices, searches connected
+points without changing character pad presets, and retries other candidates
+when the original walking helper rejects a route.
 `profile.toml` pins complete function bodies, the self-switch call/delay pair,
 structure operands, simulation clock and decompressed script/table bytes.
 Generation verifies these and emits `goldeneye_ai_config.h`; reference source
@@ -160,8 +205,11 @@ temporary ASan/UBSan checks for hearing ranges, register preservation,
 self-noise suppression, protected targets, visibility, weapon restrictions,
 target resolution and burst cancellation. Changed function, field, global,
 script and model-allowlist evidence was rejected by generation. The subsequent
-sound-destination, scientist and explosion changes have not been built or run;
-testing is left to the user at their request.
+sound-destination, scientist, explosion, sneeze, friendly-fire, wandering and
+idle-grenade changes have not been tested here. The current sneeze timer,
+wandering, connected-waypoint selection, stuck-route recovery and longer grenade
+delays are awaiting gameplay confirmation. Builds
+and testing are left to the user at their request.
 Broader combat balance and mission progression still require playtesting.
 
 ## Mouse and keyboard

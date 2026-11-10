@@ -15,6 +15,7 @@ configure_file(LICENSE "${CMAKE_BINARY_DIR}/bin/LICENSE" COPYONLY)
 configure_file(THIRD_PARTY_NOTICES.md "${CMAKE_BINARY_DIR}/bin/THIRD_PARTY_NOTICES.md" COPYONLY)
 configure_file(licenses/GLideN64.txt "${CMAKE_BINARY_DIR}/bin/licenses/GLideN64.txt" COPYONLY)
 configure_file(licenses/Mupen64Plus-rsp-hle.txt "${CMAKE_BINARY_DIR}/bin/licenses/Mupen64Plus-rsp-hle.txt" COPYONLY)
+configure_file(licenses/minicoro.txt "${CMAKE_BINARY_DIR}/bin/licenses/minicoro.txt" COPYONLY)
 
 # One native game per build tree. Use a separate directory for each mode.
 set(RECOMP_GAME "sm64-us" CACHE STRING "Game to build, or none for shared libraries")
@@ -78,8 +79,9 @@ else()
     target_link_libraries(recomp_runtime PUBLIC m)
 endif()
 target_include_directories(recomp_runtime PUBLIC include)
+target_include_directories(recomp_runtime PRIVATE third_party/minicoro)
 target_sources(recomp_runtime PRIVATE include/recomp.h include/runtime.h include/host.h
-    include/runtime_debug.h include/profiler.h include/cheats.h include/timing.h)
+    include/runtime_debug.h include/profiler.h include/cheats.h include/timing.h third_party/minicoro/minicoro.h)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(recomp_runtime PUBLIC RECOMP_DEBUG)
     target_sources(recomp_runtime PRIVATE runtime/debug.c)

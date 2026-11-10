@@ -274,11 +274,12 @@ locks or GPU presentation may require separate scheduling/GPU measurements.
 
 The host thread is named `goldeneye-us`. Its Release frame loop drains guest
 scheduling, services audio/graphics completion, updates input, presents and waits
-for the next frame. Guest pthread names come from the entry-address labels in
-the game profile, with `n64-<guest ID>` as a fallback for unknown entries.
-GoldenEye uses `n64-main` (formerly `n64-3`), `n64-idle` (`n64-1`),
-`n64-scheduler` (`n64-2`), `n64-sound` (`n64-4`) and `n64-controller` (`n64-5`).
-The old suffix identified a guest thread, not a host CPU number. Graphics HLE,
+for the next frame. Guest threads are stackful fibers on that same OS thread,
+so CPU profiles attribute their execution to `goldeneye-us`. The profile's
+entry-address labels (`n64-main`, `n64-idle`, `n64-scheduler`, `n64-sound` and
+`n64-controller`) identify logical guest threads in diagnostics, with
+`n64-<guest ID>` as the fallback. Older captures with separate guest pthreads
+retain their original native thread names. Graphics HLE,
 audio synthesis and presentation preparation now run synchronously on the main
 host thread while guest execution is parked. The adapter no longer creates
 `n64-video` or `n64-audio` threads. RT64 retains its own workload, texture, buffer
@@ -286,8 +287,9 @@ and presentation threads; SDL retains its playback thread.
 
 A busy main thread can reflect HLE processing, guest context serialization,
 device services or scheduling. Use sampled call trees to distinguish these from
-translated game computation. Voluntary context switches can reflect scheduler
-handoffs or ordinary waits; inspect stacks rather than assuming useful work.
+translated game computation. Guest fiber switches do not contribute to OS
+context-switch counters. Remaining voluntary switches can reflect frame pacing,
+I/O or backend waits; inspect stacks to identify their cause.
 
 The historical captures below predate synchronous HLE and describe the former
 snapshot/worker implementation. Their timings are not current-path benchmarks.

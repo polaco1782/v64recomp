@@ -107,15 +107,15 @@ and backends, and enters the compiled startup code.
 ```mermaid
 flowchart TD
     Main["Main host thread<br/>SDL window, input and host callbacks"] --> Input["Read controller state<br/>Update native input service"]
-    Input --> Scheduler["Guest scheduler<br/>Priorities and execution token"]
-    Scheduler --> Guest["One guest CPU pthread runs at a time<br/>Own MipsContext and native call stack"]
+    Input --> Scheduler["Guest scheduler<br/>Priorities and local stack switching"]
+    Scheduler --> Guest["One guest CPU fiber runs at a time<br/>Own MipsContext and native call stack"]
     Guest --> Calls{"Next call or operation"}
     Calls -->|"Compiled function"| Registry["Fixed call or recomp_lookup<br/>Validate registered target and loaded section"]
     Registry --> Logic["Native game code<br/>Gameplay, physics, AI and list construction"]
     Logic --> Guest
     Calls -->|"Verified OS/library hook"| OS["Native services<br/>Threads, queues, timers, memory and devices"]
     OS --> Block{"Blocking operation<br/>cannot complete?"}
-    Block -->|Yes| Park["Park guest pthread<br/>Preserve translated call stack"]
+    Block -->|Yes| Park["Suspend guest fiber<br/>Preserve translated call stack"]
     Park --> Scheduler
     Block -->|No| Guest
     OS --> DMA["PI/EPI transfer<br/>Copy ROM or supported cartridge data<br/>Then publish completion"]
@@ -161,18 +161,17 @@ callable. The scheduler allows only one guest CPU thread to execute at a time.
 
 ## Thread ownership and concurrency
 
-Each guest libultra thread has a real pthread, its own native stack and a
-`MipsContext`. A scheduler mutex and condition variables transfer the execution
-token between the owner and a selected guest thread. The runtime implements
-guest priorities and FIFO order among equally ready threads. Linux thread
-priorities do not determine libultra scheduling.
+Each guest libultra thread has a stackful fiber, its own native C stack and a
+`MipsContext`. Fibers and the scheduler share the main owner OS thread, switching
+stacks locally when a guest blocks, yields or requests an owner callback. The
+runtime implements guest priorities and FIFO order among equally ready threads.
 
 ```mermaid
 flowchart LR
     subgraph Owner["Main host thread / scheduler owner"]
         SDL["SDL window and controller events<br/>PCM queue admission and frame pacing"]
         Host["Run scheduler and host callbacks<br/>Poll timers, devices and task receipts"]
-        Dispatch["Pick highest-priority ready guest<br/>Signal its condition variable"]
+        Dispatch["Pick highest-priority ready guest<br/>Resume its fiber"]
         Submit["Validate task and reserve SP<br/>Execute HLE synchronously using live RAM"]
         Commit["Poll queued SP/DP receipts<br/>Publish completion messages"]
         SDL --> Host
@@ -180,17 +179,17 @@ flowchart LR
         Host --> Submit
         Submit --> Commit
         Commit --> Host
-    end
-    subgraph Guests["Guest CPU pthreads — one execution token"]
+    subgraph Guests["Guest CPU fibers — same owner OS thread"]
         Game["Game / scheduler / controller threads<br/>Compiled guest functions"]
         Sound["Guest sound thread<br/>Compiled sequences and audio-list construction"]
-        Park["Other guest threads parked<br/>Condition-variable wait preserves call stack"]
-        Return["Block, stop or checkpoint yield<br/>Return execution token to owner"]
+        Park["Other guest fibers suspended<br/>Native C stacks remain intact"]
+        Return["Block, stop or checkpoint yield<br/>Return to scheduler's main stack"]
         Callback["recomp_on_host request<br/>Park until owner finishes callback"]
         Game --> Return
         Sound --> Return
         Game --> Callback
         Sound --> Callback
+    end
     end
     subgraph Renderer["RT64 internal threads and GPU"]
         Render["Workload/render queues<br/>Rendering and supporting workers"]
@@ -205,8 +204,8 @@ flowchart LR
     Park -. "Message, start or wake makes eligible" .-> Dispatch
 ```
 
-The main thread waits while a guest owns the token. A guest calling
-`recomp_on_host()` parks while the main thread executes the requested callback,
+The owner executes either its main stack or one guest fiber. A guest calling
+`recomp_on_host()` switches to the main stack for the requested callback,
 then resumes at the same call site. Window/input handling, task submission and
 PCM queue admission therefore retain their required host-thread ownership.
 
@@ -222,13 +221,14 @@ interval.
 ```mermaid
 sequenceDiagram
     participant H as Main host / scheduler
-    participant A as Guest pthread A
-    participant B as Guest pthread B
-    H->>A: Grant execution token
+    participant A as Guest fiber A
+    participant B as Guest fiber B
+    Note over H,B: All three contexts share the owner OS thread
+    H->>A: Resume fiber
     A->>A: osRecvMesg with blocking flag; queue empty
-    A->>H: Mark WAIT_RECV, release token and park
+    A->>H: Mark WAIT_RECV and yield fiber
     Note over A: Native stack and MipsContext remain intact
-    H->>B: Grant token to next ready guest
+    H->>B: Resume next ready guest fiber
     B->>H: Submit task through recomp_on_host; park B
     H->>H: Process HLE using live RAM; queue completion
     H-->>B: Owner callback returns; resume B
@@ -236,7 +236,7 @@ sequenceDiagram
     H->>H: Poll queued task receipts
     H->>H: Deliver registered completion message
     H->>H: Make A ready; apply guest priority ordering
-    H->>A: Grant token when A is selected
+    H->>A: Resume fiber when A is selected
     A->>A: Original receive completes; continue same call stack
 ```
 
@@ -248,8 +248,8 @@ queue can similarly park a blocking sender until space becomes available.
 
 | Execution context | Work and concurrency |
 | --- | --- |
-| Main host thread | Runs SDL, scheduling, graphics HLE and audio DSP while the guest is parked; waits while a guest owns the token. |
-| One guest pthread | Executes translated game code; other guest CPU pthreads remain parked. |
+| Main stack on owner OS thread | Runs SDL, scheduling, graphics HLE and audio DSP while guest fibers are suspended. |
+| One guest fiber on owner OS thread | Executes translated game code; the main stack and other guest fibers are suspended. |
 | RT64 internal threads and GPU | Render and present captured workload data independently; can overlap guest CPU execution without accessing live guest RAM. |
 | SDL audio device thread | Consumes queued host PCM independently; does not drive guest AI completion timing. |
 
@@ -258,8 +258,8 @@ completion receipts; polling delivers SP before DP. Split lists without full
 sync retire after SP. A whole-list HLE call cannot be suspended midway through
 processing; a late yield polls its queued completion first.
 
-Shutdown drains RT64 queues, destroys backends before the runtime and joins guest
-threads before releasing their storage. HLE failures occur directly on the owner
+Shutdown drains RT64 queues, destroys backends before the runtime and releases
+guest fiber stacks. HLE failures occur directly on the owner
 and use the shared crash reporter. See [native threading](threading.md) and
 [audio](audio.md) for memory ownership and buffering.
 

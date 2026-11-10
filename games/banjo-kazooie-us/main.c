@@ -10,7 +10,7 @@
 
 static RecompRenderer *renderer;
 static RecompAudio *audio;
-static bool core_services;
+static bool core_services, idle_configured;
 static uint64_t wall_origin;
 
 void recomp_banjo_get_sr(Runtime *rt, MipsContext *ctx) {
@@ -74,6 +74,14 @@ static void services(Runtime *rt, bool core) {
 }
 
 static void prepare_call(Runtime *rt, uint32_t address) {
+    if (address == 0x8023df9c && !idle_configured) {
+        /* initThread_entry starts at priority zero but first creates the PI
+         * manager and main thread. Only after osStartThread dispatches main
+         * (call 0x80240c50) does it reach its endless branch at 0x80240c58.
+         * Keep that initialization and let the host wait instead of spinning. */
+        recomp_scheduler_set_idle_thread(rt, 0x8027ed10);
+        idle_configured = true;
+    }
     if (address == 0x80263c10 && !core_services) {
         /* The original core1 entry has now cleared its BSS. No guest thread
          * exists yet: switch from the boot SDK's globals to the core1 instance. */
@@ -128,6 +136,7 @@ int main(int argc, char **argv) {
                         "Banjo runtime initialization failed", 0);
     wall_origin = 0;
     core_services = false;
+    idle_configured = false;
     uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t n = 0; n < sizeof(boot_parameters) / sizeof(boot_parameters[0]); n++)
@@ -139,18 +148,24 @@ int main(int argc, char **argv) {
                         "Banjo IO/task initialization failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Banjo-Kazooie");
     recomp_game_require(renderer != NULL, "Banjo renderer initialization failed", 0);
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .microcode = RECOMP_AUDIO_NAUDIO,
-                            .task_profile = &banjo_audio_profile};
-    audio = recomp_game_audio_create(&rt, &ac);
-    recomp_game_require(audio != NULL, "Banjo audio initialization failed", 0);
+    /* Preserve the game's steady 30 Hz output. Automatic 60 Hz matching
+     * presents the logo's interpolated frames in uneven pairs. */
+    recomp_renderer_set_frame_rate(renderer, 0);
     rt.prepare_call = prepare_call;
     rt.canonical_function_address = activate_image;
     wall_origin = recomp_game_monotonic();
     MipsContext ctx = {0};
     recomp_lookup(&rt, BOOT_ENTRY)(&rt, &ctx);
     recomp_game_require(core_services, "Banjo boot did not enter core1", 0x8023da20);
+    /* Boot replaces the platform services with core1's SDK instance. Attach
+     * the AI output sink afterward, before dispatching the initial thread;
+     * destroying the boot platform would otherwise discard the sink. */
+    RecompAudioConfig ac = {.output_enabled = true,
+                            .playback = !options.mute,
+                            .microcode = RECOMP_AUDIO_NAUDIO,
+                            .task_profile = &banjo_audio_profile};
+    audio = recomp_game_audio_create(&rt, &ac);
+    recomp_game_require(audio != NULL, "Banjo audio initialization failed", 0);
     uint64_t deadline = recomp_game_monotonic();
     for (unsigned frame = 0; !options.frames || frame < options.frames; frame++) {
         RecompPad pad = {.connected = true};

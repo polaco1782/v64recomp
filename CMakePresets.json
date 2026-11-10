@@ -424,6 +424,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "banjo-kazooie-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/banjo-kazooie-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "banjo-kazooie-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "banjo-kazooie-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/banjo-kazooie-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "banjo-kazooie-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -918,6 +939,32 @@
     {
       "name": "twine-us-debug-promote",
       "configurePreset": "twine-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
+      "name": "banjo-kazooie-us-release",
+      "configurePreset": "banjo-kazooie-us-release",
+      "jobs": 4
+    },
+    {
+      "name": "banjo-kazooie-us-release-promote",
+      "configurePreset": "banjo-kazooie-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
+      "name": "banjo-kazooie-us-debug",
+      "configurePreset": "banjo-kazooie-us-debug",
+      "jobs": 4
+    },
+    {
+      "name": "banjo-kazooie-us-debug-promote",
+      "configurePreset": "banjo-kazooie-us-debug",
       "targets": [
         "promote-live-patches"
       ],
@@ -1568,6 +1615,40 @@
         {
           "type": "build",
           "name": "twine-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "banjo-kazooie-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "banjo-kazooie-us-release"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-release-promote"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-release"
+        }
+      ]
+    },
+    {
+      "name": "banjo-kazooie-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "banjo-kazooie-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-debug-promote"
+        },
+        {
+          "type": "build",
+          "name": "banjo-kazooie-us-debug"
         }
       ]
     }

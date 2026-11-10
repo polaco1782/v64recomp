@@ -89,6 +89,7 @@
     <ClCompile Include="$(RecompRoot)runtime\time.c" />
     <ClCompile Include="$(RecompRoot)runtime\timing.c" />
     <ClCompile Include="$(RecompRoot)runtime\video.c" />
+    <ClInclude Include="$(RecompRoot)third_party\minicoro\minicoro.h" />
     <None Include="$(RecompRoot)tools\auto_live_function.py" />
     <None Include="$(RecompRoot)tools\build_live_function.py" />
     <None Include="$(RecompRoot)tools\build_msvc_project.ps1" />

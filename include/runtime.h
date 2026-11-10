@@ -45,19 +45,19 @@ typedef struct RecompThreadSnapshot {
 size_t recomp_thread_snapshots(Runtime *, RecompThreadSnapshot *, size_t capacity);
 /* Optional native stack boundary for diagnostic unwinding. */
 void recomp_set_trace_ceiling(uintptr_t);
-/* Execute an owner-thread callback while the calling guest pthread is parked.
- * Owner callers execute directly. Callbacks must not block/yield guest threads. */
+/* Execute a callback on the owner's main stack while the guest fiber is parked.
+ * Main-stack callers execute directly. Callbacks must not block/yield guest threads. */
 void recomp_on_host(Runtime *, void (*callback)(Runtime *, void *), void *);
 
 typedef struct RecompThreadName {
     uint32_t entry;   /* Original guest entry address, independent of guest ID. */
-    const char *name; /* Native pthread name: 1..15 bytes, excluding the NUL. */
+    const char *name; /* Logical guest-thread diagnostic label: 1..15 bytes, excluding the NUL. */
 } RecompThreadName;
 
 typedef struct RecompSchedulerConfig {
     uint32_t thread_tail;                                          /* Guest address of an eight-byte tail sentinel. */
     uint32_t run_queue, active_queue, running_thread, event_table; /* Optional guest globals. */
-    size_t native_stack_size;                                      /* Zero uses the pthread stack default. */
+    size_t native_stack_size;                                      /* Fiber stack; zero reserves 8 MiB on demand. */
     unsigned checkpoint_interval;                                  /* Backedges per yield; zero selects 64. */
     uint32_t stop_before_entry; /* Debugger stop before a thread's first instruction. */
     const uint32_t *stop_before_entries;
@@ -68,11 +68,14 @@ typedef struct RecompSchedulerConfig {
     size_t thread_name_count;
 } RecompSchedulerConfig;
 
-/* Runtime access is serialized between the owner and one guest pthread. Guest code must
+/* Guest fibers and host callbacks execute serially on the owner's OS thread. Guest code must
  * reach checkpoints/hooks to yield; max_resumes is not an instruction budget.
  * Destroy backends and drain their RT64 queues before destroying the runtime. */
 bool recomp_scheduler_init(Runtime *, const RecompSchedulerConfig *);
 void recomp_scheduler_destroy(Runtime *);
+/* Arm idle detection after a priority-zero thread finishes its startup work.
+ * The thread stays runnable in guest RAM; only its host busy loop is skipped. */
+void recomp_scheduler_set_idle_thread(Runtime *, uint32_t object);
 RecompRunResult recomp_scheduler_run(Runtime *, size_t max_resumes);
 void recomp_thread_create(Runtime *, uint32_t object, int32_t id, uint32_t entry, uint32_t argument, uint32_t stack,
                           int32_t priority);

@@ -196,6 +196,9 @@
     <ClCompile Include="$(RecompRoot)runtime\video.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
+    <ClInclude Include="$(RecompRoot)third_party\minicoro\minicoro.h">
+      <Filter>Header Files\third_party\minicoro</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)tools\auto_live_function.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -365,6 +368,12 @@
     </Filter>
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{360CC0C4-8AB5-5F6C-88CE-F143FE46165D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\third_party">
+      <UniqueIdentifier>{C973E584-B597-53D2-BED0-7B0D34D3DB02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\third_party\minicoro">
+      <UniqueIdentifier>{BC409265-1466-5BC9-B848-B39EF6711C5D}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{BDCE5D5A-1719-5579-B014-087B01302240}</UniqueIdentifier>

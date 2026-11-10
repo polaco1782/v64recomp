@@ -7,13 +7,13 @@ extern "C" {
 #endif
 
 /* Optional wall-time/counter measurements, shared by all games and both modes.
- * Access only with the guest execution token; rendering workers never write it.
+ * Access only on the owner thread, including guest fibers; render workers never write it.
  * Categories can nest: their durations must not be added into a frame total. */
 typedef enum RecompTimingPhase {
     RECOMP_TIMING_DISPATCH,
     RECOMP_TIMING_CHECKPOINT,
     RECOMP_TIMING_CONTEXT_SYNC,
-    RECOMP_TIMING_GUEST_WAIT,
+    RECOMP_TIMING_GUEST_RUN,
     RECOMP_TIMING_HOST_CALLBACK,
     RECOMP_TIMING_GRAPHICS,
     RECOMP_TIMING_PRESENT,

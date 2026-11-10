@@ -16,6 +16,18 @@ cmake --workflow --preset sm64-us-debug
 Shared renderer statistics distinguish displayed frames from host presentations;
 Debug uses the common tracing, replay and capture options.
 
+The live loop uses the shared wall-clock pacer to service VI/AI, timers and task
+completion between display ticks. The profile's verified priority-zero idle
+thread lets the scheduler wait for those events without running its busy loop.
+This replaces a full-frame sleep and a game-specific queue-state predicate.
+
+On 2026-11-09, the Debug startup check and Debian 12 Release build passed, and
+the user confirmed steady 60 FPS while moving inside the castle on Steam Deck.
+The earlier build also held 60 FPS after restarting, so the originally reported
+30 FPS drop was not reproduced in that comparison. The pacing change improves
+event servicing and host presentation cadence; it does not establish the cause
+of that intermittent drop or broader course performance.
+
 Configure either mode with `-DRECOMP_EMBED_ROM=ON` to include ROM content in the
 executable and launch without the external ROM. SM64's complete checked inventory
 lets packaging erase ordinary CPU text, native OS ranges and the unused IPL3

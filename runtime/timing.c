@@ -17,7 +17,7 @@ struct RecompTiming {
     bool cpu_valid;
 };
 
-static const char *phase_names[RECOMP_TIMING_PHASES] = {"dispatch",      "checkpoint", "context_sync", "guest_wait",
+static const char *phase_names[RECOMP_TIMING_PHASES] = {"dispatch",      "checkpoint", "context_sync", "guest_run",
                                                         "host_callback", "graphics",   "present",      "audio",
                                                         "sleep",         "display",    "graphics_cpu"};
 

@@ -22,19 +22,11 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     recomp_game_require(ok, "SM64 task rejected", task->words[4]);
     return true;
 }
-static bool waiting(Runtime *rt) {
-    if (!rt->section_loaded[1] || recomp_thread_state(rt, GAME_MAIN_THREAD) != RECOMP_WAIT_RECV ||
-        (uint32_t)recomp_thread_context(rt, GAME_MAIN_THREAD)->gpr[4] != GAME_GINTRMESGQUEUE)
-        return false;
-    return recomp_thread_state(rt, GAME_GSOUNDTHREAD) == RECOMP_WAIT_RECV &&
-           recomp_thread_state(rt, GAME_GGAMELOOPTHREAD) == RECOMP_WAIT_RECV &&
-           (uint32_t)recomp_thread_context(rt, GAME_GGAMELOOPTHREAD)->gpr[4] == GAME_GGAMEVBLANKQUEUE &&
-           !recomp_task_stats(rt).pending_records;
-}
 static void drain(Runtime *rt) {
     for (unsigned n = 0; n < 512; n++) {
-        recomp_game_require(recomp_scheduler_run(rt, 16) == RECOMP_RUN_BUDGET, "SM64 scheduler stopped", 0);
-        if (waiting(rt))
+        RecompRunResult run = recomp_scheduler_run(rt, 16);
+        recomp_game_require(run != RECOMP_RUN_COMPLETE, "SM64 scheduler stopped", 0);
+        if (run == RECOMP_RUN_WAITING)
             break;
     }
 }
@@ -56,7 +48,8 @@ int main(int argc, char **argv) {
                                        .run_queue = GAME_RUN_QUEUE,
                                        .active_queue = GAME_ACTIVE_QUEUE,
                                        .running_thread = GAME_RUNNING_THREAD,
-                                       .event_table = GAME_EVENT_TABLE};
+                                       .event_table = GAME_EVENT_TABLE,
+                                       .idle_thread = GAME_IDLE_THREAD};
     recomp_game_require(recomp_scheduler_init(&rt, &scheduler), "SM64 scheduler init failed", 0);
     wall_origin = recomp_game_monotonic();
     RecompClockConfig clock = {
@@ -88,7 +81,9 @@ int main(int argc, char **argv) {
         drain(&rt);
         recomp_game_require(recomp_game_present(renderer), "SM64 presentation failed", 0);
         next_present += 16666667;
-        recomp_game_sleep(next_present);
+        /* Service VI/AI/timers and task receipts between display ticks so a
+         * completed frame is not held until the following 60 Hz host tick. */
+        recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);

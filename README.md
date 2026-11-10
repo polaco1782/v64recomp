@@ -241,6 +241,7 @@ keeps the detailed validation history and known gaps.
 | [Shadow Man](games/shadowman-us/README.md) | `shadowman-us` | Menus, movement and rendered level progression. |
 | [Turok: Dinosaur Hunter US v1.2](games/turok-us-v12/README.md) | `turok-us-v12` | Experimental; first-person gameplay and automap. |
 | [1080 Snowboarding JU revision 0](games/1080-us/README.md) | `1080-us` | Intro, title and Select Rider; riding unvalidated. |
+| [Banjo-Kazooie US revision 0](games/banjo-kazooie-us/README.md) | `banjo-kazooie-us` | Experimental; original startup and callback bring-up in progress. |
 | [Resident Evil 2 US revision 1](games/re2-us-v1/README.md) | `re2-us-v1` | Experimental; opening movie and title menu. |
 | [Rayman 2](games/rayman2-us/README.md) | `rayman2-us` | Experimental; title and language selection. |
 | [Conker's Bad Fur Day](games/conker-us/README.md) | `conker-us` | Experimental; logo intro and audio. |
@@ -256,6 +257,7 @@ Import is the easiest way to check your ROM: it verifies size and SHA-1 against
 | Filename | MD5 |
 | --- | --- |
 | `1080.ju.z64` | `fa27089c425dbab99f19245c5c997613` |
+| `banjo-kazooie.us.z64` | `b29599651a13f681c9923d69354bf4a3` |
 | `duke-zero-hour.us.z64` | `026789d47db5fe202a76f89797b33ac7` |
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
 | `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |
