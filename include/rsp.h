@@ -21,6 +21,8 @@ typedef struct RecompRspProgram {
     const RecompRspCode *images;
     size_t image_count;
     void (*run)(RecompRspState *);
+    const uint8_t *block_lengths;
+    size_t entry_count;
 } RecompRspProgram;
 typedef struct RecompRspWrite {
     uint32_t address, bytes;
@@ -34,6 +36,7 @@ struct RecompRspState {
     bool div_pending;
     uint8_t dmem[4096], imem[4096];
     uint16_t native[1024];
+    uint8_t blocks[1024]; /* Currently verified contiguous instructions per entry. */
     uint32_t cp0[16];
     uint8_t *ram;
     size_t ram_size;

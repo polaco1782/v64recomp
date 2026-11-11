@@ -1,8 +1,9 @@
 """Translate checked RSP instruction images to C11, including IMEM overlays.
 
-Each unique instruction gets a native entry with constant operands. IMEM DMA
-binds those entries only after matching a complete range against a declared
-image; execution never decodes a guest opcode or compiles unknown RAM.
+Straight-line instruction blocks have native entry points at every instruction,
+including delay slots and computed-jump targets. IMEM DMA binds entries only
+after matching a complete range against a declared image. Execution never
+decodes a guest opcode or compiles unknown RAM.
 """
 from __future__ import annotations
 
@@ -26,6 +27,7 @@ VECTOR = {
 }
 MEMORY = ('bv', 'sv', 'lv', 'dv', 'qv', 'rv', 'pv', 'uv', 'hv', 'fv', 'wv', 'tv')
 SCALE = (0, 1, 2, 3, 4, 4, 3, 3, 4, 4, 4, 4)
+MAX_BLOCK_INSTRUCTIONS = 32
 
 
 def number(value: int) -> str:
@@ -117,6 +119,52 @@ def instruction(word: int) -> str:
     return f'recomp_rsp_fault(s, "unsupported compiled RSP instruction", at, {number(word)});'
 
 
+def branch_instruction(word: int) -> bool:
+    op, rt, fn = word >> 26, (word >> 16) & 31, word & 63
+    return (op == 0 and fn in (8, 9) or op == 1 and rt in (0, 1, 16, 17) or
+            op in (2, 3, 4, 5, 6, 7))
+
+
+def block_barrier(word: int) -> bool:
+    # CP0 writes can halt, replace IMEM or submit RDP output. Faults are terminal
+    # so no charged block contains an earlier operation that can stop execution.
+    return (word >> 26 == 16 and (word >> 21) & 31 == 4 or
+            word >> 26 == 0 and word & 63 == 13 or
+            instruction(word).startswith('recomp_rsp_fault('))
+
+
+def instruction_blocks(words: list[int]) -> list[tuple[int, ...]]:
+    leaders = {0}
+    for i, word in enumerate(words):
+        op = word >> 26
+        if branch_instruction(word):
+            leaders.add(i + 2)
+            if op in (1, 4, 5, 6, 7):
+                immediate = (word & 65535) - (65536 if word & 32768 else 0)
+                leaders.add(i + 1 + immediate)
+        if block_barrier(word):
+            leaders.add(i + 1)
+    blocks = []
+    start = 0
+    while start < len(words):
+        end = start
+        while end < len(words):
+            word = words[end]
+            end += 1
+            if block_barrier(word):
+                break
+            if branch_instruction(word):
+                # Include the delay slot, even when it is itself a branch or
+                # barrier. Any pending transfer on entry uses the single step.
+                end = min(end + 1, len(words))
+                break
+            if end - start >= MAX_BLOCK_INSTRUCTIONS or end in leaders:
+                break
+        blocks.append(tuple(words[start:end]))
+        start = end
+    return blocks
+
+
 def emit_program(output: Path, images: list[tuple[str, bytes]]) -> None:
     if not 1 <= len(images) <= 128:
         raise RecompError('invalid RSP native image count')
@@ -125,33 +173,79 @@ def emit_program(output: Path, images: list[tuple[str, bytes]]) -> None:
         if not raw or len(raw) % 4 or len(raw) > 65536:
             raise RecompError(f'invalid RSP instruction image {name}')
         words_by_image.append([int.from_bytes(raw[i:i + 4], 'big') for i in range(0, len(raw), 4)])
-    words = sorted({word for image in words_by_image for word in image})
-    if len(words) >= 65535:
-        raise RecompError('RSP native instruction entry count exhausted')
-    entries = {word: i for i, word in enumerate(words)}
+    blocks = {}
+    entries_by_image, lengths = [], []
+    word_entries: dict[int, list[int]] = {}
+    for image in words_by_image:
+        image_entries = []
+        for block in instruction_blocks(image):
+            # Contiguous suffix entries allow computed jumps into a block and
+            # let IMEM binding verify native fall-through after partial DMA.
+            if block not in blocks:
+                base = len(lengths)
+                blocks[block] = base
+                lengths.extend(range(len(block), 0, -1))
+                for i, word in enumerate(block):
+                    word_entries.setdefault(word, []).append(base + i)
+            base = blocks[block]
+            image_entries.extend(range(base, base + len(block)))
+        entries_by_image.append(image_entries)
+    if len(lengths) >= 65535:
+        raise RecompError('RSP native block entry count exhausted')
     lines = ['/* Generated C11 from verified RSP images. Private ROM-derived output. */',
              '#include "rsp.h"',
-             'static void rsp_run(RecompRspState *s) {', 'while (!s->halted) {',
+             'static const uint8_t rsp_block_lengths[] = {']
+    for offset in range(0, len(lengths), 32):
+        lines.append(','.join(str(n) for n in lengths[offset:offset + 32]) + ',')
+    lines.extend(['};',
+             '/* One precompiled instruction handles partial blocks, pending',
+             ' * delay slots and the exact instruction-budget boundary. */',
+             'static void rsp_step(RecompRspState *s) {',
              'uint32_t at = s->pc;', 's->instruction_pc = at;',
              'if ((at & 3) || at >= 4096 || ++s->instructions > s->instruction_limit) {',
-             'recomp_rsp_fault(s, "RSP execution address or instruction limit", at, 0); break; }',
+             'recomp_rsp_fault(s, "RSP execution address or instruction limit", at, 0); return; }',
              'uint16_t entry = s->native[at / 4];',
              's->pc = s->next_pc; s->next_pc = (s->next_pc + 4) & 4095;',
-             'switch (entry) {']
-    for word in words:
-        lines.append(f'case {entries[word]}: {{ {instruction(word)} break; }}')
+             'switch (entry) {'])
+    for word, entries in sorted(word_entries.items()):
+        lines.extend(f'case {entry}:' for entry in entries)
+        lines.append(f'{{ {instruction(word)} break; }}')
     lines.extend(['default: recomp_rsp_fault(s, "RSP executed untranslated IMEM", at, entry); break;',
-                  '}', 's->gpr[0] = 0;', '}', '}'])
-    for index, image in enumerate(words_by_image):
+                  '}', 's->gpr[0] = 0;', '}',
+                  'static void rsp_run(RecompRspState *s) {', 'while (!s->halted) {',
+                  'uint32_t at = s->pc;',
+                  'if ((at & 3) || at >= 4096) { rsp_step(s); continue; }',
+                  'uint16_t entry = s->native[at / 4];',
+                  'if (entry >= sizeof(rsp_block_lengths)) { rsp_step(s); continue; }',
+                  'unsigned length = rsp_block_lengths[entry];',
+                  'if (s->blocks[at / 4] < length || s->next_pc != ((at + 4) & 4095) ||',
+                  's->instructions > s->instruction_limit || length > s->instruction_limit - s->instructions) {',
+                  'rsp_step(s); continue; }',
+                  'uint32_t pc = at, next_pc = (at + 4) & 4095;',
+                  '/* Only the final instruction may halt, fault or replace IMEM.',
+                  ' * Helpers in earlier instructions must preserve that invariant. */',
+                  's->instructions += length;', 'switch (entry) {'])
+    for block, base in blocks.items():
+        for i, word in enumerate(block):
+            lines.extend([f'case {base + i}: {{', 'at = pc; pc = next_pc; next_pc = (next_pc + 4) & 4095;'])
+            if i + 1 == len(block):
+                lines.append('s->instruction_pc = at;')
+            lines.append(instruction(word).replace('s->next_pc', 'next_pc'))
+            lines.extend(['break;', '}'] if i + 1 == len(block) else ['}', '/* fall through */'])
+    lines.extend(['}', 's->pc = pc; s->next_pc = next_pc; s->instruction_pc = at;',
+                  's->gpr[0] = 0;', '}', '}'])
+    for index, (image, entries) in enumerate(zip(words_by_image, entries_by_image)):
         lines.append(f'static const uint32_t rsp_words_{index}[] = {{')
         for offset in range(0, len(image), 8):
             lines.append(','.join(f'0x{word:08x}' for word in image[offset:offset + 8]) + ',')
         lines.extend(['};', f'static const uint16_t rsp_entries_{index}[] = {{'])
         for offset in range(0, len(image), 16):
-            lines.append(','.join(str(entries[word]) for word in image[offset:offset + 16]) + ',')
+            lines.append(','.join(str(entry) for entry in entries[offset:offset + 16]) + ',')
         lines.append('};')
     lines.append('static const RecompRspCode rsp_images[] = {')
     for index, ((name, _), image) in enumerate(zip(images, words_by_image)):
         lines.append(f'{{{json.dumps(name)}, rsp_words_{index}, rsp_entries_{index}, {len(image)}}},')
-    lines.extend(['};', 'const RecompRspProgram game_rsp_program = {rsp_images, sizeof(rsp_images)/sizeof(rsp_images[0]), rsp_run};', ''])
+    lines.extend(['};', 'const RecompRspProgram game_rsp_program = {',
+                  '.images = rsp_images, .image_count = sizeof(rsp_images)/sizeof(rsp_images[0]), .run = rsp_run,',
+                  '.block_lengths = rsp_block_lengths, .entry_count = sizeof(rsp_block_lengths)', '};', ''])
     (output / 'game_rsp.c').write_text('\n'.join(lines))

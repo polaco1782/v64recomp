@@ -20,11 +20,21 @@ polls or waits at required task boundaries; shutdown drains and joins the worker
 Only actual DMA writes and completed native color readback enter live RAM.
 SP and DP events remain separate; a task without `FULLSYNC` has no DP event.
 
-Python emits constant-operand C11 instruction bodies and per-image IMEM maps.
+Python emits constant-operand C11 basic blocks and per-image IMEM maps.
 IMEM DMA binds these compiled entries only when the complete transferred range
 matches verified original program words, including overlays. Runtime execution
 never decodes unknown instructions or compiles mutable RAM. Unknown IMEM,
 unsupported instructions, invalid DMA and instruction/output budgets fail explicitly.
+
+Blocks group straight-line instructions and include a terminating branch's
+delay slot. PC bookkeeping stays local and instruction budgets are charged once
+per block. Every instruction also has a suffix entry for computed jumps into
+the middle of a block. DMA/status writes and faults end blocks; an IMEM load
+rebuilds the verified span map, truncating any block affected by a partial overlay.
+Pending branch delays, incomplete spans and limits that expire inside a block
+use one precompiled instruction at a time, preserving exact fault state. Normal
+straight-line blocks are capped at 32 instructions, plus a branch delay slot.
+
 This models completed graphics tasks rather than RSP cycle timing or resumable
 hardware yield. Full-RDRAM snapshots add memory traffic; threading is not a speed
 claim, and ARM performance has not been measured.
@@ -199,11 +209,35 @@ Process CPU was 71.4% of one logical core: the RSP worker used 45.1% and the own
 23.8%. Of 2,745 samples, 30.5% were in the generated RSP loop itself and 24.1%
 in vector helpers. Source attribution placed 14.2% of all samples in the loop's
 dispatch, PC advancement and checks; the full loop self cost also includes scalar
-instructions. Basic-block compilation is therefore the next CPU optimization
-to investigate. Approximately aligned timing windows averaged 2.74 ms wall and
+instructions. This motivated the basic-block compiler described above.
+Approximately aligned timing windows averaged 2.74 ms wall and
 2.37 ms owner CPU per completed RDP/GLES2/readback service. There were no dropped
 samples or timer overruns. This does not measure GPU execution, steady-scene
 FPS or ARM performance. See the [profiling workflow](profiling.md).
+
+The basic-block compiler matches the previous dispatcher byte for byte on 180
+temporary synthetic cases and three captured GoldenEye/Quake tasks, comparing
+registers, PC/fault state, DMEM/IMEM, RAM, DMA writes and ordered RDP output.
+All 183 comparisons also pass AddressSanitizer/UBSan. Coverage includes
+mid-block entries, branches in delay slots, exact instruction limits, IMEM wrap,
+partial/overlapping overlays and changed-code rejection. These compiler checks
+do not replace gameplay acceptance, which remains with the user.
+
+On the same Ryzen 7 5700X, an interleaved, CPU-pinned comparison with the presets'
+`-O3` generated C measured these captured tasks (medians of four samples of 31
+timed runs per version, after two warmups):
+
+| Captured task | Instructions | Previous dispatcher | Basic blocks | Less RSP CPU time |
+| --- | ---: | ---: | ---: | ---: |
+| GoldenEye US | 2,004,161 | 17.45 ms | 8.98 ms | 48.6% |
+| Quake US | 126,153 | 1.029 ms | 0.608 ms | 40.9% |
+| Quake US | 78,095 | 0.204 ms | 0.139 ms | 31.9% |
+
+Timing includes RSP task initialization and IMEM verification, excluding the
+worker's RAM snapshot and rendering. The `-O2` comparison also improves these
+tasks by 32–44%. Larger generated block bodies trade code size for fewer
+dispatches. These results measure x86-64 task CPU time; game FPS and ARM
+performance still need measurement.
 
 Vector behavior was checked against the primary
 [ares RSP implementation](https://github.com/ares-emulator/ares/tree/master/ares/n64/rsp);

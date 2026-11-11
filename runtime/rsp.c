@@ -50,6 +50,25 @@ void recomp_rsp_store(RecompRspState *s, uint32_t address, uint32_t value, unsig
     for (unsigned i = 0; i < bytes; i++)
         s->dmem[(address + i) & 4095] = (uint8_t)(value >> ((bytes - 1 - i) * 8));
 }
+/* A partial/overlapping DMA can truncate an earlier block. Rebuild the small
+ * IMEM map after binding so a compiled fall-through never crosses changed or
+ * untranslated words. Blocks stop at the IMEM wrap boundary. */
+static void bind_blocks(RecompRspState *s) {
+    for (unsigned i = 1024; i-- > 0;) {
+        uint16_t entry = s->native[i];
+        unsigned length = 0;
+        if (entry < s->program->entry_count) {
+            length = 1;
+            unsigned remaining = s->program->block_lengths[entry];
+            if (remaining > 1 && i + 1 < 1024 && s->native[i + 1] == entry + 1) {
+                length += s->blocks[i + 1];
+                if (length > remaining)
+                    length = remaining;
+            }
+        }
+        s->blocks[i] = (uint8_t)length;
+    }
+}
 static bool bind_imem(RecompRspState *s, uint32_t dram, uint32_t target, unsigned bytes) {
     for (size_t image = 0; image < s->program->image_count; image++) {
         const RecompRspCode *code = &s->program->images[image];
@@ -68,6 +87,7 @@ static bool bind_imem(RecompRspState *s, uint32_t dram, uint32_t target, unsigne
                 s->native[((target + i * 4) & 4095) / 4] = code->entries[offset + i];
             for (i = 0; i < bytes; i++)
                 s->imem[(target + i) & 4095] = ram_byte(s, dram + i);
+            bind_blocks(s);
             return true;
         }
     }
@@ -237,12 +257,14 @@ bool recomp_rsp_start(RecompRspState *s, const uint32_t task[16]) {
     memset(s->cp0, 0, sizeof(s->cp0));
     memset(s->dmem, 0, sizeof(s->dmem));
     memset(s->native, 255, sizeof(s->native));
+    memset(s->blocks, 0, sizeof(s->blocks));
     s->cp0[11] = 0x80; /* Synchronous command sink is ready and never busy. */
     for (unsigned i = 0; i < 16; i++)
         recomp_rsp_store(s, 0xfc0 + i * 4, task[i], 4);
     uint32_t boot = task[2] & 0x1fffffff;
-    if (!s->program || !s->program->image_count || task[3] != s->program->images[0].count * 4 ||
-        !ram_span(s, boot, task[3]) || !bind_imem(s, boot, 0, task[3])) {
+    if (!s->program || !s->program->image_count || !s->program->run || !s->program->block_lengths ||
+        !s->program->entry_count || s->program->entry_count >= UINT16_MAX ||
+        task[3] != s->program->images[0].count * 4 || !ram_span(s, boot, task[3]) || !bind_imem(s, boot, 0, task[3])) {
         recomp_rsp_fault(s, "RSP bootstrap does not match the compiled program", boot, task[3]);
         return false;
     }
