@@ -2,6 +2,11 @@
 #define MINICORO_IMPL
 #define MCO_USE_VMEM_ALLOCATOR
 #define MCO_DEFAULT_STACK_SIZE (8 * 1024 * 1024)
+#ifdef __EMSCRIPTEN__
+/* Asyncify spills translated call frames separately from the guest fiber's C
+ * stack. Unoptimized CPU functions can exceed minicoro's 16 KiB default. */
+#define MCO_ASYNCFY_STACK_SIZE (256 * 1024)
+#endif
 #define MCO_NO_DEBUG
 #include "minicoro.h"
 

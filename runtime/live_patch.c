@@ -2,6 +2,7 @@
 #include "runtime.h"
 #include "recomp_live.h"
 
+#ifndef __EMSCRIPTEN__
 #include <dlfcn.h>
 #include <errno.h>
 #include <spawn.h>
@@ -239,6 +240,36 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
     }
 }
 
+#else
+/* Browsers cannot launch native repair helpers or load native shared objects. */
+typedef struct LiveModule {
+    const RecompLiveManifest *manifest;
+} LiveModule;
+static const RecompFunctionEntry *find_entry(Runtime *rt, uint32_t a, uint32_t s, uint32_t n, bool checked) {
+    (void)rt;
+    (void)a;
+    (void)s;
+    (void)n;
+    (void)checked;
+    return NULL;
+}
+static LiveModule *find_jump(Runtime *rt, uint32_t a, uint32_t s, uint32_t n) {
+    (void)rt;
+    (void)a;
+    (void)s;
+    (void)n;
+    return NULL;
+}
+static bool wait_for_repair(Runtime *rt, uint32_t a, uint32_t s, uint32_t n, bool checked, bool jump) {
+    (void)rt;
+    (void)a;
+    (void)s;
+    (void)n;
+    (void)checked;
+    (void)jump;
+    return false;
+}
+#endif
 RecompFunction recomp_live_lookup(Runtime *rt, uint32_t address) {
     const RecompFunctionEntry *entry = find_entry(rt, address, 0, 0, false);
     if (!entry && wait_for_repair(rt, address, 0, 0, false, false))
@@ -306,6 +337,7 @@ bool recomp_live_boundary(Runtime *rt, MipsContext *ctx, uint32_t address) {
 }
 
 void recomp_live_destroy(Runtime *rt) {
+#ifndef __EMSCRIPTEN__
     LiveModule *module = rt->live_modules;
     while (module) {
         LiveModule *next = module->next;
@@ -313,5 +345,6 @@ void recomp_live_destroy(Runtime *rt) {
         free(module);
         module = next;
     }
+#endif
     rt->live_modules = NULL;
 }

@@ -1,4 +1,6 @@
-find_package(SDL2 REQUIRED)
+if(NOT TARGET SDL2::SDL2)
+    find_package(SDL2 REQUIRED)
+endif()
 add_library(recomp_rsp STATIC runtime/rsp.c runtime/rsp_vector.c runtime/rsp_worker.c include/rsp.h include/rsp_worker.h)
 target_link_libraries(recomp_rsp PUBLIC recomp_runtime)
 if(MSVC)

@@ -1,3 +1,6 @@
+if(EMSCRIPTEN AND NOT RECOMP_GAME STREQUAL "sm64-us")
+    message(FATAL_ERROR "The browser ROM loader currently supports sm64-us only")
+endif()
 # Only the selected game is generated and compiled. Python is a build dependency.
 if(RECOMP_RENDERER STREQUAL "gles2" AND NOT RECOMP_GAME_GLES2_SUPPORTED)
     message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES2 graphics path. Select -DRECOMP_RENDERER=rt64.")
@@ -84,6 +87,16 @@ add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_GE
     DEPENDS ${RECOMP_GENERATOR_INPUTS} "${RECOMP_ROM}"
     COMMENT "Checking ${RECOMP_GAME} CPU source generation" USES_TERMINAL VERBATIM)
 set(RECOMP_LOCAL "${CMAKE_SOURCE_DIR}/local")
+set(RECOMP_DEBUG_OUTPUT_DIR "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
+if(EMSCRIPTEN)
+    if(RECOMP_EMBED_ROM OR RECOMP_EMBED_TEXTURE_PACK)
+        message(FATAL_ERROR "Browser builds load a user-selected ROM; embedding is unsupported")
+    endif()
+    set(RECOMP_ROM "/rom.z64")
+    set(RECOMP_SAVE "/saves/${RECOMP_GAME}.eeprom")
+    set(RECOMP_LOCAL "/local")
+    set(RECOMP_DEBUG_OUTPUT_DIR "/debug-output/${RECOMP_GAME}")
+endif()
 configure_file("${CMAKE_SOURCE_DIR}/cmake/game_defaults.h.in" "${RECOMP_GENERATED}/game_defaults.h" @ONLY)
 if(RECOMP_RSP_SOURCE)
     target_compile_definitions(recomp_renderer PRIVATE RECOMP_HAS_RSP_PROGRAM)
@@ -148,11 +161,25 @@ else()
         "$<$<CONFIG:Debug>:-O0;-g3>" "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL};-g1>"
         -fno-omit-frame-pointer -Wall -Wextra -Werror -Wno-unused-label
         -fno-fast-math -frounding-math -ffp-contract=off)
-    target_link_options(${RECOMP_GAME} PRIVATE -rdynamic)
+    if(NOT EMSCRIPTEN)
+        target_link_options(${RECOMP_GAME} PRIVATE -rdynamic)
+    endif()
 endif()
 recomp_optimize_release_target(${RECOMP_GAME})
 recomp_optimize_release_cpu(${RECOMP_CPU_SOURCES})
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_renderer recomp_audio)
+if(EMSCRIPTEN)
+    set_target_properties(${RECOMP_GAME} PROPERTIES SUFFIX ".js")
+    target_link_options(${RECOMP_GAME} PRIVATE
+        "$<$<CONFIG:Debug>:-O0;-g2;-sASSERTIONS=2;-sSTACK_OVERFLOW_CHECK=2>"
+        "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL}>"
+        -sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=65536 -sPROXY_TO_PTHREAD=1 -sOFFSCREEN_FRAMEBUFFER=1 -sPTHREAD_POOL_SIZE=8 -sSTACK_SIZE=8388608
+        -sDEFAULT_PTHREAD_STACK_SIZE=2097152 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728
+        -sMAXIMUM_MEMORY=1073741824 -sMODULARIZE=1 -sEXPORT_NAME=createGame
+        -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain -sFORCE_FILESYSTEM=1
+        -sEXIT_RUNTIME=1 -sENVIRONMENT=web,worker -lidbfs.js)
+    configure_file("${CMAKE_SOURCE_DIR}/web/index.html.in" "${CMAKE_BINARY_DIR}/bin/index.html" @ONLY)
+endif()
 if(WIN32)
     add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different

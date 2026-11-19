@@ -41,6 +41,7 @@ def source_files(root: Path, game: str) -> list[Path]:
     if game == 'none':
         files.update(root / p for p in ('CMakeLists.txt', 'CMakePresets.json', 'vcpkg.json',
                                        'requirements.txt', 'msvc/Recomp.props'))
+        files.update((root / 'web').glob('*.html.in'))
     return sorted(files)
 
 

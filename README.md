@@ -6,6 +6,8 @@ v64recomp rebuilds N64 games as native Windows and Linux applications. Bring you
 own ROM, build the game, and settle in with a wider view, familiar controls and
 a few comforts that weren't around in the cartridge days.
 
+Super Mario 64 US also has an experimental [browser build](docs/webassembly.md) using WebAssembly and WebGL.
+
 | Make it yours | What you can do |
 | --- | --- |
 | **[Widescreen and ultrawide](#a-little-more-room-to-see)** | Expand the view to fit your window with **F7**, or keep the original proportions. |

@@ -6,6 +6,14 @@
 #include <stdint.h>
 #include <time.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+uint64_t recomp_monotonic_ns(void);
+#ifdef __cplusplus
+}
+#endif
+
 #ifdef _MSC_VER
 #ifdef __cplusplus
 #define _Thread_local thread_local

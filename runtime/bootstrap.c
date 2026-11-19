@@ -1,15 +1,14 @@
 #include "runtime.h"
 #include "runtime_debug.h"
-#include <openssl/evp.h>
+#include "hash.h"
 #include <string.h>
 
 bool recomp_rom_attach(Runtime *rt, const uint8_t *rom, size_t size, const uint8_t sha1[20]) {
     static const uint8_t magic[] = {0x80, 0x37, 0x12, 0x40};
     if (rt->rom || !rom || !sha1 || size < 64 || size % 4 || memcmp(rom, magic, 4))
         return false;
-    uint8_t digest[EVP_MAX_MD_SIZE];
-    unsigned length = 0;
-    if (!EVP_Digest(rom, size, digest, &length, EVP_sha1(), NULL) || length != 20 || memcmp(digest, sha1, 20))
+    uint8_t digest[20];
+    if (!recomp_sha1(rom, size, digest) || memcmp(digest, sha1, 20))
         return false;
     rt->rom = rom;
     rt->rom_size = size;

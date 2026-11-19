@@ -62,7 +62,11 @@ The backend also clears inherited flush-to-zero, default-NaN and alternative
 floating-point modes before arithmetic. The saved environment restores those
 modes on return, including when the guest operation subsequently traps.
 This is an initial portability path, not a Pi performance or conformance claim.
-Other hosts need a validated backend.
+Browser builds use `RECOMP_SOFTFLOAT=ON`: pinned Berkeley SoftFloat implements
+binary32/binary64 operations and all four rounding modes with thread-local state.
+The same VR4300 operand checks, result handling and FCR31 updates wrap it. Native
+builds may select it for differential validation. See [WebAssembly](webassembly.md)
+for build instructions and the scope of the initial numerical checks.
 
 VR4300 NaNs use the legacy convention: the highest fraction bit is set for a
 signaling NaN. Computational signaling NaNs set Invalid; quiet NaNs and denormal

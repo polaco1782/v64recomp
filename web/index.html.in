@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v64recomp · Super Mario 64</title>
+<link rel="icon" href="data:,">
+<style>
+:root{color-scheme:dark;font:16px system-ui;background:#11151d;color:#e8edf5}body{max-width:1000px;margin:32px auto;padding:0 20px}h1{font-size:26px}p{line-height:1.5;color:#bbc8db}.controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:20px 0}button{padding:10px 20px;background:#6cafff;border:0;border-radius:6px;color:#101722;font:inherit;cursor:pointer}button:disabled{opacity:.45;cursor:default}canvas{display:block;width:100%;aspect-ratio:4/3;background:#000;outline:0}canvas:focus{box-shadow:0 0 0 2px #6cafff}#status{min-height:24px}pre{white-space:pre-wrap;max-height:240px;overflow:auto;font-size:12px}
+</style>
+<h1>Super Mario 64 <small>· browser preview</small></h1>
+<p>Choose your Super Mario 64 US ROM (.z64, .n64 or .v64). It stays on your device. Saves are stored in this browser.</p>
+<div class="controls"><input id="rom" type="file" accept=".z64,.n64,.v64"><button id="start" disabled>Play</button><button id="save" disabled>Download save</button></div>
+<p id="status" role="status">Loading runtime…</p>
+<canvas id="canvas" width="960" height="720" tabindex="0" aria-label="Game screen"></canvas>
+<p>Click the game to focus. Arrow keys: move · A: jump · X: attack · S: start · Z: crouch · C/V: L/R · I/K/J/L: C buttons. A connected gamepad also works. Click the game again if audio is paused.</p>
+<details><summary>Diagnostics</summary><pre id="log"></pre></details>
+<script src="@RECOMP_GAME@.js"></script>
+<script>
+'use strict';
+const status = document.getElementById('status');
+const start = document.getElementById('start');
+const rom = document.getElementById('rom');
+const save = document.getElementById('save');
+const canvas = document.getElementById('canvas');
+const savePath = '/saves/@RECOMP_GAME@.eeprom';
+const log = document.getElementById('log');
+let game, running = false, ready = false;
+const report = text => {log.textContent = (log.textContent + text + '\n').slice(-24000); log.scrollTop=log.scrollHeight;};
+function fail(error){status.textContent=String(error);report(error);start.disabled=true;}
+window.addEventListener('error', event=>fail(event.message || 'Runtime error; see diagnostics.'));
+async function initialize(){
+    if(!crossOriginIsolated) throw new Error('This page needs COOP/COEP hosting headers. Use tools/serve_web.py.');
+    game = await createGame({canvas, noInitialRun:true, print:report, printErr:report,
+        onAbort:reason => fail('Game stopped: '+reason),
+        onExit:code => {running=false;status.textContent='Game exited ('+code+'). Reload to play again.';}});
+    game.FS.mkdir('/saves');
+    game.FS.mount(game.IDBFS,{autoPersist:true},'/saves');
+    await new Promise((resolve,reject)=>game.FS.syncfs(true,error=>error?reject(error):resolve()));
+    ready=true;
+    status.textContent='Choose a ROM to begin.';
+    start.disabled=!rom.files.length;
+}
+rom.addEventListener('change',()=>{start.disabled=!ready || running || !rom.files.length;});
+start.addEventListener('click',async()=>{
+    start.disabled=true;
+    try {
+        const file=rom.files[0];
+        if(!file || file.size!==8388608) throw new Error('Choose an 8 MiB Super Mario 64 US ROM.');
+        const bytes=new Uint8Array(await file.arrayBuffer());
+        if(bytes[0]===0x37 && bytes[1]===0x80 && bytes[2]===0x40 && bytes[3]===0x12){
+            for(let i=0;i<bytes.length;i+=2){const t=bytes[i];bytes[i]=bytes[i+1];bytes[i+1]=t;}
+        } else if(bytes[0]===0x40 && bytes[1]===0x12 && bytes[2]===0x37 && bytes[3]===0x80){
+            for(let i=0;i<bytes.length;i+=4){const a=bytes[i],b=bytes[i+1];bytes[i]=bytes[i+3];bytes[i+1]=bytes[i+2];bytes[i+2]=b;bytes[i+3]=a;}
+        }
+        const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+        if(hash!=='9bef1128717f958171a4afac3ed78ee2bb4e86ce') throw new Error('This build requires the original Super Mario 64 US ROM.');
+        game.FS.writeFile('/rom.z64',bytes);
+        running=true;rom.disabled=true;save.disabled=false;canvas.focus();
+        status.textContent='Running · click the game for controls and audio.';
+        game.callMain([]);
+    } catch(error){running=false;status.textContent=String(error);report(error);start.disabled=false;}
+});
+save.addEventListener('click',()=>{
+    try{
+        const bytes=game.FS.readFile(savePath);
+        const url=URL.createObjectURL(new Blob([bytes],{type:'application/octet-stream'}));
+        const link=document.createElement('a');link.href=url;link.download='@RECOMP_GAME@.eeprom';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }catch(error){status.textContent='No save has been written yet.';}
+});
+canvas.addEventListener('click',()=>canvas.focus());
+initialize().catch(fail);
+</script>
+</html>

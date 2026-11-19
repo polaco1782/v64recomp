@@ -97,7 +97,13 @@
     <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\SoftFloat.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
     <None Include="$(RecompRoot)cmake\SourceGroups.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\WebAssembly.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
     <None Include="$(RecompRoot)cmake\rt64\AnamorphicPresentation.cmake">
@@ -118,6 +124,9 @@
     <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
+    <ClInclude Include="$(RecompRoot)cmake\softfloat\platform.h">
+      <Filter>Header Files\cmake\softfloat</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake">
       <Filter>Configuration\cmake\toolchains</Filter>
     </None>
@@ -131,6 +140,9 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\game.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\hash.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\host.h">
@@ -206,6 +218,9 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\game.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\hash.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\host.c">
@@ -379,6 +394,9 @@
     <None Include="$(RecompRoot)tools\rsp_recompile.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\serve_web.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\setup_windows.ps1">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -409,6 +427,9 @@
     <None Include="$(RecompRoot)vcpkg.json">
       <Filter>Configuration</Filter>
     </None>
+    <None Include="$(RecompRoot)web\index.html.in">
+      <Filter>Configuration\web</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Configuration">
@@ -429,11 +450,20 @@
     <Filter Include="Configuration\tools">
       <UniqueIdentifier>{2D15F58C-19C2-5E53-875C-8DC3E292E009}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Configuration\web">
+      <UniqueIdentifier>{71D0726A-F54E-5B5B-9F7C-107AFB049002}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{E9A7F251-9AB3-53C7-8CDD-7946290D9E2A}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\backends">
       <UniqueIdentifier>{D2D23502-9D21-539D-BBA4-21F5DB89B7F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cmake">
+      <UniqueIdentifier>{F591A1D5-BCE9-5FF5-A942-7F8276F6DCEA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cmake\softfloat">
+      <UniqueIdentifier>{1059DC9E-D408-549C-9E98-6BC7ED54B6C3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{360CC0C4-8AB5-5F6C-88CE-F143FE46165D}</UniqueIdentifier>

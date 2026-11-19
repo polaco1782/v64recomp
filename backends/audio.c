@@ -7,7 +7,11 @@
 #include "ucodes.h"
 #include "memory.h"
 #include <SDL2/SDL.h>
-#include <openssl/evp.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten/threading.h>
+#include <emscripten/proxying.h>
+#endif
+#include "hash.h"
 #include <stdarg.h>
 #include <setjmp.h>
 #include <stdio.h>
@@ -432,7 +436,7 @@ static bool wav_header(RecompAudio *a) {
     little(h + 40, (uint32_t)a->stats.frames * 4, 4);
     return !fseek(a->wav, 0, SEEK_SET) && fwrite(h, 1, 44, a->wav) == 44;
 }
-static bool open_device(RecompAudio *a, unsigned frequency) {
+static bool open_device_impl(RecompAudio *a, unsigned frequency) {
     if (a->device)
         return true;
     if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
@@ -464,6 +468,34 @@ static bool open_device(RecompAudio *a, unsigned frequency) {
         fprintf(stderr, "Audio trace: driver=%s rate=%d device_period=%u prebuffer_frames=%u\n", a->stats.driver,
                 have.freq, have.samples, a->stats.prebuffer_frames);
     return true;
+}
+#ifdef __EMSCRIPTEN__
+struct AudioOpenRequest {
+    RecompAudio *audio;
+    unsigned frequency;
+    bool okay;
+};
+static void open_browser_device(void *opaque) {
+    struct AudioOpenRequest *request = opaque;
+    request->okay = open_device_impl(request->audio, request->frequency);
+}
+#endif
+static bool open_device(RecompAudio *a, unsigned frequency) {
+    if (a->device)
+        return true;
+#ifdef __EMSCRIPTEN__
+    /* SDL's WebAudio initialization reads main-thread Module state. Keep only
+     * device creation on that thread; guest synthesis stays with its owner. */
+    struct AudioOpenRequest request = {a, frequency, false};
+    em_proxying_queue *queue = em_proxying_queue_create();
+    if (!queue)
+        return false;
+    bool completed = emscripten_proxy_sync(queue, emscripten_main_runtime_thread_id(), open_browser_device, &request);
+    em_proxying_queue_destroy(queue);
+    return completed && request.okay;
+#else
+    return open_device_impl(a, frequency);
+#endif
 }
 static void reset_playback(RecompAudio *a) {
     SDL_PauseAudioDevice(a->device, 1);
@@ -743,8 +775,7 @@ static bool microcode_matches(RecompAudio *a, uint32_t address, unsigned bytes, 
     for (unsigned i = 0; i < bytes; i++)
         data[i] = (uint8_t)recomp_load(a->rt, address + i, 1);
     uint8_t digest[32];
-    unsigned size = 0;
-    bool okay = EVP_Digest(data, bytes, digest, &size, EVP_sha256(), NULL) != 0 && size == 32;
+    bool okay = recomp_sha256(data, bytes, digest);
     free(data);
     for (unsigned i = 0; okay && i < 32; i++) {
         unsigned expected;

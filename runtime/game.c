@@ -323,10 +323,7 @@ void recomp_game_require(bool condition, const char *message, uint32_t address) 
         recomp_fail(message, address);
 }
 uint64_t recomp_game_monotonic(void) {
-    struct timespec ts;
-    recomp_game_require(clock_gettime(CLOCK_MONOTONIC, &ts) == 0, "host clock failed", 0);
-    /* Keep host pacing and wall-derived guest clocks stopped during F8. */
-    return (uint64_t)ts.tv_sec * UINT64_C(1000000000) + (uint64_t)ts.tv_nsec - recomp_renderer_paused_ns();
+    return recomp_monotonic_ns() - recomp_renderer_paused_ns();
 }
 void recomp_game_sleep(uint64_t deadline) {
     deadline += recomp_renderer_paused_ns();
@@ -474,6 +471,9 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
         quoted(f, module);
         fputs(",\"symbol\":", f);
         quoted(f, named ? symbol.info.Name : NULL);
+#elif defined(__EMSCRIPTEN__)
+        fprintf(f, "%s{\"address\":\"0x%" PRIxPTR "\",\"symbol\":null", i ? "," : "",
+                (uintptr_t)info->native_frames[i]);
 #else
         Dl_info d = {0};
         (void)dladdr(info->native_frames[i], &d);

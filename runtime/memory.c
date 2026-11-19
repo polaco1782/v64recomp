@@ -8,6 +8,8 @@
 #ifdef RECOMP_DEBUG
 #include <dbghelp.h>
 #endif
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
 #else
 #include <execinfo.h>
 #include <unwind.h>
@@ -41,11 +43,17 @@ typedef struct RecompWarningSite {
 static _Thread_local RecompWarningSite warning_sites[32];
 static _Thread_local unsigned warning_site_count;
 static _Thread_local bool warning_limit_reported;
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static _Thread_local uintptr_t trace_ceiling;
+#endif
 void recomp_set_trace_ceiling(uintptr_t ceiling) {
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     trace_ceiling = ceiling;
+#else
+    (void)ceiling;
+#endif
 }
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *opaque) {
     RecompFailureInfo *info = opaque;
     /* An optional stack boundary can limit diagnostic unwinding. */
@@ -61,6 +69,7 @@ static _Unwind_Reason_Code trace_frame(struct _Unwind_Context *context, void *op
 /* Resolve return PCs at the calling instruction, rather than the next line.
  * Batch each ELF image into one addr2line invocation. link_map.l_addr is zero
  * for non-PIE executables and the relocation bias for PIE/shared libraries. */
+#ifndef __EMSCRIPTEN__
 static void resolve_trace(RecompFailureInfo *info) {
 #if defined(RECOMP_DEBUG) && (defined(__linux__) || defined(_WIN32))
     /* Reports are consumed synchronously, including forwarding from guest threads. */
@@ -171,7 +180,14 @@ static void resolve_trace(RecompFailureInfo *info) {
     (void)info;
 #endif
 }
+#endif
 static void capture_trace(RecompFailureInfo *info) {
+#ifdef __EMSCRIPTEN__
+    char stack[8192];
+    info->native_frame_count = 0;
+    emscripten_get_callstack(EM_LOG_JS_STACK, stack, sizeof(stack));
+    fprintf(stderr, "WebAssembly call stack:\n%s\n", stack);
+#else
 #ifdef _WIN32
     info->native_frame_count = CaptureStackBackTrace(1, 64, info->native_frames, NULL);
 #else
@@ -194,6 +210,7 @@ static void capture_trace(RecompFailureInfo *info) {
     }
 #ifndef _WIN32
     free(symbols);
+#endif
 #endif
 }
 

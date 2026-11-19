@@ -1,5 +1,7 @@
 # Game support
 
+The experimental [WebAssembly target](webassembly.md) starts with SM64 US using compiled graphics RSP microcode and WebGL. See the browser validation notes for tested scenes and configurations.
+
 These are the established port milestones, not new full-game acceptance claims.
 
 - **Bad Apple!! demo**: Build-time download of a pinned external ROM; no ROM is bundled. Windows Debug/Release builds and rendered playback pass. The MMIO store bypass and recurring audio starvation are fixed. A 60-second Release trace had one startup underrun and none afterward; a 30-second Debug trace had zero underruns, exact ROM PCM output and a verified rendered frame. Neither run reset the audio queue. Full-loop, listening and Linux acceptance remain unverified. See the [demo notes](../games/bad-apple/README.md).

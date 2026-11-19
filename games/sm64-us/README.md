@@ -47,3 +47,7 @@ Word shifts retain the fix for MSVC optimized sign extension that affected
 packed physics parameters. The standalone physics regression harness and
 scripted validation frontend have been removed; Debug now uses the common
 frame loop, replay and capture options.
+
+## Browser preview
+
+See [WebAssembly build and validation](../../docs/webassembly.md) for the experimental Emscripten/GLES2 target.
