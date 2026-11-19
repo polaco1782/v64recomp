@@ -27,23 +27,23 @@ These are the investigation tools and when to use them:
 | Tool | Purpose |
 | --- | --- |
 | GDB | Stop at runtime failures, inspect host and guest state, catch native faults, interrupt hangs, set watchpoints. |
-| `tools/diagnose_rom.py` | Collect verified mapping, coverage, callback, crash and RSP evidence for one ROM issue; see [the model workflow](rom-diagnostics.md). |
+| `tools/analyze.py diagnose` | Collect verified mapping, coverage, callback, crash and RSP evidence for one ROM issue; see [the model workflow](rom-diagnostics.md). |
 | `tools/compare_native_hooks.py` | Report potential SDK variants for full-body/ABI review against exact catalog bodies in private reference ROMs; never installs hooks. |
-| `tools/inspect_sdk_symbols.py` | Match SDK signatures in the verified analysis image and report names, confidence, caller evidence, hardware-access candidates and native-handler coverage without changing discovery. |
+| `tools/analyze.py sdk-symbols` | Match SDK signatures in the verified analysis image and report names, confidence, caller evidence, hardware-access candidates and native-handler coverage without changing discovery. |
 | GNU binutils: `nm`, `addr2line`, `objdump` | Find missing host symbols and resolve native addresses against the matching executable. |
-| `tools/inspect_rom.py` | Identify a ROM before a profile exists; show normalized hashes, header, bytes, disassembly and range hashes. |
+| `tools/analyze.py rom` | Identify a ROM before a profile exists; show normalized hashes, header, bytes, disassembly and range hashes. |
 | `tools/import_rom.py` | Normalize and import a ROM after its profile pins size and SHA-1. |
 | `tools/discover.py` | Follow CPU control flow using explicit load mappings; write `symbols.json`. |
 | `tools/translate.py` | Audit instructions and targets; write `coverage.json`, optionally emit C. |
 | `tools/generate_game.py` | Run registered game preparation, discovery, translation and CMake source splitting. |
 | `tools/package_rom.py` | Create an embedded content image by zeroing verified CPU instructions while preserving cartridge offsets; see [ROM packaging](rom-packaging.md). |
-| `tools/inspect_address.py` | Resolve a guest address to section, byte offset, entry/instruction ownership, gaps, errors and known references. |
-| `tools/disassemble_function.py` | Resolve a generated name such as `recomp_s3_7f068008` through `symbols.json` and show verified MIPS plus recompiled x86-64 instructions when a build executable is available. |
-| `tools/dump_cpu_code.py` | Export all checked CPU text as a packed binary, disassembly and address manifest, plus the separate IPL3 boot block; see [CPU code dumps](dumping-cpu-code.md). |
-| `tools/inspect_callbacks.py` | Find callback address materializations, direct/checked callers and bounded data pointers; show MIPS context, ownership and fingerprints without changing discovery metadata. |
-| `tools/inspect_function_candidates.py` | Find potentially missing entries from owned address-producing code, image-wide pointers, stack frames and direct calls in candidate bodies; report bounded control-flow and ownership checks. |
-| `tools/export_analysis_rom.py` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
-| `tools/inspect_crash.py` | Summarize a controlled crash and resolve native frames with `addr2line`. |
+| `tools/analyze.py address` | Resolve a guest address to section, byte offset, entry/instruction ownership, gaps, errors and known references. |
+| `tools/analyze.py disassemble` | Resolve a generated name such as `recomp_s3_7f068008` through `symbols.json` and show verified MIPS plus recompiled x86-64 instructions when a build executable is available. |
+| `tools/analyze.py dump-cpu` | Export all checked CPU text as a packed binary, disassembly and address manifest, plus the separate IPL3 boot block; see [CPU code dumps](dumping-cpu-code.md). |
+| `tools/analyze.py callbacks` | Find callback address materializations, direct/checked callers and bounded data pointers; show MIPS context, ownership and fingerprints without changing discovery metadata. |
+| `tools/analyze.py candidates` | Find potentially missing entries from owned address-producing code, image-wide pointers, stack frames and direct calls in candidate bodies; report bounded control-flow and ownership checks. |
+| `tools/analyze.py export-rom` | Export and verify the same prepared CPU image used by discovery, including decompressed code. |
+| `tools/analyze.py crash` | Summarize a controlled crash and resolve native frames with `addr2line`. |
 | `tools/desktop_replay.py` | Replay text inputs as keyboard actions in a launched app's own X11 window; capture Release scenes and record the bounded process result. |
 | Optional MIPS disassembler/decompiler, such as Ghidra | Investigate loaders, BSS bounds, callbacks and data structures. Configure big-endian VR4300/MIPS III semantics and the verified address mapping. |
 
@@ -55,7 +55,7 @@ MIPS decoding. A matching original ELF/map helps name functions but is not requi
 ## 2. Identify the exact revision before importing it
 
 ```sh
-.venv/bin/python tools/inspect_rom.py '/path/to/New Game.v64'
+.venv/bin/python tools/analyze.py rom '/path/to/New Game.v64'
 ```
 
 Record the normalized SHA-1, ROM size, header entry, country and revision bytes in
@@ -86,7 +86,7 @@ For example, Duke's profile maps ROM `0x1000` to guest `0x8004b400`. Therefore
 guest `0x8004b450` corresponds to ROM `0x1050`. Inspect it with:
 
 ```sh
-.venv/bin/python tools/inspect_rom.py local/duke.us.z64 \
+.venv/bin/python tools/analyze.py rom local/duke.us.z64 \
   --offset 0x1050 --vram 0x8004b450 --size 0x40
 ```
 
@@ -214,7 +214,7 @@ another ROM's addresses or accept a matching prologue as identification.
 Before manually naming an SDK routine, run the diagnostic symbol scanner:
 
 ```sh
-.venv/bin/python tools/inspect_sdk_symbols.py --game newgame-us \
+.venv/bin/python tools/analyze.py sdk-symbols --game newgame-us \
   --metadata build/newgame-us-report/symbols.json \
   --output build/newgame-us-report/sdk-symbols
 ```
@@ -271,7 +271,7 @@ Run the static preflight before the first desktop run and after each reviewed
 discovery batch:
 
 ```sh
-.venv/bin/python tools/review_candidates.py --game newgame-us \
+.venv/bin/python tools/analyze.py review-candidates --game newgame-us \
   --build-dir build/newgame-us-debug --preflight
 ```
 
@@ -299,8 +299,8 @@ together. Equal offsets in unrelated structures are only a search hint.
 `summary.json` also lists calls that still rely on runtime registered targets;
 zero translation errors does not establish complete callback coverage.
 
-`tools/probe_function_roots.py` follows a proposed root through normal discovery
-without changing checked inputs. `tools/review_candidates.py --roots-only --codex`
+`tools/analyze.py probe-roots` follows a proposed root through normal discovery
+without changing checked inputs. `tools/analyze.py review-candidates --roots-only --codex`
 uses that probe, asks Codex to verify the entry and its pointer source, and
 keeps an accepted root in `profile.toml` only after ROM and generation checks.
 Subsequent builds reuse the saved root without another AI review. The
@@ -346,7 +346,7 @@ To collect source evidence for existing entries too, such as a callback that
 previously crashed and has since been registered:
 
 ```sh
-.venv/bin/python tools/inspect_function_candidates.py --game duke-zero-hour-us \
+.venv/bin/python tools/analyze.py candidates --game duke-zero-hour-us \
   --metadata build/duke-zero-hour-us-debug/generated/duke-zero-hour-us/symbols.json \
   --include-registered --output build/duke-zero-hour-functions.json
 ```
@@ -585,7 +585,7 @@ For a missing **guest** function, take the reported target and the caller's gues
 PC/RA from GDB or the crash report. Inspect the matching metadata, for example:
 
 ```sh
-.venv/bin/python tools/inspect_address.py \
+.venv/bin/python tools/analyze.py address \
   --metadata build/duke-us-debug/generated/duke-us/symbols.json \
   --address 0x8004b450 --rom local/duke.us.z64
 ```
@@ -599,10 +599,10 @@ bytes. It does not recover dynamic callers or prove which section is active.
 For a compressed/paged port, export the prepared image first:
 
 ```sh
-.venv/bin/python tools/export_analysis_rom.py --game newgame-us \
+.venv/bin/python tools/analyze.py export-rom --game newgame-us \
   --metadata build/newgame-us-debug/generated/newgame-us/symbols.json \
   --output build/newgame-us-debug/analysis-rom.bin
-.venv/bin/python tools/inspect_address.py \
+.venv/bin/python tools/analyze.py address \
   --metadata build/newgame-us-debug/generated/newgame-us/symbols.json \
   --rom build/newgame-us-debug/analysis-rom.bin --address 0x80001000
 ```
@@ -659,7 +659,7 @@ produce substantial output. See [debugging options](debugging.md) for availabili
 For a controlled failure routed through `recomp_fail`:
 
 ```sh
-.venv/bin/python tools/inspect_crash.py /path/to/crash-report.json
+.venv/bin/python tools/analyze.py crash /path/to/crash-report.json
 ```
 
 Omitting the path selects the latest report under `local/crashes/` or `build/`,

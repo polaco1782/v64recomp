@@ -9,7 +9,7 @@ import sys
 
 from code_inventory import load_inventory
 from common import RecompError, load_profile, load_rom, write_json
-from export_analysis_rom import load_analysis_rom
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT
 
 

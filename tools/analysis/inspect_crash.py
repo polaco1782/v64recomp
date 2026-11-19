@@ -81,7 +81,7 @@ def main() -> int:
     parser.add_argument('--no-resolve', action='store_true', help='print recorded frames without using possibly rebuilt binaries or sources')
     args=parser.parse_args();path=args.report
     if path is None:
-        directory=Path(__file__).resolve().parents[1]
+        directory=Path(__file__).resolve().parents[2]
         reports=[p for base in (directory/'local/crashes',directory/'build') for pattern in ('crash-*.json','warning-*.json','*.crash.json') for p in base.rglob(pattern)]
         if not reports:raise ValueError(f'no crash reports in {directory}')
         path=max(reports,key=lambda p:p.stat().st_mtime_ns)

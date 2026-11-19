@@ -16,7 +16,7 @@ import sys
 import zlib
 
 from common import RecompError, load_metadata, load_profile, validate_recomp_prefix
-from export_analysis_rom import load_analysis_rom
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT
 from symbol_database import DATABASE, load_database
 

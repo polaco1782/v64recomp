@@ -189,8 +189,8 @@ offset, instruction bytes, and evidence for the proposed classification.
 | Overlapping functions or nonsense instructions | Revisit code/data classification, function ownership, shared tails, delay slots, section overlap, decompression, and relocations. Do not grow a code region merely to absorb the error. |
 | Privileged instruction, hardware access, or unknown SDK routine | Determine whether this is an OS/device boundary, a game-specific pager, or real CPU code. Use the shared native catalog/runtime or a checked game adapter as appropriate. |
 
-For callback discovery, use `tools/inspect_callbacks.py` and
-`tools/inspect_function_candidates.py`, which share the scans in
+For callback discovery, use `tools/analyze.py callbacks` and
+`tools/analyze.py candidates`, which share the scans in
 `tools/metadata_candidates.py`. Adapt ranges to the new game and exclude known
 switch tables/data.
 Treat pointer scans, stack-prologue scans, and valid-looking MIPS as candidates.
@@ -203,7 +203,7 @@ Use the maintained command-line tools before writing investigation snippets:
   replay and review it again after a coherent discovery correction. Generation
   already writes `function-candidates.json`; inspect its `likely` candidates and
   `indirect_tables`, not just summary counts. To print the ranked table/candidate
-  evidence, run `tools/inspect_function_candidates.py --game <game> --metadata
+  evidence, run `tools/analyze.py candidates --game <game> --metadata
   <matching-symbols.json> --output build/<game>-function-candidates.json` with the
   repository Python environment. Prefer the table families connected to owned
   `jalr` call sites over isolated raw pointers. `indexed-table-call` references
@@ -215,16 +215,16 @@ Use the maintained command-line tools before writing investigation snippets:
   out a real callback. Never bulk-register
   the candidate list. See [ROM diagnostics](docs/rom-diagnostics.md) for report
   interpretation. For already registered targets, use
-  `tools/inspect_function_candidates.py --game <game> --metadata PATH
+  `tools/analyze.py candidates --game <game> --metadata PATH
   --include-registered --output build/<game>-function-candidates.json`.
 - A table with an unproved selector range cannot become a checked
   `function_tables` declaration. Its exact ROM pointer slots may still support
   individual roots after the consumer, distinct entry boundaries, closed bodies,
   and full discovery and translation are checked. Leave ambiguous slots out.
 - When likely candidates form a disconnected call tree, run
-  `tools/probe_function_roots.py --game <game> --build-dir build/<game>-debug`
+  `tools/analyze.py probe-roots --game <game> --build-dir build/<game>-debug`
   to see what a temporary root would discover. Use
-  `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+  `tools/analyze.py review-candidates --game <game> --build-dir build/<game>-debug
   --roots-only --codex` for bounded Codex review; accepted entries are written
   to the checked profile after ROM and generation validation. The CMake
   `candidate-review-roots` target runs this review explicitly. A dry-run
@@ -247,10 +247,10 @@ and document the verified producer/consumer ABI in the port notes. Retain a
 checked entry when the flow requires manual evidence that shared inference
 cannot establish. Do not copy speculative candidate lists into checked
 inventories. Normal generation must not rewrite checked inputs.
-- `tools/disassemble_function.py recomp_s<id>_<address> --game <game>
+- `tools/analyze.py disassemble recomp_s<id>_<address> --game <game>
   --metadata build/<game>-debug/generated/<game>/symbols.json` resolves a native
   stack's generated function name and disassembles its verified owned instructions.
-- `tools/inspect_callbacks.py --game <game> --metadata PATH --target ADDRESS`
+- `tools/analyze.py callbacks --game <game> --metadata PATH --target ADDRESS`
   shows direct callers, checked transfers and address materializations, with MIPS
   context including delay slots. Repeat `--target` to inspect both a callback and
   the traversal/registration function that receives it. Increase `--before` or
@@ -301,7 +301,7 @@ missing common service in the shared runtime. Reserve explicit game hooks for
 custom startup, hardware, loaders, or other game-specific behavior.
 
 For an unidentified SDK routine or hardware-register failure, use
-`tools/inspect_sdk_symbols.py --game <game> --metadata <matching-symbols.json>
+`tools/analyze.py sdk-symbols --game <game> --metadata <matching-symbols.json>
 --output <new-build-directory>` before manually reconstructing its name. Read
 `report.txt` / `report.json` for confidence, native-handler coverage, caller
 evidence and direct hardware-access candidates. The default scans discovered
@@ -328,7 +328,7 @@ cannot stand in for behavior reached by the acceptance replay.
 ## 5. Run, diagnose, fix, and replay
 
 Before the first desktop run, and after each coherent discovery correction,
-run `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+run `tools/analyze.py review-candidates --game <game> --build-dir build/<game>-debug
 --preflight`. Review its callback families, selected translation gaps and active
 SDK boundary candidates in batches. Repeat static discovery/translation as the
 reviewed graph expands, then build and exercise runtime behavior. Do not use
@@ -355,13 +355,13 @@ started is not a passed run.
 
 For crashes, retain the matching executable/generated sources, failure JSON,
 RDRAM snapshot, recent calls, thread registers, and task state. Use
-`tools/inspect_crash.py`, Debug instruction PCs, and GDB when needed. Reproduce
+`tools/analyze.py crash`, Debug instruction PCs, and GDB when needed. Reproduce
 the exact failing input/path, explain the causal chain from evidence, fix the
 owning layer, regenerate/rebuild, and replay beyond the previous failure point.
 For hangs, inspect runnable/blocked threads, queue ownership, event delivery,
 guest time, busy waits, and worker completion rather than raising budgets alone.
 
-Start a focused ROM investigation with `tools/diagnose_rom.py --game <game>
+Start a focused ROM investigation with `tools/analyze.py diagnose --game <game>
 --metadata <matching-symbols.json> --crash <failure.json> --output <new-build-directory>`.
 It verifies the game's analysis image and aggregates coverage, address ownership,
 callback producers, crash state and task fingerprints. Without `--crash`, it
@@ -411,7 +411,7 @@ guest threads, shared runtime, audio, RT64 and driver work before optimizing.
 Thread CPU percentages use one logical CPU as 100%; function sample percentages
 describe the selected samples. Self cost excludes callees; inclusive/Children
 cost overlaps and must not be summed. Resolve `recomp_s<section>_<address>` with
-`tools/disassemble_function.py` and the capture's matching generated metadata.
+`tools/analyze.py disassemble` and the capture's matching generated metadata.
 Keep the matching executable/generated sources. Built-in frame-pointer stacks
 can be incomplete; use perf for DWARF unwinding or kernel attribution.
 For an optimization, record focused correctness checks, helper timings and
@@ -423,7 +423,7 @@ For an unsupported graphics/audio task, inspect the captured task bytes before
 changing a microcode profile:
 
 ```sh
-.venv/bin/python tools/inspect_rsp_task.py local/crashes/<game>/crash-<id>.json \
+.venv/bin/python tools/analyze.py rsp-task local/crashes/<game>/crash-<id>.json \
   --rom local/<original-rom>.z64 --commands 32 \
   --extract build/<game>-report/rsp-task
 ```
@@ -521,7 +521,7 @@ diff against the starting status and identify files created by this work.
 - Remove temporary tests, throwaway harnesses, one-off ROM scanners, scratch
   scripts, experimental patches, duplicate fixtures, unused copied game code,
   obsolete launchers, and abandoned configuration. Consolidate useful analysis
-  into maintained root-level tools or the shared Debug support.
+  under `tools/analysis/` or in the shared Debug support.
 - Remove diagnostic logging/probes from normal Release play. Keep useful
   reproducible replay inputs and maintained investigation tools;
   remove obsolete validation harnesses without masking unresolved failures.

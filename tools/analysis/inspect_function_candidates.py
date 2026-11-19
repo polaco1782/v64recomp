@@ -15,15 +15,17 @@ import struct
 import sys
 
 from common import RecompError, load_metadata, write_json
-from emit import SUPPORTED, decode, target
-from export_analysis_rom import load_analysis_rom
+from emit import SUPPORTED, constant_condition, decode, target
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES
-from metadata_candidates import indexed_call_tables, indirect_field_calls, materialized_entries, owned_ranges, shared_entry_slots
+from metadata_candidates import (indexed_call_tables, indirect_field_calls, materialized_entries,
+                                 section_pages, shared_entry_slots, visible_shared_slots)
 
 
 def probe_body(rom, section, address, owners, entries, transfers, limit, shared_entries=()):
     """A bounded control-flow check, not proof of function ownership or ABI."""
     pending, visited, errors, calls = deque([address]), set(), [], []
+    expanded = set()
     terminals, indirect_calls, returns = 0, 0, 0
     sid, low, high = section['id'], section['vram'], section['vram']+section['size']
 
@@ -46,10 +48,14 @@ def probe_body(rom, section, address, owners, entries, transfers, limit, shared_
         else:
             pending.append(destination)
 
-    while pending and len(visited) < limit and len(errors) < 8:
+    while pending and len(errors) < 8:
         pc = pending.popleft()
-        if pc in visited:
+        if pc in expanded:
             continue
+        if pc not in visited and len(visited) >= limit:
+            error(pc, 'bounded probe stopped before all paths were checked')
+            break
+        expanded.add(pc)
         if (sid, pc) in owners and not (pc == address and (sid,pc) in shared_entries):
             error(pc, 'overlaps an already owned instruction')
             continue
@@ -72,6 +78,9 @@ def probe_body(rom, section, address, owners, entries, transfers, limit, shared_
                 or (sid,pc+4) in owners):
             error(pc, 'missing, unsupported or already owned delay slot')
             continue
+        if pc+4 not in visited and len(visited) >= limit:
+            error(pc, 'bounded probe stopped before its delay slot was checked')
+            break
         visited.add(pc+4)
         if i.opcode == 'jr' and i.rs == 31:
             terminals += 1
@@ -93,19 +102,17 @@ def probe_body(rom, section, address, owners, entries, transfers, limit, shared_
                 calls.extend(dict(pc=pc,vram=a) for a in checked['targets'])
                 terminals += 1
         elif i.opcode in ('jal','bltzal','bgezal','bltzall','bgezall'):
-            calls.append(dict(pc=pc,vram=target(i)))
+            if i.opcode == 'jal' or constant_condition(i) is not False:
+                calls.append(dict(pc=pc,vram=target(i)))
             pending.append(pc+8)
         elif i.opcode == 'j':
             local(target(i),pc)
         else:
-            always = i.opcode=='b' or i.opcode in ('beq','beql') and i.rs==i.rt
-            never = i.opcode in ('bne','bnel') and i.rs==i.rt
-            if not never:
+            outcome = constant_condition(i)
+            if outcome is not False:
                 local(target(i),pc)
-            if not always:
+            if outcome is not True:
                 pending.append(pc+8)
-    if pending:
-        error(address,'bounded probe stopped before all paths were checked')
     if not errors and not terminals:
         error(address,'no return, tail transfer or trap was established')
     first = []
@@ -144,8 +151,9 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
     table_candidates = []
     skipped_interior = 0
 
+    pages = section_pages(sections)
     def mappings(address, size=16, preferred=None):
-        matches = [s for s in sections if not address % 4
+        matches = [s for s in pages.get(address >> 12, ()) if not address % 4
                    and s['vram'] <= address and address + size <= s['vram'] + s['size']]
         selected = [s for s in matches if s['id'] == preferred]
         return selected or matches
@@ -200,6 +208,7 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                    and other['vram'] < section['vram'] + section['size']
                    for other in sections)
         }
+        shared_by_section = visible_shared_slots(sections, overlapping_sections, shared_entries)
         unambiguous_sections = [dict(section, section=section['id']) for section in sections
                                 if section['id'] not in overlapping_sections]
         text_by_section = {
@@ -245,9 +254,8 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                         record(address,dict(kind='direct-call',pc=pc,expected_word=word,
                             rom_offset=offset,section=function['section'],function=function['name']))
             candidates = materialized_entries(rom,{'functions':[]},text_by_section[function['section']],
-                                               source_ranges=owned_ranges(function),
-                                               shared_entries={pc for sid,pc in shared_entries
-                                                   if sid == function['section'] or sid not in overlapping_sections})
+                                               source_function=function,
+                                               shared_entries=shared_by_section[function['section']])
             for candidate in candidates:
                 for use in candidate['address_uses']:
                     record(candidate['vram'],dict(use,section=function['section'],
@@ -265,7 +273,7 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             words, targets = 0, set()
             stop = 'scan-limit'
             for index in range(256):
-                address = base + index * 4
+                address = base + index * use['stride']
                 offset = section['rom_offset'] + address - section['vram']
                 if address + 4 > section['vram'] + section['size']:
                     stop = 'mapping-end'

@@ -57,7 +57,7 @@ indirect calls, including a valid entry sharing a return delay slot.
 Before another executable run, review related callback families together:
 
 ```sh
-.venv/bin/python tools/review_candidates.py --game turok2-us \
+.venv/bin/python tools/analyze.py review-candidates --game turok2-us \
   --build-dir build/turok2-us-debug --preflight
 ```
 
@@ -127,7 +127,7 @@ launching the game (optional `--rt64` requires system `libxxhash`). Its database
 check does not execute or validate this game's custom C hook:
 
 ```sh
-.venv/bin/python tools/inspect_rsp_task.py local/crashes/turok2-us/REPORT.json \
+.venv/bin/python tools/analyze.py rsp-task local/crashes/turok2-us/REPORT.json \
   --rom local/turok2.us.z64 --rt64 --commands 16
 ```
 

@@ -119,10 +119,10 @@ Repeat the investigation with maintained tools, using this build's verified
 metadata rather than an arbitrary external map:
 
 ```powershell
-.venv/Scripts/python.exe tools/disassemble_function.py recomp_s0_800a2754 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
-.venv/Scripts/python.exe tools/inspect_callbacks.py --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --target 0x800a2754 --target 0x800a34e0 --before 10 --after 8
-.venv/Scripts/python.exe tools/disassemble_function.py recomp_s0_800998d4 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
-.venv/Scripts/python.exe tools/disassemble_function.py recomp_s0_800a34e0 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
+.venv/Scripts/python.exe tools/analyze.py disassemble recomp_s0_800a2754 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
+.venv/Scripts/python.exe tools/analyze.py callbacks --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --target 0x800a2754 --target 0x800a34e0 --before 10 --after 8
+.venv/Scripts/python.exe tools/analyze.py disassemble recomp_s0_800998d4 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
+.venv/Scripts/python.exe tools/analyze.py disassemble recomp_s0_800a34e0 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
 ```
 
 Check the call delay slots and the copy at `0x80099b44..0x80099b74`. Follow the

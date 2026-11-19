@@ -10,9 +10,9 @@ import sys
 
 from common import RecompError, load_metadata
 from emit import decode
-from export_analysis_rom import load_analysis_rom
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES
-from metadata_candidates import materialized_entries, owned_ranges, pointer_entries
+from metadata_candidates import materialized_entries, pointer_entries
 
 
 def number(value: str) -> int:
@@ -85,7 +85,7 @@ def inspect_callbacks(rom: bytes, metadata: dict, text: list[dict], data: list[d
     empty = {'functions': []}
     for function in metadata['functions']:
         source = dict(section=function['section'], vram=function['vram'], rom_offset=function['rom_offset'])
-        candidates = materialized_entries(rom, empty, text, source_ranges=owned_ranges(function))
+        candidates = materialized_entries(rom, empty, text, source_function=function)
         for candidate in candidates:
             address = candidate['vram']
             if not targets or address in targets:

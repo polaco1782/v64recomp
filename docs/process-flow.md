@@ -305,7 +305,7 @@ stacks and generated functions. See [CPU profiling](profiling.md).
 | Generation orchestration | [`tools/generate_game.py`](../tools/generate_game.py), [`cmake/Game.cmake`](../cmake/Game.cmake) |
 | Discovery and translation | [`tools/discover.py`](../tools/discover.py), [`tools/translate.py`](../tools/translate.py), [`tools/emit.py`](../tools/emit.py), [recompilation](recompilation.md) |
 | Native hook matching | [`tools/symbols.json`](../tools/symbols.json), [native hooks](native-hooks.md) |
-| Diagnostic SDK symbols and handler coverage | [`tools/inspect_sdk_symbols.py`](../tools/inspect_sdk_symbols.py), [SDK report interpretation](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps) |
+| Diagnostic SDK symbols and handler coverage | [`tools/analyze.py sdk-symbols`](../tools/analysis/inspect_sdk_symbols.py), [SDK report interpretation](native-hooks.md#identifying-rom-routines-and-reviewing-handler-gaps) |
 | Optional embedded content | [`tools/package_rom.py`](../tools/package_rom.py), [ROM content packaging](rom-packaging.md) |
 | Optional executable compression | [`cmake/PackUPX.cmake`](../cmake/PackUPX.cmake) |
 | Runtime entry and boot | `games/<game>/main.c`, [`runtime/game.c`](../runtime/game.c), [`runtime/bootstrap.c`](../runtime/bootstrap.c) |
@@ -316,4 +316,4 @@ stacks and generated functions. See [CPU profiling](profiling.md).
 | Graphics and textures | [`backends/rt64.cpp`](../backends/rt64.cpp), [`backends/textures.cpp`](../backends/textures.cpp), [textures](textures.md) |
 | Audio synthesis and output | [`backends/audio.c`](../backends/audio.c), [`third_party/rsp-hle/README.md`](../third_party/rsp-hle/README.md), [audio](audio.md) |
 | Shared renderer build | [`cmake/SharedRT64.cmake`](../cmake/SharedRT64.cmake) |
-| Crash investigation | [`tools/inspect_crash.py`](../tools/inspect_crash.py), [debugging](debugging.md) |
+| Crash investigation | [`tools/analyze.py crash`](../tools/analysis/inspect_crash.py), [debugging](debugging.md) |

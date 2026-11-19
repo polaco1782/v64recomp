@@ -16,10 +16,10 @@ import subprocess
 import sys
 
 from common import RecompError, load_profile
-from export_analysis_rom import load_analysis_rom
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT
-from inspect_address import inspect_address, read_inputs
-from inspect_callbacks import inspect_callbacks, mapped_range, print_report
+from analysis.inspect_address import inspect_address, read_inputs
+from analysis.inspect_callbacks import inspect_callbacks, mapped_range, print_report
 
 
 def integer(value):
@@ -153,14 +153,14 @@ def diagnose(args):
         (args.output / 'callbacks.txt').write_text(stream.getvalue())
         (args.output / 'callbacks.json').write_text(json.dumps(callbacks, indent=2) + '\n')
     if args.crash:
-        commands = [('crash.txt', 'inspect_crash.py', [str(args.crash)] + ([] if resolve_native else ['--no-resolve']))]
+        commands = [('crash.txt', 'crash', [str(args.crash)] + ([] if resolve_native else ['--no-resolve']))]
         task = crash.get('task')
         if task or len(crash.get('task_words', [])) == 16:
-            commands.append(('task.txt', 'inspect_rsp_task.py', [str(args.crash), '--rom',
+            commands.append(('task.txt', 'rsp-task', [str(args.crash), '--rom',
                 str(profile['game']['rom']), '--commands', '24', '--list-scale', str(args.list_scale)]))
         for filename, script, extra in commands:
             try:
-                result = subprocess.run([sys.executable, str(PROJECT / 'tools' / script), *extra],
+                result = subprocess.run([sys.executable, str(PROJECT / 'tools/analyze.py'), script, *extra],
                     capture_output=True, text=True, timeout=45, check=False)
                 (args.output / filename).write_text(result.stdout + result.stderr)
                 summary['subtools'].append(dict(tool=script, exit_code=result.returncode, output=filename))

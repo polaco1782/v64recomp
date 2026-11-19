@@ -142,7 +142,7 @@ def main() -> int:
     if args.rt64:
         if words[0] != 1:
             raise RecompError('--rt64 requires a graphics OSTask')
-        source = Path(__file__).resolve().parents[1] / 'third_party/rt64/src/gbi/rt64_gbi.cpp'
+        source = Path(__file__).resolve().parents[2] / 'third_party/rt64/src/gbi/rt64_gbi.cpp'
         result = rt64_microcode(snapshot,words,source)
         print('\nRT64 microcode database:')
         print(json.dumps(result,indent=2))

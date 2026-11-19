@@ -1,6 +1,6 @@
 # Collecting ROM failure evidence
 
-Use `tools/diagnose_rom.py` at the start of a model's ROM debugging pass. It
+Use `tools/analyze.py diagnose` at the start of a model's ROM debugging pass. It
 combines the maintained address, callback, crash and RSP inspectors into one
 private diagnostic directory. It reads the selected game's pinned cartridge,
 runs its preparation hook in temporary storage when needed, and verifies the
@@ -20,7 +20,7 @@ build; preserve the original files.
 Start with a concrete crash path, not an automatic latest-report selection:
 
 ```sh
-.venv/bin/python tools/diagnose_rom.py --game rayman2-us \
+.venv/bin/python tools/analyze.py diagnose --game rayman2-us \
   --metadata build/rayman2-us-debug/generated/rayman2-us/symbols.json \
   --crash local/crashes/rayman2-us/crash-ID.json \
   --output build/rayman2-us-report/crash-ID
@@ -35,7 +35,7 @@ unsupported functions in the adjacent `coverage.json`. `--coverage PATH` selects
 another coverage report with the same verified analysis identity:
 
 ```sh
-.venv/bin/python tools/diagnose_rom.py --game rayman2-us \
+.venv/bin/python tools/analyze.py diagnose --game rayman2-us \
   --metadata build/rayman2-us-report/symbols.json \
   --output build/rayman2-us-report/static-triage
 ```
@@ -45,7 +45,7 @@ bounded pointer-table range. Ends are exclusive. This Rayman example is its
 30-slot command table, whose slot zero is null:
 
 ```sh
-.venv/bin/python tools/diagnose_rom.py --game rayman2-us \
+.venv/bin/python tools/analyze.py diagnose --game rayman2-us \
   --metadata build/rayman2-us-debug/generated/rayman2-us/symbols.json \
   --address 0x800841a4 --data 1:0x800c8b3c:0x800c8bb4 \
   --output build/rayman2-us-report/command-callback
@@ -91,12 +91,12 @@ Generation also writes `function-candidates.json` before translation. Review it
 for missing entries before the next run. The shared scanner includes raw pointers
 in script/assets outside CPU mappings and address uses in owned code; candidate
 body checks expose unsupported transfers and overlaps. Use
-`tools/inspect_function_candidates.py --game <game> --metadata PATH
+`tools/analyze.py candidates --game <game> --metadata PATH
 --include-registered --output build/<game>-function-candidates.json` to recover
 source evidence for an entry that was registered after an older crash. A likely
 candidate still needs source/ABI and ownership review before becoming a root.
 
-Use `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+Use `tools/analyze.py review-candidates --game <game> --build-dir build/<game>-debug
 --preflight` to refresh a complete static review packet before launching again.
 It groups register/stack argument producers by shared callee and object-field
 pointer stores by possible consumers, retains every translation gap and links a
@@ -107,16 +107,16 @@ families together and repeat discovery/translation before runtime validation.
 The preflight is read-only with respect to profiles and executables; its output
 is under the selected build's `candidate-review/<game>/preflight/` directory.
 
-For a graphics-task failure, `tools/inspect_rsp_task.py REPORT.json --rom ROM
+For a graphics-task failure, `tools/analyze.py rsp-task REPORT.json --rom ROM
 --rt64` compares captured text/data bytes against the checked-out RT64 database
 using its exact XXH3 hashes and reports whether the matched variant has a
 decoder. This optional diagnostic requires system `libxxhash`. A recognized SDK
 name or database entry does not by itself establish decoder support. The check
 does not launch a game or validate custom renderer hooks/rendered output.
 
-The scanner also follows constant-base, word-indexed `lw` values into `jalr`
-through owned control flow. `indexed-table-call` references connect a candidate
-to its table slot, pointer load and call site. The CLI lists tables with likely
+The scanner follows indexed `lw` values into `jalr` through owned control flow.
+It scans the pointer field in 4-, 8-, 16- and 32-byte records. An
+`indexed-table-call` reference identifies the stride, slot, load and call site. The CLI lists tables with likely
 missing targets first, and prioritizes their candidates over raw pointer hits.
 The `indirect_tables` records describe a bounded scan (at most 256 words), its
 stopping reason and `bounds_verified = false`. A neighboring observed base can
@@ -140,7 +140,7 @@ For a hardware-register failure or unidentified SDK routine, generate a symbol
 report using the same verified metadata:
 
 ```sh
-.venv/bin/python tools/inspect_sdk_symbols.py --game hexen-us \
+.venv/bin/python tools/analyze.py sdk-symbols --game hexen-us \
   --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
   --scope sections --symbol osContReset --symbol __osSiRawStartDma \
   --symbol __osSiDeviceBusy --output build/hexen-us-report/sdk-reset
@@ -173,7 +173,7 @@ routine has no exact catalog match:
 ```
 
 For prepared games, export the exact analysis image first with
-`tools/export_analysis_rom.py` and pass that file to `--rom`. Reference files can
+`tools/analyze.py export-rom` and pass that file to `--rom`. Reference files can
 also be prepared images. Only complete catalog bodies whose SHA-256 verifies in
 a reference image are compared. References never become build dependencies.
 

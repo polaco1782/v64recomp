@@ -212,14 +212,14 @@ To display the original MIPS and available recompiled x86-64 instructions for a
 generated function in one run, use:
 
 ```sh
-.venv/bin/python tools/disassemble_function.py recomp_s3_7f068008
+.venv/bin/python tools/analyze.py disassemble recomp_s3_7f068008
 ```
 
 For an unidentified SDK routine or a hardware-register failure, generate a
 diagnostic SDK symbol/handler report against the matching build metadata:
 
 ```sh
-.venv/bin/python tools/inspect_sdk_symbols.py --game hexen-us \
+.venv/bin/python tools/analyze.py sdk-symbols --game hexen-us \
   --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
   --output build/hexen-us-debug/sdk-symbols
 ```

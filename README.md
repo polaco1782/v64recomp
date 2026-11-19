@@ -321,7 +321,8 @@ offline use.
 
 If something goes wrong, controlled failures in both builds save a JSON report
 and RAM snapshot to `local/crashes/<game>/`. Keep the executable and generated
-sources with the report; `tools/inspect_crash.py` helps inspect it. Host faults
+sources with the report. Run `.venv/bin/python tools/analyze.py crash REPORT.json`
+to inspect it, or use `tools/analyze.py --help` to list the ROM analysis commands. Host faults
 outside those checks need a debugger or core dump. See [debugging](docs/debugging.md)
 and [live code repair](docs/live-repair.md) for the next steps.
 

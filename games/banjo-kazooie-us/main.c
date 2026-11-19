@@ -138,6 +138,7 @@ int main(int argc, char **argv) {
     core_services = false;
     idle_configured = false;
     uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
+    recomp_copy_to_ram(&rt, 0x80000000, rom + BOOT_IPL3_ROM_OFFSET, BOOT_IPL3_COPY_SIZE);
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t n = 0; n < sizeof(boot_parameters) / sizeof(boot_parameters[0]); n++)
         recomp_store(&rt, boot_parameters[n][0], boot_parameters[n][1], 4);

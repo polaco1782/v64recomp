@@ -1940,6 +1940,18 @@
       "origin": "checked-root",
       "sha256": "19a4afc93d8bf65fc3c3c064b8439cb1762115fefdacacc7c1d3f4398f22cb45",
       "evidence": "Live missing-function review: published caller 0x24032c materializes 0x2407d8 in a3 at 0x240600/0x240604 and calls 0x226f90 at 0x240608 (0x0c089be4), with 8-byte elements in a2 from the delay slot. Consumer 0x226f90 saves a3 in s6 at 0x226fa0 and invokes jalr s6 at 0x22705c/0x22707c (0x02c0f809), passing two element pointers in a0/a1; its small-range helper 0x227184 also invokes the comparator at 0x2271d8. Distinct closed nine-instruction leaf at ROM 0x413d8, 0x24 bytes: compares float fields at +4, returns -1 or +1 in v0, and returns via jr ra at 0x2407f4 with nop delay slot. Previous function returns at 0x2407d0/0x2407d4; next prologue is 0x240800. No existing instruction owner in the normal generated metadata; the published caller's metadata independently inferred this call-argument callback."
+    },
+    {
+      "vram": 2517204,
+      "origin": "checked-root",
+      "sha256": "1ef4890ee83e6abf189826a53348f326525f7d65509da98372a841387fd2db00",
+      "evidence": "The saved dispatch at 0x26e0d8 has group 9 and row 1 in bytes +0x11 and +0x12 of s0. The group pointer at 0x800b264c selects 0x800b2578. Row 1, stride 8, has 0x2668d4 at 0x800b2580. Both pointer words and all 80 target code bytes match the pinned ROM. LW a3,0(s1) at 0x26e0ac feeds JALR a3, with a0 pointing to the actor, a1 to actor+0x140 and a2 to the event record. The previous body returns at 0x2668cc. This body restores its own frame at 0x26691c/0x266920."
+    },
+    {
+      "vram": 2326836,
+      "origin": "checked-root",
+      "sha256": "1406ea7076d9c41b615d55d56245cfad2ca7728c85d1b3506867c1e87972b521",
+      "evidence": "The event dispatcher scales s5 by eight at 0x236f00. Rows at 0x800ad080 contain a function pointer and flags. The recorded JALR v0 at 0x236f8c selected row 1 at 0x800ad088 via the LW at 0x236f88. The pointer word and complete 56-byte body match the ROM and the saved RAM. This entry has its own frame, calls 0x246690 and returns via jr ra."
     }
   ]
 }

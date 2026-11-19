@@ -52,6 +52,13 @@ their targets, and explores both possible branch paths unless the instruction
 itself proves one impossible. N64 branch delay slots are included in that
 analysis. This stage does not need gameplay or a recorded execution trace.
 
+For partial inventories, discovery recognizes a local switch when an unsigned
+`sltiu` bound feeds a `beq` to the default case, the guarded path scales the
+same index by four in or immediately after the delay slot, and `lui/addu/lw` loads the destination for `jr`. Discovery
+checks register flow and the mapped extent of the table, records its SHA-256,
+and follows the case blocks and their calls. An explicit profile transfer takes
+precedence. A branch into the middle of an inferred dispatch requires review.
+
 VR4300 branch-and-link instructions write `ra = PC + 8` even when untaken.
 Discovery therefore treats `BLTZAL $zero` as address materialization, without
 following its unreachable destination into possible inline data. Translation
@@ -85,6 +92,42 @@ encodes its destination, while `jalr` takes a destination from a register.
 Computed local jumps can select a target from a switch table. Profiles can supply
 checked targets and jump tables, and registered indirect calls can resolve
 against the compiled function registry at runtime.
+
+For a function table stored as records, set `count` to the number of records,
+`stride` to their size in bytes, and `field_offset` to the callback's byte
+offset within each record. The SHA-256 covers all records, including their
+non-pointer fields. Optional `indices` select record numbers. Set
+`nullable = true` when the consumer checks for a null method before calling it.
+A contiguous pointer table uses the defaults of four-byte stride and offset zero.
+
+Callback discovery follows a literal function pointer through a straight-line
+wrapper when the called function invokes the forwarded argument. It recognizes
+o32 stack saves, including a save in a call delay slot, and verifies that an
+intervening leaf call preserves the saved word. For deferred callbacks it also
+matches an argument stored at a fixed guest RAM address to a `jalr` through
+that same word. At a branch join, every incoming load must agree on the slot.
+The generated symbol metadata records the caller, forwarding or store site,
+and indirect call so the inference can be checked against the ROM.
+
+Discovery also recognizes adjacent calls that initialize and consume the same
+object. It follows a literal stored by the initializer when the consumer passes
+that field to a checked callback parameter. The initializer must return with
+the full pointer intact. The evidence records both calls and the field offset
+in the producer’s overlay.
+
+A conditional branch can also separate construction of a function pointer from
+the call that receives it. Discovery tracks the untaken path through an
+ordinary branch's delay slot. For a branch-likely instruction it restores the
+register and outgoing stack values from before the annulled slot. Direct branch
+targets, checked switch targets and continuation entries discard local constants.
+
+A partial port using registered indirect calls can declare a known callback
+argument in `discovery.callback_parameters`. Give the callee's `section`,
+`vram`, complete body `size` and `sha256`, the o32 argument `register` (4–7),
+and a reviewed consumer's `call_pc` and `expected_word` in the same section.
+Document how the argument reaches that consumer. Discovery checks the ROM body
+and JALR instruction, then follows literal callback arguments in translated
+callers. Each inferred entry records its producer and indirect call site.
 
 Partial ports may also declare `discovery.registered_direct_calls`, with `pc`,
 `expected_word`, `target`, and an optional source `section`. Each site must match
@@ -125,8 +168,8 @@ code, function pointers, computed addresses and data that decodes as valid MIPS
 instructions can leave ambiguities. Discovery reports unresolved transfers,
 conflicting instruction ownership and unvisited ranges for review.
 
-[The shared callback inspector](../tools/inspect_callbacks.py) and
-[function candidate inspector](../tools/inspect_function_candidates.py)
+[The shared callback inspector](../tools/analysis/inspect_callbacks.py) and
+[function candidate inspector](../tools/analysis/inspect_function_candidates.py)
 use pointer and address-materialization scans to propose missing roots.
 Proposals retain their source sites and fingerprints for review, followed by
 another discovery pass to validate ownership and indirect transfers.

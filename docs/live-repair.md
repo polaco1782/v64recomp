@@ -45,12 +45,12 @@ tables and independent function call trees, and writes
 `build/<game>-debug/candidate-review/<game>/ranked.json`. The report is read-only;
 its scanned table lengths are clues, not verified index bounds.
 
-For a missing function family, `tools/probe_function_roots.py` temporarily adds
+For a missing function family, `tools/analyze.py probe-roots` temporarily adds
 one candidate root, runs normal discovery against the pinned prepared ROM, and
 reports which other functions it reaches. For example:
 
 ```sh
-.venv/bin/python tools/probe_function_roots.py --game <game> \
+.venv/bin/python tools/analyze.py probe-roots --game <game> \
   --build-dir build/<game>-debug --address 0x8005d2cc
 ```
 
@@ -60,7 +60,7 @@ entry boundary and call tree, then save an accepted root in the game's
 candidate-review-roots`, or select specific addresses:
 
 ```sh
-.venv/bin/python tools/review_candidates.py --game <game> \
+.venv/bin/python tools/analyze.py review-candidates --game <game> \
   --build-dir build/<game>-debug --roots-only --codex \
   --root-address 0x8005d2cc
 ```
@@ -79,7 +79,7 @@ that evidence changes. The explicit `candidate-review-tables` and
 To opt into Codex review of the top three table groups, run:
 
 ```sh
-.venv/bin/python tools/review_candidates.py --game <game> \
+.venv/bin/python tools/analyze.py review-candidates --game <game> \
   --build-dir build/<game>-debug --codex --max-groups 3
 ```
 

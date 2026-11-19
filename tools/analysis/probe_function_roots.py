@@ -17,7 +17,7 @@ import tempfile
 
 from common import RecompError, load_profile, load_rom, write_json
 from discover import discover
-PROJECT = Path(__file__).resolve().parents[1]
+PROJECT = Path(__file__).resolve().parents[2]
 
 
 def prepare(game: str) -> tuple[bytes, dict]:

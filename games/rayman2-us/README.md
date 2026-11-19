@@ -200,7 +200,7 @@ The shared crash reporter writes failure JSON and word-swapped RDRAM under
 For a failure, collect evidence before rebuilding:
 
 ```sh
-.venv/bin/python tools/diagnose_rom.py --game rayman2-us \
+.venv/bin/python tools/analyze.py diagnose --game rayman2-us \
   --metadata build/rayman2-us-debug/generated/rayman2-us/symbols.json \
   --crash local/crashes/rayman2-us/crash-ID.json \
   --output build/rayman2-us-report/crash-ID

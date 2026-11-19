@@ -220,6 +220,51 @@
     <ClInclude Include="$(RecompRoot)third_party\minicoro\minicoro.h">
       <Filter>Header Files\third_party\minicoro</Filter>
     </ClInclude>
+    <None Include="$(RecompRoot)tools\analysis\diagnose_rom.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\disassemble_function.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\dump_cpu_code.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\export_analysis_rom.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_address.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_callbacks.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_crash.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_function_candidates.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_rom.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_rsp_task.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_sdk_symbols.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\probe_function_roots.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\review_candidates.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analysis\review_discovery.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\analyze.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\auto_live_function.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -244,25 +289,13 @@
     <None Include="$(RecompRoot)tools\desktop_replay.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\diagnose_rom.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\disassemble_function.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\discover.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\dump_cpu_code.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\embed_texture_pack.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\emit.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\export_analysis_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\fetch_rom.py">
@@ -280,27 +313,6 @@
     <None Include="$(RecompRoot)tools\input_evidence.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\inspect_address.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_callbacks.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_crash.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_function_candidates.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_rom.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_rsp_task.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\inspect_sdk_symbols.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\merge_symbol_database.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -316,9 +328,6 @@
     <None Include="$(RecompRoot)tools\package_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\probe_function_roots.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\profile_execution.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -326,12 +335,6 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\promote_live_patches.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\review_candidates.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
-    <None Include="$(RecompRoot)tools\review_discovery.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\setup_windows.ps1">
@@ -407,6 +410,9 @@
     </Filter>
     <Filter Include="Source Files\tools">
       <UniqueIdentifier>{654D8EE0-DBFF-5A9D-827B-C7EB348AD9D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\analysis">
+      <UniqueIdentifier>{34B6CC66-016C-575C-A2EE-FCDF26935678}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\tools\steamdeck">
       <UniqueIdentifier>{332DA6D4-0C2B-5159-989C-A3AFAEFA1BA2}</UniqueIdentifier>

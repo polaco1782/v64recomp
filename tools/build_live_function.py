@@ -43,7 +43,10 @@ def verified_leaf_table_reference(rom: bytes, metadata: dict, candidate: dict) -
                 or type(pc) is not int or type(load_pc) is not int):
             continue
         table = sections[sid]
-        slot = base + index * 4
+        stride = ref.get('stride', 4)
+        if type(stride) is not int or stride not in (4, 8, 16, 32):
+            continue
+        slot = base + index * stride
         offset = table['rom_offset'] + slot - table['vram']
         if (slot < table['vram'] or slot + 4 > table['vram'] + table['size']
                 or offset != ref.get('rom_offset')

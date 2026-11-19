@@ -12,7 +12,7 @@ import sys
 
 from common import RecompError, load_metadata, load_profile
 from emit import cname, decode_function
-from export_analysis_rom import load_analysis_rom
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT
 
 

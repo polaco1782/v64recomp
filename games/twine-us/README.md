@@ -61,6 +61,6 @@ Successful bounded startup runs do not establish title/menu or gameplay support.
 - `tools/symbols.json` contains the reviewed full-body SDK variants used here.
   Masked SDK matches alone never authorize a native replacement.
 
-Use `tools/diagnose_rom.py --game twine-us --metadata <matching-symbols.json>
+Use `tools/analyze.py diagnose --game twine-us --metadata <matching-symbols.json>
 --crash <failure.json> --output <new-directory>` for a controlled failure.
 Keep its executable, generated sources and shared crash artifacts together.

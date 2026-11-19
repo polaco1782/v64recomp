@@ -20,9 +20,9 @@ import subprocess
 import sys
 
 from common import RecompError, load_profile, write_json
-from export_analysis_rom import load_analysis_rom
+from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT, generate
-from probe_function_roots import call_edges, descendants, probe, ranked_roots
+from analysis.probe_function_roots import call_edges, descendants, probe, ranked_roots
 from promote_live_patches import add_roots, write_atomic
 
 
@@ -111,7 +111,7 @@ def table_groups(report: dict, checked_sites: set[int]) -> list[dict]:
                                         'sites': [], 'candidates': set(), 'likely': set()})
         group['sites'].append({name: table[name] for name in
                                ('pc', 'section', 'function', 'scanned_words', 'stop_reason',
-                                'bounds_verified', 'target_count') if name in table})
+                                'bounds_verified', 'target_count', 'stride') if name in table})
     for candidate in report['candidates']:
         if candidate.get('registered'):
             continue
@@ -291,7 +291,7 @@ def preflight(game: str, build_dir: Path) -> None:
         while (output / f'sdk-{number:03d}').exists():
             number += 1
         sdk = output / f'sdk-{number:03d}'
-    command = [sys.executable,str(PROJECT / 'tools' / 'inspect_sdk_symbols.py'),
+    command = [sys.executable,str(PROJECT / 'tools/analyze.py'), 'sdk-symbols',
                '--game',game,'--metadata',str(metadata_path),'--scope','sections',
                '--output',str(sdk),'--missing-only']
     with (output / 'sdk-scan.log').open('w') as log:
@@ -338,7 +338,8 @@ def ask_codex(game: str, group: dict, metadata_path: Path, output: Path) -> dict
         f'Candidate report: {metadata_path.with_name("function-candidates.json")}. '
         f'Inspect the producer code and exact index constraints, adjacent data, target ownership, '
         f'and ROM bytes. A checked function_tables declaration requires exact count/indices '
-        f'and every proposed call site. If selector bounds are unproved, you may instead '
+        f'and every proposed call site. For strided records use individual roots. '
+        f'If selector bounds are unproved, you may instead '
         f'propose individual function roots from this table: include only exact ROM pointer '
         f'slots with separate closed entry bodies, unambiguous ownership and a credible '
         f'function-pointer-table consumer. Roots assert entries, not selector bounds. '
@@ -413,6 +414,7 @@ def checked_table_lines(rom: bytes, metadata: dict, report: dict, group: dict, p
         if (type(pc) is not int or type(word) is not int or type(address) is not int
                 or type(count) is not int or pc not in sites or pc in existing_sites or pc in seen
                 or address != group['table_vram'] or not 0 < count <= 8192
+                or sites[pc].get('stride', 4) != 4
                 or count > sites[pc]['scanned_words'] or address % 4
                 or not isinstance(indices, list)
                 or any(type(i) is not int or not 0 <= i < count for i in indices)

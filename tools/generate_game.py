@@ -102,7 +102,9 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     original_rom=rom
     progress.stage('Checking generation cache')
     # Cache against ROM, Python implementation, and all checked game metadata.
-    inputs = sorted([*Path(__file__).parent.glob('*.py'),*Path(__file__).parent.glob('*.toml'),DATABASE,
+    tools_dir = PROJECT / 'tools'
+    inputs = sorted([*tools_dir.glob('*.py'), *tools_dir.glob('*.toml'), DATABASE,
+                     tools_dir / 'analysis' / 'inspect_function_candidates.py',
                      *base.glob('*.toml'),*base.glob('*.json'),*base.glob('*.py')])
     digest = hashlib.sha256(rom)
     for path in inputs:
@@ -127,7 +129,7 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     if hasattr(generator,'finalize_metadata'):generator.finalize_metadata(rom,metadata,profile)
     write_json(output/'symbols.json',metadata)
     metadata=load_metadata(output/'symbols.json',rom)
-    from inspect_function_candidates import inspect_candidates
+    from analysis.inspect_function_candidates import inspect_candidates
     progress.stage('Inspecting unregistered function candidates')
     candidates=inspect_candidates(rom,metadata)
     write_json(output/'function-candidates.json',candidates)

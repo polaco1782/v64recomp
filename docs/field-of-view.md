@@ -43,7 +43,7 @@ declarations supplies candidates rather than a C implementation of those bodies.
 For a libultra renderer, start with the maintained SDK inspector:
 
 ```powershell
-.venv/Scripts/python.exe tools/inspect_sdk_symbols.py --game duke-us --metadata build/duke-fov-analysis/symbols.json --symbol guPerspective --symbol guPerspectiveF --symbol guFrustum --symbol guFrustumF --output build/duke-fov-sdk
+.venv/Scripts/python.exe tools/analyze.py sdk-symbols --game duke-us --metadata build/duke-fov-analysis/symbols.json --symbol guPerspective --symbol guPerspectiveF --symbol guFrustum --symbol guFrustumF --output build/duke-fov-sdk
 ```
 
 Read `report.txt` and its caller evidence. These are identification candidates;
@@ -58,9 +58,9 @@ from an unrelated ROM.
 Disassemble the candidate and its caller using verified instruction ownership:
 
 ```powershell
-.venv/Scripts/python.exe tools/disassemble_function.py recomp_s0_800c3130 --game duke-us --metadata build/duke-fov-analysis/symbols.json --arch mips
-.venv/Scripts/python.exe tools/inspect_callbacks.py --game duke-us --metadata build/duke-fov-analysis/symbols.json --target 0x800c3130 --target 0x800c3360 --before 20 --after 8
-.venv/Scripts/python.exe tools/disassemble_function.py recomp_s0_80063bb8 --game duke-us --metadata build/duke-fov-analysis/symbols.json --arch mips
+.venv/Scripts/python.exe tools/analyze.py disassemble recomp_s0_800c3130 --game duke-us --metadata build/duke-fov-analysis/symbols.json --arch mips
+.venv/Scripts/python.exe tools/analyze.py callbacks --game duke-us --metadata build/duke-fov-analysis/symbols.json --target 0x800c3130 --target 0x800c3360 --before 20 --after 8
+.venv/Scripts/python.exe tools/analyze.py disassemble recomp_s0_80063bb8 --game duke-us --metadata build/duke-fov-analysis/symbols.json --arch mips
 ```
 
 Work backwards from each `jal` through argument construction and forwards from
@@ -123,7 +123,7 @@ and containing function with the disassembler. For example, Duke's matrix at
 
 ```powershell
 rg -n -C 4 -- '-0x1390' build/msvc/duke-us/debug/generated/duke-us
-.venv/Scripts/python.exe tools/disassemble_function.py recomp_s0_8006cb30 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
+.venv/Scripts/python.exe tools/analyze.py disassemble recomp_s0_8006cb30 --game duke-us --metadata build/msvc/duke-us/debug/generated/duke-us/symbols.json --arch mips
 ```
 
 Many unrelated addresses can share that low half. In this consumer,

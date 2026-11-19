@@ -157,7 +157,7 @@ while the map was open. These focused runs do not establish later hub progressio
 Inspect another captured RSP task without writing a snapshot decoder:
 
 ```sh
-.venv/bin/python tools/inspect_rsp_task.py local/crashes/hexen-us/crash-<id>.json \
+.venv/bin/python tools/analyze.py rsp-task local/crashes/hexen-us/crash-<id>.json \
   --rom local/hexen.us.z64 --list-scale 8 --opcode 0xb5 --commands 20 \
   --extract build/hexen-us-report/rsp-task
 ```
@@ -170,12 +170,12 @@ Use the maintained tools to investigate another callback without writing a ROM
 scanner. These commands prepare and verify the analysis image automatically:
 
 ```sh
-.venv/bin/python tools/disassemble_function.py recomp_s2_800f7a74 \
+.venv/bin/python tools/analyze.py disassemble recomp_s2_800f7a74 \
   --game hexen-us --metadata build/hexen-us-debug/generated/hexen-us/symbols.json
-.venv/bin/python tools/inspect_callbacks.py --game hexen-us \
+.venv/bin/python tools/analyze.py callbacks --game hexen-us \
   --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
   --target 0x800f4dc4 --target 0x800f7b98
-.venv/bin/python tools/inspect_callbacks.py --game hexen-us \
+.venv/bin/python tools/analyze.py callbacks --game hexen-us \
   --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
   --target 0x800dff00 --data .game:0x80130e70:0x80131008
 ```

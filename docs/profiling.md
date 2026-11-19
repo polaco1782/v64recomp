@@ -262,7 +262,7 @@ Map a generated function's guest address to discovery evidence using the
 existing address inspection tool:
 
 ```sh
-.venv/bin/python tools/inspect_address.py --help
+.venv/bin/python tools/analyze.py address --help
 ```
 
 For instruction-level inspection, run `perf annotate -i CAPTURE/perf.data` and

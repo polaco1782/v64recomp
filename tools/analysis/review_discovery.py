@@ -15,7 +15,7 @@ import sys
 
 from common import RecompError, load_profile, write_json
 from generate_game import GAMES, PROJECT
-from review_candidates import run
+from analysis.review_candidates import run
 
 
 def pending_requests(game: str, rom_sha1: str) -> list[str]:
@@ -45,9 +45,9 @@ def evidence_key(game: str) -> dict:
             checked_inputs.update(field.encode())
             checked_inputs.update(source.read_bytes())
     scanner = hashlib.sha256()
-    for source in ('inspect_function_candidates.py', 'metadata_candidates.py',
-                   'probe_function_roots.py', 'review_candidates.py',
-                   'review_discovery.py'):
+    for source in ('discover.py', 'analysis/inspect_function_candidates.py', 'metadata_candidates.py',
+                   'analysis/probe_function_roots.py', 'analysis/review_candidates.py',
+                   'analysis/review_discovery.py'):
         scanner.update((PROJECT / 'tools' / source).read_bytes())
     scanner.update((path.parent / 'generate.py').read_bytes())
     return {'rom_sha1': rom_sha1,

@@ -23,7 +23,33 @@ entry_vram = 0x80000400
 entry_inventory = "startup-entries.json"
 allow_registered_indirect_calls = true
 regions = [{name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0x4e70}]
-roots = [{name = "core1_main", vram = 0x8023da20}]
+roots = [
+  {name = "core1_main", vram = 0x8023da20},
+  # ROM-verified function roots.
+  {name = "live_8032b5c0", vram = 0x8032b5c0, section = ".core2"},
+]
+# ROM-verified callback arguments and a representative indirect consumer.
+callback_parameters = [
+  # Spawn queue entries hold the callback at +0, its arguments at +4..+20,
+  # and argument count at +24. The drain loop selects one of six call sites.
+  {section = ".core2", vram = 0x802c3bf8, register = 4, size = 144, sha256 = "7512232ed43d82d0182106a7df799007418180a88827a91e9b1cad1ace137d7f", call_pc = 0x802c3a94, expected_word = 0x0320f809},
+  {section = ".core2", vram = 0x802c3c88, register = 4, size = 180, sha256 = "19907f5f7e424d41e021949e2da3e833fd2731575129a67c72c11364cb299489", call_pc = 0x802c3abc, expected_word = 0x0320f809},
+  {section = ".core2", vram = 0x802c3d3c, register = 4, size = 212, sha256 = "b9fb7d7c7a4acf684f2f150fcff5fb078093390f34345792916dbef246638303", call_pc = 0x802c3ae8, expected_word = 0x0320f809},
+  {section = ".core2", vram = 0x802c3e10, register = 4, size = 244, sha256 = "5996000d1bde74e5228184d3cec6a6fa2b96a476e773e05a56c1ed1b4bf60bd3", call_pc = 0x802c3b14, expected_word = 0x0320f809},
+  {section = ".core2", vram = 0x802c3f04, register = 4, size = 272, sha256 = "7e943bb16b770f4f1892d94b4559797b6b16e66f93e201ca24f68de1d15957d4", call_pc = 0x802c3b44, expected_word = 0x0320f809},
+  {section = ".core2", vram = 0x802c4014, register = 4, size = 300, sha256 = "4236ad14b30cb9c66a4ffc59b98dc010e3cace9b3a1cce5c01b71786c6422d42", call_pc = 0x802c3b80, expected_word = 0x0320f809},
+  # Three marker collision methods at +0x0c/+0x10/+0x1c. Dispatcher
+  # 0x8032fff4 selects the field by event and checks it before the JALR.
+  {section = ".core2", vram = 0x803300a8, register = 5, size = 16, sha256 = "191ff1eb48f9a23274ca626d7ef428e87fb85a179600757444099177e2362cf6", call_pc = 0x80330028, expected_word = 0x0040f809},
+  {section = ".core2", vram = 0x803300a8, register = 6, size = 16, sha256 = "191ff1eb48f9a23274ca626d7ef428e87fb85a179600757444099177e2362cf6", call_pc = 0x80330044, expected_word = 0x0040f809},
+  {section = ".core2", vram = 0x803300a8, register = 7, size = 16, sha256 = "191ff1eb48f9a23274ca626d7ef428e87fb85a179600757444099177e2362cf6", call_pc = 0x80330060, expected_word = 0x0040f809},
+  # marker + 0x54, dispatched with the marker at 0x80330090.
+  {section = ".core2", vram = 0x803300b8, register = 5, size = 8, sha256 = "6abc61538f4d06d500789f33a2ecf0408dcf029892c46739b0f9ddd517f600ed", call_pc = 0x80330090, expected_word = 0x0040f809},
+  # Marker destruction loads its +0x30 method and calls it with the actor.
+  {section = ".core2", vram = 0x803300d8, register = 5, size = 8, sha256 = "266b396bfaef76e29007b871b4cd228089a883b5604ff730b57678734b6835d0", call_pc = 0x8032607c, expected_word = 0x0040f809},
+  # Sound source setter spills a1, then stores it at +0x30 of the source.
+  {section = ".core2", vram = 0x8030dd54, register = 5, size = 60, sha256 = "3e71151a52b4f34c5f2f203d6a83af9c3b18cf43624b165ce6d6d25d7176b3d2", call_pc = 0x8030e3e4, expected_word = 0x0040f809},
+]
 # spawnQueue_reset calls the active fight overlay's entry at a shared address.
 # Intro also has an independent sequence callback at 0x803863f0. Preserve the
 # ROM call and select its uniquely loaded registry entry at runtime.
@@ -31,6 +57,13 @@ registered_direct_calls = [
   {section = ".core2", pc = 0x802c384c, expected_word = 0x0c0e18fc, target = 0x803863f0},
 ]
 function_tables = [
+  # bsMethodsTable: setup at 0x802958a0 copies four nullable methods per
+  # player-state ID into 0x8037c700, stopping at the zero ID at 0x8036442c.
+  # The getters and JALRs below dispatch init, update, end and interrupt.
+  {section = ".core2", pc = 0x8029a7a0, expected_word = 0x0040f809, table_vram = 0x80363824, count = 154, stride = 20, field_offset = 4, nullable = true, sha256 = "ded1dca5a7a0476f66717e11374455d330630b1eda0ba5e2af9d53f8a58ebffa"},
+  {section = ".core2", pc = 0x8029a804, expected_word = 0x0040f809, table_vram = 0x80363824, count = 154, stride = 20, field_offset = 8, nullable = true, sha256 = "ded1dca5a7a0476f66717e11374455d330630b1eda0ba5e2af9d53f8a58ebffa"},
+  {section = ".core2", pc = 0x8029a764, expected_word = 0x0040f809, table_vram = 0x80363824, count = 154, stride = 20, field_offset = 12, nullable = true, sha256 = "ded1dca5a7a0476f66717e11374455d330630b1eda0ba5e2af9d53f8a58ebffa"},
+  {section = ".core2", pc = 0x8029a850, expected_word = 0x0040f809, table_vram = 0x80363824, count = 154, stride = 20, field_offset = 16, nullable = true, sha256 = "ded1dca5a7a0476f66717e11374455d330630b1eda0ba5e2af9d53f8a58ebffa"},
   # Hitbox collision predicates: 0x8033d410 loops exactly eleven times,
   # indexes eight-byte records, and compares the callback result to +4.
   {section = ".core2", pc = 0x8033d4c0, expected_word = 0x0320f809, table_vram = 0x80371dc0, count = 22, indices = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20], sha256 = "0ca7672dad2c14164b999b58482d5ad3ca5bf317d316f64057602693a937771f"},
@@ -239,6 +272,9 @@ overlays = [
 ]
 
 [bootstrap]
+# IPL3 copy loop at 0xa4000498 leaves this block at physical address zero.
+ipl3_rom_offset = 0x4c0
+ipl3_copy_size = 0x2a8
 initial_rom_offset = 0x1000
 initial_load_address = 0x80000400
 initial_load_size = 0x4e70
@@ -248,10 +284,6 @@ counter_hz = 46875000
 vi_period_ticks = 781250
 
 [bootstrap.parameters]
-# IPL3 copies ROM [0x4c0,0x768) to physical zero (copy loop 0xa4000498).
-# The perspective path at 0x8024c9c8 checks its retained word at +0x1d8:
-# ROM[0x698] = 0xac2b0010, whose sum with 0x53d4fff0 must be zero.
-0x800001d8 = 0xac2b0010
 0x80000300 = 1
 # Cartridge base and CIC-6103 ID written by IPL3 at 0xa4000708/06dc.
 # baModel_setScale (0x802920fc) quarters the player if the ID differs.

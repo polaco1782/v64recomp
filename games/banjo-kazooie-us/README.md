@@ -28,12 +28,12 @@ and [Debug options](../../docs/debugging.md).
 
 Keep the original protection checks running with the state left by this ROM's
 CIC-6103 IPL3. Its copy loop at `0xa4000498` moves ROM `[0x4c0,0x768)` to
-physical zero, leaving `0xac2b0010` at `0x1d8` (ROM offset `0x698`). The projection
-check at `0x8024c9c8` expects that word: zero instead forces near/far planes to
-750/1250 and clips the sky and scene into large screen-edge shapes. IPL3 also
-writes CIC ID 6103 at `0x80000310`; `baModel_setScale` quarters Banjo's scale if
-it differs. The checked profile supplies these boot parameters and the original
-cartridge base. Guest decompression and the original checksum paths remain in use.
+physical zero. The bootstrap restores that block from the cartridge. The
+projection check at `0x8024c9c8` expects `0xac2b0010` at `0x1d8`. A mismatch
+clips the sky and scene. The animation setter at `0x8028768c` expects
+`0x10000003` at `0x238` and adds three seconds to each requested duration on a
+mismatch. The profile also supplies the cartridge base and CIC ID 6103 at
+`0x80000310`, which the player model checks when setting its scale.
 
 Presentation uses the game's original 30 Hz rate. A 15-second Release comparison
 showed steady 33.3 ms game/display intervals with original-rate presentation;
@@ -51,6 +51,13 @@ checks and verified selector ranges. Geometry opcodes come from model assets
 without a CPU bounds check, so their verified pointer slots support individual
 entry roots rather than a bounded dispatch declaration. The CPU inventory stays
 partial; missing executable targets continue to fail explicitly.
+
+The player-state setup copies four callback fields from 154 cartridge records
+into a RAM table indexed by state ID. Discovery reads the four columns from the
+fingerprinted source table and registers every non-null method. This covers
+states such as landing and beak barge before an attract run enters them. Shared
+discovery follows the sprite callback through its global slot and collision
+predicates through their argument-forwarding wrapper.
 
 Reference: [Banjo-Kazooie decompilation at
 7b6a4c44](https://github.com/n64decomp/banjo-kazooie/tree/7b6a4c44a1a5bf80977adcf48d822ea9d6bdf899).

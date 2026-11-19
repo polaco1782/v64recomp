@@ -162,7 +162,7 @@ and an independently verified complete body.
 SDK variants. They include tail jumps and unresolved library-local labels; an
 entry with no signatures exists only as a reference target. These indexes do
 not establish which variant a game uses or provide its game-specific callers.
-Use `tools/inspect_callbacks.py` against matching ROM metadata for that evidence.
+Use `tools/analyze.py callbacks` against matching ROM metadata for that evidence.
 Data/address references remain in each signature and do not become call edges.
 
 ## Identifying ROM routines and reviewing handler gaps
@@ -170,7 +170,7 @@ Data/address references remain in each signature and do not become call edges.
 Run the SDK scanner against metadata from the build being investigated:
 
 ```sh
-.venv/bin/python tools/inspect_sdk_symbols.py --game hexen-us \
+.venv/bin/python tools/analyze.py sdk-symbols --game hexen-us \
   --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
   --output build/hexen-us-debug/sdk-symbols
 ```
@@ -200,7 +200,7 @@ cross-section call targets ambiguous.
 For the original Hexen failure, inspect the three relevant symbols explicitly:
 
 ```sh
-.venv/bin/python tools/inspect_sdk_symbols.py --game hexen-us \
+.venv/bin/python tools/analyze.py sdk-symbols --game hexen-us \
   --metadata build/hexen-us-debug/generated/hexen-us/symbols.json \
   --scope sections --symbol osContReset --symbol __osSiRawStartDma \
   --symbol __osSiDeviceBusy --output build/hexen-us-debug/sdk-reset

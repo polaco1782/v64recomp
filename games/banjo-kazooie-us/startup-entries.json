@@ -4731,6 +4731,34 @@
       "section": ".core2",
       "sha256": "7d7cca88653a592ab5045658df29b4fce65ffa1e1a8a518db9ebd46a4ff37f01",
       "vram": 2150214708
+    },
+    {
+      "evidence": "Particle callback passed in a2 at 0x802c7e1c to 0x8033e73c, stored in particle record +0x40 at 0x8033e798 and returned by getter 0x8033e888. Runtime requests this entry during the intro.",
+      "origin": "checked-root",
+      "section": ".core2",
+      "sha256": "59dd21fd885b83d8599f263eeefdaabd7a4345e7b9210fe0ca3697880044feb5",
+      "vram": 2150799620
+    },
+    {
+      "evidence": "Music oscillator initOsc. Configuration routine 0x8023fa64 materializes this address and stores it at +0x10 at 0x8023fb0c. The sequence player copies the three methods into +0x70/+0x74/+0x78 and calls them to initialize, advance and release oscillators. The concert reaches initOsc through JALR at 0x8025dd98.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "b927fe06b2c3ad7b0f3917e07d93a30b2b8e2b6011c16db3f7fbc6489584c778",
+      "vram": 2149840752
+    },
+    {
+      "evidence": "Music oscillator updateOsc. Configuration routine 0x8023fa64 materializes this address and stores it at +0x14 at 0x8023fb10. The sequence player copies the three methods into +0x70/+0x74/+0x78 and calls them to initialize, advance and release oscillators. The concert reaches initOsc through JALR at 0x8025dd98.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "f5bb71838e85b7e48abb7a33f5a3f55bd3a5b32cdcbc73cf797eabce5d159eb6",
+      "vram": 2149841036
+    },
+    {
+      "evidence": "Music oscillator stopOsc. Configuration routine 0x8023fa64 materializes this address and stores it at +0x18 at 0x8023fb18. The sequence player copies the three methods into +0x70/+0x74/+0x78 and calls them to initialize, advance and release oscillators. The concert reaches initOsc through JALR at 0x8025dd98.",
+      "origin": "checked-root",
+      "section": ".core1",
+      "sha256": "2bd5241743573eb5518626f65a88a245d1205e5407e5d32dd2132a97989f459f",
+      "vram": 2149841484
     }
   ],
   "format_version": 1,

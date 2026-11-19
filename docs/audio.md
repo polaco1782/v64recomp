@@ -36,7 +36,7 @@ PCM/ADPCM voices, output and history pointers, and optional delay/filter effects
 The shared adapter verifies its microcode profile and validates RAM spans and
 DSP buffer bounds before synthesis. RE2's data fingerprint covers its complete
 0x230-byte constant prefix; the next bytes contain mutable CPU-owned state.
-Inspect a captured task with `tools/inspect_rsp_task.py REPORT --list-scale 0xa10
+Inspect a captured task with `tools/analyze.py rsp-task REPORT --list-scale 0xa10
 --structured`.
 
 Quake II uses standard NAudio (`RECOMP_AUDIO_NAUDIO`). Its opcode 14 supplies

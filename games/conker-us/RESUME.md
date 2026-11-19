@@ -245,7 +245,7 @@ Raw discovery, without the explicit failing runtime boundaries:
 
 Debug captures/reports are in `build/conker-us-debug/debug-output/conker-us/`.
 Crashes and word-swapped RAM snapshots are under `local/crashes/conker-us/`.
-Use `tools/inspect_crash.py REPORT.json`. Guest aligned words in the RAM dump
+Use `tools/analyze.py crash REPORT.json`. Guest aligned words in the RAM dump
 are little-endian; guest bytes use physical offset XOR 3.
 
 ## ROM and mappings

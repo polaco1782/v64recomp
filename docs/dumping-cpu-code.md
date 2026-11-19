@@ -3,7 +3,7 @@
 Run the shared script against the pinned game ROM and matching discovery metadata:
 
 ```sh
-.venv/bin/python tools/dump_cpu_code.py --game sm64-us \
+.venv/bin/python tools/analyze.py dump-cpu --game sm64-us \
   --metadata build/sm64-us-release/generated/sm64-us/symbols.json \
   --output build/sm64-us-cpu-dump
 ```
