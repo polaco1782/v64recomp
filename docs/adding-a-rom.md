@@ -266,6 +266,39 @@ the CPU load mappings. A bounded body probe checks instruction validity, control
 flow and overlap with owned code; clean candidate bodies expose further direct
 callees. Checked switch-table words and already owned interiors are excluded.
 Stack frames supply additional candidates for routines without pointer references.
+
+Run the static preflight before the first desktop run and after each reviewed
+discovery batch:
+
+```sh
+.venv/bin/python tools/review_candidates.py --game newgame-us \
+  --build-dir build/newgame-us-debug --preflight
+```
+
+This refreshes report-only generation, ranks callback argument families, collects
+all selected translation gaps and scans SDK boundaries in one command. It leaves
+the profile and executable untouched. Reports live in
+`build/newgame-us-debug/candidate-review/newgame-us/preflight/`; read
+`summary.json`, `ranked.json` and the linked SDK report. Review a shared callee's
+callback ABI and all its producers together, register the verified family, then
+repeat until the newly exposed static gaps have been addressed. Build and run
+after that pass. Runtime evidence remains necessary for mutable dispatch tables,
+loaded sections and gameplay behavior.
+
+`stack-argument` evidence identifies an o32 outgoing stack word, its store and
+the call that receives it, including stores in delay slots. Unknown/partial
+overwrites, frame changes, joins and intervening calls discard that evidence.
+The ranked `callback_groups` collect targets by callee and argument location;
+an address passed as an integer or data pointer still needs to be ruled out.
+No argument family is automatically promoted solely because its bodies decode.
+
+The ranked `object_callback_groups` connect constant pointer stores with indirect
+calls loading the same object-field offset. Review the constructor, object
+identity (including embedded subobjects), consumer and full target bodies
+together. Equal offsets in unrelated structures are only a search hint.
+`summary.json` also lists calls that still rely on runtime registered targets;
+zero translation errors does not establish complete callback coverage.
+
 `tools/probe_function_roots.py` follows a proposed root through normal discovery
 without changing checked inputs. `tools/review_candidates.py --roots-only --codex`
 uses that probe, asks Codex to verify the entry and its pointer source, and
@@ -287,16 +320,27 @@ register copies along a callee's owned control flow to `jalr`, including delay
 slots, branch-likely paths and call clobbers. If an owned caller passes a constant
 mapped code address in that argument, discovery adds the unowned target and
 repeats until no new entries appear. Constant `jalr` targets are handled too.
+This also covers incoming o32 stack arguments when exact entry-relative SP
+adjustments prove the load in the straight entry prologue, before control flow
+or a possible incoming-area write. A callback
+already captured in a saved register remains traceable across calls.
+The fully fingerprinted shared `osCreateThread` handler establishes its deferred
+entry argument directly; discovery records that native ABI and body SHA-256.
+Constant calls to an entry sharing a translated function's terminal `jr ra`
+delay word remain discoverable. Only that single shared instruction is allowed;
+the ordinary overlap validator still rejects other interior entries.
 Recovered functions have origin `inferred-callback` and `entry_sources` recording
 the caller, instruction word, argument, callee and consuming indirect-call sites.
 Mutable memory values, raw pointer matches and prologue guesses do not authorize
 this inference; complete checked code inventories retain their existing entries.
 
-Reports in `build/` are ignored by Git. Preserve reviewed, validated discoveries
-in the game's checked `startup-entries.json` or code inventory, with its analysis
-ROM identity, entry fingerprint and useful source evidence. An inferred callback
-can be retained as a `checked-root` after review. Generation does not rewrite
-these inputs; speculative candidates remain diagnostic output.
+Reports in `build/` are ignored by Git. Preserve manual callback decisions in the
+game's checked `startup-entries.json` or code inventory, with its analysis ROM
+identity, entry fingerprint and useful source evidence. A callback fully
+recovered by proven shared inference needs no duplicate root; inspect its
+`entry_sources` and document the reviewed ABI in the port notes. Keep a
+`checked-root` when manual evidence is still required. Generation does not
+rewrite these inputs; speculative candidates remain diagnostic output.
 
 To collect source evidence for existing entries too, such as a callback that
 previously crashed and has since been registered:
@@ -412,6 +456,9 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    from submitted tasks. Supply checked audio profiles and any required graphics
    extensions; an unknown RSP task is not fixed by declaring it standard graphics
    or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
+   Keep game-specific graphics commands, microcode fingerprints and lighting in
+   `games/<game>/`. C11 adapters can use the generic microcode callback interface
+   in `renderer.h`; the shared backend contains only reusable RT64 operations.
 5. Run the scheduler, input, presentation and deadlines from the app loop.
    Use `recomp_game_input`, `recomp_game_present` and
    `recomp_game_audio_create` from `game.h` so shared Debug replay, captures and

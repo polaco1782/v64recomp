@@ -137,6 +137,82 @@ def table_groups(report: dict, checked_sites: set[int]) -> list[dict]:
     return ranked
 
 
+def callback_groups(report: dict, metadata: dict) -> list[dict]:
+    """Group constant argument producers by callee and ABI location for review.
+
+    This is candidate evidence, not an assertion that an integer/data argument
+    is callable. In particular, closed disassembly alone does not prove a
+    callback. Review the common callee's use of that argument once, then the
+    complete set of producers and target bodies together.
+    """
+    groups = {}
+    for candidate in report['candidates']:
+        if candidate.get('registered'):
+            continue
+        for ref in candidate.get('references',[]):
+            if ref['kind'] not in ('call-argument','stack-argument') or 'callee' not in ref:
+                continue
+            location = (f'sp+{ref["stack_offset"]:#x}' if ref['kind'] == 'stack-argument'
+                        else f'gpr{ref["register"]}')
+            matches = [f for f in metadata['functions'] if f['vram'] == ref['callee']]
+            callee = next((f for f in matches if f['section'] == ref['section']),
+                          matches[0] if len(matches) == 1 else None)
+            if callee is None:
+                continue
+            # Standard native data/queue arguments are not callback evidence.
+            # Recognized thread callbacks are already followed by discovery.
+            if callee['origin'] in ('native-replacement','unsupported-boundary'):
+                continue
+            key = callee['section'],ref['callee'],location
+            group = groups.setdefault(key,dict(callee_section=key[0],callee=key[1],
+                                               argument=location,targets={}))
+            target = group['targets'].setdefault((candidate['section'],candidate['vram']),
+                dict(section=candidate['section'],vram=candidate['vram'],sha256=candidate['sha256'],
+                     body_status=candidate['body']['status'],
+                     instructions=candidate['body']['instructions'],producers=[]))
+            producer = {name:ref[name] for name in ('section','function','pc','store_pc','rom_offset') if name in ref}
+            if producer not in target['producers']:
+                target['producers'].append(producer)
+    ranked = []
+    for group in groups.values():
+        group['targets'] = [target for _,target in sorted(group['targets'].items())]
+        group['closed_targets'] = sum(t['body_status'] == 'closed' for t in group['targets'])
+        if group['closed_targets']:
+            ranked.append(group)
+    ranked.sort(key=lambda group:(-group['closed_targets'],-len(group['targets']),
+                                   group['callee_section'],group['callee'],group['argument']))
+    return ranked
+
+
+def field_groups(report: dict) -> list[dict]:
+    """Connect stored pointers with indirect field-load sites for batch review."""
+    groups = {}
+    for site in report.get('indirect_fields',[]):
+        group = groups.setdefault(site['field_offset'],dict(field_offset=site['field_offset'],
+                                                           consumers=[],targets={}))
+        group['consumers'].append(site)
+    for candidate in report['candidates']:
+        if candidate.get('registered'):
+            continue
+        for ref in candidate['references']:
+            group = groups.get(ref.get('field_offset'))
+            if ref['kind'] != 'stored-address' or group is None:
+                continue
+            item = group['targets'].setdefault((candidate['section'],candidate['vram']),
+                dict(section=candidate['section'],vram=candidate['vram'],sha256=candidate['sha256'],
+                     body_status=candidate['body']['status'],instructions=candidate['body']['instructions'],
+                     producers=[]))
+            item['producers'].append(ref)
+    ranked = []
+    for group in groups.values():
+        group['targets'] = [item for _,item in sorted(group['targets'].items())]
+        group['closed_targets'] = sum(t['body_status'] == 'closed' for t in group['targets'])
+        if group['targets']:
+            ranked.append(group)
+    ranked.sort(key=lambda g:(-g['closed_targets'],-len(g['targets']),g['field_offset']))
+    return ranked
+
+
 def read_inputs(game: str, metadata_path: Path) -> tuple[bytes, dict, dict]:
     rom, metadata = load_analysis_rom(game, metadata_path)
     report = json.loads(metadata_path.with_name('function-candidates.json').read_text())
@@ -155,10 +231,14 @@ def checked_sites(game: str) -> set[int]:
 def rank_report(game: str, metadata_path: Path, output: Path) -> tuple[bytes, dict, dict, list[dict], list[dict]]:
     rom, metadata, candidates = read_inputs(game, metadata_path)
     groups = table_groups(candidates, checked_sites(game))
+    callbacks = callback_groups(candidates,metadata)
+    fields = field_groups(candidates)
     profile = load_profile(PROJECT / 'games' / game / 'profile.toml')
     roots = root_groups(game, candidates, profile['game']['rom_sha1'])
     write_json(output, {'game': game, 'rom_sha1': metadata['rom_sha1'],
                         'summary': candidates['summary'], 'table_groups': groups,
+                        'callback_groups': callbacks,
+                        'object_callback_groups': fields,
                         'root_groups': roots,
                         'note': 'Scanned tables and candidate call trees need checked entry evidence.'})
     print(f'{game}: {candidates["summary"]}; {len(groups)} table groups, '
@@ -171,8 +251,70 @@ def rank_report(game: str, metadata_path: Path, output: Path) -> tuple[bytes, di
         print(f'  root 0x{root["vram"]:08x}: {root["candidate_descendants"]} candidate '
               f'functions; {root["confidence"]}; '
               f'{"runtime observed" if root["runtime_observed"] else ", ".join(root["references"])}')
+    for group in callbacks[:10]:
+        print(f'  arguments to 0x{group["callee"]:08x} {group["argument"]}: '
+              f'{group["closed_targets"]} closed candidates; callback role needs review')
+    for group in fields[:10]:
+        print(f'  object field +0x{group["field_offset"]:x}: {group["closed_targets"]} closed candidates, '
+              f'{len(group["consumers"])} call sites; object identity needs review')
     print(f'Report: {output}')
     return rom, metadata, candidates, groups, roots
+
+
+def preflight(game: str, build_dir: Path) -> None:
+    """Refresh all static evidence together without building or running a game."""
+    output = build_dir / 'candidate-review' / game / 'preflight'
+    output.mkdir(parents=True,exist_ok=True)
+    baseline = output / 'baseline'
+    with (output / 'generation.log').open('w') as log, redirect_stdout(log), redirect_stderr(log):
+        # Keep reports even when newly discovered switches cannot translate.
+        generate(game,baseline,True)
+    metadata_path = baseline / 'symbols.json'
+    _,metadata,candidates,_,_ = rank_report(game,metadata_path,output / 'ranked.json')
+    coverage = json.loads((baseline / 'coverage.json').read_text())
+    gaps = [dict(section=f['section'],vram=f['vram'],name=f['name'],errors=f['errors'])
+            for f in coverage['functions'] if f['errors']]
+    # Registered-target policy makes these calls translatable, but does not
+    # establish the complete set of pointers a mutable object can contain.
+    # Keep the remaining runtime frontier visible even when translation is clean.
+    dynamic_calls = [dict(section=f['section'],function=f['name'],**site)
+                     for f in metadata['functions']
+                     if f['origin'] not in ('native-replacement','unsupported-boundary')
+                     for site in f.get('indirect_transfers',[])
+                     if site.get('registered_targets')]
+    sdk = output / 'sdk'
+    # The SDK scanner writes bounded, private evidence and never installs hooks.
+    # Permit refreshing the same preflight directory while preserving unrelated
+    # scans; its own CLI deliberately requires a new output directory.
+    if sdk.exists():
+        number = 1
+        while (output / f'sdk-{number:03d}').exists():
+            number += 1
+        sdk = output / f'sdk-{number:03d}'
+    command = [sys.executable,str(PROJECT / 'tools' / 'inspect_sdk_symbols.py'),
+               '--game',game,'--metadata',str(metadata_path),'--scope','sections',
+               '--output',str(sdk),'--missing-only']
+    with (output / 'sdk-scan.log').open('w') as log:
+        result = subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,check=False)
+    if result.returncode:
+        raise RecompError(f'SDK preflight failed; see {output / "sdk-scan.log"}')
+    sdk_report = json.loads((sdk / 'report.json').read_text())
+    active_gaps = [item for item in sdk_report['matches']
+                   if item['native']['status'] != 'native_replacement'
+                   and (item['hardware_accesses'] or item['native']['registered_handlers'])
+                   and any(c['evidence'] == 'owned_instruction_or_checked_transfer'
+                           and not c['source_native_replaced'] for c in item['callers'])]
+    write_json(output / 'summary.json',dict(game=game,rom_sha1=metadata['rom_sha1'],
+        coverage=coverage['summary'],translation_gaps=gaps,sdk_boundary_candidates=active_gaps,
+        metadata_issues=coverage.get('metadata_issues',[]),
+        discovery=metadata.get('discovery_summary',{}),
+        dynamic_calls=dynamic_calls,
+        indirect_field_calls=candidates.get('indirect_fields',[]),
+        ranked_report=str(output / 'ranked.json'),sdk_report=str(sdk / 'report.txt'),
+        note='Review callback families, translation gaps and active SDK boundaries; regenerate to a static fixed point before runtime validation. No profile was changed.'))
+    print(f'{len(gaps)} functions with translation gaps; {len(active_gaps)} active SDK boundary candidates; '
+          f'{len(dynamic_calls)} calls still depend on runtime registered targets')
+    print(f'Preflight: {output / "summary.json"}')
 
 
 def ask_codex(game: str, group: dict, metadata_path: Path, output: Path) -> dict:
@@ -534,6 +676,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game', choices=GAMES, required=True)
     parser.add_argument('--build-dir', type=Path, required=True)
+    parser.add_argument('--preflight',action='store_true',
+                        help='refresh generation, callback families, translation gaps and SDK evidence without running a game')
     parser.add_argument('--codex', action='store_true', help='ask Codex to review and apply bounded table groups')
     parser.add_argument('--roots-only', action='store_true',
                         help='review missing function call trees and save accepted roots in profile.toml')
@@ -547,9 +691,14 @@ def main() -> int:
         parser.error('--max-groups must be between 1 and 10')
     if args.root_address and not args.roots_only:
         parser.error('--root-address requires --roots-only')
+    if args.preflight and (args.codex or args.roots_only or args.root_address):
+        parser.error('--preflight is a report-only mode; review/apply changes separately')
     try:
-        run(args.game, args.build_dir.resolve(), args.codex, args.max_groups,
-            args.retry_unresolved, args.roots_only, args.root_address)
+        if args.preflight:
+            preflight(args.game,args.build_dir.resolve())
+        else:
+            run(args.game, args.build_dir.resolve(), args.codex, args.max_groups,
+                args.retry_unresolved, args.roots_only, args.root_address)
     except (RecompError, OSError, ValueError, KeyError, ImportError) as error:
         print(f'candidate review stopped: {error}', file=sys.stderr)
         return 1

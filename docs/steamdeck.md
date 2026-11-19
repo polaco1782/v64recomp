@@ -169,14 +169,14 @@ activates that layout for the Deck controls.
 | Deck control | N64 control |
 | --- | --- |
 | Left stick | Analog stick |
-| D-pad | C-buttons in OOT; N64 D-pad in other games |
+| D-pad | C-buttons in OOT/GoldenEye/Duke gameplay; N64 D-pad in other games |
 | A / X | A / B |
 | B / Y | C-down / C-left |
 | Left trigger | Z (OOT targeting) |
 | Right trigger / bumper | R (OOT shield) |
 | Left bumper | L |
 | Menu | Start |
-| Right stick | Third-person camera in OOT; C-buttons in other games |
+| Right stick | Camera in OOT; look in GoldenEye/Duke; C-buttons in other games |
 | Right trackpad directions | C-buttons |
 | Right stick click | C-up |
 | L4 / R4 | C-up / C-down |
@@ -198,6 +198,19 @@ and proportional camera speed; it operates independently of mouse capture.
 Z-targeting, dialog, pause and special camera modes retain native behavior.
 Set `RECOMP_OOT_GAMEPAD_CAMERA=0` before launching to restore the original
 gamepad mapping. These settings take effect when the game starts.
+
+Deck launchers also disable the desktop mouse adapters for Duke Nukem 64, Turok,
+Quake, Quake II, Rayman 2, Hexen and Nightmare Creatures. These adapters can
+replace gameplay gamepad input with keyboard/mouse actions even when Steam Input
+is configured correctly. GoldenEye disables its mouse adapter and enables its
+dedicated gamepad mode. Existing packages need updated launchers; installing the
+Steam Input template alone does not change these defaults. Explicit environment
+settings still override the launcher defaults.
+
+Duke additionally enables `RECOMP_DUKE_GAMEPAD=1`: left-stick travel controls
+walking/strafe speed continuously and the right stick turns/looks. Menus and
+saved action bindings remain native. Set `RECOMP_DUKE_GAMEPAD=0` to restore its
+original N64 stick assignment, where C-buttons supply digital movement.
 
 The VDF format is checked against Steam's installed Deck Gamepad template;
 installation follows [EmuDeck's template workflow](https://emudeck.github.io/community-creations/steamos/community-creations/#how-to-download-steam-input-profiles).

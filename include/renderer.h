@@ -9,6 +9,40 @@ extern "C" {
 typedef struct RecompRenderer RecompRenderer;
 typedef void (*RecompGraphicsHook)(void *interpreter, size_t ram_size, uint64_t *rdp_triangles);
 typedef bool (*RecompMicrocodeHook)(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
+/* Game-owned C microcode extensions can reuse a standard command map without
+ * accessing RT64's C++ objects. Contexts are valid only during the callback.
+ * Configuration must remain immutable, and it and userdata must outlive the
+ * renderer binding. */
+typedef struct RecompMicrocodeContext RecompMicrocodeContext;
+typedef enum { RECOMP_GBI_F3D, RECOMP_GBI_F3DEX, RECOMP_GBI_F3DEX2 } RecompMicrocodeBase;
+typedef void (*RecompMicrocodeCommand)(RecompMicrocodeContext *, uint32_t word0, uint32_t word1, void *userdata);
+typedef struct {
+    uint8_t opcode;
+    RecompMicrocodeCommand command;
+} RecompMicrocodeBinding;
+typedef struct {
+    RecompMicrocodeBase base;
+    bool low_precision, no_near_clip, reject;
+    const RecompMicrocodeBinding *bindings;
+    size_t binding_count;
+    void (*reset)(RecompMicrocodeContext *, bool from_task, void *userdata);
+    void *userdata;
+} RecompMicrocodeConfig;
+enum { RECOMP_MICROCODE_MAX_LIGHTS = 7 };
+typedef struct {
+    float clip_position[3], normal[3], color[3], world_matrix[9];
+} RecompMicrocodeVertex;
+void recomp_renderer_bind_microcode(void *interpreter, uint32_t code, uint32_t data,
+                                    const RecompMicrocodeConfig *config);
+void recomp_microcode_read(RecompMicrocodeContext *, uint32_t address, bool segmented, void *bytes, size_t size);
+void recomp_microcode_default(RecompMicrocodeContext *);
+uint32_t recomp_microcode_data_address(RecompMicrocodeContext *);
+uint32_t recomp_microcode_geometry_mode(RecompMicrocodeContext *);
+unsigned recomp_microcode_light_count(RecompMicrocodeContext *);
+void recomp_microcode_light(RecompMicrocodeContext *, unsigned index, float direction[3], float color[3]);
+void recomp_microcode_vertex(RecompMicrocodeContext *, unsigned index, RecompMicrocodeVertex *vertex);
+/* Supply a computed shade while retaining source normals for texture generation. */
+void recomp_microcode_vertex_color(RecompMicrocodeContext *, unsigned index, const float color[3]);
 typedef struct RecompRendererStats {
     uint64_t graphics_tasks, sp_callbacks, dp_callbacks, presentations;
     uint64_t submit_ns, present_ns;
@@ -25,6 +59,7 @@ RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, c
 /* Select PNG/JSON texture dumping for subsequently created renderers.
  * Call before renderer creation; NULL disables dumping (the default). */
 void recomp_renderer_configure_texture_dump(const char *directory);
+void recomp_renderer_enable_texture_editor(bool enabled);
 /* Defaults to 60 FPS interpolation. 0 preserves the game's original rate;
  * 10..1000 enables RT64 interpolation at the requested rate.
  * Configure before submitting the first task. Guest VI/CPU timing is unchanged. */
@@ -42,6 +77,7 @@ bool recomp_renderer_submit_rdp(RecompRenderer *, uint32_t start, uint32_t end, 
                                 uint32_t framebuffer);
 bool recomp_renderer_present(RecompRenderer *);
 bool recomp_renderer_input(RecompRenderer *, RecompPad *);
+uint64_t recomp_renderer_paused_ns(void);
 /* Opt into keypad +/- FOV changes, one degree per keydown (including repeat).
  * Callback runs on the host owner with guest execution parked. */
 void recomp_renderer_set_fov_hook(RecompRenderer *, void (*adjust)(int steps));

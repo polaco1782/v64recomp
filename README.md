@@ -240,6 +240,7 @@ keeps the detailed validation history and known gaps.
 | [Nightmare Creatures](games/nightmare-us/README.md) | `nightmare-us` | Character selection and playable Chelsea. |
 | [Shadow Man](games/shadowman-us/README.md) | `shadowman-us` | Menus, movement and rendered level progression. |
 | [Turok: Dinosaur Hunter US v1.2](games/turok-us-v12/README.md) | `turok-us-v12` | Experimental; first-person gameplay and automap. |
+| [Turok 2: Seeds of Evil US 1.0](games/turok2-us/README.md) | `turok2-us` | Experimental; copyright/Expansion Pak rendering, original paging and audio tasks. Title/gameplay bring-up in progress. |
 | [1080 Snowboarding JU revision 0](games/1080-us/README.md) | `1080-us` | Intro, title and Select Rider; riding unvalidated. |
 | [Banjo-Kazooie US revision 0](games/banjo-kazooie-us/README.md) | `banjo-kazooie-us` | Experimental; original startup and callback bring-up in progress. |
 | [Resident Evil 2 US revision 1](games/re2-us-v1/README.md) | `re2-us-v1` | Experimental; opening movie and title menu. |
@@ -294,6 +295,7 @@ Keep these shortcuts handy while you play:
 | Key | What it does |
 | --- | --- |
 | **F7** | Switch between original aspect ratio and widescreen expansion. |
+| **F8** | Pause and edit textures in the ZIP supplied with `--texture-pack`. |
 | **F5** | Reload texture packs and switch original/replacement textures. |
 | **Keypad + / −** | Adjust FOV in the [five supported games](#controls-that-feel-familiar). |
 | **F12** | Open the shared GameShark cheat menu. |

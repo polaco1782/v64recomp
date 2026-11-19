@@ -37,6 +37,12 @@
     <ClCompile Include="$(RecompRoot)backends\jpeg.c" />
     <ClCompile Include="$(RecompRoot)backends\rt64.cpp" />
     <ClInclude Include="$(RecompRoot)backends\texture_decode.h" />
+    <ClCompile Include="$(RecompRoot)backends\texture_editor.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\texture_editor.h" />
+    <ClInclude Include="$(RecompRoot)backends\texture_editor_hooks.h" />
+    <ClInclude Include="$(RecompRoot)backends\texture_editor_paths.h" />
+    <ClCompile Include="$(RecompRoot)backends\texture_editor_zip.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\texture_editor_zip.h" />
     <ClCompile Include="$(RecompRoot)backends\textures.cpp" />
     <ClInclude Include="$(RecompRoot)backends\textures.h" />
     <None Include="$(RecompRoot)cmake\BuildRT64.cmake" />
@@ -52,6 +58,7 @@
     <None Include="$(RecompRoot)cmake\rt64\LookAtMatching.cmake" />
     <None Include="$(RecompRoot)cmake\rt64\PrimitiveDepth.cmake" />
     <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake" />
+    <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake" />
     <ClInclude Include="$(RecompRoot)include\cheats.h" />
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h" />
     <ClInclude Include="$(RecompRoot)include\fov_control.h" />

@@ -9,11 +9,17 @@ class RecompTextureFiles {
     size_t rdramByteCount = 0;
     bool zipPack = false;
     std::unordered_set<uint64_t> dumped, replaced;
+    void loadZip(RT64::TextureCache& cache);
 
 public:
     uint64_t pngsWritten = 0, replacementFiles = 0;
     void configure(RT64::TextureCache& cache, const std::string& title, size_t rdramSize, const std::string& dumpPath);
     void reload(RT64::TextureCache& cache);
+    void editZip(RT64::TextureCache&, const std::string& entry, const std::vector<uint8_t>& png);
+    const std::string& packRomTitle() const {
+        return romTitle;
+    }
+    void enableReplacements(RT64::TextureCache& cache);
     void refreshAndToggle(RT64::TextureCache& cache);
     void collect(RT64::TextureCache& cache);
     uint64_t replacedCount() const {

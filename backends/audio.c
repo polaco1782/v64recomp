@@ -570,6 +570,13 @@ static void debug_audio_snapshot(void *opaque, RecompDebugAudioStats *out) {
                                                                                : 0.0};
 }
 #endif
+static void ai_pause(void *opaque, bool paused) {
+    RecompAudio *a = opaque;
+    owner(a);
+    if (a->device)
+        SDL_PauseAudioDevice(a->device, paused || !a->stats.playback_running);
+}
+
 RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
     if (!rt || !rt->platform || !config || config->prebuffer_ms > 200 ||
         (config->microcode != RECOMP_AUDIO_ABI1 && config->microcode != RECOMP_AUDIO_ABI1_LINEAR &&
@@ -611,7 +618,7 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
         }
         fputs("host_ns,frames,rate,queued_bytes,underruns,prebuffer_frames\n", a->trace);
     }
-    RecompAiOutput output = {.start = ai_start, .opaque = a};
+    RecompAiOutput output = {.start = ai_start, .opaque = a, .pause = ai_pause};
     if (!recomp_ai_set_output(rt, &output)) {
         if (a->trace)
             fclose(a->trace);

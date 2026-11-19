@@ -134,7 +134,10 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/msvc/goldeneye-us/debug/bin/Debug/goldeneye-us.exe",
-      "args": ["--texture-pack", "C:/Users/cassi/Downloads/ge007-hd-v2025.12.30-gliden64-png-hd.zip"],
+      "args": [
+        "--texture-pack",
+        "C:/Users/cassi/Downloads/ge007-hd-v2025.12.30-gliden64-png-hd.zip"
+      ],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "environment": [],
@@ -146,7 +149,10 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/msvc/goldeneye-us/release/bin/Release/goldeneye-us.exe",
-      "args": ["--texture-pack", "C:/Users/cassi/Downloads/ge007-hd-v2025.12.30-gliden64-png-hd.zip"],
+      "args": [
+        "--texture-pack",
+        "C:/Users/cassi/Downloads/ge007-hd-v2025.12.30-gliden64-png-hd.zip"
+      ],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "environment": [],
@@ -962,6 +968,51 @@
       ],
       "preLaunchTask": "Build Release: Banjo-Kazooie US",
       "miDebuggerPath": "/usr/bin/gdb"
+    },
+    {
+      "name": "Debug: Turok 2 US 1.0 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/turok2-us/debug/bin/Debug/turok2-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Turok 2 US 1.0"
+    },
+    {
+      "name": "Release: Turok 2 US 1.0 (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/turok2-us/release/bin/Release/turok2-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Turok 2 US 1.0"
+    },
+    {
+      "name": "Debug: Turok 2 US 1.0 (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/turok2-us-debug/bin/turok2-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Turok 2 US 1.0"
     }
   ]
 }

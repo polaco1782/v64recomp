@@ -12,7 +12,7 @@ from common import RecompError, load_profile, load_rom, validate_recomp_prefix, 
 from code_inventory import load_inventory, load_entry_inventory, complete_code
 from emit import constant_condition, decode, target
 from native_hooks import classify_native_bodies, resolve_native_hooks
-from metadata_candidates import indirect_parameter_uses, materialized_entries, owned_ranges
+from metadata_candidates import indirect_parameter_uses, materialized_entries, owned_ranges, shared_entry_slots
 
 
 def discover(rom: bytes, profile: dict) -> dict:
@@ -139,6 +139,7 @@ def discover(rom: bytes, profile: dict) -> dict:
     for root in partial_entries:
         add_entry(root['vram'], origin='checked-partial-entry', preferred=root.get('section'))
     replacements = {}
+    native_callbacks = {}
     for hook in [*profile.get('hooks', []), *profile.get('boundaries', [])]:
         if 'vram' not in hook:
             continue
@@ -162,6 +163,11 @@ def discover(rom: bytes, profile: dict) -> dict:
         if key in replacements:
             raise RecompError(f"duplicate native replacement: {hook['symbol']}")
         replacements[key] = (size, hook.get('kind'))
+        # A complete catalog match establishes the shared handler's ABI. Its
+        # thread entry is a deferred function call even though native OS bodies
+        # are deliberately excluded from translated-callee dataflow analysis.
+        if hook.get('catalog_body_size') and hook.get('handler') == 'recomp_os_create_thread':
+            native_callbacks[key] = {6:hook['handler']}
     transfers_by_section = {}
     table_transfers = []
     tables = [(t, 'jump') for t in config.get('jump_tables', [])]
@@ -464,6 +470,7 @@ def discover(rom: bytes, profile: dict) -> dict:
                             else unambiguous_owned | owned_by_section[section['id']])
             for section in sections
         }
+        shared_slots = shared_entry_slots(rom,functions)
         parameters = {}
         for function in functions:
             if function['discovery_errors'] or function['origin'] in ('native-replacement','unsupported-boundary'):
@@ -473,7 +480,9 @@ def discover(rom: bytes, profile: dict) -> dict:
             # target has one unambiguous mapping. Other overlay roots require
             # a checked inventory entry with an explicit section.
             candidates = materialized_entries(rom,{'functions':functions},text_by_section[current_section],
-                source_ranges=owned_ranges(function),owned_addresses=owned_by_selection[current_section])
+                source_ranges=owned_ranges(function),owned_addresses=owned_by_selection[current_section],
+                shared_entries={pc for sid,pc in shared_slots if sid == current_section
+                                or sid in {s['id'] for s in unambiguous_sections}})
             for candidate in candidates:
                 sources = []
                 for use in candidate['address_uses']:
@@ -481,21 +490,32 @@ def discover(rom: bytes, profile: dict) -> dict:
                                   pc=use['pc'],expected_word=read(use['pc']).word,kind=use['kind'])
                     if use['kind']=='constant-indirect-call':
                         sources.append(source)
-                    elif use['kind']=='call-argument' and use.get('callee') in by_address:
+                    elif use['kind'] in ('call-argument','stack-argument') and use.get('callee') in by_address:
                         matches = by_address[use['callee']]
                         callee = next((f for f in matches if f['section'] == current_section),
                                       matches[0] if len(matches) == 1 else None)
                         if callee is None:
                             continue
+                        callee_key = (callee['section'], callee['vram'])
+                        handler = (native_callbacks.get(callee_key,{}).get(use['register'])
+                                   if use['kind'] == 'call-argument' else None)
+                        if handler:
+                            sources.append(dict(source,callee=callee['vram'],
+                                                argument_register=use['register'],native_handler=handler,
+                                                callee_sha256=callee['sha256']))
+                            continue
                         if callee['discovery_errors'] or callee['origin'] in ('native-replacement','unsupported-boundary'):
                             continue
-                        callee_key = (callee['section'], callee['vram'])
                         if callee_key not in parameters:
                             parameters[callee_key] = indirect_parameter_uses(rom,callee)
-                        sites = parameters[callee_key].get(use['register'],[])
+                        parameter = (('stack',use['stack_offset']) if use['kind'] == 'stack-argument'
+                                     else use['register'])
+                        sites = parameters[callee_key].get(parameter,[])
                         if sites:
-                            sources.append(dict(source,callee=callee['vram'],
-                                                argument_register=use['register'],indirect_calls=sites))
+                            location = ({'argument_stack_offset':use['stack_offset'],'store_pc':use['store_pc']}
+                                        if use['kind'] == 'stack-argument'
+                                        else {'argument_register':use['register']})
+                            sources.append(dict(source,callee=callee['vram'],indirect_calls=sites,**location))
                 if sources:
                     key = add_entry(candidate['vram'],origin='inferred-callback')
                     entries[key].setdefault('sources',[]).extend(sources)

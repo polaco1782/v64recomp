@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\turok2-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\turok2-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\turok2-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\turok2-us\graphics.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\turok2-us\graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\turok2-us\lighting.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\turok2-us\lighting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\turok2-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\turok2-us\pager.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\turok2-us\pager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\turok2-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\turok2-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\turok2-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\turok2-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\turok2-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{F8CB6CE2-7FC7-56D7-831A-02B71EAFA8AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{6A585574-5D1C-5A9D-8BB0-0E7AD0ABCA08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{F6C1FF61-66A4-5126-A335-E0439933DEBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{94F60A00-705B-507D-BAD8-A15899E28F91}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

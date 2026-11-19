@@ -1,0 +1,1945 @@
+{
+  "format_version": 1,
+  "rom_sha1": "fb0400f21e3f043939ab56500c7b12a3231006f1",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2675584,
+      "origin": "checked-root",
+      "sha256": "910e3d0c0f86664e79ca06d7fef49504bae49b9a3f609f057d7d3b578f98aa48",
+      "evidence": "Boot stub materializes entry in a0 at 0x80000478 and calls jalr a0 at 0x8000047c."
+    },
+    {
+      "vram": 2555212,
+      "origin": "checked-root",
+      "sha256": "aa591716432e17f7e2d9180499e6a166cfc80eeff2785628e44b789dfa752430",
+      "evidence": "DMA factory stored in synth config +0x10 at 0x26f7a0; alLoadNew invokes it at 0x29537c."
+    },
+    {
+      "vram": 2556112,
+      "origin": "checked-root",
+      "sha256": "85376837daf8038369f73dc1dac64ab01c47d397c251eaafe04135ec290f9dbd",
+      "evidence": "DMA factory returns this entry at 0x26fd7c; alLoadNew stores factory result in load filter +0x30."
+    },
+    {
+      "vram": 2702108,
+      "origin": "checked-root",
+      "sha256": "cb557ebb1d6837075bf7f5fa9dc0aebbdccdd7a7fa498d4d0765a5bade38a88d",
+      "evidence": "Audio player handler: stored at 0x29369c into player +8; alAudioFrame calls +8 at 0x294a3c."
+    },
+    {
+      "vram": 2706784,
+      "origin": "checked-root",
+      "sha256": "242d46fef6a0b1bc096dd721ed7ebe20d458c4a3e2a1aa7e92fc71ddf8d42bb1",
+      "evidence": "Audio filter pull: constructor 0x295440, alFilterNew stores a1 at +4."
+    },
+    {
+      "vram": 2712416,
+      "origin": "checked-root",
+      "sha256": "96db0d7879f2c4196225bd7b44e1eb2bb94e1cff5e5ea98ebaebb12061af998d",
+      "evidence": "Audio filter pull: constructor 0x2953e4, alFilterNew stores a1 at +4."
+    },
+    {
+      "vram": 2712784,
+      "origin": "checked-root",
+      "sha256": "2866725026326076f6cb020d6f121ce88e16c6cd5389bfbc35d151e541ea6608",
+      "evidence": "Audio filter pull: constructor 0x295494, alFilterNew stores a1 at +4."
+    },
+    {
+      "vram": 2713424,
+      "origin": "checked-root",
+      "sha256": "c28f68c9c1217ab161aaf73f45a45a321489e30c3435db8e95cdb86992225cf2",
+      "evidence": "Audio effect pull: constructor stores +4 at 0x294ec4; alAudioFrame calls +4 at 0x294ae8."
+    },
+    {
+      "vram": 2716384,
+      "origin": "checked-root",
+      "sha256": "c3542703176fae6cd35e0ab04ac23faefe4a6eaa9d2e3136510374643b8fb184",
+      "evidence": "Audio filter pull: constructor 0x295518, alFilterNew stores a1 at +4."
+    },
+    {
+      "vram": 2748816,
+      "origin": "checked-root",
+      "sha256": "f93ad57246aaa21c8fddc5672c47ed3ab45c377afd5c9f9ecbf4beb23ce10b73",
+      "evidence": "Audio ADPCM pull: constructors 0x295338 and store +4 at 0x29fbd8."
+    },
+    {
+      "vram": 2749908,
+      "origin": "checked-root",
+      "sha256": "0f7a14db1a7e3b9cfb965976beb4d09b8a0d92362b99170edd52c3f3d764f703",
+      "evidence": "Audio raw pull: wave selector in alLoadParam stores +4 at 0x29fc50."
+    },
+    {
+      "vram": 2750808,
+      "origin": "checked-root",
+      "sha256": "3485ad8eaca44cc5488ce0d51e872d0d7a02fe278bc337480ba443d9215eccd3",
+      "evidence": "Audio wave pull: wave selector in alLoadParam stores +4 at 0x29fc88."
+    },
+    {
+      "vram": 2709136,
+      "origin": "checked-root",
+      "sha256": "5c7ff62ed8223840458fc63bad0e3098d59ffd8d197d2daf394c9e5bf7a1c3a6",
+      "evidence": "Audio envelope pull: constructor 0x295564, alFilterNew stores a1 at +4."
+    },
+    {
+      "vram": 2714356,
+      "origin": "checked-root",
+      "sha256": "6f6b821e0db7ffd3225f978afbb7a56868ea9b118fc5fafe18518d9bac47f6f7",
+      "evidence": "Audio effect parameter handler: constructor stores +0x28 at 0x294ed0."
+    },
+    {
+      "vram": 2685824,
+      "origin": "checked-root",
+      "sha256": "ad6eec35f7bc78b0a5c77717e73f510831f24e2372550e26ff895f904e957044",
+      "evidence": "Sequence player handler: constructor stores +8 at 0x28fb5c; alAudioFrame calls +8 at 0x294a3c."
+    },
+    {
+      "vram": 2629188,
+      "origin": "checked-root",
+      "sha256": "5aff524e11c4b5f1d5fc4f3655935b55d490859f559486ba0003193b927722fc",
+      "evidence": "Original two-instruction empty camera callback. Pointer at ROM 0xb78b4 / KSEG 0x800b6cb4, selected by camera +0x14 and invoked at 0x27d224."
+    },
+    {
+      "vram": 4377572,
+      "origin": "checked-root",
+      "sha256": "6a7894dea5c02625607340bb12f76ed94d7e8d84ae44a3a5762d692dd0c721d7",
+      "evidence": "Resource postprocessor passed as stack argument +0x14 at 0x42a13c through 0x205d0c/0x20367c; queued job +0x14 invoked by decompressor at 0x201c98."
+    },
+    {
+      "vram": 2099936,
+      "origin": "checked-root",
+      "sha256": "b0f7fafc27fd3919ae1b964f229f25f1bc4a4ed9c4e3fde6610eef2aa7f3fc37",
+      "evidence": "Resource postprocessor: stored at 0x00224e98, passed at 0x00224eac to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2124176,
+      "origin": "checked-root",
+      "sha256": "cb74b4cf47e7f92705cef74cbbd9b866957ecc4abc9ba5973bf6db6260395242",
+      "evidence": "Resource postprocessor: stored at 0x0020794c, passed at 0x00207978 to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2143376,
+      "origin": "checked-root",
+      "sha256": "6f089729131e764a2f9e49d38b0a525c311eb2d49db70287e015625ffdea5433",
+      "evidence": "Resource postprocessor: stored at 0x00214e4c, passed at 0x00214e6c to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2143408,
+      "origin": "checked-root",
+      "sha256": "6f089729131e764a2f9e49d38b0a525c311eb2d49db70287e015625ffdea5433",
+      "evidence": "Resource postprocessor: stored at 0x0020b894, passed at 0x0020b8a8 to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2143440,
+      "origin": "checked-root",
+      "sha256": "fd632589d42b335aaaf3f8845b31b9fb9f96ca7871585dc377e757a7db88e7f8",
+      "evidence": "Resource postprocessor: stored at 0x0021f368, passed at 0x0021f390 to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2189980,
+      "origin": "checked-root",
+      "sha256": "5ab9938cda6d953019211b4bf2cbd7fdb68e933e1f5cf3603b864311e181c1e7",
+      "evidence": "Resource postprocessor: stored at 0x00218bcc, passed at 0x00218be0 to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2231552,
+      "origin": "checked-root",
+      "sha256": "335544f5b2722024dd04913a7d23e16436ec45eff5fb852cdae7a1d43fd4a205",
+      "evidence": "Resource postprocessor: stored at 0x00221970, passed at 0x00221984 to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 4371428,
+      "origin": "checked-root",
+      "sha256": "fd458e075bc8ba8cb7663159885e7a207d87fce56224dae024239b7d63e58762",
+      "evidence": "Resource postprocessor: stored at 0x0042b148, passed at 0x0042b160 to 0x00205d0c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 4372144,
+      "origin": "checked-root",
+      "sha256": "f6358f28491b59b63aa68ee6d0399ae6660746a2772e37ee12ab9fcb21105e38",
+      "evidence": "Resource postprocessor: stored at 0x0042b0a0, passed at 0x0042b0b8 to 0x00205d0c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 4373056,
+      "origin": "checked-root",
+      "sha256": "4c5ce16fc15802ecc031c61c61ea5a9c46fcfbe38ae95eeb058e7f85ed77b750",
+      "evidence": "Resource postprocessor: stored at 0x0042b274, passed at 0x0042b28c to 0x00205d0c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 4377268,
+      "origin": "checked-root",
+      "sha256": "2a6ed436acbae811763694303b994b0ea0b15ff384e94d708e6d4c430912650c",
+      "evidence": "Resource postprocessor: stored at 0x0042a174, passed at 0x0042a184 to 0x00205d0c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 4377860,
+      "origin": "checked-root",
+      "sha256": "5f5a2edbdb8f143d41ff2a940b1bab7db3aee74e56ec701d948931226d47df9f",
+      "evidence": "Resource postprocessor: stored at 0x0042b17c, passed at 0x0042b194 to 0x00205d0c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 4258292,
+      "origin": "checked-root",
+      "sha256": "58a68ab2479f2d3c47b611866185a5feed66083e70b60f676b34c4df99a4586f",
+      "evidence": "Resource postprocessor: stored at 0x0040fe0c, passed at 0x0040fe24 to 0x0020367c sp+0x14; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2182932,
+      "origin": "checked-root",
+      "sha256": "b94ba0041c759d1df9b6ae0933fce7e0c5ee97f764bdfe65ef138a1b275c12ce",
+      "evidence": "Resource postprocessor: stored at 0x00214944, passed at 0x00214960 to 0x00203ca0 sp+0x18; original loader stores job +0x14 and decompressor invokes it at 0x201c98. Reviewed as one callback family with closed distinct bodies."
+    },
+    {
+      "vram": 2222144,
+      "origin": "checked-root",
+      "sha256": "3bc6eb574e4f19c0b7f0320407bdd840fd037cefb522961a1687b3581d6a67cb",
+      "evidence": "Actor transform callback: 0x2429bc initializes subobject +0x104 at 0x242a28; 0x219bc0 embeds that subobject at actor +0x140. Actor +0x244 is invoked at 0x21a270, 0x21a4b8, 0x21d458 and 0x21e814. Constructor 0x42da60 installs the same actor callback at 0x42dae8."
+    },
+    {
+      "vram": 2217916,
+      "origin": "checked-root",
+      "sha256": "f579346cfe8c0db896e4eeefb6e2746a1f54d726ba5a46a6656cbf8b3b0d0dde",
+      "evidence": "Actor animation callback: 0x2429bc initializes subobject +0xf4 at 0x242a34, embedded at actor +0x140 by 0x219bc0. Actor +0x234 is invoked by 0x21d39c at 0x21d774. Reviewed six-way selector and complete body."
+    },
+    {
+      "vram": 2218636,
+      "origin": "checked-root",
+      "sha256": "2952f28e5918db7aa9f84985086caceee76572aa689cbacaabf95e82b3680638",
+      "evidence": "Actor animation callback variant: 0x219bc0 writes actor +0x234 at 0x219eec when flags select this variant; 0x21d39c invokes actor +0x234 at 0x21d774. Reviewed six-way selector and complete body."
+    },
+    {
+      "vram": 2228744,
+      "origin": "checked-root",
+      "sha256": "a0c1d4232e2fc229540c01af96ead5ba506a8467428ff69e2947da41ed52a312",
+      "evidence": "Resource postprocessor passed in stack argument +0x18 at 0x21dbc8/0x21dbe8 to 0x203ca0; original loader stores job +0x14 and decompressor invokes it at 0x201c98."
+    },
+    {
+      "vram": 4388808,
+      "origin": "checked-root",
+      "sha256": "c1d3f3c43caf4377040d1f46b8fe1ac0044d4eb6400adb4c836c8b55581df823",
+      "evidence": "Animation bit-stream callback: 0x42ef2c stores 0x42f7c8 into stream +0x14 at 0x42f0ac. Shared stream processor 0x42f344 loads and invokes this same field at 0x42f388, 0x42f39c, 0x42f3ac, 0x42f3f8, 0x42f41c and 0x42f440."
+    },
+    {
+      "vram": 4282108,
+      "origin": "checked-root",
+      "sha256": "3bb2915d9a7702bc486e63b7b03fdedde577694059e3aa2849ad605f51048844",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b6a8 field +0x10 at 0x43b6b8, invoked at 0x416ad0; ROM-bound descriptor 0x43b6cc field +0x10 at 0x43b6dc, invoked at 0x416ad0; ROM-bound descriptor 0x43b6f0 field +0x10 at 0x43b700, invoked at 0x416ad0. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4317008,
+      "origin": "checked-root",
+      "sha256": "6b379fec2d3494ebd9874a31208b8bb6e19b71c777c20ab8748e07e30cab38ad",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b6cc field +0x8 at 0x43b6d4, invoked at 0x415134. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4317656,
+      "origin": "checked-root",
+      "sha256": "ad4d1c410f868a5e103dd18bdaeaab1678ac37299eb77041a2be81ebcc3f8196",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b6a8 field +0x8 at 0x43b6b0, invoked at 0x415134. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4318464,
+      "origin": "checked-root",
+      "sha256": "e34554579b6ec1c5ebf555052ba4eadc8bc3d08c56387766f41049e6ca36b0ef",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b738 field +0x8 at 0x43b740, invoked at 0x415134. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4319876,
+      "origin": "checked-root",
+      "sha256": "5f93d07774317d19582a7690e891ad1d1e735e017219c295d65aaa61399fd5fa",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b714 field +0x8 at 0x43b71c, invoked at 0x415134. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4320324,
+      "origin": "checked-root",
+      "sha256": "ae8f8ceadb6604006320fc7976a9183f92fd3fdbb20f31643853957a344775a2",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b6f0 field +0x8 at 0x43b6f8, invoked at 0x415134. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4322092,
+      "origin": "checked-root",
+      "sha256": "c02d9622e9db2e6a05d841918dc5f8688a6670650260d2b962c174925747e9d2",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b3fc field +0x1c at 0x43b418, invoked at 0x4156bc; ROM-bound descriptor 0x43b420 field +0x1c at 0x43b43c, invoked at 0x4156bc; ROM-bound descriptor 0x43b444 field +0x1c at 0x43b460, invoked at 0x4156bc. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4324176,
+      "origin": "checked-root",
+      "sha256": "90b02518b1800f4c98d4a1e74990f6ed8ef655656e288091722531dc618d6c2d",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b3fc field +0x18 at 0x43b414, invoked at 0x41538c; ROM-bound descriptor 0x43b420 field +0x18 at 0x43b438, invoked at 0x41538c; ROM-bound descriptor 0x43b444 field +0x18 at 0x43b45c, invoked at 0x41538c. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4324596,
+      "origin": "checked-root",
+      "sha256": "1f00a020f5fb7ad53a20f117941c02816b77e236e1583695542aba3f0bf1a4e6",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b63c field +0x18 at 0x43b654, invoked at 0x41538c. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4325060,
+      "origin": "checked-root",
+      "sha256": "4d822ad335da1c1107327bd6998a5ac008ae8c67b38a8eb99464ffeba615916e",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b660 field +0x1c at 0x43b67c, invoked at 0x4156bc. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4325788,
+      "origin": "checked-root",
+      "sha256": "1fc8a074b73e58c37ee287605c410629cf2ec3c220ea4e04c06cac1eeaebca4f",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b684 field +0x1c at 0x43b6a0, invoked at 0x4156bc. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4331200,
+      "origin": "checked-root",
+      "sha256": "3d1b8ff5f66a29c1a41d173b8335754334e7457fb8a804dad0829ffe7f35e5ac",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b6a8 field +0x14 at 0x43b6bc, invoked at 0x415354; ROM-bound descriptor 0x43b6cc field +0x14 at 0x43b6e0, invoked at 0x415354. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4331424,
+      "origin": "checked-root",
+      "sha256": "3d1b8ff5f66a29c1a41d173b8335754334e7457fb8a804dad0829ffe7f35e5ac",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b6f0 field +0x14 at 0x43b704, invoked at 0x415354; ROM-bound descriptor 0x43b714 field +0x14 at 0x43b728, invoked at 0x415354. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4331716,
+      "origin": "checked-root",
+      "sha256": "b32e9812b28aa5781ebec20ff238e0d63f1cdcb8ed47c7e8e57b6f249121c054",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b738 field +0x14 at 0x43b74c, invoked at 0x415354. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4332516,
+      "origin": "checked-root",
+      "sha256": "cc03a93e290c8e1ca2e406680b4fd37fda9b0c4125ac2e03cf2b677ab7c27d6b",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b660 field +0x18 at 0x43b678, invoked at 0x41538c. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4332704,
+      "origin": "checked-root",
+      "sha256": "8e57ced4211293fd9219fbca8f23efef4260c205f13b20efa1b81f9c621f0027",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b3b4 field +0x18 at 0x43b3cc, invoked at 0x41538c. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4332832,
+      "origin": "checked-root",
+      "sha256": "10643065125fed9f7b398bd27b60dea55229c7ed05ebdb9ab6210e011c8b1b86",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b3d8 field +0x18 at 0x43b3f0, invoked at 0x41538c. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4333052,
+      "origin": "checked-root",
+      "sha256": "0e668480ef410765232f81e5685bca198c2e0a850ca7bc5f43a8c4da4ab85d41",
+      "evidence": "Menu callback family: ROM-bound descriptor 0x43b684 field +0x18 at 0x43b69c, invoked at 0x41538c. Five adjacent 0x24-byte menu descriptors share the 22-item inventory at 0x43b390, ending at 0x43b6a8. Original constructor 0x414ea8 stores menu descriptor at object +0x14 and item descriptor at item +0x18; these objects are consumed by 0x41531c/0x416aa4."
+    },
+    {
+      "vram": 4277212,
+      "origin": "checked-root",
+      "sha256": "875b28912a1d40486ef8a1bf2d034c483a67ebaafde6e192fdbb52a62a44f0fc",
+      "evidence": "Menu item rendering callback at descriptor slot 0x43b3a4 (field +0x14), consumed by 0x4156fc at 0x415c8c. The 22-item, 0x24-byte inventory at 0x43b390 ends exactly at the five menu descriptors beginning 0x43b6a8; constructor 0x414ea8 stores each descriptor at item +0x18."
+    },
+    {
+      "vram": 4284776,
+      "origin": "checked-root",
+      "sha256": "d971402175b0378c7e9b276acb1bfec9c91ef57df8aed013d47ffc2cb1236a53",
+      "evidence": "Menu item rendering callback at descriptor slot 0x43b3c8 (field +0x14), consumed by 0x4156fc at 0x415c8c. The 22-item, 0x24-byte inventory at 0x43b390 ends exactly at the five menu descriptors beginning 0x43b6a8; constructor 0x414ea8 stores each descriptor at item +0x18."
+    },
+    {
+      "vram": 2391984,
+      "origin": "checked-root",
+      "sha256": "4fa70951109980903f240e7f1cae8a1c8a1b4c6238a1e96189ce9ef0330a794a",
+      "evidence": "Actor callback family: constructor 0x42da60 stores this target in actor +0x234 at 0x42db24; the same actor field is loaded and invoked at 0x21d774. Reviewed alongside original actor transform/animation callbacks; separate closed body."
+    },
+    {
+      "vram": 2451612,
+      "origin": "checked-root",
+      "sha256": "41e2fe229f4576696bc2c1f46b25a851e7efc5edb38dc93feaaea356f43739fc",
+      "evidence": "Actor callback family: constructor 0x42da60 stores this target in actor +0x240 at 0x42db0c; the same actor field is loaded and invoked at 0x22c820. Reviewed alongside original actor transform/animation callbacks; separate closed body."
+    },
+    {
+      "vram": 2425904,
+      "origin": "checked-root",
+      "sha256": "c6f27542abd0c73acc764445e5d81c7cef1ef2de9c8e777a1dc599ca768df2b1",
+      "evidence": "Actor state callback: state 2, slot 0x800adf88, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2426360,
+      "origin": "checked-root",
+      "sha256": "243c2432681d7489b807c2219d5a10a6289739b700c64a4989050a1a906d2172",
+      "evidence": "Actor state callback: state 3, slot 0x800adfa0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2427088,
+      "origin": "checked-root",
+      "sha256": "7e54cf493d56db178f7adcc4102eadf8903fe30493e02b3f1d0717ab038e7fb4",
+      "evidence": "Actor state callback: state 8, slot 0x800ae018, consumer 0x24db74; state 9, slot 0x800ae030, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2427888,
+      "origin": "checked-root",
+      "sha256": "7e54cf493d56db178f7adcc4102eadf8903fe30493e02b3f1d0717ab038e7fb4",
+      "evidence": "Actor state callback: state 10, slot 0x800ae048, consumer 0x24db74; state 11, slot 0x800ae060, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2428608,
+      "origin": "checked-root",
+      "sha256": "a90b03869712c2e7f8f5513a6f58112beb3a404b7a4a528e53a4a52b1aaa1766",
+      "evidence": "Actor state callback: state 14, slot 0x800ae0a8, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2431016,
+      "origin": "checked-root",
+      "sha256": "8499889ada9a890e8d8555bd05853e38fdaac396d044f940edb1a53af41b637b",
+      "evidence": "Actor state callback: state 32, slot 0x800ae258, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2432552,
+      "origin": "checked-root",
+      "sha256": "90f9d961067da6120fee2917fee7d3a848303783b0ea6b596adfd82800beeefd",
+      "evidence": "Actor state callback: state 35, slot 0x800ae2a0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2446716,
+      "origin": "checked-root",
+      "sha256": "29be77c337b6012b48b180b91ee7bf4bb9cae7224395c202a4f624ae45e6b9e4",
+      "evidence": "Actor state callback: state 2, slot 0x800adf84, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2446788,
+      "origin": "checked-root",
+      "sha256": "e9a3f8ad5ca695d17302fcd39745e3300f1c01bf3fecd3284cb03b74fdf2e43e",
+      "evidence": "Actor state callback: state 3, slot 0x800adf9c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2446796,
+      "origin": "checked-root",
+      "sha256": "732792cece9b17448d417db8fe3d6bf1b2d95ff6d5052fdfb5c6816cac87c7ab",
+      "evidence": "Actor state callback: state 4, slot 0x800adfb4, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2446960,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor state callback: state 4, slot 0x800adfb8, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2447124,
+      "origin": "checked-root",
+      "sha256": "0f881cdd7f5ef7154d2cf0b1260f59b80f4df6b9439548bba3f7f5e75359c8db",
+      "evidence": "Actor state callback: state 5, slot 0x800adfd0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2447424,
+      "origin": "checked-root",
+      "sha256": "c6337b2a640b0a83663340086d1857cbfb2bbb117ae7e62941fe5f405d006540",
+      "evidence": "Actor state callback: state 6, slot 0x800adfe4, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2447492,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "evidence": "Actor state callback: state 6, slot 0x800adfe8, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2447680,
+      "origin": "checked-root",
+      "sha256": "0f881cdd7f5ef7154d2cf0b1260f59b80f4df6b9439548bba3f7f5e75359c8db",
+      "evidence": "Actor state callback: state 7, slot 0x800ae000, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2447840,
+      "origin": "checked-root",
+      "sha256": "5fd61ba55fe72b37dde3b8db55e95c7d3fc91de9b1981c24117875c0a2662768",
+      "evidence": "Actor state callback: state 8, slot 0x800ae014, consumer 0x24e68c; state 9, slot 0x800ae02c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2447940,
+      "origin": "checked-root",
+      "sha256": "243c2432681d7489b807c2219d5a10a6289739b700c64a4989050a1a906d2172",
+      "evidence": "Actor state callback: state 10, slot 0x800ae044, consumer 0x24e68c; state 11, slot 0x800ae05c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448160,
+      "origin": "checked-root",
+      "sha256": "ba3e4ef938f878618fb3a23ded271d6c654312d062b0ebec8814306094e143b2",
+      "evidence": "Actor state callback: state 12, slot 0x800ae074, consumer 0x24e68c; state 13, slot 0x800ae08c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448208,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "evidence": "Actor state callback: state 12, slot 0x800ae078, consumer 0x24db74; state 13, slot 0x800ae090, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448476,
+      "origin": "checked-root",
+      "sha256": "db2409ccdbe6f38baccd7b2573dfd295259c85446e886c5ad7164b39978a4b1d",
+      "evidence": "Actor state callback: state 14, slot 0x800ae0a4, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448512,
+      "origin": "checked-root",
+      "sha256": "bf2e77a607c71b32fba02e1003d525aa5a7776b12cea68c3ce712665894a8dc8",
+      "evidence": "Actor state callback: state 15, slot 0x800ae0bc, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448744,
+      "origin": "checked-root",
+      "sha256": "caf19b931c6e5a109e15e17a2eb8caff04cee2d0d91d9ddb54469b0948dff4b4",
+      "evidence": "Actor state callback: state 15, slot 0x800ae0c0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448752,
+      "origin": "checked-root",
+      "sha256": "12f638653c9125e7dd0f52e365e08e45286316f96e6d9e1832c5618573647323",
+      "evidence": "Actor state callback: state 16, slot 0x800ae0d4, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2448972,
+      "origin": "checked-root",
+      "sha256": "2726d288242a026cda130614d775d619a06da825befe0cbf3997410359110ff0",
+      "evidence": "Actor state callback: state 17, slot 0x800ae0ec, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449064,
+      "origin": "checked-root",
+      "sha256": "fdc254abb5350f7f6cf402fa1b1360321232973f274eb6c263ac5b597c71bc8a",
+      "evidence": "Actor state callback: state 17, slot 0x800ae0f0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449072,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "evidence": "Actor state callback: state 18, slot 0x800ae104, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449156,
+      "origin": "checked-root",
+      "sha256": "c963e3035b30b37e5916392a8194850cfd66fe232e7e385d5c4409e8b7e4172a",
+      "evidence": "Actor state callback: state 18, slot 0x800ae108, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449348,
+      "origin": "checked-root",
+      "sha256": "fd827e49b46b11b318da120ea85205c53be856054ada4cf42693a43d6c338986",
+      "evidence": "Actor state callback: state 31, slot 0x800ae23c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449540,
+      "origin": "checked-root",
+      "sha256": "12689e07ac6a11db5564d81651b6fe3baea056ffe85fb8f417c3a68b0e9191ed",
+      "evidence": "Actor state callback: state 19, slot 0x800ae11c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449568,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 19, slot 0x800ae120, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449596,
+      "origin": "checked-root",
+      "sha256": "acb25a184f657f75a31b6f6f1d05ea8751e988259fc125efc3a0a338c96d78fc",
+      "evidence": "Actor state callback: state 28, slot 0x800ae1f4, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449624,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 28, slot 0x800ae1f8, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449652,
+      "origin": "checked-root",
+      "sha256": "1a87a496db7c2ad84eb1596ff4550c883f78ad8d862603988d7c5f567a679476",
+      "evidence": "Actor state callback: state 20, slot 0x800ae134, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449680,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 20, slot 0x800ae138, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449708,
+      "origin": "checked-root",
+      "sha256": "e811b809d11be75911fde003ad284257596e4cea4e7c3e0c8ab2e934ec3272e1",
+      "evidence": "Actor state callback: state 24, slot 0x800ae194, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449736,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 24, slot 0x800ae198, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449764,
+      "origin": "checked-root",
+      "sha256": "23eaf46ee27cdf41331de202f3ea7033fc829106f5c8633796f39335eca112fd",
+      "evidence": "Actor state callback: state 22, slot 0x800ae164, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449792,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 22, slot 0x800ae168, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449820,
+      "origin": "checked-root",
+      "sha256": "e7e35cc3fc2adc81a553e3dab08fb46e512cf6276540f9c82d603607d52c919a",
+      "evidence": "Actor state callback: state 25, slot 0x800ae1ac, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449848,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 25, slot 0x800ae1b0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449876,
+      "origin": "checked-root",
+      "sha256": "789b03d1b3f9735c29b6cebedfd9192bedfe6103aa2ff8729eec39eeee69dacf",
+      "evidence": "Actor state callback: state 26, slot 0x800ae1c4, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449904,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 26, slot 0x800ae1c8, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449932,
+      "origin": "checked-root",
+      "sha256": "f3bd7d9b84d78793b877e204ed26e156929c0b9f1ed7d8aef223fda7c8ccf1d3",
+      "evidence": "Actor state callback: state 27, slot 0x800ae1dc, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449960,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 27, slot 0x800ae1e0, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2449988,
+      "origin": "checked-root",
+      "sha256": "fc3d94d0b9530c1f0c7866ec160fc8375352dd79d1289824ae29aa488c2f074c",
+      "evidence": "Actor state callback: state 30, slot 0x800ae224, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450016,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 30, slot 0x800ae228, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450044,
+      "origin": "checked-root",
+      "sha256": "9ffa1e0b0c5e415e07037eb36723d96f777cbcfe7b66c65bffce29d9b26b49ab",
+      "evidence": "Actor state callback: state 29, slot 0x800ae20c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450072,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 29, slot 0x800ae210, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450100,
+      "origin": "checked-root",
+      "sha256": "fa03a168ae0393b130d8c72c93c9d68dadb1e2b860427e8fd9cfda15eec0efc7",
+      "evidence": "Actor state callback: state 21, slot 0x800ae14c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450128,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 21, slot 0x800ae150, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450156,
+      "origin": "checked-root",
+      "sha256": "73b20899c5d4e31842dd1139694b133516d6d380a4c35841fadb071a321dc03b",
+      "evidence": "Actor state callback: state 23, slot 0x800ae17c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450184,
+      "origin": "checked-root",
+      "sha256": "cafc5f2893469443fc57f78d2191046dc400afe58ff81988dced3359cb208ae8",
+      "evidence": "Actor state callback: state 23, slot 0x800ae180, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450212,
+      "origin": "checked-root",
+      "sha256": "fcef392b5390f3ddb0ae99ace4362eb549499b1707d5d64cb2d2249857a73dd7",
+      "evidence": "Actor state callback: state 32, slot 0x800ae254, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450396,
+      "origin": "checked-root",
+      "sha256": "a2d49163ee7311189a86910bb70a92212804caf15055824aa426c184f02967a6",
+      "evidence": "Actor state callback: state 33, slot 0x800ae26c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450428,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor state callback: state 33, slot 0x800ae270, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450512,
+      "origin": "checked-root",
+      "sha256": "a2d49163ee7311189a86910bb70a92212804caf15055824aa426c184f02967a6",
+      "evidence": "Actor state callback: state 34, slot 0x800ae284, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450544,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor state callback: state 34, slot 0x800ae288, consumer 0x24db74. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2450628,
+      "origin": "checked-root",
+      "sha256": "b97c8b9585a02686285aa6525dde26a8a7a976a0c54ec24db37cb35ee7f9ea39",
+      "evidence": "Actor state callback: state 35, slot 0x800ae29c, consumer 0x24e68c. Reviewed initializer/update columns in 36 adjacent 24-byte records at 0x800adf54..0x800ae2b4, before the following packed-short data. Initializer 0x24e5f0 and updater 0x24d344 compute the same state*24 index from actor +0xa08. Individual roots preserve verified pointer slots without asserting an unproved selector bound."
+    },
+    {
+      "vram": 2460004,
+      "origin": "checked-root",
+      "sha256": "8f1d21338b6532af99879209c41f2a11f473060d07a2a281912d1bb4d8272319",
+      "evidence": "Actor class initializer: special actor descriptor selected by 0x219bc0, descriptor 0x800ae994 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2473072,
+      "origin": "checked-root",
+      "sha256": "81be618d14f901787a225776474436a050fa4aaa2442db25a2277de6918407f6",
+      "evidence": "Actor class initializer: actor class 1, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b1760 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2500264,
+      "origin": "checked-root",
+      "sha256": "6b15fe29142b959f79871ea79e744ba93ebe8ffcf5f6acce7575d1c1050f8074",
+      "evidence": "Actor class initializer: actor class 4, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b1ec0 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2503640,
+      "origin": "checked-root",
+      "sha256": "0ebb8f6cfcb8d0d92cd8a65a1f17b74f3eb7c551d07cee8357b6b9f148cd15d1",
+      "evidence": "Actor class initializer: actor class 3, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b2088 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2507160,
+      "origin": "checked-root",
+      "sha256": "313482c1c7ad94387a18d26782f4ccd5600139e18cbc56429640cd0b2c799e98",
+      "evidence": "Actor class initializer: actor class 2, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b2170 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2509972,
+      "origin": "checked-root",
+      "sha256": "4a8569ab09ad86ad668e2ce72cd5d8b1cebe1e8672d9c782c565d18db6437315",
+      "evidence": "Actor class initializer: actor class 5, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b2280 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2512196,
+      "origin": "checked-root",
+      "sha256": "bd893f57c58ff1585d668933e8a7173b704cfa61fb777792ee5a8a62a1b50b2e",
+      "evidence": "Actor class initializer: actor class 6, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b2310 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2513456,
+      "origin": "checked-root",
+      "sha256": "340035916050b5b470712d6edb8dc672730f87d2b5cde6e7222cbb22513d6dac",
+      "evidence": "Actor class initializer: actor class 7, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b23d0 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2515152,
+      "origin": "checked-root",
+      "sha256": "245676a03d90a34d02e1e60cf874ea04c1584690be59c685872d8c2881e27f19",
+      "evidence": "Actor class initializer: actor class 10, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b24b0 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2516724,
+      "origin": "checked-root",
+      "sha256": "ab9c28d2a0174b236845f89d4d133b837cb8ac2563806fd5808f9bee72fe5904",
+      "evidence": "Actor class initializer: actor class 9, bounded 13-entry pointer array at 0x800acb60, descriptor 0x800b2570 field +0. Original 0x219bc0 selects the descriptor, passes it as a2 to 0x2429bc, which loads descriptor +0 and invokes it at 0x242bc4 with actor and embedded animation object. Reviewed with the complete class initializer family."
+    },
+    {
+      "vram": 2456904,
+      "origin": "checked-root",
+      "sha256": "51bed43e3f1142f8ecba8f5935d951891a16237e2ba034d816b4af19f0f2c9cc",
+      "evidence": "Actor method family: func_00258964 stores at 0x258988, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2459708,
+      "origin": "checked-root",
+      "sha256": "e8d923fbfb9dc7e30865d997f299640e979a33caba62b0052b87a48a4dedbc9b",
+      "evidence": "Actor method family: func_00258964 stores at 0x258994, animation +0xf4, consumer 0x21d774. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2470612,
+      "origin": "checked-root",
+      "sha256": "f460dd9425979371bd7d1918861e15adf63bfe7293c5b84bbde3100ee14ee5fd",
+      "evidence": "Actor method family: func_0025bc70 stores at 0x25bd70, animation +0xf8, consumer 0x2465dc. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2472576,
+      "origin": "checked-root",
+      "sha256": "e5651101001a3833b67748eeacb9d6074804619c30e3eaa4df86b094d32bd90f",
+      "evidence": "Actor method family: func_0025bc70 stores at 0x25bd18, animation +0xf4, consumer 0x21d774. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2474008,
+      "origin": "checked-root",
+      "sha256": "76979b3b0075011b286780b87b807e2e2e839f7608dd913345c0075e39f01ded",
+      "evidence": "Actor method family: func_0025bc70 stores at 0x25bd0c, animation +0x104, consumer 0x21a270/0x21a4b8/0x21d458/0x21e814. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2475512,
+      "origin": "checked-root",
+      "sha256": "79c3250ff0af9bcaf25e2dd604f693c8ae9f8c28f97f5ca1095c5bfe6a4c0a33",
+      "evidence": "Actor method family: func_0025bc70 stores at 0x25bd00, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2476744,
+      "origin": "checked-root",
+      "sha256": "4ec605ca3be7ad0a8ee58db651f10bcd7bb2ef02ae9af34a567e9f9109a35175",
+      "evidence": "Actor method family: func_0025bc70 stores at 0x25bd58, animation +0x100, consumer 0x22c820. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2486120,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "Actor method family: func_0025bc70 stores at 0x25bd64, animation +0xfc, consumer 0x21a7a4. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2500536,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "Actor method family: func_002626a8 stores at 0x2626bc, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2501148,
+      "origin": "checked-root",
+      "sha256": "1e369e002c7a62ff57ae86ee84c55d917d878cc89c7f24ff9a1456b55da4fb02",
+      "evidence": "Actor method family: func_002626a8 stores at 0x2626dc, animation +0x104, consumer 0x21a270/0x21a4b8/0x21d458/0x21e814. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2501600,
+      "origin": "checked-root",
+      "sha256": "0ada3f5939498aceb7662b861d797971278f2a6ab9b1447828165c25c341ed5b",
+      "evidence": "Actor method family: func_002626a8 stores at 0x2626c8, animation +0xf8, consumer 0x2465dc. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2503980,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor method family: func_002633d8 stores at 0x2633f0, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2507372,
+      "origin": "checked-root",
+      "sha256": "f32beda1bcba5f80ce720b45a6691a036ec6df29815bc807129eb374e7ffad10",
+      "evidence": "Actor method family: func_00264198 stores at 0x2641c4, animation +0x104, consumer 0x21a270/0x21a4b8/0x21d458/0x21e814. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2507640,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor method family: func_00264198 stores at 0x2641b8, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2509216,
+      "origin": "checked-root",
+      "sha256": "628e53bc90ff1ee0bb31cc0237d78b5a194141d5cf3acd3758e4e08c1cbeef36",
+      "evidence": "Actor method family: func_00264c94 stores at 0x264cc4, animation +0x104, consumer 0x21a270/0x21a4b8/0x21d458/0x21e814. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2510060,
+      "origin": "checked-root",
+      "sha256": "67022f5dc3996fb8ed0dbbfadc8710264ea580929e79d1d3f73aa751e12db922",
+      "evidence": "Actor method family: func_00264c94 stores at 0x264cb4, animation +0xfc, consumer 0x21a7a4. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2510232,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "Actor method family: func_00264c94 stores at 0x264ca8, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2512324,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "Actor method family: func_00265544 stores at 0x26555c, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2513656,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "Actor method family: func_00265a30 stores at 0x265a4c, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2514668,
+      "origin": "checked-root",
+      "sha256": "280b1721869f0bbb6f4420e6a1ae2787e341b75deeaaec6d6eee4760d59c2b45",
+      "evidence": "Actor method family: func_00265a30 stores at 0x265a58, animation +0xf8, consumer 0x2465dc. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2515100,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "Actor method family: func_002660d0 stores at 0x2660e4, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2516336,
+      "origin": "checked-root",
+      "sha256": "c82c0083e932b47f5d00dcc8989a6f8a45ae0a78eec84b0629b81ea5098ed1e0",
+      "evidence": "Actor method family: func_002660d0 stores at 0x2660f0, animation +0xf4, consumer 0x21d774. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2517012,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "Actor method family: func_002666f4 stores at 0x266718, animation +0xf0, consumer 0x245940. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2517684,
+      "origin": "checked-root",
+      "sha256": "f761fb71026730de614e12980a13cfe6fe2f7a07f6ad16d81c6f4a93ad5f20e7",
+      "evidence": "Actor method family: func_002666f4 stores at 0x266780, animation +0xf4, consumer 0x21d774. The reviewed class initializers receive the embedded animation object as a1 from 0x2429bc (actor +0x140), preserving that pointer in a1/s0 through these stores. Consumers use the same embedded object or its actor-relative alias. Field +0x108 remains unpromoted without a verified consumer."
+    },
+    {
+      "vram": 2457600,
+      "origin": "checked-root",
+      "sha256": "33713f9105c1eebbe14a4b215b782042f055dea73500d624139878fbf423d84d",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 1, slot 0x800ae3dc (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800ae394, class-selected root 0x800ae394, state 7, slot 0x800ae45c (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2460108,
+      "origin": "checked-root",
+      "sha256": "a51362292dbd8eed54def1bfd158d629d99d426adc4ee0047b10714d2a11b929",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 0, slot 0x800ae3b8 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2460312,
+      "origin": "checked-root",
+      "sha256": "51bed43e3f1142f8ecba8f5935d951891a16237e2ba034d816b4af19f0f2c9cc",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 0, slot 0x800ae3bc (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2460532,
+      "origin": "checked-root",
+      "sha256": "b87893ef19f75c34601c71c4a7ca2415faa7437dceb132400cd870e86eeefb25",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 2, slot 0x800ae3fc (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800ae394, class-selected root 0x800ae394, state 3, slot 0x800ae41c (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2460704,
+      "origin": "checked-root",
+      "sha256": "39270dfd69d77b0a025d584d25bcdbc06c12bf61c9aa03120044b4fe8866f19f",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 4, slot 0x800ae438 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2460752,
+      "origin": "checked-root",
+      "sha256": "76f9adc7329bb6fb8f7ffea8f936392f7856640aa02e5ea86ba5b3bf0a478d10",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 4, slot 0x800ae43c (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2461036,
+      "origin": "checked-root",
+      "sha256": "0cba1805862570b3aecc8d449b0bc6cc5645756fe64c4bcb2783518b88a6f780",
+      "evidence": "Animation descriptor callback family: table 0x800ae394, class-selected root 0x800ae394, state 1, slot 0x800ae3d8 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2465376,
+      "origin": "checked-root",
+      "sha256": "46a9b2420a3bb93af2a34739c312ce2c8304f4f420cf98f71c9fdfb5e19cd162",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 10, slot 0x800b0a90 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b0a60, class-selected root 0x800b0a60, state 44, slot 0x800b0e10 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2465508,
+      "origin": "checked-root",
+      "sha256": "ad2473a7b1af47b323cc7adb7c289c964b1304b238636dda71d0a8e8f552858d",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 12, slot 0x800b0ad0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2465640,
+      "origin": "checked-root",
+      "sha256": "519b5b878d836eac7cb8ef936ce842d5e8a63fc3d881bbc9e11974343394f10f",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 13, slot 0x800b0af0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2465772,
+      "origin": "checked-root",
+      "sha256": "cdb92e35b433874c0cc31eec18c9c60eb858cd2d24a3b292334b7519ea2f8f93",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 36, slot 0x800b0dd0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2465904,
+      "origin": "checked-root",
+      "sha256": "a0b7fc542a1569ccf42263421bb395ac81baf95966c7b3dc177316026a510d71",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 37, slot 0x800b0df0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2466036,
+      "origin": "checked-root",
+      "sha256": "b122b8e41af773ccd6a36411891849aefe7ea033539a339e34c77faaece59a13",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 3, slot 0x800b0b10 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2466168,
+      "origin": "checked-root",
+      "sha256": "c074b632cdd3de7082af0700b4ecda3d666d6b930cdf914c0c7a9e51be95aa13",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 4, slot 0x800b0b30 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b0a60, class-selected root 0x800b0a60, state 45, slot 0x800b0e30 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2466300,
+      "origin": "checked-root",
+      "sha256": "c074b632cdd3de7082af0700b4ecda3d666d6b930cdf914c0c7a9e51be95aa13",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 5, slot 0x800b0b70 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2466432,
+      "origin": "checked-root",
+      "sha256": "b9483983f35e9990cc7103cf2c8d4c2058258075f6e3a548275f1722ea21a551",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 6, slot 0x800b0b50 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2466564,
+      "origin": "checked-root",
+      "sha256": "cb396dd5b5201693e6225885e8c053df5f249c1cbde37857a2a573fc26787e38",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 19, slot 0x800b0c70 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2467108,
+      "origin": "checked-root",
+      "sha256": "2d3cb713bb12ab37115e2ffb0a04b1a04ec547a09ac7283f4db7076ce81063d1",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 20, slot 0x800b0c90 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2467240,
+      "origin": "checked-root",
+      "sha256": "98c6adc2b362803f0d005b78485aa25a56cbd3f598b3ded202f43f1458e19343",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 14, slot 0x800b0bd0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b0a60, class-selected root 0x800b0a60, state 46, slot 0x800b0e50 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2467372,
+      "origin": "checked-root",
+      "sha256": "76e9257203edd9a2ae0997ff3d2c668ad9e2ad2177f9a31ff40d74a246d3465e",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 15, slot 0x800b0bf0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2467504,
+      "origin": "checked-root",
+      "sha256": "d369afb380da195055db4dbff256ec09e2f491e3192eec2217b74957be6cb885",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 16, slot 0x800b0c10 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2467636,
+      "origin": "checked-root",
+      "sha256": "4bcb1f27284a4a65e02b3a232bb13bf65af024cfefd0314c60b3dd62056a5f55",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 18, slot 0x800b0c30 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2467768,
+      "origin": "checked-root",
+      "sha256": "9ad37d3af3f75ad8c8718dfbaa9c80f5bce98fbb75d87f4a5309c7bc71034a0b",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 17, slot 0x800b0c50 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2468560,
+      "origin": "checked-root",
+      "sha256": "47b85b5a7e9aa1f22bf9da999a0cb157fbb59870b8f74d7dbef55da7b83a82e4",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 8, slot 0x800b0b90 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2468692,
+      "origin": "checked-root",
+      "sha256": "47b85b5a7e9aa1f22bf9da999a0cb157fbb59870b8f74d7dbef55da7b83a82e4",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 9, slot 0x800b0bb0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2469000,
+      "origin": "checked-root",
+      "sha256": "4447aeec0d099bfbf860b24fed5d10ae58f941a18c6494d0e10fdc06c4707adc",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 50, slot 0x800b09f0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2479220,
+      "origin": "checked-root",
+      "sha256": "2db5f4beca996af59032cd4b0293d550f72baaad4ba3de749711dda819aece06",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 10, slot 0x800b0a88 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 3, slot 0x800b0b08 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 4, slot 0x800b0b28 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 6, slot 0x800b0b48 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 5, slot 0x800b0b68 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2480612,
+      "origin": "checked-root",
+      "sha256": "15d4b86837a8cf9bee6f664407322be85421f1a01214fde8e8bf82d68ca57b9f",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 11, slot 0x800b0ab0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2481112,
+      "origin": "checked-root",
+      "sha256": "70aeb1df01c5fc2ed3f7a0426ee1b8ac9f7dad1195bcb567f6ae5b5c7938c302",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 14, slot 0x800b0bc8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 15, slot 0x800b0be8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 16, slot 0x800b0c08 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 18, slot 0x800b0c28 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 17, slot 0x800b0c48 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2481596,
+      "origin": "checked-root",
+      "sha256": "70aeb1df01c5fc2ed3f7a0426ee1b8ac9f7dad1195bcb567f6ae5b5c7938c302",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 19, slot 0x800b0c68 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2482760,
+      "origin": "checked-root",
+      "sha256": "5fb14c6ed03ef40741e3706ede56ad80b6beb5114f7e03a4f4cb25e2abdc74b1",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 52, slot 0x800b0788 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 53, slot 0x800b07a8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 54, slot 0x800b07c8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 55, slot 0x800b07e8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 56, slot 0x800b0808 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 57, slot 0x800b0828 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 58, slot 0x800b0848 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0700, class-selected root 0x800b0a60, state 59, slot 0x800b0868 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2483792,
+      "origin": "checked-root",
+      "sha256": "98ca6ee0c751914c41522bfc7d586b78be06ea85b1e4201352c648e34fd1983d",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 0, slot 0x800b0724 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2483800,
+      "origin": "checked-root",
+      "sha256": "8b0a9a743ff63fc4900ede6b4fd6dfbe145f4fdb943f1105fc8728871a98bd81",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 0, slot 0x800b0728 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2483864,
+      "origin": "checked-root",
+      "sha256": "98ca6ee0c751914c41522bfc7d586b78be06ea85b1e4201352c648e34fd1983d",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 1, slot 0x800b0744 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2483872,
+      "origin": "checked-root",
+      "sha256": "1702ae78f667397d0c58dd6518a1ed92d3809af26c75d7da0df28c3206c2e892",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 1, slot 0x800b0748 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2483936,
+      "origin": "checked-root",
+      "sha256": "34a3f31fb5cb47cc236ef12fcbb0f53f9ce3756f8db080971281a2aa7b776ef1",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 1, slot 0x800b0750 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b0700, class-selected root 0x800b0a60, state 2, slot 0x800b0770 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2484120,
+      "origin": "checked-root",
+      "sha256": "a380260fe802a302126eb489218cf048f46acc715ca0533b670a5613abd2c408",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 2, slot 0x800b0764 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2484192,
+      "origin": "checked-root",
+      "sha256": "993ea3d8e33d09adac79eb198c9392c62d0085886c22c050e2d1c39c0a959c92",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 2, slot 0x800b0768 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2484360,
+      "origin": "checked-root",
+      "sha256": "543d593ec82f0e6facba8d2e887a2c2b67167c5297797696bc91aeb37a4dd688",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 52, slot 0x800b0784 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 53, slot 0x800b07a4 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 54, slot 0x800b07c4 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 55, slot 0x800b07e4 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 56, slot 0x800b0804 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 57, slot 0x800b0824 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 58, slot 0x800b0844 (+0x4), consumer 0x24355c; table 0x800b0700, class-selected root 0x800b0a60, state 59, slot 0x800b0864 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2484556,
+      "origin": "checked-root",
+      "sha256": "9aa249188c236c25d8ffe33d1f5d3a3f21e91a8403df2128e474d1fe4e6fd60d",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 60, slot 0x800b0884 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2484668,
+      "origin": "checked-root",
+      "sha256": "c6f27542abd0c73acc764445e5d81c7cef1ef2de9c8e777a1dc599ca768df2b1",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 60, slot 0x800b0888 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2486264,
+      "origin": "checked-root",
+      "sha256": "4e8045c951f410602bdfed36ad8503b7f6615d1a341cf70f55b90a49b88c6eb5",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 0, slot 0x800b0730 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2486376,
+      "origin": "checked-root",
+      "sha256": "70aeb1df01c5fc2ed3f7a0426ee1b8ac9f7dad1195bcb567f6ae5b5c7938c302",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 11, slot 0x800b0aa8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2486548,
+      "origin": "checked-root",
+      "sha256": "eab4823a4c64a9cad0e26ecf77cb8fc7deeb0022e46cb5b5d89ebb99ffc67f67",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 12, slot 0x800b0ac8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2486708,
+      "origin": "checked-root",
+      "sha256": "794379ea5e6b37e2648dbcea142f22050071b4359b8b43d58d3613f051e56ce0",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 13, slot 0x800b0ae8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2486736,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 8, slot 0x800b0b88 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 9, slot 0x800b0ba8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2486940,
+      "origin": "checked-root",
+      "sha256": "dd2594cea9736f33165253a1046faf1e81832d439dedec7abf11b544a8acbb3f",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 14, slot 0x800b0bc4 (+0x4), consumer 0x24355c; table 0x800b0a60, class-selected root 0x800b0a60, state 15, slot 0x800b0be4 (+0x4), consumer 0x24355c; table 0x800b0a60, class-selected root 0x800b0a60, state 16, slot 0x800b0c04 (+0x4), consumer 0x24355c; table 0x800b0a60, class-selected root 0x800b0a60, state 18, slot 0x800b0c24 (+0x4), consumer 0x24355c; table 0x800b0a60, class-selected root 0x800b0a60, state 17, slot 0x800b0c44 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487032,
+      "origin": "checked-root",
+      "sha256": "f52cb46eb74c285a84149e16ae4fae9473afdc4e2e11bcd7a8fc716fa09c2541",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 19, slot 0x800b0c64 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487128,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 20, slot 0x800b0c88 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487168,
+      "origin": "checked-root",
+      "sha256": "14cef12bfff1696b739d8b16386fd7cb4ab21dc14205a1a0eede361863c2622c",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 21, slot 0x800b0ca4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487204,
+      "origin": "checked-root",
+      "sha256": "993ea3d8e33d09adac79eb198c9392c62d0085886c22c050e2d1c39c0a959c92",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 21, slot 0x800b0ca8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487468,
+      "origin": "checked-root",
+      "sha256": "98ca6ee0c751914c41522bfc7d586b78be06ea85b1e4201352c648e34fd1983d",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 22, slot 0x800b0cc4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487476,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 22, slot 0x800b0cc8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487516,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 23, slot 0x800b0968 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487556,
+      "origin": "checked-root",
+      "sha256": "95f5d5a81be20a1dc88e92cfa21c86ebd5fdab67dd97eb6bc883924f26a2e2b1",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 24, slot 0x800b0984 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487804,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 24, slot 0x800b0988 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487844,
+      "origin": "checked-root",
+      "sha256": "c2987ee06ffe0b26c14f7815c6b5e1eeb4cdd950225aa4f7211265d5a60e6f81",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 25, slot 0x800b09a4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487940,
+      "origin": "checked-root",
+      "sha256": "27b9f00e651d8ea846512b73e5f018ed6e1917e2d90f2c47ebceec4132298e29",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 25, slot 0x800b09a8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2487984,
+      "origin": "checked-root",
+      "sha256": "e516e8e0343db999107292a873bc7b3e8f428cd569cd39eb0c56455bdc46c98e",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 38, slot 0x800b08a8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488028,
+      "origin": "checked-root",
+      "sha256": "8c37f32c3e4c2198ea3c7741de366ef2a2cfa1447776c59614c57f2ba9ba63b9",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 39, slot 0x800b08c8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488072,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 40, slot 0x800b08e8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488112,
+      "origin": "checked-root",
+      "sha256": "8c37f32c3e4c2198ea3c7741de366ef2a2cfa1447776c59614c57f2ba9ba63b9",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 41, slot 0x800b0908 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488156,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 42, slot 0x800b0928 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488196,
+      "origin": "checked-root",
+      "sha256": "e516e8e0343db999107292a873bc7b3e8f428cd569cd39eb0c56455bdc46c98e",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 43, slot 0x800b0948 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488548,
+      "origin": "checked-root",
+      "sha256": "fb17926129637d12a3e2102f11770fd149ced52ef118a90c4e9c609be0f058a3",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 28, slot 0x800b0ce4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488576,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 28, slot 0x800b0ce8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488616,
+      "origin": "checked-root",
+      "sha256": "702f4d4e3b9352d92f0cfd647db408926d5e3684e6fca9257ca5953959af0255",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 29, slot 0x800b0d04 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488696,
+      "origin": "checked-root",
+      "sha256": "076e0e0bd615e651d891221c29745d33bebf81afe896c3de5b88b21e7a3304e3",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 29, slot 0x800b0d08 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488788,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 30, slot 0x800b0d28 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488828,
+      "origin": "checked-root",
+      "sha256": "702f4d4e3b9352d92f0cfd647db408926d5e3684e6fca9257ca5953959af0255",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 31, slot 0x800b0d44 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2488916,
+      "origin": "checked-root",
+      "sha256": "076e0e0bd615e651d891221c29745d33bebf81afe896c3de5b88b21e7a3304e3",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 31, slot 0x800b0d48 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489008,
+      "origin": "checked-root",
+      "sha256": "702f4d4e3b9352d92f0cfd647db408926d5e3684e6fca9257ca5953959af0255",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 32, slot 0x800b0d64 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489040,
+      "origin": "checked-root",
+      "sha256": "480cba598a5c5db11aaec707f595ac71f96f0c4ba61cfb5c0af63ee24abc0e55",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 32, slot 0x800b0d68 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489272,
+      "origin": "checked-root",
+      "sha256": "65f27e9a264fe0f15d047f7e11e92138bb03f2f9902f9457768d06a868ac7da9",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 33, slot 0x800b0d84 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489352,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 33, slot 0x800b0d88 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489528,
+      "origin": "checked-root",
+      "sha256": "65f27e9a264fe0f15d047f7e11e92138bb03f2f9902f9457768d06a868ac7da9",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 34, slot 0x800b0da4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489608,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 34, slot 0x800b0da8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489648,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 36, slot 0x800b0dc8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 37, slot 0x800b0de8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489688,
+      "origin": "checked-root",
+      "sha256": "98ca6ee0c751914c41522bfc7d586b78be06ea85b1e4201352c648e34fd1983d",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 51, slot 0x800b0a04 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489696,
+      "origin": "checked-root",
+      "sha256": "46e947dee3929ae5d42a3d78c9d4fab8200980cb010f062c6f62846dbb6ec684",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 51, slot 0x800b0a08 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489752,
+      "origin": "checked-root",
+      "sha256": "afd8b2eeef122ae5d05d92f4489faf20b410cbaf9cb5b7ab45a200e769d567c6",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 53, slot 0x800b07b0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b0700, class-selected root 0x800b0a60, state 54, slot 0x800b07d0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489800,
+      "origin": "checked-root",
+      "sha256": "380d80e7e173577b5efa0862680319d2e72ce0614cb7392a4871fe529279d1bb",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 55, slot 0x800b07f0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489816,
+      "origin": "checked-root",
+      "sha256": "f0a1b263f478138d9bfa1395c8bda97012c28ac62fe0e815d2343d9842fe5630",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 56, slot 0x800b0810 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489832,
+      "origin": "checked-root",
+      "sha256": "001ab5da74700d17759274310a24c2d66e04096e874fb4a9862c93c8bc9b6a40",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 57, slot 0x800b0830 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489848,
+      "origin": "checked-root",
+      "sha256": "8a7c697923a0d3a1836fe5c3023f838e358bd4f3e9151dba14d2d2df3a4bb73b",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 58, slot 0x800b0850 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489864,
+      "origin": "checked-root",
+      "sha256": "a879767fc7130c03f7255d8e93cb0dea76c785b71a4a5e82284233c580c63f0c",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 59, slot 0x800b0870 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2489880,
+      "origin": "checked-root",
+      "sha256": "142b11da0101f8818822c98091521b3dddb2b199178aba55be0eea2caf0668b9",
+      "evidence": "Animation descriptor callback family: table 0x800b0a60, class-selected root 0x800b0a60, state 44, slot 0x800b0e08 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 45, slot 0x800b0e28 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8); table 0x800b0a60, class-selected root 0x800b0a60, state 46, slot 0x800b0e48 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2490352,
+      "origin": "checked-root",
+      "sha256": "4447aeec0d099bfbf860b24fed5d10ae58f941a18c6494d0e10fdc06c4707adc",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 49, slot 0x800b09c8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2490424,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 50, slot 0x800b09e8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2490464,
+      "origin": "checked-root",
+      "sha256": "159ae9cdaff7494e5dee082f5f5a93bd1c4a6ece121a33982939b21e4b4b70d7",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 61, slot 0x800b0a24 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2490492,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "Animation descriptor callback family: table 0x800b0700, class-selected root 0x800b0a60, state 61, slot 0x800b0a28 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2500588,
+      "origin": "checked-root",
+      "sha256": "7ee252e332c98b73ff3f3397e2bf02be04fe46267cc6a6433947259acae34e0e",
+      "evidence": "Animation descriptor callback family: table 0x800b1de0, class-selected root 0x800b1de0, state 0, slot 0x800b1e10 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b1de0, class-selected root 0x800b1de0, state 1, slot 0x800b1e30 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2500616,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b1de0, class-selected root 0x800b1de0, state 1, slot 0x800b1e28 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2500656,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Animation descriptor callback family: table 0x800b1de0, class-selected root 0x800b1de0, state 62, slot 0x800b1e48 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2500724,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Animation descriptor callback family: table 0x800b1de0, class-selected root 0x800b1de0, state 63, slot 0x800b1e68 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2500792,
+      "origin": "checked-root",
+      "sha256": "0a8ee458ca5a284ec9ffe0fbe8642f6d8b9c80e060aa46ff89c052e458e64b96",
+      "evidence": "Animation descriptor callback family: table 0x800b1de0, class-selected root 0x800b1de0, state 64, slot 0x800b1e84 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2502004,
+      "origin": "checked-root",
+      "sha256": "49140f528eb23def7ccc2fdfd559087a27dfc88a4198b778f91c27eebb8f4dc1",
+      "evidence": "Animation descriptor callback family: table 0x800b2008, class-selected root 0x800b2008, state 1, slot 0x800b204c (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2504084,
+      "origin": "checked-root",
+      "sha256": "73e0cdb336f181923e96b3d866d7d517e3b047344f98dad7fcbed6ba0802d8eb",
+      "evidence": "Animation descriptor callback family: table 0x800b2008, class-selected root 0x800b2008, state 0, slot 0x800b202c (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2504256,
+      "origin": "checked-root",
+      "sha256": "34a3f31fb5cb47cc236ef12fcbb0f53f9ce3756f8db080971281a2aa7b776ef1",
+      "evidence": "Animation descriptor callback family: table 0x800b2008, class-selected root 0x800b2008, state 0, slot 0x800b2030 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2504428,
+      "origin": "checked-root",
+      "sha256": "ee9795aa42f4495cad2d4ed3dcff62942435379d91603d64a85ef08c5b916186",
+      "evidence": "Animation descriptor callback family: table 0x800b2008, class-selected root 0x800b2008, state 1, slot 0x800b2050 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2506972,
+      "origin": "checked-root",
+      "sha256": "b7bc478d6947f15303f5567f7bbb60a2f8cdb2adbfc3ccb4a89ba6cedfc2a7bf",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 0, slot 0x800b20e0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b20b0, class-selected root 0x800b20b0, state 1, slot 0x800b2100 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b20b0, class-selected root 0x800b20b0, state 2, slot 0x800b2120 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024; table 0x800b20b0, class-selected root 0x800b20b0, state 3, slot 0x800b2140 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2507852,
+      "origin": "checked-root",
+      "sha256": "7b96335cdd05d20add08f6dc8571c5b14af2af8ee2ffa41d3d8b0bcc28126e9a",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 0, slot 0x800b20d4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2507896,
+      "origin": "checked-root",
+      "sha256": "343be92a69a97c3665fd8db8130365eea07834837d7c0e8cd2e879b9e5f781cb",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 0, slot 0x800b20d8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2508056,
+      "origin": "checked-root",
+      "sha256": "3766795a3b3a1d51b0841730b3795ce381f6c93b1b80972d6ec2af1c5523baad",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 1, slot 0x800b20f4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2508148,
+      "origin": "checked-root",
+      "sha256": "343be92a69a97c3665fd8db8130365eea07834837d7c0e8cd2e879b9e5f781cb",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 1, slot 0x800b20f8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2508312,
+      "origin": "checked-root",
+      "sha256": "b490fb77c7c439cc9c9e0f7b52ceffe75e8c2d772264cda9289662b5b00f3980",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 2, slot 0x800b2114 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2508356,
+      "origin": "checked-root",
+      "sha256": "343be92a69a97c3665fd8db8130365eea07834837d7c0e8cd2e879b9e5f781cb",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 2, slot 0x800b2118 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2508516,
+      "origin": "checked-root",
+      "sha256": "8840a1a0e83dff3755fedbfd1bf014a61f2e576f3243bef0f062799d0c1a49fe",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 3, slot 0x800b2134 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2508608,
+      "origin": "checked-root",
+      "sha256": "343be92a69a97c3665fd8db8130365eea07834837d7c0e8cd2e879b9e5f781cb",
+      "evidence": "Animation descriptor callback family: table 0x800b20b0, class-selected root 0x800b20b0, state 3, slot 0x800b2138 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2510284,
+      "origin": "checked-root",
+      "sha256": "250b06744ea8e21eea8d737595c571e53f2557c7f6a3d971307e5c57b0cb41db",
+      "evidence": "Animation descriptor callback family: table 0x800b21e0, class-selected root 0x800b21e0, state 0, slot 0x800b2208 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2510304,
+      "origin": "checked-root",
+      "sha256": "d162ec64130b289159d797b52bd07388995d4e9789ee04cc66c04938791564be",
+      "evidence": "Animation descriptor callback family: table 0x800b21e0, class-selected root 0x800b21e0, state 1, slot 0x800b2224 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2510320,
+      "origin": "checked-root",
+      "sha256": "b572f3c5c49aafd0db7e5761b7a058b87b4df80fac2b8b1c1eaf7f15df444b4c",
+      "evidence": "Animation descriptor callback family: table 0x800b21e0, class-selected root 0x800b21e0, state 1, slot 0x800b2228 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2510680,
+      "origin": "checked-root",
+      "sha256": "3488a4c7b87e6e57d12111fdf0170f03de97bb17cf6654133d8f6106a58f4744",
+      "evidence": "Animation descriptor callback family: table 0x800b21e0, class-selected root 0x800b21e0, state 2, slot 0x800b2244 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2510988,
+      "origin": "checked-root",
+      "sha256": "cd7111ed80a1c2f96014d80b7e9e8cb67b5f0d6d526cc7a748b57128036f7a3a",
+      "evidence": "Animation descriptor callback family: table 0x800b21e0, class-selected root 0x800b21e0, state 2, slot 0x800b2248 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2511360,
+      "origin": "checked-root",
+      "sha256": "a73e205685b3e338aca9d71002c7a456997200d591f618c2ce29d6029ea3df55",
+      "evidence": "Animation descriptor callback family: table 0x800b2290, class-selected root 0x800b2290, state 0, slot 0x800b22b8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2511864,
+      "origin": "checked-root",
+      "sha256": "9b8c1a27fcae15691041e4d123deedb27f309c8d1f4e19c6e1312e171173c364",
+      "evidence": "Animation descriptor callback family: table 0x800b2290, class-selected root 0x800b2290, state 1, slot 0x800b22d8 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2512376,
+      "origin": "checked-root",
+      "sha256": "376badfd2534c3183c8087bd80b927ac6a20565998c3ab49be4e77395c1fce09",
+      "evidence": "Animation descriptor callback family: table 0x800b2290, class-selected root 0x800b2290, state 0, slot 0x800b22b4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2512572,
+      "origin": "checked-root",
+      "sha256": "8b843210644018eff0ea646d2a995e05c4c9a1b52c790525fe6b98c056bf29ba",
+      "evidence": "Animation descriptor callback family: table 0x800b2290, class-selected root 0x800b2290, state 1, slot 0x800b22d4 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2513708,
+      "origin": "checked-root",
+      "sha256": "4097666d7bf195f8c02da9320b67c3445742e559e906041ff58cca8bd9ea6aae",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 0, slot 0x800b2360 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2513736,
+      "origin": "checked-root",
+      "sha256": "e1107bdd0fbd604b6417f36f3fb8dea0b0033cd23fb384548d55bafa062e623e",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 1, slot 0x800b2380 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2513752,
+      "origin": "checked-root",
+      "sha256": "f9d3172e16a64906d6f985591c73c6554b38f5834eaa96a708c9442340f6afba",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 1, slot 0x800b2374 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2514120,
+      "origin": "checked-root",
+      "sha256": "f60994703125069fc4fd658fee44145b70f4beb57b12b37d65191a9208923a97",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 1, slot 0x800b2378 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2514180,
+      "origin": "checked-root",
+      "sha256": "918b6e33898eff9e193131ff97186e7b60c15190aacc2957017be1ad2c65579f",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 2, slot 0x800b23a0 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2514196,
+      "origin": "checked-root",
+      "sha256": "a59f2efa73bd9bd56ed34e6d696f80cbfb1fed9252dd34b95b4ec7199e52bec7",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 2, slot 0x800b2394 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2514464,
+      "origin": "checked-root",
+      "sha256": "f60994703125069fc4fd658fee44145b70f4beb57b12b37d65191a9208923a97",
+      "evidence": "Animation descriptor callback family: table 0x800b2330, class-selected root 0x800b2330, state 2, slot 0x800b2398 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2515456,
+      "origin": "checked-root",
+      "sha256": "063a27b7e88e0140bf90eae8145f457346e24669e687cb28d4a1619265ba58ad",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 0, slot 0x800b2440 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2515504,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 0, slot 0x800b2434 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2515588,
+      "origin": "checked-root",
+      "sha256": "614d5b88382cf43ccf298112e6d187f95fc52cf106d8a6d946a981e9b0999926",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 1, slot 0x800b2460 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2515644,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 1, slot 0x800b2454 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2515840,
+      "origin": "checked-root",
+      "sha256": "0f881cdd7f5ef7154d2cf0b1260f59b80f4df6b9439548bba3f7f5e75359c8db",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 1, slot 0x800b2458 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2516112,
+      "origin": "checked-root",
+      "sha256": "d1ed9feed71505311b9484c60ba31982bbeb0a053cf7731576c7df37d7f830ff",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 2, slot 0x800b2474 (+0x4), consumer 0x24355c. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2516128,
+      "origin": "checked-root",
+      "sha256": "34cc0fdeae56ffd89e8a173788fc587c79545b232e96717bc225fb5c865a9e5d",
+      "evidence": "Animation descriptor callback family: table 0x800b2410, class-selected root 0x800b2410, state 2, slot 0x800b2478 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2517064,
+      "origin": "checked-root",
+      "sha256": "e351d796a3ce29349dcf2cf56b59fcf2cb3b7581c333f2e3cbdcc42924489ca3",
+      "evidence": "Animation descriptor callback family: table 0x800b2510, class-selected root 0x800b2510, state 0, slot 0x800b2540 (+0x10), consumer 0x2431f0, after code-range classifier 0x267024. Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2517076,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "Animation descriptor callback family: table 0x800b2510, class-selected root 0x800b2510, state 0, slot 0x800b2538 (+0x8), consumer class updater (e.g. 0x257e28/0x25c97c/0x2627d8). Class initializers store these headers at animation +0x2c. Original 0x243414 walks 32-byte state records from header +0x20 until id -1 and follows the header +0 parent link; the selected record is stored at animation +0x30. Init, update and optional animation-selector consumers use the reviewed columns of that same record."
+    },
+    {
+      "vram": 2473608,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor class secondary setup family: class 1, descriptor 0x800b1760 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2507292,
+      "origin": "checked-root",
+      "sha256": "f8f86ef4059124e023249c96105159e1ac8b62995af9b2a6948a203e43e41043",
+      "evidence": "Actor class secondary setup family: class 2, descriptor 0x800b2170 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2503724,
+      "origin": "checked-root",
+      "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
+      "evidence": "Actor class secondary setup family: class 3, descriptor 0x800b2088 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2500328,
+      "origin": "checked-root",
+      "sha256": "551f9443f2b801d5e4692adacb5b3475b1274c628b38da3c862e82c5aad62228",
+      "evidence": "Actor class secondary setup family: class 4, descriptor 0x800b1ec0 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2510024,
+      "origin": "checked-root",
+      "sha256": "b1d3d18c71019fb9c3cf240535c12880661105c323339eabc8827049f7d9f130",
+      "evidence": "Actor class secondary setup family: class 5, descriptor 0x800b2280 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2512224,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor class secondary setup family: class 6, descriptor 0x800b2310 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2513536,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor class secondary setup family: class 7, descriptor 0x800b23d0 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2516884,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "Actor class secondary setup family: class 9, descriptor 0x800b2570 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2515260,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "Actor class secondary setup family: class 10, descriptor 0x800b24b0 +4. Original 0x21e5d4 guards the class index unsigned <13 at 0x21e5ec, selects the same 0x800acb60 pointer array as the constructor, loads descriptor +4 at 0x21e668 and calls at 0x21e674 with actor/actor+0x140. All nonnull secondary callback entries in this bounded class family were reviewed together; special descriptor 0x800ae994 +4 is null."
+    },
+    {
+      "vram": 2197024,
+      "origin": "checked-root",
+      "sha256": "c5ffeeabde66f41c5dcd86f615efc7a6a09fae6eaf19919e085c78114e6d6475",
+      "evidence": "Animation component decoder: function 0x216604 selects this complete entry in saved register s7 at 0x216684 for selector 0. Reviewed all three selector branches (0/1/2) at 0x21664c..0x2166a4; no other s7 assignment precedes JALR s7 at 0x2167ac, which passes the bit-reader state, destination component and shared decode parameter. The selected saved register survives the reader calls."
+    },
+    {
+      "vram": 2188388,
+      "origin": "checked-root",
+      "sha256": "689914d3f428747d121abc654d2b2669591ae1017be583dc1132589499f4c6cb",
+      "evidence": "Animation component decoder: function 0x216604 selects this complete entry in saved register s7 at 0x216694 for selector 1. Reviewed all three selector branches (0/1/2) at 0x21664c..0x2166a4; no other s7 assignment precedes JALR s7 at 0x2167ac, which passes the bit-reader state, destination component and shared decode parameter. The selected saved register survives the reader calls."
+    },
+    {
+      "vram": 2197208,
+      "origin": "checked-root",
+      "sha256": "09a1943cc7f7915429d427d58f66463d88281fecfde51b08b8311f92c41d713e",
+      "evidence": "Animation component decoder: function 0x216604 selects this complete entry in saved register s7 at 0x2166a4 for selector 2. Reviewed all three selector branches (0/1/2) at 0x21664c..0x2166a4; no other s7 assignment precedes JALR s7 at 0x2167ac, which passes the bit-reader state, destination component and shared decode parameter. The selected saved register survives the reader calls."
+    },
+    {
+      "vram": 2456128,
+      "origin": "checked-root",
+      "sha256": "8fb23cc03735d0797572ec64b0ef99dd610eb9df39e400aa2909fcf32463fd5f",
+      "evidence": "Embedded player actor transform: 0x42da60 creates the second actor at a0+0x288 (0x42db18..0x42db3c), then stores this callback at outer actor +0x4cc at 0x42db60, exactly inner actor +0x244. Consumer 0x21a270 invokes actor +0x244 with actor and its +0x140 animation object. Sibling actor methods at outer +0x4c0/+0x4c8 reuse already registered 0x247c10/0x25689c."
+    },
+    {
+      "vram": 2485580,
+      "origin": "checked-root",
+      "sha256": "31cb41124446931d4366197761950b0273e7bb06602cb4e9c450d8377df75d8d",
+      "evidence": "Extended actor animation method family: func_00260060 store at 0x260070, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 2491820,
+      "origin": "checked-root",
+      "sha256": "31cb41124446931d4366197761950b0273e7bb06602cb4e9c450d8377df75d8d",
+      "evidence": "Extended actor animation method family: func_0025e94c store at 0x25e978, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 2516548,
+      "origin": "checked-root",
+      "sha256": "31cb41124446931d4366197761950b0273e7bb06602cb4e9c450d8377df75d8d",
+      "evidence": "Extended actor animation method family: func_00266490 store at 0x26649c, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4203524,
+      "origin": "checked-root",
+      "sha256": "9e2c13a5a01fa0997068d07a72c9528acb21f5a7f55d7be360b7521079b50684",
+      "evidence": "Extended actor animation method family: func_00402888 store at 0x4028bc, field +0xf8, consumer 0x2465dc. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4205072,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "Extended actor animation method family: func_00402888 store at 0x4028b0, field +0xf0, consumer 0x245940. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4208224,
+      "origin": "checked-root",
+      "sha256": "f914ad2016ce9ac0a2be41f60671ec22c6fdf894e8c246c43b35d05ea8e38872",
+      "evidence": "Extended actor animation method family: func_00402888 store at 0x4028d4, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4208560,
+      "origin": "checked-root",
+      "sha256": "612fe12b6659beaddf2761bdd6c336d1489f708003519e5f3d54b7f6c20e912f",
+      "evidence": "Extended actor animation method family: func_00403cf8 store at 0x403d60, field +0xf8, consumer 0x2465dc. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4210492,
+      "origin": "checked-root",
+      "sha256": "ea33a545566201455ffc5e2bf20220267fee5adecb5de39dbf487a7059afd380",
+      "evidence": "Extended actor animation method family: func_00403cf8 store at 0x403d54, field +0xf0, consumer 0x245940. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4226496,
+      "origin": "checked-root",
+      "sha256": "b0afc12ce1c5d974c9ef94a1ea911c8bb62399edbdc6f5c90a8e29877c5fa64b",
+      "evidence": "Extended actor animation method family: func_00403cf8 store at 0x403d78, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4228512,
+      "origin": "checked-root",
+      "sha256": "ffd348d9e12abd36c8c39ed1652c125e947325c4bccc5247c3ce875d5687229a",
+      "evidence": "Extended actor animation method family: func_004088b0 store at 0x4088cc, field +0xf0, consumer 0x245940. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4229600,
+      "origin": "checked-root",
+      "sha256": "66f01ceae943d3fbc6595e63b33b4ecc5b3db935de84392d21fed75dc083d7e8",
+      "evidence": "Extended actor animation method family: func_004088b0 store at 0x408930, field +0x234, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4231152,
+      "origin": "checked-root",
+      "sha256": "32f1465ff215ce1cebca46e4e8e28ea76affed6c862aa67c3a6d9a0bc239983d",
+      "evidence": "Extended actor animation method family: func_004088b0 store at 0x4088d8, field +0xf8, consumer 0x2465dc. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4242532,
+      "origin": "checked-root",
+      "sha256": "46426748d6617316276102de5218a8630d2669887915bfa43974d4631f7ed1fa",
+      "evidence": "Extended actor animation method family: func_00409340 store at 0x409450, field +0xf0, consumer 0x245940. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4243172,
+      "origin": "checked-root",
+      "sha256": "7f996dc3b4416b9476d051425080fe1810050b1634af60f551e661bacf53dca0",
+      "evidence": "Extended actor animation method family: func_00409340 store at 0x409484, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4243440,
+      "origin": "checked-root",
+      "sha256": "414bbd7d4ab6bf64fabde739920da2f995d0c3dcc683ab8efca070827ceda81a",
+      "evidence": "Extended actor animation method family: func_00409340 store at 0x409474, field +0xfc, consumer 0x21a7a4. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4250040,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "Extended actor animation method family: func_0040d5c4 store at 0x40d608, field +0xf8, consumer 0x2465dc. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4250256,
+      "origin": "checked-root",
+      "sha256": "ea286a2d91700e609d4e283e45ce9f34d449bfe96ca17c7773fce03467cac22c",
+      "evidence": "Extended actor animation method family: func_0040d5c4 store at 0x40d5fc, field +0xf0, consumer 0x245940. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4251060,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "Extended actor animation method family: func_0040d6a0 store at 0x40d6d0, field +0xf8, consumer 0x2465dc; func_0040d7a8 store at 0x40d7d8, field +0xf8, consumer 0x2465dc; func_0040d8b0 store at 0x40d8e0, field +0xf8, consumer 0x2465dc. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4251504,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "evidence": "Extended actor animation method family: func_0040d6a0 store at 0x40d6c4, field +0xf0, consumer 0x245940; func_0040d7a8 store at 0x40d7cc, field +0xf0, consumer 0x245940; func_0040d8b0 store at 0x40d8d4, field +0xf0, consumer 0x245940. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4255152,
+      "origin": "checked-root",
+      "sha256": "aeda44cd4332b70180f05ad1bc18d8f3864e24cb21b1e3b21d91588e2f6f8111",
+      "evidence": "Extended actor animation method family: func_0040d5c4 store at 0x40d61c, field +0xf4, consumer 0x21d774; func_0040d6a0 store at 0x40d708, field +0xf4, consumer 0x21d774; func_0040d7a8 store at 0x40d810, field +0xf4, consumer 0x21d774; func_0040d8b0 store at 0x40d918, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4255392,
+      "origin": "checked-root",
+      "sha256": "f579346cfe8c0db896e4eeefb6e2746a1f54d726ba5a46a6656cbf8b3b0d0dde",
+      "evidence": "Extended actor animation method family: func_0040d6a0 store at 0x40d6fc, field +0xf4, consumer 0x21d774; func_0040d7a8 store at 0x40d804, field +0xf4, consumer 0x21d774; func_0040d8b0 store at 0x40d90c, field +0xf4, consumer 0x21d774. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 4231168,
+      "origin": "checked-root",
+      "sha256": "e12e010f1ec33d612a7ab68a1d3dc9c4e9a3c875dbda2bc54e6fb084265a4b5f",
+      "evidence": "Extended actor animation method family: func_00409340 store at 0x40945c, field +0xf8, consumer 0x2465dc. Reviewed class secondary setup calls preserve actor in a0 and its embedded animation in a1 (or saved s0/s3/s5); animation update-state callbacks use the same ABI. Field +0x234 is the actor alias of animation +0xf4. Unproved +0x108 methods remain excluded."
+    },
+    {
+      "vram": 2349976,
+      "origin": "checked-root",
+      "sha256": "19a4afc93d8bf65fc3c3c064b8439cb1762115fefdacacc7c1d3f4398f22cb45",
+      "evidence": "Live missing-function review: published caller 0x23d050 materializes 0x23db98 in a3 at 0x23d42c/0x23d430 and calls 0x226f90 at 0x23d434 (0x0c089be4), with 8-byte elements in a2. Consumer 0x226f90 saves a3 in s6 at 0x226fa0 and invokes jalr s6 at 0x22705c/0x22707c (0x02c0f809), passing two element pointers in a0/a1. Distinct closed leaf at ROM 0x3e798, 0x24 bytes: compares float fields at +4, returns -1 or +1 in v0, and returns via jr ra at 0x23dbb4 with nop delay slot; previous function returns at 0x23db90/0x23db94, next prologue is 0x23dbbc. No existing instruction owner in the normal generated metadata."
+    },
+    {
+      "vram": 2349916,
+      "origin": "checked-root",
+      "sha256": "aadcc0858dcc0bda72d483ba730ad18f7672ee1b782e8df1b1ab025dd717b7bf",
+      "evidence": "Live missing-function review: published caller 0x23d050 materializes 0x23db5c at 0x23d418/0x23d41c and stores it at sp+0x10 at 0x23d420 before calling 0x226f90 at 0x23d434 (0x0c089be4), with 8-byte elements in a2. Consumer 0x226f90 allocates 0x130 stack bytes and loads this argument into s7 from sp+0x140 at 0x226fa8; jalr s7 at 0x227040/0x227098/0x2270ac (0x02e0f809) passes two element pointers in a0/a1. Distinct closed leaf at ROM 0x3e75c, 0x3c bytes: swaps both 32-bit fields through an 8-byte stack temporary, preserves ra, and returns via jr ra at 0x23db90 with stack restoration in the delay slot. Previous function returns at 0x23db54/0x23db58; next entry is comparator 0x23db98. No existing instruction owner in the normal generated metadata; the published caller's metadata independently inferred this stack-argument callback."
+    },
+    {
+      "vram": 2337560,
+      "origin": "direct-jal",
+      "sha256": "3a30b75bc72d208a614b71c72042a3291f8233e5318c257f797a7153f0f89ea2",
+      "evidence": "Live missing-function review: published caller 0x23d4d4 owns JAL 0x0c08eac6 at 0x23d6d4 and 0x23d740. At 0x23d6b4..0x23d6d8 it supplies a0..a3 plus mode 7 at sp+0x10, float at sp+0x14 and zero at sp+0x18, matching this entry's 0xd0-byte frame and stack arguments. Distinct body at ROM 0x3b718, ending at 0x23b38c exclusive: preceding return is 0x23ab10/0x23ab14; next prologue is 0x23b38c. JR v0 at 0x23ad8c uses the profile's checked seven-entry table at 0x800a6640 after unsigned (mode - 1) < 7 at 0x23ad74. All cases converge on the saved-register/FP restoration at 0x23b360 and JR ra at 0x23b384 with sp += 0xd0 in its delay slot. No existing instruction owner in the normal generated metadata."
+    },
+    {
+      "vram": 2361304,
+      "origin": "checked-root",
+      "sha256": "19a4afc93d8bf65fc3c3c064b8439cb1762115fefdacacc7c1d3f4398f22cb45",
+      "evidence": "Live missing-function review: published caller 0x24032c materializes 0x2407d8 in a3 at 0x240600/0x240604 and calls 0x226f90 at 0x240608 (0x0c089be4), with 8-byte elements in a2 from the delay slot. Consumer 0x226f90 saves a3 in s6 at 0x226fa0 and invokes jalr s6 at 0x22705c/0x22707c (0x02c0f809), passing two element pointers in a0/a1; its small-range helper 0x227184 also invokes the comparator at 0x2271d8. Distinct closed nine-instruction leaf at ROM 0x413d8, 0x24 bytes: compares float fields at +4, returns -1 or +1 in v0, and returns via jr ra at 0x2407f4 with nop delay slot. Previous function returns at 0x2407d0/0x2407d4; next prologue is 0x240800. No existing instruction owner in the normal generated metadata; the published caller's metadata independently inferred this call-argument callback."
+    }
+  ]
+}

@@ -40,6 +40,24 @@
     <ClInclude Include="$(RecompRoot)backends\texture_decode.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\texture_editor.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\texture_editor.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)backends\texture_editor_hooks.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)backends\texture_editor_paths.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\texture_editor_zip.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\texture_editor_zip.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\textures.cpp">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -83,6 +101,9 @@
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
     <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake">
+      <Filter>Configuration\cmake\rt64</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
     <ClInclude Include="$(RecompRoot)include\cheats.h">

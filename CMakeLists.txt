@@ -19,7 +19,7 @@ configure_file(licenses/minicoro.txt "${CMAKE_BINARY_DIR}/bin/licenses/minicoro.
 
 # One native game per build tree. Use a separate directory for each mode.
 set(RECOMP_GAME "sm64-us" CACHE STRING "Game to build, or none for shared libraries")
-set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us rayman2-us quake2-us re2-us-v1 turok-us-v12 1080-us banjo-kazooie-us twine-us)
+set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us rayman2-us quake2-us re2-us-v1 turok-us-v12 turok2-us 1080-us banjo-kazooie-us twine-us)
 list(APPEND RECOMP_GAMES bad-apple media-player)
 set_property(CACHE RECOMP_GAME PROPERTY STRINGS none ${RECOMP_GAMES})
 if(NOT RECOMP_GAME STREQUAL "none" AND NOT RECOMP_GAME IN_LIST RECOMP_GAMES)
@@ -147,7 +147,8 @@ if(RECOMP_BUILD_RT64)
     find_package(SDL2 REQUIRED)
     find_package(CURL 7.85 REQUIRED)
     add_library(recomp_renderer STATIC backends/rt64.cpp backends/textures.cpp backends/input.c
-        backends/cheat_database.cpp backends/cheat_menu.cpp)
+        backends/cheat_database.cpp backends/cheat_menu.cpp
+        backends/texture_editor.cpp backends/texture_editor_zip.cpp)
     target_link_libraries(recomp_renderer PUBLIC recomp_runtime RecompRT64::rt64 SDL2::SDL2 CURL::libcurl)
     file(GLOB RECOMP_RENDERER_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/backends/*.h")
     target_sources(recomp_renderer PRIVATE include/renderer.h include/input.h ${RECOMP_RENDERER_HEADERS})

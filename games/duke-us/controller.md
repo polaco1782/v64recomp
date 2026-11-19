@@ -1,4 +1,4 @@
-# Duke Nukem 64 US mouse/keyboard adapter
+# Duke Nukem 64 US controls
 
 The adapter targets US revision 0, cartridge SHA-1
 `98d6778004becc672eba0a5e887f6e3f3d1b5c15`. It is enabled by default in Debug
@@ -32,6 +32,34 @@ Set `RECOMP_DUKE_MOUSE=0` to restore the ordinary keyboard/controller mapping.
 `RECOMP_MOUSE_SENSITIVITY` defaults to `0.08` degrees per mouse count, range
 `0.001..10`; `RECOMP_MOUSE_INVERT_Y=1` reverses vertical look. These apply at launch.
 Keypad `+` / `-` changes FOV independently of mouse capture.
+
+## Steam Deck and dual-stick gamepads
+
+The Deck launcher sets `RECOMP_DUKE_MOUSE=0` and `RECOMP_DUKE_GAMEPAD=1`.
+The left stick walks forward/backward and strafes with proportional speed, from
+gentle movement to the native full digital movement speed. The shared 12% radial
+deadzone preserves diagonal direction. The right stick turns and looks up/down
+through Duke's native analog/free-look path. Face buttons, triggers, bumpers and
+D-pad C-buttons retain the game's selected action bindings. Menus, pause, maps,
+demos, death and multiplayer use the original controller path.
+
+The generic N64 layout alone puts looking on the left stick and digital walking
+on the right because that is Duke's native control scheme. The dual-stick mode
+separates these at the checked single-player command boundary. It temporarily
+selects free-look and supplies right-stick axes, restoring the saved aim setting,
+cached controller values and working controls after the original call.
+
+At the first `mulscale9` call from `getinput` (return `0x800a2d04`), a scoped
+wrapper adds left-stick travel to the native forward/side velocities before the
+original sine-table rotation. Full stick supplies 80 velocity units; the native
+90-unit component limits still apply when combined with digital movement. The
+ROM retains world-space rotation, friction contributions and all player physics.
+Other callers of the fixed-point helper are unchanged. Generation checks its
+complete body and the caller/global operands alongside the existing evidence.
+
+Set `RECOMP_DUKE_GAMEPAD=0` to restore the original N64 stick assignment. Debug
+controller replay disables both live adapters and preserves original pad
+semantics. Active mouse capture takes priority over dual-stick input.
 
 Capture requires game state 2, no inactive/demo flag, one local player, no pause
 or overhead map, positive player health, no fist/exit sequence and no remote
@@ -109,6 +137,18 @@ These establish static evidence and translated coverage, not gameplay acceptance
 
 ## Gameplay acceptance
 
-The user subsequently confirmed that the input and
-FOV changes work well in game. Broader level progression, sustained audio and
-less common controller/camera transitions remain unverified.
+The user confirmed the earlier desktop input and FOV changes work well in game.
+The November 12 dual-stick change passes generation, Debug/Release builds and
+716 focused ROM-backed checks in each mode. These exercise progressive forward,
+backward and strafe commands, separate right-stick look, native rotation/friction,
+saved controls, pause bypass and unrelated fixed-point calls. SDL virtual-stick
+travel of 0/25/50/75/100% produces movement commands 0/384/1120/1824/2560 after
+the shared radial deadzone.
+
+Rendered checks reached the title/menu for 2,400 Debug and 3,300 Release
+presentations; automated navigation did not establish gameplay movement. The
+installed Deck Release passes a 180-presentation startup with a temporary save,
+and the user's save checksum is unchanged. Physical Deck stick feel and gameplay
+acceptance remain pending. Temporary probes/replays/captures were removed.
+Broader progression, sustained audio and uncommon controller/camera transitions
+remain unverified.

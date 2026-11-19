@@ -36,6 +36,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/StableProjection.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/PrimitiveDepth.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/LookAtMatching.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/AnamorphicPresentation.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/TextureEditor.cmake")
 
 # Keep optimized native renderer stacks usable by the built-in CPU sampler.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

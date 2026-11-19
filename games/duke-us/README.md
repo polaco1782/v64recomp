@@ -5,6 +5,8 @@ Original menus and first level with RT64 graphics, ABI1 audio and live input. Fu
 Single-player WASD/mouse controls are enabled by default. See the
 [controller guide](controller.md) for bindings, settings, ROM evidence and
 validation. `RECOMP_DUKE_MOUSE=0` restores the ordinary controller path.
+The Deck launcher also enables `RECOMP_DUKE_GAMEPAD=1` for progressive left-stick
+walking/strafe and right-stick look, preserving native menus and saved bindings.
 
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/duke-us/profile.toml --rom /path/to/rom`.

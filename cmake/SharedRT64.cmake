@@ -69,7 +69,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_LIST_DIR}/rt64/StableProjection.cmake"
     "${CMAKE_CURRENT_LIST_DIR}/rt64/PrimitiveDepth.cmake"
     "${CMAKE_CURRENT_LIST_DIR}/rt64/AnamorphicPresentation.cmake"
-    "${CMAKE_CURRENT_LIST_DIR}/rt64/LookAtMatching.cmake")
+    "${CMAKE_CURRENT_LIST_DIR}/rt64/LookAtMatching.cmake"
+    "${CMAKE_CURRENT_LIST_DIR}/rt64/TextureEditor.cmake")
 
 # Local symlinks (copies on Windows) let generators order missing libraries.
 # Cleaning a game preserves the shared artifacts.

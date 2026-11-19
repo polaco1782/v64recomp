@@ -21,6 +21,17 @@ SYSTEM_LIBRARY = re.compile(
 GLIBC_VERSION = re.compile(r"\bGLIBC_(\d+(?:\.\d+)+)\b")
 CXX_VERSION = re.compile(r"\bGLIBCXX_(\d+(?:\.\d+)+)\b")
 ROOT = Path(__file__).resolve().parents[2]
+GAMEPAD_DEFAULTS = {
+    "oot-us-v12": {"RECOMP_OOT_MOUSE": "0", "RECOMP_OOT_GAMEPAD_CAMERA": "1"},
+    "goldeneye-us": {"RECOMP_GOLDENEYE_MOUSE": "0", "RECOMP_GOLDENEYE_GAMEPAD": "1"},
+    "duke-us": {"RECOMP_DUKE_MOUSE": "0", "RECOMP_DUKE_GAMEPAD": "1"},
+    "turok-us-v12": {"RECOMP_TUROK_MOUSE": "0"},
+    "quake-us": {"RECOMP_QUAKE_MOUSE": "0"},
+    "quake2-us": {"RECOMP_QUAKE2_MOUSE": "0"},
+    "rayman2-us": {"RECOMP_RAYMAN2_MOUSE": "0"},
+    "hexen-us": {"RECOMP_HEXEN_MOUSE": "0"},
+    "nightmare-us": {"RECOMP_NIGHTMARE_MOUSE": "0"},
+}
 
 
 def output(*args):
@@ -79,14 +90,12 @@ def package(game, build):
     (destination / "GLIBC-REQUIREMENTS.txt").write_text("".join(report))
     (destination / "local").mkdir()
     launcher = destination / "launch.sh"
-    # OoT uses native analog movement/camera and D-pad C-buttons on the Deck.
-    gamepad_defaults = (
-        'export RECOMP_OOT_MOUSE="${RECOMP_OOT_MOUSE-0}"\n'
-        'export RECOMP_OOT_GAMEPAD_CAMERA="${RECOMP_OOT_GAMEPAD_CAMERA-1}"\n'
-    ) if game == "oot-us-v12" else (
-        'export RECOMP_GOLDENEYE_MOUSE="${RECOMP_GOLDENEYE_MOUSE-0}"\n'
-        'export RECOMP_GOLDENEYE_GAMEPAD="${RECOMP_GOLDENEYE_GAMEPAD-1}"\n'
-    ) if game == "goldeneye-us" else ""
+    # Desktop mouse adapters can replace gameplay pad input. Deck launches use
+    # native controls, with dedicated camera/aim modes where supported.
+    gamepad_defaults = "".join(
+        f'export {name}="${{{name}-{value}}}"\n'
+        for name, value in GAMEPAD_DEFAULTS.get(game, {}).items()
+    )
     rom_argument = "" if embedded_rom else f' --rom "$here/local/{rom}"'
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
@@ -123,6 +132,10 @@ exec "$here/{game}"{rom_argument} \\
         "LT = fire; RT/RB = aim; A = change weapon; X = use/reload; Menu = watch.\n"
         "RECOMP_GOLDENEYE_GAMEPAD=0 restores the saved N64 control style.\n"
     ) if game == "goldeneye-us" else (
+        "Left stick = proportional walking/strafe; right stick = turn/look.\n"
+        "Buttons retain the game's selected N64 bindings; Menu = Start.\n"
+        "RECOMP_DUKE_GAMEPAD=0 restores the original N64 stick assignment.\n"
+    ) if game == "duke-us" else (
         "A/X = N64 A/B; left trigger = Z; right trigger = R; right stick = C-buttons.\n"
         "Menu = Start; D-pad = N64 D-pad.\n"
     )

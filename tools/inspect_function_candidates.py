@@ -18,10 +18,10 @@ from common import RecompError, load_metadata, write_json
 from emit import SUPPORTED, decode, target
 from export_analysis_rom import load_analysis_rom
 from generate_game import GAMES
-from metadata_candidates import indexed_call_tables, materialized_entries, owned_ranges
+from metadata_candidates import indexed_call_tables, indirect_field_calls, materialized_entries, owned_ranges, shared_entry_slots
 
 
-def probe_body(rom, section, address, owners, entries, transfers, limit):
+def probe_body(rom, section, address, owners, entries, transfers, limit, shared_entries=()):
     """A bounded control-flow check, not proof of function ownership or ABI."""
     pending, visited, errors, calls = deque([address]), set(), [], []
     terminals, indirect_calls, returns = 0, 0, 0
@@ -50,7 +50,7 @@ def probe_body(rom, section, address, owners, entries, transfers, limit):
         pc = pending.popleft()
         if pc in visited:
             continue
-        if (sid, pc) in owners:
+        if (sid, pc) in owners and not (pc == address and (sid,pc) in shared_entries):
             error(pc, 'overlaps an already owned instruction')
             continue
         i = read(pc)
@@ -137,8 +137,10 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                       for pc in f['instruction_addresses']} if scan else set())
     transfers = {(f['section'],t['pc']):t for f in metadata['functions']
                  for t in f.get('indirect_transfers',[])}
+    shared_entries = shared_entry_slots(rom,metadata['functions'])
     records = {}
     table_uses = []
+    field_uses = []
     table_candidates = []
     skipped_interior = 0
 
@@ -159,7 +161,7 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             key = section['id'],address
             if key in entries and not include_registered:
                 continue
-            if key in owners and key not in entries:
+            if key in owners and key not in entries and key not in shared_entries:
                 skipped_interior += 1
                 continue
             offset = section['rom_offset']+address-section['vram']
@@ -232,6 +234,8 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                 continue
             table_uses.extend(dict(use, section=function['section'], function=function['name'])
                               for use in indexed_call_tables(rom, function))
+            field_uses.extend(dict(use,section=function['section'],function=function['name'])
+                              for use in indirect_field_calls(rom,function))
             if include_registered:
                 for pc in function['instruction_addresses']:
                     offset = function['rom_offset']+pc-function['vram']
@@ -241,7 +245,9 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
                         record(address,dict(kind='direct-call',pc=pc,expected_word=word,
                             rom_offset=offset,section=function['section'],function=function['name']))
             candidates = materialized_entries(rom,{'functions':[]},text_by_section[function['section']],
-                                               source_ranges=owned_ranges(function))
+                                               source_ranges=owned_ranges(function),
+                                               shared_entries={pc for sid,pc in shared_entries
+                                                   if sid == function['section'] or sid not in overlapping_sections})
             for candidate in candidates:
                 for use in candidate['address_uses']:
                     record(candidate['vram'],dict(use,section=function['section'],
@@ -295,14 +301,15 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
             item['body'] = dict(status='registered',instructions=len(entries[key]['instruction_addresses']))
             item['confidence'] = 'registered'
             continue
-        body = probe_body(rom,mapping(item['vram'],preferred=item['section']),item['vram'],owners,entries,transfers,max_instructions)
+        body = probe_body(rom,mapping(item['vram'],preferred=item['section']),item['vram'],owners,entries,transfers,
+                          max_instructions,shared_entries)
         for call in body['direct_calls']:
             if mapping(call['vram'],4,item['section']) is None:
                 body['issues'].append(dict(pc=call['pc'],reason='direct call target has no unique CPU mapping'))
                 body['status'] = 'review'
         item['body'] = body
         kinds = {r['kind'] for r in item['references']}
-        strong = bool(kinds & {'constant-indirect-call','call-argument','stored-address','candidate-direct-call',
+        strong = bool(kinds & {'constant-indirect-call','call-argument','stack-argument','stored-address','candidate-direct-call',
                               'indexed-table-call'})
         item['confidence'] = ('likely' if body['status']=='closed' and (strong or
                               body['stack_prologue'] and kinds!={'stack-prologue'})
@@ -343,7 +350,7 @@ def inspect_candidates(rom: bytes, metadata: dict, *, include_registered=False,
         rejected_pointer_candidates=dict(rejected),
         excluded_owned_interiors=skipped_interior,
         warning='Heuristics do not prove callback ABI, table bounds, code ownership or playability. Review sources and bodies before adding checked entries.',
-        indirect_tables=table_candidates, candidates=candidates)
+        indirect_tables=table_candidates, indirect_fields=field_uses, candidates=candidates)
 
 
 def main():

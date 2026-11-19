@@ -2832,6 +2832,148 @@
         ]
       },
       "group": "build"
+    },
+    {
+      "label": "Configure Debug: Turok 2 US 1.0",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "turok2-us-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Debug: Turok 2 US 1.0",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "turok2-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Turok 2 US 1.0",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Turok 2 US 1.0",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "turok2-us-release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Turok 2 US 1.0",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "turok2-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Turok 2 US 1.0",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     }
   ]
 }

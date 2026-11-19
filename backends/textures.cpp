@@ -1,5 +1,6 @@
 #include "textures.h"
 #include "texture_decode.h"
+#include "texture_editor_zip.h"
 #include "xxHash/xxh3.h"
 #include "common/rt64_tmem_hasher.h"
 #include "common/rt64_filesystem_directory.h"
@@ -58,6 +59,7 @@ void RecompTextureFiles::configure(RT64::TextureCache& cache, const std::string&
     if (const char *path = std::getenv("RECOMP_TEXTURE_PACK"); path && *path) {
         replacementDirectory = path;
         zipPack = true;
+        replacementDirectory = std::filesystem::canonical(replacementDirectory);
     }
     reload(cache);
 }
@@ -70,13 +72,7 @@ void RecompTextureFiles::reload(RT64::TextureCache& cache) {
     PausedUploads pause(cache);
     cache.clearReplacementDirectories();
     if (zipPack) {
-#ifdef RECOMP_DEBUG
-        constexpr bool logLoads = true;
-#else
-        constexpr bool logLoads = false;
-#endif
-        if (!cache.loadTexturePack(replacementDirectory, romTitle, rdramByteCount, logLoads))
-            throw std::runtime_error("could not load texture ZIP");
+        loadZip(cache);
         return;
     }
     // A missing pack is normal: the game uses its original textures.
@@ -154,6 +150,39 @@ void RecompTextureFiles::reload(RT64::TextureCache& cache) {
     cache.reloadReplacements(true);
     std::fprintf(stderr, "Texture replacements: %llu PNGs in %s (F5 reloads and toggles originals/replacements)\n",
                  static_cast<unsigned long long>(replacementFiles), replacementDirectory.u8string().c_str());
+}
+
+void RecompTextureFiles::loadZip(RT64::TextureCache& cache) {
+#ifdef RECOMP_DEBUG
+    constexpr bool logLoads = true;
+#else
+    constexpr bool logLoads = false;
+#endif
+    if (!cache.loadTexturePack(replacementDirectory, romTitle, rdramByteCount, logLoads))
+        throw std::runtime_error("could not load texture ZIP");
+}
+
+void RecompTextureFiles::editZip(RT64::TextureCache& cache, const std::string& entry, const std::vector<uint8_t>& png) {
+    RecompTextureZip::Edit edit(replacementDirectory, entry, png);
+    {
+        PausedUploads pause(cache);
+        cache.clearReplacementDirectories();
+        try {
+            edit.publish();
+        } catch (...) {
+            loadZip(cache);
+            throw;
+        }
+        loadZip(cache);
+    }
+    replacementFiles = 0;
+    replaced.clear();
+}
+
+void RecompTextureFiles::enableReplacements(RT64::TextureCache& cache) {
+    const std::lock_guard lock(cache.textureMapMutex);
+    cache.textureMap.replacementMapEnabled = true;
+    cache.textureMap.globalVersion++;
 }
 
 void RecompTextureFiles::refreshAndToggle(RT64::TextureCache& cache) {

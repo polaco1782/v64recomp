@@ -238,12 +238,15 @@ Use the maintained command-line tools before writing investigation snippets:
   inference does not promote raw pointers, mutable memory values or prologue
   candidates.
 
-Generated reports under `build/` are ignored by Git. After reviewing an inferred
-entry and validating the affected path, retain the verified entry and its source
-evidence in the game's checked `startup-entries.json` (or complete code inventory).
-Bind the entry to the analysis ROM identity and first-16-byte SHA-256; keep useful
-caller/consumer evidence alongside it. Do not copy speculative candidate lists
-into checked inventories. Normal generation must not rewrite checked inputs.
+Generated reports under `build/` are ignored by Git. Keep manually reviewed
+callback decisions and their source evidence in the game's checked
+`startup-entries.json` (or complete code inventory), bound to the analysis ROM
+identity and first-16-byte SHA-256. Callbacks fully recovered by proven shared
+inference do not need duplicate roots: inspect their generated `entry_sources`
+and document the verified producer/consumer ABI in the port notes. Retain a
+checked entry when the flow requires manual evidence that shared inference
+cannot establish. Do not copy speculative candidate lists into checked
+inventories. Normal generation must not rewrite checked inputs.
 - `tools/disassemble_function.py recomp_s<id>_<address> --game <game>
   --metadata build/<game>-debug/generated/<game>/symbols.json` resolves a native
   stack's generated function name and disassembles its verified owned instructions.
@@ -323,6 +326,14 @@ bring-up, with a verified address and reason. They remain unresolved work and
 cannot stand in for behavior reached by the acceptance replay.
 
 ## 5. Run, diagnose, fix, and replay
+
+Before the first desktop run, and after each coherent discovery correction,
+run `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+--preflight`. Review its callback families, selected translation gaps and active
+SDK boundary candidates in batches. Repeat static discovery/translation as the
+reviewed graph expands, then build and exercise runtime behavior. Do not use
+successive runtime missing-call failures as the primary function-discovery loop.
+The report does not authorize speculative roots or unproved table bounds.
 
 Configure and build separate modes once generation is viable:
 
@@ -428,8 +439,10 @@ lists are not followed. Extracted bytes belong in ignored `build/` or `local/`.
 Fingerprint the full verified text/data spans; a microcode name or an address
 alone does not prove compatibility. Check whether RT64 actually implements the
 identified GBI: a database entry can still map to `Unknown` or a stub handler.
-Use the existing microcode hook for a game-specific extension, keep it in the
-game's parent folder, and retain fatal checks for unsupported behavior. Replay
+Use the existing microcode hook for a game-specific extension, keep its commands,
+fingerprints and lighting in the game's parent folder, and retain fatal checks
+for unsupported behavior. C11 extensions use the generic callback interface in
+`renderer.h`; game semantics do not belong in the shared backend. Replay
 the triggering feature and transitions back to ordinary graphics, then visually
 inspect the feature's output; accepting a task without rendering its commands
 does not resolve the failure.

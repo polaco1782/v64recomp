@@ -172,8 +172,10 @@ typedef struct RecompAiOutput {
      * Copy PCM before returning; this callback must not yield guest threads. */
     bool (*start)(Runtime *, void *, uint32_t address, uint32_t bytes, uint32_t clock, uint32_t divisor);
     void *opaque;
+    void (*pause)(void *, bool paused);
 } RecompAiOutput;
 bool recomp_ai_set_output(Runtime *, const RecompAiOutput *);
+void recomp_ai_pause_output(Runtime *, bool paused);
 void recomp_os_ai_set_frequency(Runtime *, MipsContext *);
 void recomp_os_ai_set_next_buffer(Runtime *, MipsContext *);
 void recomp_os_ai_get_length(Runtime *, MipsContext *);

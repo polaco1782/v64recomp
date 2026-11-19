@@ -4,9 +4,14 @@
 #include "hle/rt64_application.h"
 #include "hle/rt64_workload_queue.h"
 #include "hle/rt64_present_queue.h"
+#include "gbi/rt64_gbi_f3d.h"
+#include "gbi/rt64_gbi_f3dex.h"
+#include "gbi/rt64_gbi_f3dex2.h"
+#include "gbi/rt64_gbi_rdp.h"
 #include "rhi/rt64_render_hooks.h"
 #include "imgui.h"
 #include "textures.h"
+#include "texture_editor.h"
 #include "cheat_menu.h"
 #ifdef RECOMP_DEBUG
 #include "debug_overlay.h"
@@ -16,8 +21,8 @@
 #include <X11/Xutil.h>
 #undef Status
 #endif
-#include <array>
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cstdio>
@@ -30,6 +35,15 @@
 extern "C" void recomp_rt64_set_anamorphic_present(bool enabled);
 
 static std::string texture_dump_directory;
+static bool texture_editor_enabled;
+static uint64_t texture_editor_paused_ns;
+
+void recomp_renderer_enable_texture_editor(bool enabled) {
+    texture_editor_enabled = enabled;
+}
+uint64_t recomp_renderer_paused_ns(void) {
+    return texture_editor_paused_ns;
+}
 
 void recomp_renderer_configure_texture_dump(const char *directory) {
     texture_dump_directory = directory ? directory : "";
@@ -45,6 +59,9 @@ struct RecompRenderer {
     void *aspect_opaque = nullptr;
     bool expanded_aspect = false;
     bool custom_gbi = false;
+    RT64::GBI c_gbi{}, c_base_gbi{};
+    const RecompMicrocodeConfig *c_gbi_config = nullptr;
+    std::array<RecompMicrocodeCommand, UCODE_MAP_SIZE> c_commands{};
     bool raw_rdp = false, raw_vi = false;
     std::thread::id owner = std::this_thread::get_id();
     std::unique_ptr<RT64::Application> app;
@@ -66,12 +83,14 @@ struct RecompRenderer {
     std::atomic<uint64_t> display_frames{0}, first_display_ns{0}, last_display_ns{0};
     uint64_t timing_display_frames = 0;
     RecompTextureFiles textureFiles;
+    std::unique_ptr<RecompTextureEditor> texture_editor;
     uint64_t token = 0;
     bool sp_seen = false, dp_seen = false;
     bool ready = false;
     SDL_Window *window = nullptr;
     std::unique_ptr<RecompInput, decltype(&recomp_input_destroy)> input{nullptr, recomp_input_destroy};
     bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
+    bool texture_editor_escape = false;
     bool keyboard_c_buttons = false;
     bool gamepad_camera = false;
     RecompCameraStick camera_stick{};
@@ -113,6 +132,182 @@ struct RecompRenderer {
     }
 };
 static RecompRenderer *active_renderer;
+static_assert(RECOMP_MICROCODE_MAX_LIGHTS == RSP_MAX_LIGHTS, "C microcode light limit differs from RT64");
+
+struct RecompMicrocodeContext {
+    RT64::State *state;
+    RT64::DisplayList **list;
+};
+
+static RecompRenderer *microcode_owner(RT64::State *state) {
+    RecompRenderer *s = active_renderer;
+    if (!s || s->app->state.get() != state || !s->c_gbi_config)
+        recomp_fail("invalid C microcode callback context", 0);
+    s->check_owner();
+    return s;
+}
+static void microcode_reset(RT64::State *state, bool from_task) {
+    RecompRenderer *s = microcode_owner(state);
+    const auto reset = from_task ? s->c_base_gbi.resetFromTask : s->c_base_gbi.resetFromLoad;
+    if (reset)
+        reset(state);
+    if (s->c_gbi_config->reset) {
+        RecompMicrocodeContext context{state, nullptr};
+        s->c_gbi_config->reset(&context, from_task, s->c_gbi_config->userdata);
+    }
+}
+static void microcode_reset_task(RT64::State *state) {
+    microcode_reset(state, true);
+}
+static void microcode_reset_load(RT64::State *state) {
+    microcode_reset(state, false);
+}
+static void microcode_command(RT64::State *state, RT64::DisplayList **list) {
+    RecompRenderer *s = microcode_owner(state);
+    const uint32_t w0 = (*list)->w0, w1 = (*list)->w1;
+    const auto command = s->c_commands[w0 >> 24];
+    if (!command)
+        recomp_fail("missing C microcode command handler", w0);
+    RecompMicrocodeContext context{state, list};
+    command(&context, w0, w1, s->c_gbi_config->userdata);
+}
+void recomp_renderer_bind_microcode(void *opaque, uint32_t code, uint32_t data, const RecompMicrocodeConfig *config) {
+    RecompRenderer *s = active_renderer;
+    if (!s || !config || s->app->interpreter.get() != opaque || (config->binding_count && !config->bindings))
+        recomp_fail("invalid C microcode binding", code);
+    s->check_owner();
+    if (s->c_gbi_config != config) {
+        s->c_base_gbi = {};
+        RT64::GBI_RDP::setup(&s->c_base_gbi, true);
+        switch (config->base) {
+            case RECOMP_GBI_F3D:
+                s->c_base_gbi.ucode = RT64::GBIUCode::F3D;
+                RT64::GBI_F3D::setup(&s->c_base_gbi);
+                break;
+            case RECOMP_GBI_F3DEX:
+                s->c_base_gbi.ucode = RT64::GBIUCode::F3DEX;
+                RT64::GBI_F3DEX::setup(&s->c_base_gbi);
+                break;
+            case RECOMP_GBI_F3DEX2:
+                s->c_base_gbi.ucode = RT64::GBIUCode::F3DEX2;
+                RT64::GBI_F3DEX2::setup(&s->c_base_gbi);
+                break;
+            default:
+                recomp_fail("unsupported C microcode base", config->base);
+        }
+        s->c_base_gbi.flags.LowP = config->low_precision;
+        s->c_base_gbi.flags.NoN = config->no_near_clip;
+        s->c_base_gbi.flags.ReJ = config->reject;
+        s->c_gbi = s->c_base_gbi;
+        s->c_commands.fill(nullptr);
+        for (size_t i = 0; i < config->binding_count; i++) {
+            const auto& binding = config->bindings[i];
+            if (!binding.command || s->c_commands[binding.opcode])
+                recomp_fail("invalid or duplicate C microcode command", binding.opcode);
+            s->c_commands[binding.opcode] = binding.command;
+            s->c_gbi.map[binding.opcode] = microcode_command;
+        }
+        s->c_gbi.resetFromTask = microcode_reset_task;
+        s->c_gbi.resetFromLoad = microcode_reset_load;
+        s->c_gbi_config = config;
+    }
+    auto *interpreter = s->app->interpreter.get();
+    interpreter->hleGBI = &s->c_gbi;
+    interpreter->UCode.textAddress = code;
+    interpreter->UCode.dataAddress = data;
+    interpreter->state->rsp->setGBI(&s->c_gbi);
+}
+void recomp_microcode_read(RecompMicrocodeContext *context, uint32_t address, bool segmented, void *bytes,
+                           size_t size) {
+    RecompRenderer *s = microcode_owner(context->state);
+    if (segmented)
+        address = context->state->rsp->fromSegmentedMasked(address);
+    if (address > s->rt->rdram_size || size > s->rt->rdram_size - address)
+        recomp_fail("C microcode read outside RDRAM", address);
+    auto *output = static_cast<uint8_t *>(bytes);
+    for (size_t i = 0; i < size; i++)
+        output[i] = context->state->RDRAM[(address + i) ^ 3];
+}
+void recomp_microcode_default(RecompMicrocodeContext *context) {
+    RecompRenderer *s = microcode_owner(context->state);
+    if (!context->list)
+        recomp_fail("C microcode default command outside display list", 0);
+    const uint32_t word = (*context->list)->w0;
+    const auto handler = s->c_base_gbi.map[word >> 24];
+    if (!handler)
+        recomp_fail("C microcode base command is unimplemented", word);
+    handler(context->state, context->list);
+}
+uint32_t recomp_microcode_data_address(RecompMicrocodeContext *context) {
+    microcode_owner(context->state);
+    return context->state->ext.interpreter->UCode.dataAddress;
+}
+uint32_t recomp_microcode_geometry_mode(RecompMicrocodeContext *context) {
+    microcode_owner(context->state);
+    const auto& rsp = *context->state->rsp;
+    return rsp.geometryModeStack[rsp.geometryModeStackSize - 1];
+}
+unsigned recomp_microcode_light_count(RecompMicrocodeContext *context) {
+    microcode_owner(context->state);
+    const int count = context->state->rsp->lightCount;
+    if (count < 0 || count > RECOMP_MICROCODE_MAX_LIGHTS)
+        recomp_fail("invalid C microcode light count", count);
+    return unsigned(count);
+}
+void recomp_microcode_light(RecompMicrocodeContext *context, unsigned index, float direction[3], float color[3]) {
+    microcode_owner(context->state);
+    if (index > RECOMP_MICROCODE_MAX_LIGHTS)
+        recomp_fail("invalid C microcode light index", index);
+    const auto& light = context->state->rsp->lights[index].dir;
+    direction[0] = light.dirx;
+    direction[1] = light.diry;
+    direction[2] = light.dirz;
+    color[0] = light.colr / 255.0f;
+    color[1] = light.colg / 255.0f;
+    color[2] = light.colb / 255.0f;
+}
+static unsigned microcode_vertex_index(RecompMicrocodeContext *context, unsigned index) {
+    microcode_owner(context->state);
+    const auto& rsp = *context->state->rsp;
+    if (index >= RSP_MAX_VERTICES)
+        recomp_fail("invalid C microcode vertex index", index);
+    const auto& draw =
+        context->state->ext.workloadQueue->workloads[context->state->ext.workloadQueue->writeCursor].drawData;
+    const unsigned result = rsp.indices[index];
+    if (result >= draw.vertexCount())
+        recomp_fail("C microcode vertex is not loaded", index);
+    return result;
+}
+void recomp_microcode_vertex(RecompMicrocodeContext *context, unsigned index, RecompMicrocodeVertex *vertex) {
+    const unsigned global = microcode_vertex_index(context, index);
+    const auto& rsp = *context->state->rsp;
+    const auto& draw =
+        context->state->ext.workloadQueue->workloads[context->state->ext.workloadQueue->writeCursor].drawData;
+    const auto& v = rsp.vertices[index];
+    if (global >= draw.posTransformed.size() || global >= draw.worldIndices.size() ||
+        draw.worldIndices[global] >= draw.worldTransforms.size())
+        recomp_fail("C microcode vertex transform is unavailable", index);
+    const auto& p = draw.posTransformed[global];
+    const auto& world = draw.worldTransforms[draw.worldIndices[global]];
+    *vertex = {{float(p.x), float(p.y), float(p.z)},
+               {v.normal.x / 127.0f, v.normal.y / 127.0f, v.normal.z / 127.0f},
+               {v.color.r / 255.0f, v.color.g / 255.0f, v.color.b / 255.0f},
+               {}};
+    for (unsigned row = 0; row < 3; row++)
+        for (unsigned col = 0; col < 3; col++)
+            vertex->world_matrix[row * 3 + col] = float(world[row][col]);
+}
+void recomp_microcode_vertex_color(RecompMicrocodeContext *context, unsigned index, const float color[3]) {
+    const unsigned global = microcode_vertex_index(context, index);
+    auto& draw = context->state->ext.workloadQueue->workloads[context->state->ext.workloadQueue->writeCursor].drawData;
+    interop::RSPLight result{};
+    result.col = {color[0], color[1], color[2]};
+    result.colc = result.col;
+    draw.lightIndices[global] = uint32_t(draw.rspLights.size());
+    draw.lightCounts[global] = 1;
+    draw.rspLights.push_back(result);
+    context->state->updateDrawStatusAttribute(RT64::DrawAttribute::Lights);
+}
 static uint64_t monotonic_ns() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch())
         .count();
@@ -137,9 +332,15 @@ static void display_draw(plume::RenderCommandList *list, plume::RenderFramebuffe
 #endif
     if (s->cheat_menu)
         s->cheat_menu->draw(list);
+    if (s->texture_editor)
+        s->texture_editor->draw(list);
 }
 static int menu_event_filter(void *opaque, SDL_Event *event) {
     auto *s = static_cast<RecompRenderer *>(opaque);
+    if (s->texture_editor &&
+        (s->texture_editor->open() || ((event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) &&
+                                      event->key.keysym.scancode == SDL_SCANCODE_F8)))
+        return 1;
     // Owner shortcuts must reach the app before RT64 consumes them (notably
     // F4, which otherwise opens the replacements inspector instead of recapturing).
     if (s->mouse_enabled && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) &&
@@ -383,6 +584,8 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         std::string romTitle(reinterpret_cast<const char *>(rt->rom + 32), 20);
         while (!romTitle.empty() && (romTitle.back() == ' ' || romTitle.back() == '\0'))
             romTitle.pop_back();
+        if (texture_editor_enabled)
+            s->texture_editor = std::make_unique<RecompTextureEditor>(*s->app, s->textureFiles);
         s->textureFiles.configure(*s->app->textureCache, romTitle, rt->rdram_size, texture_dump_directory);
 #ifdef RECOMP_DEBUG
         if (const char *path = std::getenv("RECOMP_TEXTURE_RAW_DUMP"); path && *path) {
@@ -395,11 +598,12 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         return s.release();
     } catch (const std::exception& e) {
         std::fprintf(stderr, "RT64 setup: %s\n", e.what());
-        SDL_SetEventFilter(nullptr, nullptr);
-        s->cheat_menu.reset();
-#ifdef RECOMP_DEBUG
-        s->debug_overlay.reset();
-#endif
+        if (s->ready) {
+            // RT64's end() joins the queues and releases their Vulkan resources
+            // before destroying the device.
+            recomp_renderer_destroy(s.release());
+            return nullptr;
+        }
         s->app.reset();
         RT64::SetRenderHooks(nullptr, nullptr, nullptr);
         active_renderer = nullptr;
@@ -443,6 +647,12 @@ void recomp_renderer_destroy(RecompRenderer *s) {
         SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_SetEventFilter(nullptr, nullptr);
     s->wait_texture_reload();
+    if (s->texture_editor) {
+        for (auto& scanner : s->app->textureCache->texturePackScanners)
+            if (scanner)
+                scanner->stop();
+        s->texture_editor.reset();
+    }
     s->cheat_menu.reset();
 #ifdef RECOMP_DEBUG
     s->debug_overlay.reset();
@@ -613,6 +823,26 @@ void recomp_renderer_set_aspect_hook(RecompRenderer *s, bool (*update)(void *, f
     recomp_rt64_set_anamorphic_present(false);
     update_native_aspect(s);
 }
+static bool run_texture_editor(RecompRenderer *s) {
+    const auto start = monotonic_ns();
+    recomp_ai_pause_output(s->rt, true);
+    s->wait_texture_reload();
+    {
+        const std::lock_guard lock(s->app->presentQueue->inspectorMutex);
+        if (s->app->presentQueue->inspector)
+            s->app->processDeveloperShortcut(RT64::Application::DeveloperShortcut::Inspector);
+    }
+    SDL_SetRelativeMouseMode(SDL_FALSE);
+    s->mouse_captured = false;
+    s->mouse_frame = {};
+    trace_frame(s, "texture_editor_open");
+    s->texture_editor->run();
+    s->texture_editor_escape = SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_ESCAPE];
+    trace_frame(s, "texture_editor_close");
+    texture_editor_paused_ns += monotonic_ns() - start;
+    recomp_ai_pause_output(s->rt, false);
+    return !s->texture_editor->quitRequested();
+}
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     s->check_owner();
     s->mouse_frame = {};
@@ -653,6 +883,12 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         }
         if (s->cheat_menu->captures_input())
             continue;
+        if (s->texture_editor && event.type == SDL_KEYDOWN && !event.key.repeat &&
+            event.key.keysym.scancode == SDL_SCANCODE_F8) {
+            if (!run_texture_editor(s))
+                return false;
+            continue;
+        }
         if (event.type == SDL_KEYDOWN && s->fov_hook && (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS) &&
             (event.key.keysym.scancode == SDL_SCANCODE_KP_PLUS || event.key.keysym.scancode == SDL_SCANCODE_KP_MINUS)) {
             bool keyboard_captured = false;
@@ -734,7 +970,8 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
     }
 #endif
     const Uint8 *keys = SDL_GetKeyboardState(nullptr);
-    if (!s->mouse_enabled && keys[SDL_SCANCODE_ESCAPE])
+    s->texture_editor_escape &= keys[SDL_SCANCODE_ESCAPE] != 0;
+    if (!s->mouse_enabled && keys[SDL_SCANCODE_ESCAPE] && !s->texture_editor_escape)
         return false;
     if (s->keyboard_c_buttons) {
         if (keys[SDL_SCANCODE_UP])

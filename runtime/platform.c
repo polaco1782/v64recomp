@@ -369,6 +369,11 @@ bool recomp_ai_set_output(Runtime *rt, const RecompAiOutput *output) {
     return true;
 }
 
+void recomp_ai_pause_output(Runtime *rt, bool paused) {
+    if (rt->platform && rt->platform->ai_output.pause)
+        rt->platform->ai_output.pause(rt->platform->ai_output.opaque, paused);
+}
+
 void recomp_os_ai_get_length(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompAiState state = recomp_ai_state(rt);

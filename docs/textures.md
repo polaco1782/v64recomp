@@ -7,8 +7,8 @@ Pass an original Rice/GLideN64 ZIP directly to RT64 in either Debug or Release:
 ```
 
 RT64 indexes the ZIP's filenames once, matches textures as they are drawn, and
-streams the matching PNGs directly from that same archive. The ZIP stays
-unchanged. No extraction, capture files, generated RTZ, or packing step is needed.
+streams the matching PNGs directly from that same archive. Loading a pack leaves
+the ZIP unchanged and requires no extraction or conversion.
 RT64 saves hash-to-entry paths in `/path/to/pack.zip.rt64.json`, atomically on its
 background worker and again at shutdown. The ZIP directory must be writable for
 that cache to persist; a write failure is logged while in-memory matching continues.
@@ -34,6 +34,24 @@ Debug builds print each loaded ZIP entry, its dimensions, and any separate alpha
 mask as `RT64 ZIP loaded: ...`.
 `RECOMP_TEXTURE_PACK=/path/to/pack.zip` is equivalent to the command-line option;
 it takes precedence over `RECOMP_TEXTURE_REPLACEMENTS`.
+
+## Edit a texture pack in-game
+
+Launch with `--texture-pack ZIP` and press **F8**. The editor releases the mouse,
+freezes the displayed frame, and pauses the guest CPU and audio. You can start
+with a ZIP of ordinary PNGs and assign them to textures in the editor. Hover
+over a textured surface to outline its geometry. Click it to see the texture and use
+**Replace...** to choose a PNG from the ZIP. **Import PNG...** adds a local PNG
+to the ZIP and selects it in the browser.
+
+**Use selected texture** writes a separate PNG entry for the target texture's
+hash, preserving the source image in the ZIP. The editor uses the target's Rice
+ID when available and the versioned RT64 hash otherwise. The replacement applies
+everywhere the game uses that texture. Press **F8** or **Esc** to resume and see
+the replacement in play.
+
+Editing requires a writable standalone ZIP supplied through `--texture-pack`.
+The ZIP directory needs room for a temporary copy while an edit is being saved.
 
 ## Embed a ZIP in the executable
 

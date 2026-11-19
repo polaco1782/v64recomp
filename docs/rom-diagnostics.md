@@ -96,6 +96,24 @@ body checks expose unsupported transfers and overlaps. Use
 source evidence for an entry that was registered after an older crash. A likely
 candidate still needs source/ABI and ownership review before becoming a root.
 
+Use `tools/review_candidates.py --game <game> --build-dir build/<game>-debug
+--preflight` to refresh a complete static review packet before launching again.
+It groups register/stack argument producers by shared callee and object-field
+pointer stores by possible consumers, retains every translation gap and links a
+whole-section SDK scan. Matching field offsets still require object-identity
+review. The summary retains indirect calls relying on runtime registered targets
+even when translation is clean. Resolve related callback
+families together and repeat discovery/translation before runtime validation.
+The preflight is read-only with respect to profiles and executables; its output
+is under the selected build's `candidate-review/<game>/preflight/` directory.
+
+For a graphics-task failure, `tools/inspect_rsp_task.py REPORT.json --rom ROM
+--rt64` compares captured text/data bytes against the checked-out RT64 database
+using its exact XXH3 hashes and reports whether the matched variant has a
+decoder. This optional diagnostic requires system `libxxhash`. A recognized SDK
+name or database entry does not by itself establish decoder support. The check
+does not launch a game or validate custom renderer hooks/rendered output.
+
 The scanner also follows constant-base, word-indexed `lw` values into `jalr`
 through owned control flow. `indexed-table-call` references connect a candidate
 to its table slot, pointer load and call site. The CLI lists tables with likely

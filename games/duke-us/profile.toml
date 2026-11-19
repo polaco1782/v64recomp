@@ -2,6 +2,7 @@
 function_wrappers = [
   {section = ".main", vram = 0x800a2754, size = 0x6a0, sha256 = "d62a15157194346303344e541126765ed705c353a7326b2f719308516c4daad3", handler = "duke_input_command_hook"},
   {section = ".main", vram = 0x800a34e0, size = 0x320c, sha256 = "d13a7ecdb8fe34d0a88bac3e4932a48e2b41166344cef40e4317fb20e08118b1", handler = "duke_input_process_hook"},
+  {section = ".main", vram = 0x8008fb84, size = 0x44, sha256 = "be40e0f6b020275facf190e3ebdb5fc5100b4bb85b1a01ef940172e5f48a5414", handler = "duke_input_movement_hook"},
   {section = ".main", vram = 0x8006cf8c, size = 0x12d8, sha256 = "31309f8c4dee86fed6d5db388b9fe2ae2c55b515619df3b02700e965f649f97a", handler = "duke_fov_sprite_hook"},
   {section = ".main", vram = 0x800c3130, size = 0x230, sha256 = "6ea2110098cbd38180f77645602c66f985ec23604d1bb6139bb762e8cf9b27d7", handler = "duke_fov_projection_hook"},
   {section = ".main", vram = 0x8005962c, size = 0x6bc, sha256 = "e1f7c8c2ae9e697fa9d9c97edcdbb483fb3fc91d21c852a21148e3d8151c68cf", handler = "duke_fov_visibility_hook"},
@@ -263,11 +264,15 @@ functions = [
   {name = "getinput", vram = 0x800a2754, size = 0x6a0, sha256 = "d62a15157194346303344e541126765ed705c353a7326b2f719308516c4daad3"},
   {name = "processinput", vram = 0x800a34e0, size = 0x320c, sha256 = "d13a7ecdb8fe34d0a88bac3e4932a48e2b41166344cef40e4317fb20e08118b1"},
   {name = "gameplay", vram = 0x800998d4, size = 0x3a4, sha256 = "7e2305723a520b72fbab946a8827ccd01962623f010b608b0a9b775baf832076"},
+  {name = "mulscale9", vram = 0x8008fb84, size = 0x44, sha256 = "be40e0f6b020275facf190e3ebdb5fc5100b4bb85b1a01ef940172e5f48a5414"},
 ]
 data = []
 bindings = [
   {name = "command_return", kind = "return", value = 0x80099b40, pcs = [0x80099b38, 0x80099b3c], words = [0x0c0289d5, 0x01002025]},
   {name = "process_return", kind = "return", value = 0x80099ba0, pcs = [0x80099b98, 0x80099b9c], words = [0x0c028d38, 0x03002025]},
+  {name = "movement_return", kind = "return", value = 0x800a2d04, pcs = [0x800a2cfc, 0x800a2d00], words = [0x0c023ee1, 0x000737c3]},
+  {name = "forward", kind = "address", value = 0x802aac28, pcs = [0x800a2a0c, 0x800a2a14], words = [0x3c0a802b, 0x254aac28]},
+  {name = "side", kind = "address", value = 0x802aac2c, pcs = [0x800a2be0, 0x800a2be4], words = [0x3c0b802b, 0x256bac2c]},
   {name = "players", kind = "address", value = 0x800ff624, pcs = [0x80099924, 0x80099928], words = [0x3c028010, 0x8442f624]},
   {name = "player", kind = "address", value = 0x802a5770, pcs = [0x800a34ec, 0x800a3510], words = [0x3c18802a, 0x27185770]},
   {name = "command", kind = "address", value = 0x802aac18, pcs = [0x800a2834, 0x800a2844], words = [0x3c10802b, 0x2610ac18]},

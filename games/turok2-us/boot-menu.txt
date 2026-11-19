@@ -1,0 +1,15 @@
+# Shared Debug replay: allow startup, then advance the legal/logo screens.
+# Frame, N64 buttons, analog X, analog Y; presentation frames at 60 Hz.
+0 0 0 0
+420 4096 0 0
+438 0 0 0
+600 32768 0 0
+618 0 0 0
+780 4096 0 0
+798 0 0 0
+1020 32768 0 0
+1038 0 0 0
+1260 4096 0 0
+1278 0 0 0
+1500 32768 0 0
+1518 0 0 0

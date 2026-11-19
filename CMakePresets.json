@@ -51,7 +51,11 @@
       "architecture": "x64",
       "binaryDir": "${sourceDir}/build/windows-msvc-release",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "cacheVariables": {
         "RECOMP_GAME": "none",
         "RECOMP_BUILD_RT64": "ON",
@@ -67,7 +71,9 @@
       "inherits": "windows-msvc-release",
       "displayName": "Windows x64 MSVC Debug",
       "binaryDir": "${sourceDir}/build/windows-msvc-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     },
     {
       "name": "sm64-us-release",
@@ -445,6 +451,27 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "turok2-us-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/turok2-us-release",
+      "cacheVariables": {
+        "RECOMP_GAME": "turok2-us",
+        "RECOMP_OPT_LEVEL": "3",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "turok2-us-debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/turok2-us-debug",
+      "cacheVariables": {
+        "RECOMP_GAME": "turok2-us",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -500,8 +527,18 @@
       ],
       "jobs": 1
     },
-    { "name": "windows-msvc-release", "configurePreset": "windows-msvc-release", "configuration": "Release", "jobs": 4 },
-    { "name": "windows-msvc-debug", "configurePreset": "windows-msvc-debug", "configuration": "Debug", "jobs": 4 },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc-release",
+      "configuration": "Release",
+      "jobs": 4
+    },
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc-debug",
+      "configuration": "Debug",
+      "jobs": 4
+    },
     {
       "name": "sm64-us-release",
       "configurePreset": "sm64-us-release",
@@ -965,6 +1002,32 @@
     {
       "name": "banjo-kazooie-us-debug-promote",
       "configurePreset": "banjo-kazooie-us-debug",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
+      "name": "turok2-us-release",
+      "configurePreset": "turok2-us-release",
+      "jobs": 4
+    },
+    {
+      "name": "turok2-us-release-promote",
+      "configurePreset": "turok2-us-release",
+      "targets": [
+        "promote-live-patches"
+      ],
+      "jobs": 1
+    },
+    {
+      "name": "turok2-us-debug",
+      "configurePreset": "turok2-us-debug",
+      "jobs": 4
+    },
+    {
+      "name": "turok2-us-debug-promote",
+      "configurePreset": "turok2-us-debug",
       "targets": [
         "promote-live-patches"
       ],
@@ -1649,6 +1712,40 @@
         {
           "type": "build",
           "name": "banjo-kazooie-us-debug"
+        }
+      ]
+    },
+    {
+      "name": "turok2-us-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "turok2-us-release"
+        },
+        {
+          "type": "build",
+          "name": "turok2-us-release-promote"
+        },
+        {
+          "type": "build",
+          "name": "turok2-us-release"
+        }
+      ]
+    },
+    {
+      "name": "turok2-us-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "turok2-us-debug"
+        },
+        {
+          "type": "build",
+          "name": "turok2-us-debug-promote"
+        },
+        {
+          "type": "build",
+          "name": "turok2-us-debug"
         }
       ]
     }

@@ -153,6 +153,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         if (!strcmp(arg, "--help")) {
             printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
                    "[--texture-pack ZIP] [--texture-dump DIR]\n"
+                   "  --texture-pack ZIP    Load a texture pack and enable its F8 editor\n"
                    "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
                    "                        Skip textures below 64 pixels or with a single RGBA color\n"
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
@@ -270,6 +271,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
     }
     crash_dir = o->crash_dir;
     recomp_renderer_configure_texture_dump(texture_dump);
+    recomp_renderer_enable_texture_editor(texture_pack != NULL);
     if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
         setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
     if (texture_pack)
@@ -313,9 +315,11 @@ void recomp_game_require(bool condition, const char *message, uint32_t address) 
 uint64_t recomp_game_monotonic(void) {
     struct timespec ts;
     recomp_game_require(clock_gettime(CLOCK_MONOTONIC, &ts) == 0, "host clock failed", 0);
-    return (uint64_t)ts.tv_sec * UINT64_C(1000000000) + (uint64_t)ts.tv_nsec;
+    /* Keep host pacing and wall-derived guest clocks stopped during F8. */
+    return (uint64_t)ts.tv_sec * UINT64_C(1000000000) + (uint64_t)ts.tv_nsec - recomp_renderer_paused_ns();
 }
 void recomp_game_sleep(uint64_t deadline) {
+    deadline += recomp_renderer_paused_ns();
     struct timespec ts = {(time_t)(deadline / 1000000000), (long)(deadline % 1000000000)};
     while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL) == EINTR) {
     }
