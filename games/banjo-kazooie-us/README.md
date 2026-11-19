@@ -13,11 +13,11 @@ support and save/reload acceptance remain to be verified.
 
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/banjo-kazooie-us/profile.toml --rom /path/to/rom
-cmake --workflow --preset banjo-kazooie-us-debug
+python3 tools/build.py banjo-kazooie-us --debug
 ./build/banjo-kazooie-us-debug/bin/banjo-kazooie-us
 ```
 
-Use the matching `banjo-kazooie-us-release` presets for Release. Both compile
+Use `python3 tools/build.py banjo-kazooie-us --release` for Release. Both compile
 `main.c`, which owns boot, runtime services and the frame loop. `generate.py`
 emits `game_config.h` under the selected build directory. Audio profiles and
 checked inventories live beside the code.

@@ -4,6 +4,12 @@ if(NOT CMAKE_HOST_WIN32 AND NOT CMAKE_TOOLCHAIN_FILE AND "$ENV{CMAKE_TOOLCHAIN_F
         AND NOT DEFINED CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
     find_program(CMAKE_C_COMPILER NAMES clang gcc REQUIRED)
 endif()
+# A workflow has no -D command-line arguments. The flag-based launcher pins
+# these settings on every configure, including reuse of a customized cache.
+if(DEFINED ENV{V64_WORKFLOW_RENDERER})
+    set(RECOMP_RENDERER "$ENV{V64_WORKFLOW_RENDERER}" CACHE STRING "Graphics backend" FORCE)
+    set(CMAKE_BUILD_TYPE "$ENV{CMAKE_BUILD_TYPE}" CACHE STRING "Build configuration" FORCE)
+endif()
 project(v64recomp LANGUAGES C)
 include(cmake/SourceGroups.cmake)
 if(EMSCRIPTEN)

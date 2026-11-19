@@ -319,6 +319,9 @@
     <None Include="$(RecompRoot)tools\auto_live_function.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\build.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\build_live_function.py">
       <Filter>Source Files\tools</Filter>
     </None>

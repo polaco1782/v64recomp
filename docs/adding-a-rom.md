@@ -544,11 +544,12 @@ cmake -S . -B build/newgame-us-debug -G Ninja \
 cmake --build build/newgame-us-debug -j 4
 ```
 
-Add Release/Debug configure, build and workflow presets to `CMakePresets.json`.
-Each workflow runs the matching configure preset, a build preset targeting
-`promote-live-patches`, then its normal build preset. Normal builds default to
-four jobs. Use `cmake --workflow --preset newgame-us-debug` to configure,
-promote checked live functions, and build together (CMake 3.25+). Add optional VS Code entries in `.vscode/tasks.json` and
+Add one configure preset named after the game ID. Inherit `game`, add its
+normal (`compile`) and preparation (`prepare`) build presets, and a matching
+workflow that runs configure, preparation and build. Use the same layout as
+`sm64-us` in `CMakePresets.json`. The flag launcher discovers games from
+the workflow list. For example, `python3 tools/build.py newgame-us --debug`
+runs the native Debug workflow with four compiler jobs. Add optional VS Code entries in `.vscode/tasks.json` and
 `.vscode/launch.json`. Update the root import/game lists and `docs/status.md` with
 the actual milestone. `cmake/Game.cmake` handles generated-source caching/splitting,
 mode-specific app selection, debug flags, and `run`/`report` targets. Configuration

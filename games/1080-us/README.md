@@ -28,8 +28,8 @@ MD5 `fa27089c425dbab99f19245c5c997613`. Supply your own matching cartridge:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/1080-us/profile.toml \
   --rom '/path/to/1080 Snowboarding (JU).z64'
-cmake --workflow --preset 1080-us-debug
-cmake --workflow --preset 1080-us-release
+python3 tools/build.py 1080-us --debug
+python3 tools/build.py 1080-us --release
 ./build/1080-us-debug/bin/1080-us --mute --frames 90
 ./build/1080-us-release/bin/1080-us --frames 90
 ```

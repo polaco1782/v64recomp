@@ -55,8 +55,8 @@ Want the pack to travel with your build? **Embed the texture ZIP in the
 executable** when you compile it:
 
 ```sh
-cmake --preset sm64-us-release -DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip
-cmake --build --preset sm64-us-release
+cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release -DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip
+cmake --build build/sm64-us-release
 ```
 
 The game then loads those textures automatically, without the original ZIP
@@ -159,9 +159,8 @@ You'll need your own ROM for the exact revision the game profile expects.
 The import tool checks it for you, so there's no need to rename files or convert
 byte order by hand. ROMs and texture packs aren't included.
 
-Build presets use RT64 by default. For games with verified graphics microcode,
-select `-DRECOMP_RENDERER=gles2` in a separate build directory. GLES2 runs the
-statically recompiled graphics RSP. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
+RT64 is the default renderer. For games with verified graphics microcode,
+`--gles2` selects the GLES2 renderer and statically compiled graphics RSP. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
 
 ### 1. Get the source and dependencies
 
@@ -211,17 +210,28 @@ revision or a destination containing different bytes. On Windows, use
 
 ### 3. Build, then play
 
-On Linux, run:
+Use one preset per game and select the build configuration and target with flags.
+From the repository root, these commands build Super Mario 64 US:
+
+| Target | Release | Debug |
+| --- | --- | --- |
+| Desktop RT64 (default) | `python3 tools/build.py sm64-us --release --rt64` | `python3 tools/build.py sm64-us --debug --rt64` |
+| Desktop GLES2 | `python3 tools/build.py sm64-us --release --gles2` | `python3 tools/build.py sm64-us --debug --gles2` |
+| Browser WebAssembly | `python3 tools/build.py sm64-us --release --wasm` | `python3 tools/build.py sm64-us --debug --wasm` |
+
+`python3 tools/build.py sm64-us` defaults to RT64 Release. Replace `sm64-us`
+with a [game ID](#games-and-progress) for desktop builds. GLES2 requires a
+[supported game](docs/armv8-gles2.md#checked-programs-and-acceptance); the
+[browser target](docs/webassembly.md) currently supports SM64 US and requires
+an activated Emscripten SDK.
+
+Run the executable from its build tree, or serve the browser build locally:
 
 ```sh
-cmake --workflow --preset sm64-us-release
 ./build/sm64-us-release/bin/sm64-us
+./build/sm64-us-gles2-debug/bin/sm64-us
+python3 tools/serve_web.py --directory build/sm64-us-wasm-release/bin
 ```
-
-Replace `sm64-us` with your [game ID](#games-and-progress). The first build also
-compiles the shared renderer, so give it a little time. Later builds reuse it.
-The executable can launch from any working directory. You can also launch with
-`cmake --build --preset sm64-us-release --target run`.
 
 On Windows, use the Visual Studio solution or [VS Code launch entries](docs/windows.md#vs-code).
 For command-line builds, the [Windows guide](docs/windows.md) has the matching
@@ -337,17 +347,21 @@ and [live code repair](docs/live-repair.md) for the next steps.
 <details>
 <summary>Build presets, compiler selection and the shared RT64 cache</summary>
 
-Every game has Release and Debug workflows, such as `quake2-us-release` and
-`quake2-us-debug`. A workflow configures the selected build tree, promotes any
-published live functions from `local/live-patches/<game>/` into its checked
-profile, then builds it with four compiler jobs. Promotion validates every
-function through normal generation before clearing temporary patch files; a
-failed promotion stops the workflow and keeps those files. List workflows with
-`cmake --workflow --list-presets`.
-For an incremental build with a different job count, use
-`cmake --build --preset quake2-us-release -j 8`. Configure custom `-D` options
-separately with `cmake --preset quake2-us-release -DOPTION=VALUE`; subsequent
-workflows retain cached options that the preset does not override.
+List game workflows with `cmake --workflow --list-presets`. The flag launcher
+runs `cmake --workflow --preset <game>` with a configuration-specific build
+directory. Native workflows promote published live functions and review discovery
+before building with four compiler jobs. Browser workflows build the ROM-verified
+CPU and graphics RSP code directly.
+
+For a custom configuration, pass CMake cache flags directly and build that directory:
+
+```sh
+cmake --preset quake2-us -B build/quake2-us-gles2-debug -DCMAKE_BUILD_TYPE=Debug -DRECOMP_RENDERER=gles2
+cmake --build build/quake2-us-gles2-debug -j 8
+```
+
+A plain `cmake --workflow --preset quake2-us` uses
+`build/quake2-us` and the project defaults on first configure.
 
 Release builds optimize generated CPU code for size (`-Oz`, falling back to
 `-Os`; `/O1 /Os` on MSVC), while the runtime and native adapters retain their
@@ -398,8 +412,8 @@ To include the game's ROM content in the executable with verified CPU code
 zeroed before embedding:
 
 ```sh
-cmake --preset sm64-us-release -DRECOMP_EMBED_ROM=ON
-cmake --build --preset sm64-us-release -j 4
+cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release -DRECOMP_EMBED_ROM=ON
+cmake --build build/sm64-us-release -j 4
 ./build/sm64-us-release/bin/sm64-us
 ```
 
@@ -412,7 +426,7 @@ removal reports and the limits of code stripping.
 To pack the final executable, install [UPX](https://upx.github.io/) and run:
 
 ```sh
-cmake --build --preset sm64-us-release --target pack -j 4
+cmake --build build/sm64-us-release --target pack -j 4
 ```
 
 The `pack` target builds the game, then uses `upx --best --ultra-brute` and checks
@@ -460,10 +474,10 @@ running game and saves thread counters and optional perf reports under
 `build/profiles/`.
 
 ```sh
-cmake --workflow --preset quake-us-debug
+python3 tools/build.py quake-us --debug
 ./build/quake-us-debug/bin/quake-us --frames 300 --capture-every 60
 ./build/quake-us-debug/bin/quake-us --trace-calls
-cmake --build --preset quake-us-debug --target report
+cmake --build build/quake-us-debug --target report
 ```
 
 All executables accept `--help`, `--rom FILE`, `--data DIR`, `--save FILE`,
@@ -512,7 +526,7 @@ VS Code build/launch entries, the Visual Studio `bad-apple` project, or:
 
 ```sh
 # Linux
-cmake --workflow --preset bad-apple-release
+python3 tools/build.py bad-apple --release
 ./build/bad-apple-release/bin/bad-apple
 ```
 

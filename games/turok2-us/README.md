@@ -14,7 +14,7 @@ Import your own ROM from the repository root:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/turok2-us/profile.toml \
   --rom '/path/to/Turok 2 - Seeds of Evil (U) [!].z64'
-cmake --workflow --preset turok2-us-release
+python3 tools/build.py turok2-us --release
 ./build/turok2-us-release/bin/turok2-us
 ```
 
@@ -23,7 +23,7 @@ The normalized ROM is `local/turok2.us.z64`, size `0x2000000`, SHA-1
 The game uses 8 MiB RDRAM and a Controller Pak at
 `local/saves/turok2-us.mpk`. Save configuration is integrated; persistence has
 not been accepted in gameplay. The corresponding Debug workflow is
-`cmake --workflow --preset turok2-us-debug`.
+`python3 tools/build.py turok2-us --debug`.
 
 ## Verified loading and callback discovery
 

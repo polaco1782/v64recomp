@@ -121,11 +121,11 @@ directory, with optional hooks as documented in
 rather than adding game-ID branches to the shared driver.
 
 Register the ID in root `CMakeLists.txt`'s `RECOMP_GAMES` and
-`tools/generate_game.py`'s `GAMES`. Add Release/Debug configure, build and workflow
-presets in `CMakePresets.json`, and matching `.vscode/tasks.json` and `launch.json`
-entries. Each workflow runs its matching configure preset, its
-`promote-live-patches` build preset, then its normal build preset; normal builds
-default to four jobs. Follow `cmake/Game.cmake` for ROM/save defaults,
+`tools/generate_game.py`'s `GAMES`. Add one game-ID configure and workflow preset in
+`CMakePresets.json` with its matching prepare and compile build presets, and
+matching `.vscode/tasks.json` and `launch.json` entries. Native workflows
+promote live functions before compilation. Build with
+`python3 tools/build.py <game> --debug` or `--release`. Follow `cmake/Game.cmake` for ROM/save defaults,
 additional sources, generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
 Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
@@ -338,7 +338,7 @@ The report does not authorize speculative roots or unproved table bounds.
 Configure and build separate modes once generation is viable:
 
 ```sh
-cmake --workflow --preset <game>-debug
+python3 tools/build.py <game> --debug
 ./build/<game>-debug/bin/<game> --frames 300
 ```
 

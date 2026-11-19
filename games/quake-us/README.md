@@ -6,10 +6,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/quake-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --workflow --preset quake-us-release
+python3 tools/build.py quake-us --release
 ./build/quake-us-release/bin/quake-us
 
-cmake --workflow --preset quake-us-debug
+python3 tools/build.py quake-us --debug
 ./build/quake-us-debug/bin/quake-us --help
 ```
 

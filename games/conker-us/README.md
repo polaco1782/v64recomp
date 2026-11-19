@@ -25,14 +25,13 @@ From the repository root:
 .venv/bin/python tools/import_rom.py \
   --profile games/conker-us/profile.toml \
   --rom "/home/cmartin/Downloads/N64/ROMS/Conker's Bad Fur Day (U) [!].z64"
-cmake --workflow --preset conker-us-debug
+python3 tools/build.py conker-us --debug
 ./build/conker-us-debug/bin/conker-us --frames 300
 ```
 
 The 300-presentation replay exits successfully. Longer runs are still being
 brought up through the intro. Optional Debug captures go under `build/conker-us-debug/debug-output/conker-us/`; crashes include a JSON
-report and RDRAM under ignored `local/crashes/conker-us/`. Release uses the
-`conker-us-release` presets and shares the runtime adapter.
+report and RDRAM under ignored `local/crashes/conker-us/`. Run `python3 tools/build.py conker-us --release` for the Release build using the same runtime adapter.
 Both copies of Conker's `osContInit` use the shared native hook. Its optional
 private SI queue configuration creates the queue at `0x80042a78`. This addresses the observed unknown-queue failure
 at `0x80042a78`; reaching that scene again has not yet been verified.

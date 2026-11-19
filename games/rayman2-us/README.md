@@ -82,11 +82,11 @@ From the repository root:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/rayman2-us/profile.toml \
   --rom '/path/to/Rayman 2.z64'
-cmake --workflow --preset rayman2-us-debug
+python3 tools/build.py rayman2-us --debug
 ./build/rayman2-us-debug/bin/rayman2-us --frames 360
 ```
 
-Use `rayman2-us-release` for the Release configure/build presets. Both modes use
+Use `python3 tools/build.py rayman2-us --release` for Release. Both modes use
 the parent-folder adapter, shared runtime, RT64 build and crash reporter. The
 default Controller Pak image is `local/saves/rayman2-us.mpk`; `--save FILE`
 selects another image. ROMs, saves and renderer data remain under ignored `local/`.

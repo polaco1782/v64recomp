@@ -35,10 +35,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/shadowman-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --workflow --preset shadowman-us-release
+python3 tools/build.py shadowman-us --release
 ./build/shadowman-us-release/bin/shadowman-us
 
-cmake --workflow --preset shadowman-us-debug
+python3 tools/build.py shadowman-us --debug
 ./build/shadowman-us-debug/bin/shadowman-us --help
 ```
 

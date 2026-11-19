@@ -13,22 +13,19 @@ ROM to `local/sm64.us.z64`, as described in the root README. Install and activat
 (the initial port uses SDK **6.0.13**), then run from the repository root:
 
 ```sh
-emcmake cmake -S . -B build/wasm-release -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build/wasm-release -j4
-python3 tools/serve_web.py --directory build/wasm-release/bin --port 8080
+python3 tools/build.py sm64-us --release --wasm
+python3 tools/serve_web.py --directory build/sm64-us-wasm-release/bin --port 8080
 ```
 
 Open `http://localhost:8080`, select the ROM and press **Play**. The loader
 normalizes `.z64`, `.v64` and `.n64` byte orders and checks the US ROM's SHA-1;
 the runtime independently validates the normalized ROM. The browser build does
-not embed or download ROMs. The server serves only `build/wasm-release/bin`.
+not embed or download ROMs. The server serves only `build/sm64-us-wasm-release/bin`.
 The chosen ROM is kept in the page's in-memory filesystem and is not uploaded.
 
 ```sh
-emcmake cmake -S . -B build/wasm-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-  -DRECOMP_OPTIMIZE_DEBUG=ON
-cmake --build build/wasm-debug -j4
-python3 tools/serve_web.py --directory build/wasm-debug/bin --port 8081
+python3 tools/build.py sm64-us --debug --wasm
+python3 tools/serve_web.py --directory build/sm64-us-wasm-debug/bin --port 8081
 ```
 
 Both configurations use `games/sm64-us/main.c`. Debug retains shared diagnostics,

@@ -108,9 +108,8 @@ RT64 is the default. Use a separate build directory for GLES2 so both executable
 are available side by side.
 
 ```sh
-cmake --preset goldeneye-us-release -B build/goldeneye-gles2-release -DRECOMP_RENDERER=gles2
-cmake --build build/goldeneye-gles2-release
-./build/goldeneye-gles2-release/bin/goldeneye-us
+python3 tools/build.py goldeneye-us --release --gles2
+./build/goldeneye-us-gles2-release/bin/goldeneye-us
 ```
 
 ## Image quality
@@ -153,7 +152,7 @@ scenes, not full campaigns or listening-quality acceptance.
 After removing the graphics HLE frontend, SM64, 1080 and Shadow Man complete
 1,200-presentation native-RSP startup checks; SM64 also passes a strict GLES2 2.0
 context check. All twelve game integrations and both native video/player targets
-build in Debug and Release. The normal `sm64-us-debug` CMake workflow passes.
+build in Debug and Release. The SM64 US Debug workflow passes.
 Media Player decodes a temporary synthetic MP3; Bad Apple completes 180 raw-RDP
 frames in both modes, with inspected grayscale animation after correcting KSEG
 address normalization and LOADTILE sampling bounds. The final 5,100-presentation

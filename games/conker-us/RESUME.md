@@ -7,8 +7,8 @@ Preserve unrelated working-tree edits and the user-provided root skill file.
 ## Run from the repository root
 
 ```sh
-cmake --preset conker-us-debug
-cmake --build --preset conker-us-debug -j 4
+cmake --preset conker-us -B build/conker-us-debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/conker-us-debug -j 4
 ./build/conker-us-debug/bin/conker-us --frames 1800 --capture-every 300 \
   --wav build/conker-us-debug/boot.wav
 ```

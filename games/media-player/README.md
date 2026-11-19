@@ -34,7 +34,7 @@ The **N64 MP3 Player** VS Code tasks/launches and the Visual Studio
 `media-player` project select the same target. On Linux:
 
 ```sh
-cmake --workflow --preset media-player-release
+python3 tools/build.py media-player --release
 ./build/media-player-release/bin/media-player
 ```
 

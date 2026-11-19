@@ -6,10 +6,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/sm64-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --workflow --preset sm64-us-release
+python3 tools/build.py sm64-us --release
 ./build/sm64-us-release/bin/sm64-us
 
-cmake --workflow --preset sm64-us-debug
+python3 tools/build.py sm64-us --debug
 ./build/sm64-us-debug/bin/sm64-us --help
 ```
 

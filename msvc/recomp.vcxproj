@@ -130,6 +130,7 @@
     <None Include="$(RecompRoot)tools\analysis\review_discovery.py" />
     <None Include="$(RecompRoot)tools\analyze.py" />
     <None Include="$(RecompRoot)tools\auto_live_function.py" />
+    <None Include="$(RecompRoot)tools\build.py" />
     <None Include="$(RecompRoot)tools\build_live_function.py" />
     <None Include="$(RecompRoot)tools\build_msvc_project.ps1" />
     <None Include="$(RecompRoot)tools\build_steamdeck.sh" />

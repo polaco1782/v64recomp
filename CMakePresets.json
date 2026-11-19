@@ -2,47 +2,13 @@
   "version": 6,
   "configurePresets": [
     {
-      "name": "media-player-debug",
+      "name": "game",
+      "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/media-player-debug",
+      "binaryDir": "${sourceDir}/build/${presetName}$penv{V64_BUILD_SUFFIX}",
       "cacheVariables": {
-        "RECOMP_GAME": "media-player",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "RECOMP_EMBED_ROM": "OFF"
-      }
-    },
-    {
-      "name": "media-player-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/media-player-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "media-player",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "RECOMP_EMBED_ROM": "OFF"
-      }
-    },
-    {
-      "name": "bad-apple-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/bad-apple-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "bad-apple",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "RECOMP_EMBED_ROM": "OFF"
-      }
-    },
-    {
-      "name": "bad-apple-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/bad-apple-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "bad-apple",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "RECOMP_EMBED_ROM": "OFF"
+        "RECOMP_GAME": "${presetName}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
     {
@@ -76,456 +42,163 @@
       }
     },
     {
-      "name": "sm64-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/sm64-us-release",
+      "name": "media-player",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "sm64-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_EMBED_ROM": "OFF"
       }
     },
     {
-      "name": "sm64-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/sm64-us-debug",
+      "name": "bad-apple",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "sm64-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_EMBED_ROM": "OFF"
       }
     },
     {
-      "name": "goldeneye-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/goldeneye-us-release",
+      "name": "sm64-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "goldeneye-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "goldeneye-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/goldeneye-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "goldeneye-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "shadowman-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/shadowman-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "shadowman-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "shadowman-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/shadowman-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "shadowman-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "quake-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/quake-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "quake-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "quake-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/quake-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "quake-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "duke-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/duke-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "duke-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "duke-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/duke-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "duke-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "nightmare-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/nightmare-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "nightmare-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "nightmare-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/nightmare-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "nightmare-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "oot-us-v12-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/oot-us-v12-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "oot-us-v12",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "oot-us-v12-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/oot-us-v12-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "oot-us-v12",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "perfectdark-us-v11-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/perfectdark-us-v11-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "perfectdark-us-v11",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "perfectdark-us-v11-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/perfectdark-us-v11-debug",
+      "name": "goldeneye-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "perfectdark-us-v11",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "conker-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/conker-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "conker-us",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "conker-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/conker-us-debug",
+      "name": "shadowman-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "conker-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "duke-zero-hour-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/duke-zero-hour-us-release",
+      "name": "quake-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "duke-zero-hour-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "duke-zero-hour-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/duke-zero-hour-us-debug",
+      "name": "duke-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "duke-zero-hour-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "hexen-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/hexen-us-release",
+      "name": "nightmare-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "hexen-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "hexen-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/hexen-us-debug",
+      "name": "oot-us-v12",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "hexen-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "rayman2-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/rayman2-us-release",
+      "name": "perfectdark-us-v11",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "rayman2-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "rayman2-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/rayman2-us-debug",
+      "name": "conker-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "rayman2-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "quake2-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/quake2-us-release",
+      "name": "duke-zero-hour-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "quake2-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "quake2-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/quake2-us-debug",
+      "name": "hexen-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "quake2-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "re2-us-v1-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/re2-us-v1-release",
+      "name": "rayman2-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "re2-us-v1",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "re2-us-v1-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/re2-us-v1-debug",
+      "name": "quake2-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "re2-us-v1",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "turok-us-v12-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/turok-us-v12-release",
+      "name": "re2-us-v1",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "turok-us-v12",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "turok-us-v12-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/turok-us-v12-debug",
+      "name": "turok-us-v12",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "turok-us-v12",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "1080-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/1080-us-release",
+      "name": "1080-us",
+      "inherits": "game"
+    },
+    {
+      "name": "twine-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "1080-us",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "1080-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/1080-us-debug",
+      "name": "banjo-kazooie-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "1080-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     },
     {
-      "name": "twine-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/twine-us-release",
+      "name": "turok2-us",
+      "inherits": "game",
       "cacheVariables": {
-        "RECOMP_GAME": "twine-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "twine-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/twine-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "twine-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "banjo-kazooie-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/banjo-kazooie-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "banjo-kazooie-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "banjo-kazooie-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/banjo-kazooie-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "banjo-kazooie-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "turok2-us-release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/turok2-us-release",
-      "cacheVariables": {
-        "RECOMP_GAME": "turok2-us",
-        "RECOMP_OPT_LEVEL": "3",
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "turok2-us-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/turok2-us-debug",
-      "cacheVariables": {
-        "RECOMP_GAME": "turok2-us",
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "RECOMP_OPT_LEVEL": "3"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "media-player-debug",
-      "configurePreset": "media-player-debug",
+      "name": "compile",
+      "hidden": true,
       "jobs": 4
     },
     {
-      "name": "media-player-debug-promote",
-      "configurePreset": "media-player-debug",
+      "name": "prepare",
+      "hidden": true,
+      "jobs": 1,
       "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "media-player-release",
-      "configurePreset": "media-player-release",
-      "jobs": 4
-    },
-    {
-      "name": "media-player-release-promote",
-      "configurePreset": "media-player-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "bad-apple-debug",
-      "configurePreset": "bad-apple-debug",
-      "jobs": 4
-    },
-    {
-      "name": "bad-apple-debug-promote",
-      "configurePreset": "bad-apple-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "bad-apple-release",
-      "configurePreset": "bad-apple-release",
-      "jobs": 4
-    },
-    {
-      "name": "bad-apple-release-promote",
-      "configurePreset": "bad-apple-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+        "prepare-workflow"
+      ]
     },
     {
       "name": "windows-msvc-release",
@@ -540,1212 +213,571 @@
       "jobs": 4
     },
     {
-      "name": "sm64-us-release",
-      "configurePreset": "sm64-us-release",
-      "jobs": 4
+      "name": "media-player",
+      "inherits": "compile",
+      "configurePreset": "media-player"
     },
     {
-      "name": "sm64-us-release-promote",
-      "configurePreset": "sm64-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "media-player-prepare",
+      "inherits": "prepare",
+      "configurePreset": "media-player"
     },
     {
-      "name": "sm64-us-debug",
-      "configurePreset": "sm64-us-debug",
-      "jobs": 4
+      "name": "bad-apple",
+      "inherits": "compile",
+      "configurePreset": "bad-apple"
     },
     {
-      "name": "sm64-us-debug-promote",
-      "configurePreset": "sm64-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "bad-apple-prepare",
+      "inherits": "prepare",
+      "configurePreset": "bad-apple"
     },
     {
-      "name": "goldeneye-us-release",
-      "configurePreset": "goldeneye-us-release",
-      "jobs": 4
+      "name": "sm64-us",
+      "inherits": "compile",
+      "configurePreset": "sm64-us"
     },
     {
-      "name": "goldeneye-us-release-promote",
-      "configurePreset": "goldeneye-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "sm64-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "sm64-us"
     },
     {
-      "name": "goldeneye-us-debug",
-      "configurePreset": "goldeneye-us-debug",
-      "jobs": 4
+      "name": "goldeneye-us",
+      "inherits": "compile",
+      "configurePreset": "goldeneye-us"
     },
     {
-      "name": "goldeneye-us-debug-promote",
-      "configurePreset": "goldeneye-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "goldeneye-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "goldeneye-us"
     },
     {
-      "name": "shadowman-us-release",
-      "configurePreset": "shadowman-us-release",
-      "jobs": 4
+      "name": "shadowman-us",
+      "inherits": "compile",
+      "configurePreset": "shadowman-us"
     },
     {
-      "name": "shadowman-us-release-promote",
-      "configurePreset": "shadowman-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "shadowman-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "shadowman-us"
     },
     {
-      "name": "shadowman-us-debug",
-      "configurePreset": "shadowman-us-debug",
-      "jobs": 4
+      "name": "quake-us",
+      "inherits": "compile",
+      "configurePreset": "quake-us"
     },
     {
-      "name": "shadowman-us-debug-promote",
-      "configurePreset": "shadowman-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "quake-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "quake-us"
     },
     {
-      "name": "quake-us-release",
-      "configurePreset": "quake-us-release",
-      "jobs": 4
+      "name": "duke-us",
+      "inherits": "compile",
+      "configurePreset": "duke-us"
     },
     {
-      "name": "quake-us-release-promote",
-      "configurePreset": "quake-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "duke-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "duke-us"
     },
     {
-      "name": "quake-us-debug",
-      "configurePreset": "quake-us-debug",
-      "jobs": 4
+      "name": "nightmare-us",
+      "inherits": "compile",
+      "configurePreset": "nightmare-us"
     },
     {
-      "name": "quake-us-debug-promote",
-      "configurePreset": "quake-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "nightmare-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "nightmare-us"
     },
     {
-      "name": "duke-us-release",
-      "configurePreset": "duke-us-release",
-      "jobs": 4
+      "name": "oot-us-v12",
+      "inherits": "compile",
+      "configurePreset": "oot-us-v12"
     },
     {
-      "name": "duke-us-release-promote",
-      "configurePreset": "duke-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "oot-us-v12-prepare",
+      "inherits": "prepare",
+      "configurePreset": "oot-us-v12"
     },
     {
-      "name": "duke-us-debug",
-      "configurePreset": "duke-us-debug",
-      "jobs": 4
+      "name": "perfectdark-us-v11",
+      "inherits": "compile",
+      "configurePreset": "perfectdark-us-v11"
     },
     {
-      "name": "duke-us-debug-promote",
-      "configurePreset": "duke-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "perfectdark-us-v11-prepare",
+      "inherits": "prepare",
+      "configurePreset": "perfectdark-us-v11"
     },
     {
-      "name": "nightmare-us-release",
-      "configurePreset": "nightmare-us-release",
-      "jobs": 4
+      "name": "conker-us",
+      "inherits": "compile",
+      "configurePreset": "conker-us"
     },
     {
-      "name": "nightmare-us-release-promote",
-      "configurePreset": "nightmare-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "conker-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "conker-us"
     },
     {
-      "name": "nightmare-us-debug",
-      "configurePreset": "nightmare-us-debug",
-      "jobs": 4
+      "name": "duke-zero-hour-us",
+      "inherits": "compile",
+      "configurePreset": "duke-zero-hour-us"
     },
     {
-      "name": "nightmare-us-debug-promote",
-      "configurePreset": "nightmare-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "duke-zero-hour-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "duke-zero-hour-us"
     },
     {
-      "name": "oot-us-v12-release",
-      "configurePreset": "oot-us-v12-release",
-      "jobs": 4
+      "name": "hexen-us",
+      "inherits": "compile",
+      "configurePreset": "hexen-us"
     },
     {
-      "name": "oot-us-v12-release-promote",
-      "configurePreset": "oot-us-v12-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "hexen-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "hexen-us"
     },
     {
-      "name": "oot-us-v12-debug",
-      "configurePreset": "oot-us-v12-debug",
-      "jobs": 4
+      "name": "rayman2-us",
+      "inherits": "compile",
+      "configurePreset": "rayman2-us"
     },
     {
-      "name": "oot-us-v12-debug-promote",
-      "configurePreset": "oot-us-v12-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "rayman2-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "rayman2-us"
     },
     {
-      "name": "perfectdark-us-v11-release",
-      "configurePreset": "perfectdark-us-v11-release",
-      "jobs": 4
+      "name": "quake2-us",
+      "inherits": "compile",
+      "configurePreset": "quake2-us"
     },
     {
-      "name": "perfectdark-us-v11-release-promote",
-      "configurePreset": "perfectdark-us-v11-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "quake2-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "quake2-us"
     },
     {
-      "name": "perfectdark-us-v11-debug",
-      "configurePreset": "perfectdark-us-v11-debug",
-      "jobs": 4
+      "name": "re2-us-v1",
+      "inherits": "compile",
+      "configurePreset": "re2-us-v1"
     },
     {
-      "name": "perfectdark-us-v11-debug-promote",
-      "configurePreset": "perfectdark-us-v11-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "re2-us-v1-prepare",
+      "inherits": "prepare",
+      "configurePreset": "re2-us-v1"
     },
     {
-      "name": "conker-us-release",
-      "configurePreset": "conker-us-release",
-      "jobs": 4
+      "name": "turok-us-v12",
+      "inherits": "compile",
+      "configurePreset": "turok-us-v12"
     },
     {
-      "name": "conker-us-release-promote",
-      "configurePreset": "conker-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "turok-us-v12-prepare",
+      "inherits": "prepare",
+      "configurePreset": "turok-us-v12"
     },
     {
-      "name": "conker-us-debug",
-      "configurePreset": "conker-us-debug",
-      "jobs": 4
+      "name": "1080-us",
+      "inherits": "compile",
+      "configurePreset": "1080-us"
     },
     {
-      "name": "conker-us-debug-promote",
-      "configurePreset": "conker-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "1080-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "1080-us"
     },
     {
-      "name": "duke-zero-hour-us-release",
-      "configurePreset": "duke-zero-hour-us-release",
-      "jobs": 4
+      "name": "twine-us",
+      "inherits": "compile",
+      "configurePreset": "twine-us"
     },
     {
-      "name": "duke-zero-hour-us-release-promote",
-      "configurePreset": "duke-zero-hour-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "twine-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "twine-us"
     },
     {
-      "name": "duke-zero-hour-us-debug",
-      "configurePreset": "duke-zero-hour-us-debug",
-      "jobs": 4
+      "name": "banjo-kazooie-us",
+      "inherits": "compile",
+      "configurePreset": "banjo-kazooie-us"
     },
     {
-      "name": "duke-zero-hour-us-debug-promote",
-      "configurePreset": "duke-zero-hour-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "banjo-kazooie-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "banjo-kazooie-us"
     },
     {
-      "name": "hexen-us-release",
-      "configurePreset": "hexen-us-release",
-      "jobs": 4
+      "name": "turok2-us",
+      "inherits": "compile",
+      "configurePreset": "turok2-us"
     },
     {
-      "name": "hexen-us-release-promote",
-      "configurePreset": "hexen-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "hexen-us-debug",
-      "configurePreset": "hexen-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "hexen-us-debug-promote",
-      "configurePreset": "hexen-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "rayman2-us-release",
-      "configurePreset": "rayman2-us-release",
-      "jobs": 4
-    },
-    {
-      "name": "rayman2-us-release-promote",
-      "configurePreset": "rayman2-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "rayman2-us-debug",
-      "configurePreset": "rayman2-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "rayman2-us-debug-promote",
-      "configurePreset": "rayman2-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "quake2-us-release",
-      "configurePreset": "quake2-us-release",
-      "jobs": 4
-    },
-    {
-      "name": "quake2-us-release-promote",
-      "configurePreset": "quake2-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "quake2-us-debug",
-      "configurePreset": "quake2-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "quake2-us-debug-promote",
-      "configurePreset": "quake2-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "re2-us-v1-release",
-      "configurePreset": "re2-us-v1-release",
-      "jobs": 4
-    },
-    {
-      "name": "re2-us-v1-release-promote",
-      "configurePreset": "re2-us-v1-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "re2-us-v1-debug",
-      "configurePreset": "re2-us-v1-debug",
-      "jobs": 4
-    },
-    {
-      "name": "re2-us-v1-debug-promote",
-      "configurePreset": "re2-us-v1-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "turok-us-v12-release",
-      "configurePreset": "turok-us-v12-release",
-      "jobs": 4
-    },
-    {
-      "name": "turok-us-v12-release-promote",
-      "configurePreset": "turok-us-v12-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "turok-us-v12-debug",
-      "configurePreset": "turok-us-v12-debug",
-      "jobs": 4
-    },
-    {
-      "name": "turok-us-v12-debug-promote",
-      "configurePreset": "turok-us-v12-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "1080-us-release",
-      "configurePreset": "1080-us-release",
-      "jobs": 4
-    },
-    {
-      "name": "1080-us-release-promote",
-      "configurePreset": "1080-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "1080-us-debug",
-      "configurePreset": "1080-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "1080-us-debug-promote",
-      "configurePreset": "1080-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "twine-us-release",
-      "configurePreset": "twine-us-release",
-      "jobs": 4
-    },
-    {
-      "name": "twine-us-release-promote",
-      "configurePreset": "twine-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "twine-us-debug",
-      "configurePreset": "twine-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "twine-us-debug-promote",
-      "configurePreset": "twine-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "banjo-kazooie-us-release",
-      "configurePreset": "banjo-kazooie-us-release",
-      "jobs": 4
-    },
-    {
-      "name": "banjo-kazooie-us-release-promote",
-      "configurePreset": "banjo-kazooie-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "banjo-kazooie-us-debug",
-      "configurePreset": "banjo-kazooie-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "banjo-kazooie-us-debug-promote",
-      "configurePreset": "banjo-kazooie-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "turok2-us-release",
-      "configurePreset": "turok2-us-release",
-      "jobs": 4
-    },
-    {
-      "name": "turok2-us-release-promote",
-      "configurePreset": "turok2-us-release",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
-    },
-    {
-      "name": "turok2-us-debug",
-      "configurePreset": "turok2-us-debug",
-      "jobs": 4
-    },
-    {
-      "name": "turok2-us-debug-promote",
-      "configurePreset": "turok2-us-debug",
-      "targets": [
-        "promote-live-patches"
-      ],
-      "jobs": 1
+      "name": "turok2-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "turok2-us"
     }
   ],
   "workflowPresets": [
     {
-      "name": "media-player-debug",
+      "name": "media-player",
       "steps": [
         {
           "type": "configure",
-          "name": "media-player-debug"
+          "name": "media-player"
         },
         {
           "type": "build",
-          "name": "media-player-debug-promote"
+          "name": "media-player-prepare"
         },
         {
           "type": "build",
-          "name": "media-player-debug"
+          "name": "media-player"
         }
       ]
     },
     {
-      "name": "media-player-release",
+      "name": "bad-apple",
       "steps": [
         {
           "type": "configure",
-          "name": "media-player-release"
+          "name": "bad-apple"
         },
         {
           "type": "build",
-          "name": "media-player-release-promote"
+          "name": "bad-apple-prepare"
         },
         {
           "type": "build",
-          "name": "media-player-release"
+          "name": "bad-apple"
         }
       ]
     },
     {
-      "name": "bad-apple-debug",
+      "name": "sm64-us",
       "steps": [
         {
           "type": "configure",
-          "name": "bad-apple-debug"
+          "name": "sm64-us"
         },
         {
           "type": "build",
-          "name": "bad-apple-debug-promote"
+          "name": "sm64-us-prepare"
         },
         {
           "type": "build",
-          "name": "bad-apple-debug"
+          "name": "sm64-us"
         }
       ]
     },
     {
-      "name": "bad-apple-release",
+      "name": "goldeneye-us",
       "steps": [
         {
           "type": "configure",
-          "name": "bad-apple-release"
+          "name": "goldeneye-us"
         },
         {
           "type": "build",
-          "name": "bad-apple-release-promote"
+          "name": "goldeneye-us-prepare"
         },
         {
           "type": "build",
-          "name": "bad-apple-release"
+          "name": "goldeneye-us"
         }
       ]
     },
     {
-      "name": "sm64-us-release",
+      "name": "shadowman-us",
       "steps": [
         {
           "type": "configure",
-          "name": "sm64-us-release"
+          "name": "shadowman-us"
         },
         {
           "type": "build",
-          "name": "sm64-us-release-promote"
+          "name": "shadowman-us-prepare"
         },
         {
           "type": "build",
-          "name": "sm64-us-release"
+          "name": "shadowman-us"
         }
       ]
     },
     {
-      "name": "sm64-us-debug",
+      "name": "quake-us",
       "steps": [
         {
           "type": "configure",
-          "name": "sm64-us-debug"
+          "name": "quake-us"
         },
         {
           "type": "build",
-          "name": "sm64-us-debug-promote"
+          "name": "quake-us-prepare"
         },
         {
           "type": "build",
-          "name": "sm64-us-debug"
+          "name": "quake-us"
         }
       ]
     },
     {
-      "name": "goldeneye-us-release",
+      "name": "duke-us",
       "steps": [
         {
           "type": "configure",
-          "name": "goldeneye-us-release"
+          "name": "duke-us"
         },
         {
           "type": "build",
-          "name": "goldeneye-us-release-promote"
+          "name": "duke-us-prepare"
         },
         {
           "type": "build",
-          "name": "goldeneye-us-release"
+          "name": "duke-us"
         }
       ]
     },
     {
-      "name": "goldeneye-us-debug",
+      "name": "nightmare-us",
       "steps": [
         {
           "type": "configure",
-          "name": "goldeneye-us-debug"
+          "name": "nightmare-us"
         },
         {
           "type": "build",
-          "name": "goldeneye-us-debug-promote"
+          "name": "nightmare-us-prepare"
         },
         {
           "type": "build",
-          "name": "goldeneye-us-debug"
+          "name": "nightmare-us"
         }
       ]
     },
     {
-      "name": "shadowman-us-release",
+      "name": "oot-us-v12",
       "steps": [
         {
           "type": "configure",
-          "name": "shadowman-us-release"
+          "name": "oot-us-v12"
         },
         {
           "type": "build",
-          "name": "shadowman-us-release-promote"
+          "name": "oot-us-v12-prepare"
         },
         {
           "type": "build",
-          "name": "shadowman-us-release"
+          "name": "oot-us-v12"
         }
       ]
     },
     {
-      "name": "shadowman-us-debug",
+      "name": "perfectdark-us-v11",
       "steps": [
         {
           "type": "configure",
-          "name": "shadowman-us-debug"
+          "name": "perfectdark-us-v11"
         },
         {
           "type": "build",
-          "name": "shadowman-us-debug-promote"
+          "name": "perfectdark-us-v11-prepare"
         },
         {
           "type": "build",
-          "name": "shadowman-us-debug"
+          "name": "perfectdark-us-v11"
         }
       ]
     },
     {
-      "name": "quake-us-release",
+      "name": "conker-us",
       "steps": [
         {
           "type": "configure",
-          "name": "quake-us-release"
+          "name": "conker-us"
         },
         {
           "type": "build",
-          "name": "quake-us-release-promote"
+          "name": "conker-us-prepare"
         },
         {
           "type": "build",
-          "name": "quake-us-release"
+          "name": "conker-us"
         }
       ]
     },
     {
-      "name": "quake-us-debug",
+      "name": "duke-zero-hour-us",
       "steps": [
         {
           "type": "configure",
-          "name": "quake-us-debug"
+          "name": "duke-zero-hour-us"
         },
         {
           "type": "build",
-          "name": "quake-us-debug-promote"
+          "name": "duke-zero-hour-us-prepare"
         },
         {
           "type": "build",
-          "name": "quake-us-debug"
+          "name": "duke-zero-hour-us"
         }
       ]
     },
     {
-      "name": "duke-us-release",
+      "name": "hexen-us",
       "steps": [
         {
           "type": "configure",
-          "name": "duke-us-release"
+          "name": "hexen-us"
         },
         {
           "type": "build",
-          "name": "duke-us-release-promote"
+          "name": "hexen-us-prepare"
         },
         {
           "type": "build",
-          "name": "duke-us-release"
+          "name": "hexen-us"
         }
       ]
     },
     {
-      "name": "duke-us-debug",
+      "name": "rayman2-us",
       "steps": [
         {
           "type": "configure",
-          "name": "duke-us-debug"
+          "name": "rayman2-us"
         },
         {
           "type": "build",
-          "name": "duke-us-debug-promote"
+          "name": "rayman2-us-prepare"
         },
         {
           "type": "build",
-          "name": "duke-us-debug"
+          "name": "rayman2-us"
         }
       ]
     },
     {
-      "name": "nightmare-us-release",
+      "name": "quake2-us",
       "steps": [
         {
           "type": "configure",
-          "name": "nightmare-us-release"
+          "name": "quake2-us"
         },
         {
           "type": "build",
-          "name": "nightmare-us-release-promote"
+          "name": "quake2-us-prepare"
         },
         {
           "type": "build",
-          "name": "nightmare-us-release"
+          "name": "quake2-us"
         }
       ]
     },
     {
-      "name": "nightmare-us-debug",
+      "name": "re2-us-v1",
       "steps": [
         {
           "type": "configure",
-          "name": "nightmare-us-debug"
+          "name": "re2-us-v1"
         },
         {
           "type": "build",
-          "name": "nightmare-us-debug-promote"
+          "name": "re2-us-v1-prepare"
         },
         {
           "type": "build",
-          "name": "nightmare-us-debug"
+          "name": "re2-us-v1"
         }
       ]
     },
     {
-      "name": "oot-us-v12-release",
+      "name": "turok-us-v12",
       "steps": [
         {
           "type": "configure",
-          "name": "oot-us-v12-release"
+          "name": "turok-us-v12"
         },
         {
           "type": "build",
-          "name": "oot-us-v12-release-promote"
+          "name": "turok-us-v12-prepare"
         },
         {
           "type": "build",
-          "name": "oot-us-v12-release"
+          "name": "turok-us-v12"
         }
       ]
     },
     {
-      "name": "oot-us-v12-debug",
+      "name": "1080-us",
       "steps": [
         {
           "type": "configure",
-          "name": "oot-us-v12-debug"
+          "name": "1080-us"
         },
         {
           "type": "build",
-          "name": "oot-us-v12-debug-promote"
+          "name": "1080-us-prepare"
         },
         {
           "type": "build",
-          "name": "oot-us-v12-debug"
+          "name": "1080-us"
         }
       ]
     },
     {
-      "name": "perfectdark-us-v11-release",
+      "name": "twine-us",
       "steps": [
         {
           "type": "configure",
-          "name": "perfectdark-us-v11-release"
+          "name": "twine-us"
         },
         {
           "type": "build",
-          "name": "perfectdark-us-v11-release-promote"
+          "name": "twine-us-prepare"
         },
         {
           "type": "build",
-          "name": "perfectdark-us-v11-release"
+          "name": "twine-us"
         }
       ]
     },
     {
-      "name": "perfectdark-us-v11-debug",
+      "name": "banjo-kazooie-us",
       "steps": [
         {
           "type": "configure",
-          "name": "perfectdark-us-v11-debug"
+          "name": "banjo-kazooie-us"
         },
         {
           "type": "build",
-          "name": "perfectdark-us-v11-debug-promote"
+          "name": "banjo-kazooie-us-prepare"
         },
         {
           "type": "build",
-          "name": "perfectdark-us-v11-debug"
+          "name": "banjo-kazooie-us"
         }
       ]
     },
     {
-      "name": "conker-us-release",
+      "name": "turok2-us",
       "steps": [
         {
           "type": "configure",
-          "name": "conker-us-release"
+          "name": "turok2-us"
         },
         {
           "type": "build",
-          "name": "conker-us-release-promote"
+          "name": "turok2-us-prepare"
         },
         {
           "type": "build",
-          "name": "conker-us-release"
-        }
-      ]
-    },
-    {
-      "name": "conker-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "conker-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "conker-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "conker-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "duke-zero-hour-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "duke-zero-hour-us-release"
-        },
-        {
-          "type": "build",
-          "name": "duke-zero-hour-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "duke-zero-hour-us-release"
-        }
-      ]
-    },
-    {
-      "name": "duke-zero-hour-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "duke-zero-hour-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "duke-zero-hour-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "duke-zero-hour-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "hexen-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "hexen-us-release"
-        },
-        {
-          "type": "build",
-          "name": "hexen-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "hexen-us-release"
-        }
-      ]
-    },
-    {
-      "name": "hexen-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "hexen-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "hexen-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "hexen-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "rayman2-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "rayman2-us-release"
-        },
-        {
-          "type": "build",
-          "name": "rayman2-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "rayman2-us-release"
-        }
-      ]
-    },
-    {
-      "name": "rayman2-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "rayman2-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "rayman2-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "rayman2-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "quake2-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "quake2-us-release"
-        },
-        {
-          "type": "build",
-          "name": "quake2-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "quake2-us-release"
-        }
-      ]
-    },
-    {
-      "name": "quake2-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "quake2-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "quake2-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "quake2-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "re2-us-v1-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "re2-us-v1-release"
-        },
-        {
-          "type": "build",
-          "name": "re2-us-v1-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "re2-us-v1-release"
-        }
-      ]
-    },
-    {
-      "name": "re2-us-v1-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "re2-us-v1-debug"
-        },
-        {
-          "type": "build",
-          "name": "re2-us-v1-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "re2-us-v1-debug"
-        }
-      ]
-    },
-    {
-      "name": "turok-us-v12-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "turok-us-v12-release"
-        },
-        {
-          "type": "build",
-          "name": "turok-us-v12-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "turok-us-v12-release"
-        }
-      ]
-    },
-    {
-      "name": "turok-us-v12-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "turok-us-v12-debug"
-        },
-        {
-          "type": "build",
-          "name": "turok-us-v12-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "turok-us-v12-debug"
-        }
-      ]
-    },
-    {
-      "name": "1080-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "1080-us-release"
-        },
-        {
-          "type": "build",
-          "name": "1080-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "1080-us-release"
-        }
-      ]
-    },
-    {
-      "name": "1080-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "1080-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "1080-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "1080-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "twine-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "twine-us-release"
-        },
-        {
-          "type": "build",
-          "name": "twine-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "twine-us-release"
-        }
-      ]
-    },
-    {
-      "name": "twine-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "twine-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "twine-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "twine-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "banjo-kazooie-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "banjo-kazooie-us-release"
-        },
-        {
-          "type": "build",
-          "name": "banjo-kazooie-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "banjo-kazooie-us-release"
-        }
-      ]
-    },
-    {
-      "name": "banjo-kazooie-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "banjo-kazooie-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "banjo-kazooie-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "banjo-kazooie-us-debug"
-        }
-      ]
-    },
-    {
-      "name": "turok2-us-release",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "turok2-us-release"
-        },
-        {
-          "type": "build",
-          "name": "turok2-us-release-promote"
-        },
-        {
-          "type": "build",
-          "name": "turok2-us-release"
-        }
-      ]
-    },
-    {
-      "name": "turok2-us-debug",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "turok2-us-debug"
-        },
-        {
-          "type": "build",
-          "name": "turok2-us-debug-promote"
-        },
-        {
-          "type": "build",
-          "name": "turok2-us-debug"
+          "name": "turok2-us"
         }
       ]
     }

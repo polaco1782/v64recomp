@@ -12,10 +12,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/duke-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --workflow --preset duke-us-release
+python3 tools/build.py duke-us --release
 ./build/duke-us-release/bin/duke-us
 
-cmake --workflow --preset duke-us-debug
+python3 tools/build.py duke-us --debug
 ./build/duke-us-debug/bin/duke-us --help
 ```
 

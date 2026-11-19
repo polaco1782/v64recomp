@@ -264,3 +264,7 @@ add_custom_target(promote-live-patches
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     COMMENT "Promoting live functions and reviewing candidate roots for ${RECOMP_GAME}"
     USES_TERMINAL VERBATIM)
+add_custom_target(prepare-workflow)
+if(NOT EMSCRIPTEN)
+    add_dependencies(prepare-workflow promote-live-patches)
+endif()

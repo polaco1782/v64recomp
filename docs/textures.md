@@ -58,8 +58,8 @@ The ZIP directory needs room for a temporary copy while an edit is being saved.
 Set the optional CMake path when configuring either Debug or Release:
 
 ```sh
-cmake --preset sm64-us-release -DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip
-cmake --build --preset sm64-us-release
+cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release -DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip
+cmake --build build/sm64-us-release
 ```
 
 The build appends the ZIP to the final executable and adjusts its archive offsets.

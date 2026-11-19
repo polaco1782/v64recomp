@@ -14,9 +14,9 @@ From the repository root:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/re2-us-v1/profile.toml \
   --rom '/path/to/Resident Evil 2 (U) [!].z64'
-cmake --workflow --preset re2-us-v1-debug
+python3 tools/build.py re2-us-v1 --debug
 ./build/re2-us-v1-debug/bin/re2-us-v1 --frames 60
-cmake --workflow --preset re2-us-v1-release
+python3 tools/build.py re2-us-v1 --release
 ./build/re2-us-v1-release/bin/re2-us-v1 --frames 60
 ```
 

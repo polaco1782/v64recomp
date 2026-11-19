@@ -164,7 +164,7 @@ the temporary repair directory; do not add them or private ROMs to the repo.
 
 ## Promote repairs after a session
 
-Close the game, then run `cmake --workflow --preset <game>-debug`. Its promotion
+Close the game, then run `python3 tools/build.py <game> --debug`. Its promotion
 step runs before compilation. You can also run `cmake --build
 build/<game>-debug --target promote-live-patches` separately. The task reads
 published `function-XXXXXXXX.path` files,

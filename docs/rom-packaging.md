@@ -5,8 +5,8 @@ verified MIPS CPU instructions. The pinned original ROM remains a build input.
 Translation always reads the original/prepared analysis image, before erasure.
 
 ```sh
-cmake --preset sm64-us-release -DRECOMP_EMBED_ROM=ON
-cmake --build --preset sm64-us-release -j 4
+cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release -DRECOMP_EMBED_ROM=ON
+cmake --build build/sm64-us-release -j 4
 ./build/sm64-us-release/bin/sm64-us
 ```
 

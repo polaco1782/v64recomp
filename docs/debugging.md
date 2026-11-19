@@ -76,7 +76,7 @@ For a new game, start with [adding a ROM and debugging a new port](adding-a-rom.
 It covers mapping discovery, missing host/guest symbols, GDB, memory corruption
 and the shared diagnostic scripts under `tools/`.
 
-Configure and build with `cmake --workflow --preset <game>-debug`. The binary is
+Configure and build with `python3 tools/build.py <game> --debug`. The binary is
 `build/<game>-debug/bin/<game>`; use `--help` for options. Both configurations
 compile `games/<game>/main.c`; generated sources live under the build's
 `generated/` directory. Both use the same named command-line options.

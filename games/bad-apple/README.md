@@ -42,11 +42,11 @@ media. The external link/download is not a redistribution license.
 ```
 
 ```sh
-cmake --workflow --preset bad-apple-release
+python3 tools/build.py bad-apple --release
 ./build/bad-apple-release/bin/bad-apple
 ```
 
-Use `Debug` / `bad-apple-debug` for diagnostics. `--frames N` limits the number
+Use `python3 tools/build.py bad-apple --debug` for diagnostics. `--frames N` limits the number
 of movie frames; `--frames 0` plays until the window closes. `--mute` disables
 playback, and `--rom PATH` selects another copy of the same verified ROM.
 The original movie loop restarts after 6,572 frames. Close the window to exit;

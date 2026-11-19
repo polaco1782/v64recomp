@@ -14,7 +14,7 @@ From the repository root, import your own ROM once:
 ```sh
 .venv/bin/python tools/import_rom.py --profile games/turok-us-v12/profile.toml \
   --rom '/path/to/Turok - Dinosaur Hunter (U) (V1.2).z64'
-cmake --workflow --preset turok-us-v12-release
+python3 tools/build.py turok-us-v12 --release
 ./build/turok-us-v12-release/bin/turok-us-v12
 ```
 
@@ -36,7 +36,7 @@ F7 widescreen expansion is separate. The new controls/FOV have static ROM and
 source-generation checks only; builds and gameplay tests are left to the user.
 
 ```sh
-cmake --workflow --preset turok-us-v12-debug
+python3 tools/build.py turok-us-v12 --debug
 ./build/turok-us-v12-debug/bin/turok-us-v12 --frames 1800 \
   --input local/replays/turok-us-v12-title.txt --capture-every 150
 ```

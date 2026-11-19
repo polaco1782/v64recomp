@@ -12,10 +12,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/hexen-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --workflow --preset hexen-us-release
+python3 tools/build.py hexen-us --release
 ./build/hexen-us-release/bin/hexen-us
 
-cmake --workflow --preset hexen-us-debug
+python3 tools/build.py hexen-us --debug
 ./build/hexen-us-debug/bin/hexen-us --help
 ```
 

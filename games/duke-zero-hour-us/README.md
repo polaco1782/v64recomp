@@ -10,7 +10,7 @@ From the repository root:
 .venv/bin/python tools/import_rom.py \
   --profile games/duke-zero-hour-us/profile.toml \
   --rom '/path/to/Duke Nukem - ZER0 H0UR (U) [!].z64'
-cmake --workflow --preset duke-zero-hour-us-release
+python3 tools/build.py duke-zero-hour-us --release
 ./build/duke-zero-hour-us-release/bin/duke-zero-hour-us
 ```
 
@@ -18,7 +18,7 @@ Debug provides the shared CLI for controller replays, captures, WAV output and
 recent-call crash reports:
 
 ```sh
-cmake --workflow --preset duke-zero-hour-us-debug
+python3 tools/build.py duke-zero-hour-us --debug
 ./build/duke-zero-hour-us-debug/bin/duke-zero-hour-us \
   --frames 1200 --capture-every 120
 ```

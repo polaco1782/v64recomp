@@ -16,10 +16,10 @@ From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/nightmare-us/profile.toml --rom /path/to/rom`.
 
 ```sh
-cmake --workflow --preset nightmare-us-release
+python3 tools/build.py nightmare-us --release
 ./build/nightmare-us-release/bin/nightmare-us
 
-cmake --workflow --preset nightmare-us-debug
+python3 tools/build.py nightmare-us --debug
 ./build/nightmare-us-debug/bin/nightmare-us --help
 ```
 

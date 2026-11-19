@@ -19,7 +19,7 @@ and existing `recomp_os_sp_task_yielded` semantics. Its new shared catalog
 fingerprint binds the entire function, removing the direct hardware-read path
 without adding low-level SP register emulation.
 
-Both `cmake --workflow --preset 1080-us-debug` and `1080-us-release` pass.
+Both `python3 tools/build.py 1080-us --debug` and `python3 tools/build.py 1080-us --release` pass.
 Generated metadata in both builds selects the native replacement, and the
 scheduler's generated call invokes `recomp_os_sp_task_yielded` directly.
 The SDK scanner confirms that the status getter's only caller is now replaced

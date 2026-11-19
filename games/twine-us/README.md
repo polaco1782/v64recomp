@@ -21,7 +21,7 @@ transitions and save/reload acceptance have not yet been established.
 .\build\msvc\twine-us\release\bin\Release\twine-us.exe --frames 900
 ```
 
-Linux uses `cmake --workflow --preset twine-us-debug` or `twine-us-release`.
+Linux uses `python3 tools/build.py twine-us --debug` or `python3 tools/build.py twine-us --release`.
 Debug supports the shared `--input`, `--wav`, `--capture-every` and
 `--trace-calls` options. Replays use zero-based frame numbers. Optional
 captures live under `build/msvc/twine-us/debug/debug-output/twine-us/` on Windows.

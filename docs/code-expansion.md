@@ -137,8 +137,8 @@ total would wrongly count debug information and other metadata as code.
 To inspect the same function in a normal SM64 build, import its ROM and run:
 
 ```sh
-cmake --preset sm64-us-release
-cmake --build --preset sm64-us-release -j 4
+cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build/sm64-us-release -j 4
 objdump -d -Mintel --disassemble=recomp_s0_80248c40 \
   build/sm64-us-release/bin/sm64-us
 ```
@@ -394,7 +394,7 @@ copies, objects and linked executables were removed after recording the results.
 
 ## Reproduce the footprint measurement
 
-Build the chosen release preset first, then run this from the repository root.
+Build the game with `--release`, then run this from the repository root.
 It counts the instruction addresses of selected `ready` functions and locates
 their generated CPU objects through CMake's compilation database. Use a fresh,
 completed build so the sources, reports and objects describe the same revision.
