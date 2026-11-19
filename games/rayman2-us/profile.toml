@@ -251,3 +251,18 @@ bindings = [
   {name = "cpu_bottom_plane", kind = "field", pcs = [0x8008972c], words = [0xc64000bc], value = 0xbc},
   {name = "cpu_top_plane", kind = "field", pcs = [0x80089798], words = [0xc64000cc], value = 0xcc},
 ]
+
+[graphics]
+# CPU clear at 0x800a0f40 spans 0x20d00 bytes: 300 x 224 x 2.
+# Menu VI at 0x8001a440: width 400, Y scale 0x540, 454 half-lines.
+framebuffers = [{width = 320, height = 240}, {width = 300, height = 224}, {width = 400, height = 300}]
+[[graphics.microcodes]]
+name = "F3DEX.NoN 1.23"
+code = {rom_offset = 0x19880, size = 0x1000, sha256 = "c7e4e769fc995d7eaddeae79d3f610ce7bb9ece5e88148e6d5d9ad8e35439790"}
+data = {rom_offset = 0x1ca60, size = 0x800, sha256 = "9bad5879304d2768d75e81e77c699a40727ddb8561062c3aa894e60cb7fc3bc1"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x18990, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX.NoN 1.23 with overlays", rom_offset = 0x19880, size = 0x1430, sha256 = "bcc2c734687e9fc95b9d793965f9679a214152bb783fe69c02237dc51a661c32"},
+]

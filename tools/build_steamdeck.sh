@@ -4,9 +4,9 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: tools/build_steamdeck.sh [GAME] [JOBS]
+Usage: tools/build_steamdeck.sh [GAME] [JOBS] [rt64|gles2]
 
-Defaults: oot-us-v12, 4 jobs. Supports Podman, Docker and Bubblewrap.
+Defaults: oot-us-v12, 4 jobs, RT64. Supports Podman, Docker and Bubblewrap.
 Outputs: build/steamdeck/GAME/package and GAME-steamdeck.tar.gz
 Set CONTAINER_ENGINE=podman, docker or bwrap to select the engine.
 Automatic selection tries Podman, Docker, then Bubblewrap.
@@ -14,9 +14,11 @@ The package excludes ROMs and existing saves; see docs/steamdeck.md.
 EOF
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
-if (( $# > 2 )); then usage >&2; exit 2; fi
+if (( $# > 3 )); then usage >&2; exit 2; fi
 game=${1:-oot-us-v12}
 jobs=${2:-4}
+renderer=${3:-rt64}
+if [[ $renderer != rt64 && $renderer != gles2 ]]; then usage >&2; exit 2; fi
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 if [[ ! $game =~ ^[a-z0-9]+(-[a-z0-9]+)*$ || ! -f $root/games/$game/profile.toml ]]; then
     printf 'Unknown game: %s\n' "$game" >&2; exit 2
@@ -44,7 +46,7 @@ command -v "$engine" >/dev/null
 mkdir -p "$root/build/steamdeck" "$root/build/shared/rt64/steamdeck"
 printf 'Steam Deck build engine: %s\n' "$engine"
 if [[ $engine == bwrap ]]; then
-    exec bash "$root/tools/steamdeck/bwrap.sh" "$root" "$game" "$jobs"
+    exec bash "$root/tools/steamdeck/bwrap.sh" "$root" "$game" "$jobs" "$renderer"
 fi
 image=localhost/v64recomp-steamdeck:bookworm
 # Only build recipes are sent to the image builder, never the checkout or ROMs.
@@ -58,4 +60,4 @@ if [[ $engine == podman ]]; then user_options+=(--userns keep-id); fi
     --volume "$root:/src:ro" \
     --volume "$root/build/steamdeck:/src/build/steamdeck:rw" \
     --volume "$root/build/shared/rt64/steamdeck:/src/build/shared/rt64/steamdeck:rw" \
-    --workdir /src "$image" bash tools/steamdeck/build.sh "$game" "$jobs"
+    --workdir /src "$image" bash tools/steamdeck/build.sh "$game" "$jobs" "$renderer"

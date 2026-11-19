@@ -325,3 +325,16 @@ counter_hz = 0x2cb4178
 0x80000310 = 0x17d9
 0x80000314 = 0x1
 0x80000318 = 0x800000
+
+[graphics]
+framebuffers = [{width = 320, height = 240}, {width = 576, height = 480}, {width = 640, height = 480}]
+[[graphics.microcodes]]
+name = "Perfect Dark Fast3D"
+code = {image = ".data", offset = 0xd0, size = 0x1000, sha256 = "35b4a521ebfc435c243f382fecf2a094b61ac8aacfc4f5c4767669376977e9b4"}
+data = {image = ".data", offset = 0x2faf0, size = 0x800, sha256 = "45db97a52d3da293aba041200406656f49808b554fcebf2c6c25c512b7d5b583"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", image = ".data", offset = 0x0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Perfect Dark Fast3D with overlays", image = ".data", offset = 0xd0, size = 0x1418, sha256 = "c70d32a0af7d0cf5d140c646a9e557d0e27da08f55ab5cf84acc44abe3903ead"},
+]

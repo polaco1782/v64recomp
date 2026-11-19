@@ -93,7 +93,7 @@ directly. SDL input, window creation, event handling and audio
 queue admission stay on that thread. This preserves application callback state
 and SDL's main-thread requirements.
 
-Graphics display-list parsing, framebuffer readbacks and audio DSP synthesis
+With RT64, graphics display-list parsing, framebuffer readbacks and audio DSP synthesis
 execute synchronously on the owner with guest CPU execution parked. Both use
 live `Runtime.rdram`; there are no task RAM snapshots, full-RAM merges or
 `n64-audio`/`n64-video` adapter threads. This follows the execution model of
@@ -105,6 +105,12 @@ render, upload and present threads, GPU rendering and SDL playback remain
 asynchronous and can overlap guest execution. No RT64 queue receives a pointer
 into guest RAM for later consumption. Texture reload, capture and shutdown keep
 the explicit RT64 queue barriers they require.
+
+With GLES2, the owner snapshots guest RAM and submits one graphics task to the
+RSP worker. The worker executes the verified program and records RDP commands
+and DMA writes. The owner draws, commits the writes and signals SP completion.
+A graphics task signals DP completion when its output contains FULLSYNC.
+[Graphics execution and synchronization](armv8-gles2.md#task-execution).
 
 Audio writes PCM and decoder state directly into live RAM before queuing SP
 completion. Graphics queues SP and applicable DP receipts after parsing and

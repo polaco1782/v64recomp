@@ -28,10 +28,19 @@
     <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\input.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\jpeg.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\rdp_gles2.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\rdp_triangle.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\rt64.cpp">
@@ -65,6 +74,9 @@
       <Filter>Header Files\backends</Filter>
     </ClInclude>
     <None Include="$(RecompRoot)cmake\BuildRT64.cmake">
+      <Filter>Configuration\cmake</Filter>
+    </None>
+    <None Include="$(RecompRoot)cmake\GLES2.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
     <None Include="$(RecompRoot)cmake\Game.cmake">
@@ -106,6 +118,9 @@
     <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake">
       <Filter>Configuration\cmake\rt64</Filter>
     </None>
+    <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake">
+      <Filter>Configuration\cmake\toolchains</Filter>
+    </None>
     <ClInclude Include="$(RecompRoot)include\cheats.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -130,6 +145,12 @@
     <ClInclude Include="$(RecompRoot)include\profiler.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rdp_gles2.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rdp_triangle.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\recomp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -143,6 +164,12 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\renderer.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rsp.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\rsp_worker.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\runtime.h">
@@ -200,6 +227,15 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\profiler.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\rsp.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\rsp_vector.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\rsp_worker.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\scheduler.c">
@@ -307,6 +343,9 @@
     <None Include="$(RecompRoot)tools\generate_game.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\graphics_microcode.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\import_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -335,6 +374,9 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\promote_live_patches.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\rsp_recompile.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\setup_windows.ps1">
@@ -377,6 +419,9 @@
     </Filter>
     <Filter Include="Configuration\cmake\rt64">
       <UniqueIdentifier>{1CBD586A-9036-5A81-A764-F240AF05E3D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration\cmake\toolchains">
+      <UniqueIdentifier>{20EE7F38-027F-5260-B59B-593AAB48DA5E}</UniqueIdentifier>
     </Filter>
     <Filter Include="Configuration\msvc">
       <UniqueIdentifier>{CB95410B-A50C-54D9-BF39-639D72BB7F5A}</UniqueIdentifier>

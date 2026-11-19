@@ -151,7 +151,9 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "Shadow Man");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     /* Preserve the game's VI-driven timing for its buffered startup frames. */
+#ifdef RECOMP_WITH_RT64
     recomp_renderer_set_frame_rate(renderer, 0);
+#endif
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .microcode = RECOMP_AUDIO_ABI1,

@@ -24,13 +24,11 @@ static void poll_command_input(Runtime *rt, void *opaque) {
 static RecompAudio *audio;
 static uint64_t now_ns, wall_origin;
 static void prepare_call(Runtime *rt, uint32_t address) {
-#ifdef RECOMP_WITH_RT64
     if (!wall_origin && address == BOOT_FRAME_CALIBRATION_END) {
         recomp_game_require(recomp_load(rt, BOOT_FRAME_VI_PERIOD, 8) == 781250,
                             "Duke Nukem 64 retrace calibration mismatch", BOOT_FRAME_VI_PERIOD);
         wall_origin = recomp_game_monotonic();
     }
-#endif
 }
 static void drain(Runtime *rt) {
     for (unsigned batch = 0; batch < 128; batch++) {

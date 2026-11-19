@@ -395,3 +395,7 @@ def configure_translation(rom, metadata, profile, output):
             kind='unsupported_function',reason='Pending GoldenEye conversion: '+function['errors'][0]['reason'],
             expected_words=[int.from_bytes(rom[offset:offset+4],'big')]))
     write_json(output/'pending-boundaries.json',{'complete_conversion':False,'boundaries':profile.get('boundaries',[])})
+
+
+def graphics_images(rom, profile):
+    return {'startup': startup_data(rom, profile['bootstrap'])}

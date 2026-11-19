@@ -270,7 +270,9 @@ Native services preserve guest memory structures, calling conventions and
 completion events expected by the translated game.
 See [native threading](threading.md) for scheduling and HLE ownership.
 
-Graphics tasks pass to RT64 for Vulkan rendering. The translated game's audio
+The RT64 backend passes graphics tasks to RT64 for Vulkan rendering.
+The GLES2 backend runs verified graphics microcode on a dedicated RSP worker
+and sends its RDP output to GLES2. [Graphics RSP and game coverage](armv8-gles2.md). The translated game's audio
 code builds command lists; the shared native audio backend executes supported,
 verified ABI1 and Zelda NEAD tasks to produce PCM in guest RAM. The native AI service supplies
 buffer timing and completion events, and SDL plays the samples. Audio synthesis,

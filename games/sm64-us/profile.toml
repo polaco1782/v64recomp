@@ -324,3 +324,15 @@ current_time = 0x80367110
 base_counter = 0x80367118
 vi_intr_count = 0x8036711c
 app_nmi_buffer = 0x8000031c
+
+[graphics]
+[[graphics.microcodes]]
+name = "Fast3D 2.0D"
+code = {rom_offset = 0xe6330, size = 0x1000, sha256 = "ffd76b7092ce0c1b6dc2b1fb9992ab2b330f0d813577f49b3a1f32b2af9ac618"}
+data = {rom_offset = 0xf4ac0, size = 0x800, sha256 = "b842fb99d1899c2f0345fcd43bd9f61f38675c39e4ec7bab5cb130518fbf0f3a"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xe6260, size = 0xd0, sha256 = "589d793eda195c576c9d767e7a5e4b77352826f59669d20bdcc358a8ebc979a3"},
+  {name = "Fast3D 2.0D with overlays", rom_offset = 0xe6330, size = 0x1408, sha256 = "36b959e4da70aec0beda2222581041af8ec1407478fa8b83ae3128fec87d5bc0"},
+]

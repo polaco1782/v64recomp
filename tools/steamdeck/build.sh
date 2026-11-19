@@ -3,7 +3,9 @@
 set -euo pipefail
 game=$1
 jobs=$2
+renderer=${3:-rt64}
 build=/src/build/steamdeck/$game
+if [[ $renderer == gles2 ]]; then build+=-gles2; fi
 mkdir -p "$build"
 # A private venv avoids the host .venv (which can require a newer glibc).
 if [[ ! -x /src/build/steamdeck/python/bin/python ]]; then
@@ -12,7 +14,7 @@ fi
 python=/src/build/steamdeck/python/bin/python
 "$python" -m pip install --disable-pip-version-check -r /src/requirements.txt
 cmake -S /src -B "$build" -G Ninja \
-    -DRECOMP_GAME="$game" -DCMAKE_BUILD_TYPE=Release -DRECOMP_OPT_LEVEL=3 \
+    -DRECOMP_GAME="$game" -DRECOMP_RENDERER="$renderer" -DCMAKE_BUILD_TYPE=Release -DRECOMP_OPT_LEVEL=3 \
     -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
     -DPython3_EXECUTABLE="$python" \
     -DCMAKE_C_FLAGS='-march=x86-64 -mtune=generic' \

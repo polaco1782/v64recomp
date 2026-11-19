@@ -3,10 +3,30 @@
 #include "runtime.h"
 #include "mouse_input.h"
 #include "input.h"
+#ifdef RECOMP_WITH_GLES2
+#include "rsp.h"
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
 typedef struct RecompRenderer RecompRenderer;
+#ifdef RECOMP_WITH_GLES2
+/* ROM-bound task identity and its statically compiled RSP program. */
+typedef struct RecompGraphicsMicrocode {
+    const char *name;
+    uint32_t code_size, data_size;
+    const char *code_sha256, *data_sha256;
+    const RecompRspProgram *rsp; /* Required checked native RSP catalog. */
+} RecompGraphicsMicrocode;
+void recomp_renderer_set_graphics_microcodes(RecompRenderer *, const RecompGraphicsMicrocode *, size_t count);
+typedef struct RecompFramebufferSize {
+    unsigned width, height;
+} RecompFramebufferSize;
+/* Additional native color-image extents, verified by the game's profile.
+ * The default GLES2 adapter accepts 320x240. Bind before submitting tasks. */
+void recomp_renderer_set_framebuffer_sizes(RecompRenderer *, const RecompFramebufferSize *, size_t count);
+void recomp_gles2_configure_game(RecompRenderer *renderer);
+#endif
 typedef void (*RecompGraphicsHook)(void *interpreter, size_t ram_size, uint64_t *rdp_triangles);
 typedef bool (*RecompMicrocodeHook)(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
 /* Game-owned C microcode extensions can reuse a standard command map without

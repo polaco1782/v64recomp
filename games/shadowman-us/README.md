@@ -1,5 +1,7 @@
 # Shadow Man US
 
+The GLES2 build uses the checked F3DEX2 program. The opening sequence can be replayed in Debug with `--input games/shadowman-us/title-intro.txt`. [GLES2 coverage](../../docs/armv8-gles2.md#checked-programs-and-acceptance).
+
 Original startup, audio, Controller Pak screen, main menu and rendered level
 progression work in desktop runs. Movement and animation transitions have been
 exercised, but later levels and a complete playthrough remain unverified. This

@@ -10,8 +10,8 @@
   "project": "v64recomp",
   "status": "in-progress",
   "targets": ["Windows", "Linux"],
-  "toolchain": ["V64recomp", "RT64"],
-  "approach": "Static MIPS-to-C recompilation with a shared native runtime and RT64 Vulkan rendering.",
+  "toolchain": ["V64recomp", "RT64", "GLES2"],
+  "approach": "Static MIPS-to-C recompilation with a shared native runtime and selectable RT64 Vulkan or GLES2 rendering. The GLES2 backend uses statically recompiled graphics RSP microcode.",
   "maintainers": [
     {
       "name": "polaco1782",

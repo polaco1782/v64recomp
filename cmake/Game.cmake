@@ -1,4 +1,7 @@
 # Only the selected game is generated and compiled. Python is a build dependency.
+if(RECOMP_RENDERER STREQUAL "gles2" AND NOT RECOMP_GAME_GLES2_SUPPORTED)
+    message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES2 graphics path. Select -DRECOMP_RENDERER=rt64.")
+endif()
 set(RECOMP_GAME_DIR "${CMAKE_SOURCE_DIR}/games/${RECOMP_GAME}")
 if(NOT DEFINED RECOMP_OPTIMIZE_DEBUG_DEFAULT)
     set(RECOMP_OPTIMIZE_DEBUG_DEFAULT OFF)
@@ -18,6 +21,9 @@ elseif(EXISTS "${CMAKE_SOURCE_DIR}/.venv/bin/python")
     set(Python3_EXECUTABLE "${CMAKE_SOURCE_DIR}/.venv/bin/python" CACHE FILEPATH "Python with rabbitizer")
 endif()
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
+if(RECOMP_EMBED_TEXTURE_PACK AND RECOMP_RENDERER STREQUAL "gles2")
+    message(FATAL_ERROR "RECOMP_EMBED_TEXTURE_PACK requires the RT64 renderer")
+endif()
 if(RECOMP_EMBED_TEXTURE_PACK)
     get_filename_component(RECOMP_EMBED_TEXTURE_PACK "${RECOMP_EMBED_TEXTURE_PACK}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
     execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
@@ -34,7 +40,7 @@ file(GLOB_RECURSE RECOMP_GENERATOR_INPUTS CONFIGURE_DEPENDS
 # The content cache makes repeat configures cheap and detects deleted outputs.
 message(STATUS "Checking ${RECOMP_GAME} CPU source generation")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -u "${CMAKE_SOURCE_DIR}/tools/generate_game.py"
-    --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}"
+    --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}" --renderer "${RECOMP_RENDERER}"
     OUTPUT_VARIABLE RECOMP_GENERATION_LOG
     ERROR_VARIABLE RECOMP_GENERATION_LOG
     ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
@@ -69,17 +75,20 @@ if(RECOMP_EMBED_ROM)
 endif()
 file(GLOB RECOMP_GENERATED_HEADERS "${RECOMP_GENERATED}/*.h")
 list(FILTER RECOMP_GENERATED_HEADERS EXCLUDE REGEX "/game_defaults\\.h$")
-add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_GENERATED_HEADERS}
+add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/sources.cmake" "${RECOMP_GENERATED}/generation.key"
     "${RECOMP_GENERATED}/symbols.json" "${RECOMP_GENERATED}/coverage.json"
     "${RECOMP_GENERATED}/function-candidates.json"
     COMMAND "${Python3_EXECUTABLE}" -u "${CMAKE_SOURCE_DIR}/tools/generate_game.py"
-        --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}"
+        --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}" --renderer "${RECOMP_RENDERER}"
     DEPENDS ${RECOMP_GENERATOR_INPUTS} "${RECOMP_ROM}"
     COMMENT "Checking ${RECOMP_GAME} CPU source generation" USES_TERMINAL VERBATIM)
 set(RECOMP_LOCAL "${CMAKE_SOURCE_DIR}/local")
 configure_file("${CMAKE_SOURCE_DIR}/cmake/game_defaults.h.in" "${RECOMP_GENERATED}/game_defaults.h" @ONLY)
-add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES}
+if(RECOMP_RSP_SOURCE)
+    target_compile_definitions(recomp_renderer PRIVATE RECOMP_HAS_RSP_PROGRAM)
+endif()
+add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE}
     "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES})
 file(GLOB RECOMP_GAME_BROWSE CONFIGURE_DEPENDS "${RECOMP_GAME_DIR}/*.h"
     "${RECOMP_GAME_DIR}/*.toml" "${RECOMP_GAME_DIR}/*.py")
@@ -89,9 +98,13 @@ set_target_properties(${RECOMP_GAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAK
 # PIC previously enabled -fPIE for CPU objects without enabling PIE at link
 # time. Check both drivers because games can include C++ graphics adapters.
 include(CheckPIESupported)
-check_pie_supported(LANGUAGES C CXX OUTPUT_VARIABLE RECOMP_PIE_ERROR)
+set(RECOMP_GAME_LANGUAGES C)
+if(CMAKE_CXX_COMPILER_LOADED)
+    list(APPEND RECOMP_GAME_LANGUAGES CXX)
+endif()
+check_pie_supported(LANGUAGES ${RECOMP_GAME_LANGUAGES} OUTPUT_VARIABLE RECOMP_PIE_ERROR)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
-        AND (NOT CMAKE_C_LINK_PIE_SUPPORTED OR NOT CMAKE_CXX_LINK_PIE_SUPPORTED))
+        AND (NOT CMAKE_C_LINK_PIE_SUPPORTED OR (CMAKE_CXX_COMPILER_LOADED AND NOT CMAKE_CXX_LINK_PIE_SUPPORTED)))
     message(FATAL_ERROR "The selected toolchain cannot link PIE games: ${RECOMP_PIE_ERROR}")
 endif()
 set_property(TARGET ${RECOMP_GAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
@@ -120,7 +133,7 @@ if(RECOMP_EMBED_ROM)
     endif()
 endif()
 target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}" "${RECOMP_GAME_DIR}")
-target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_RT64 RECOMP_WITH_AUDIO)
+target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_AUDIO)
 if(MSVC)
     # Translated MIPS intentionally narrows register values and retains labels
     # and unreachable delay-slot tails. Keep warnings enabled for handwritten code.
@@ -156,18 +169,20 @@ if(WIN32)
         endif()
     endforeach()
     # Shader compiler DLLs are delay-loaded by RT64. vcpkg deploys its own DLLs.
-    foreach(dll dxcompiler dxil)
-        add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "${RECOMP_RT64_SOURCE}/src/contrib/dxc/bin/x64/${dll}.dll"
-                "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
-    endforeach()
+    if(RECOMP_RENDERER STREQUAL "rt64")
+        foreach(dll dxcompiler dxil)
+            add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${RECOMP_RT64_SOURCE}/src/contrib/dxc/bin/x64/${dll}.dll"
+                    "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
+        endforeach()
+    endif()
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_DEBUG)
 endif()
-if(RECOMP_GAME STREQUAL "goldeneye-us")
+if(RECOMP_GAME STREQUAL "goldeneye-us" AND RECOMP_RENDERER STREQUAL "rt64")
     target_include_directories(${RECOMP_GAME} SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
     target_compile_definitions(${RECOMP_GAME} PRIVATE HLSL_CPU FFX_GCC IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
 endif()

@@ -151,7 +151,9 @@ int main(int argc, char **argv) {
     recomp_game_require(renderer != NULL, "Banjo renderer initialization failed", 0);
     /* Preserve the game's steady 30 Hz output. Automatic 60 Hz matching
      * presents the logo's interpolated frames in uneven pairs. */
+#ifdef RECOMP_WITH_RT64
     recomp_renderer_set_frame_rate(renderer, 0);
+#endif
     rt.prepare_call = prepare_call;
     rt.canonical_function_address = activate_image;
     wall_origin = recomp_game_monotonic();

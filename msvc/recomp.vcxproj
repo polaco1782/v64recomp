@@ -33,8 +33,11 @@
     <ClInclude Include="$(RecompRoot)backends\cheat_menu.h" />
     <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp" />
     <ClInclude Include="$(RecompRoot)backends\debug_overlay.h" />
+    <ClCompile Include="$(RecompRoot)backends\gles2.c" />
     <ClCompile Include="$(RecompRoot)backends\input.c" />
     <ClCompile Include="$(RecompRoot)backends\jpeg.c" />
+    <ClCompile Include="$(RecompRoot)backends\rdp_gles2.c" />
+    <ClCompile Include="$(RecompRoot)backends\rdp_triangle.c" />
     <ClCompile Include="$(RecompRoot)backends\rt64.cpp" />
     <ClInclude Include="$(RecompRoot)backends\texture_decode.h" />
     <ClCompile Include="$(RecompRoot)backends\texture_editor.cpp" />
@@ -46,6 +49,7 @@
     <ClCompile Include="$(RecompRoot)backends\textures.cpp" />
     <ClInclude Include="$(RecompRoot)backends\textures.h" />
     <None Include="$(RecompRoot)cmake\BuildRT64.cmake" />
+    <None Include="$(RecompRoot)cmake\GLES2.cmake" />
     <None Include="$(RecompRoot)cmake\Game.cmake" />
     <None Include="$(RecompRoot)cmake\OptimizeDebug.cmake" />
     <None Include="$(RecompRoot)cmake\PackUPX.cmake" />
@@ -59,6 +63,7 @@
     <None Include="$(RecompRoot)cmake\rt64\PrimitiveDepth.cmake" />
     <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake" />
     <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake" />
+    <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake" />
     <ClInclude Include="$(RecompRoot)include\cheats.h" />
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h" />
     <ClInclude Include="$(RecompRoot)include\fov_control.h" />
@@ -67,11 +72,15 @@
     <ClInclude Include="$(RecompRoot)include\input.h" />
     <ClInclude Include="$(RecompRoot)include\mouse_input.h" />
     <ClInclude Include="$(RecompRoot)include\profiler.h" />
+    <ClInclude Include="$(RecompRoot)include\rdp_gles2.h" />
+    <ClInclude Include="$(RecompRoot)include\rdp_triangle.h" />
     <ClInclude Include="$(RecompRoot)include\recomp.h" />
     <ClInclude Include="$(RecompRoot)include\recomp_audio.h" />
     <ClInclude Include="$(RecompRoot)include\recomp_jpeg.h" />
     <ClInclude Include="$(RecompRoot)include\recomp_live.h" />
     <ClInclude Include="$(RecompRoot)include\renderer.h" />
+    <ClInclude Include="$(RecompRoot)include\rsp.h" />
+    <ClInclude Include="$(RecompRoot)include\rsp_worker.h" />
     <ClInclude Include="$(RecompRoot)include\runtime.h" />
     <ClInclude Include="$(RecompRoot)include\runtime_debug.h" />
     <ClInclude Include="$(RecompRoot)include\timing.h" />
@@ -91,6 +100,9 @@
     <ClCompile Include="$(RecompRoot)runtime\os.c" />
     <ClCompile Include="$(RecompRoot)runtime\platform.c" />
     <ClCompile Include="$(RecompRoot)runtime\profiler.c" />
+    <ClCompile Include="$(RecompRoot)runtime\rsp.c" />
+    <ClCompile Include="$(RecompRoot)runtime\rsp_vector.c" />
+    <ClCompile Include="$(RecompRoot)runtime\rsp_worker.c" />
     <ClCompile Include="$(RecompRoot)runtime\scheduler.c" />
     <ClCompile Include="$(RecompRoot)runtime\tasks.c" />
     <ClCompile Include="$(RecompRoot)runtime\time.c" />
@@ -126,6 +138,7 @@
     <None Include="$(RecompRoot)tools\fetch_rom.py" />
     <None Include="$(RecompRoot)tools\format.sh" />
     <None Include="$(RecompRoot)tools\generate_game.py" />
+    <None Include="$(RecompRoot)tools\graphics_microcode.py" />
     <None Include="$(RecompRoot)tools\import_rom.py" />
     <None Include="$(RecompRoot)tools\input_evidence.py" />
     <None Include="$(RecompRoot)tools\merge_symbol_database.py" />
@@ -136,6 +149,7 @@
     <None Include="$(RecompRoot)tools\profile_execution.py" />
     <None Include="$(RecompRoot)tools\profile_frames.py" />
     <None Include="$(RecompRoot)tools\promote_live_patches.py" />
+    <None Include="$(RecompRoot)tools\rsp_recompile.py" />
     <None Include="$(RecompRoot)tools\setup_windows.ps1" />
     <None Include="$(RecompRoot)tools\steamdeck\build.sh" />
     <None Include="$(RecompRoot)tools\steamdeck\bwrap.sh" />

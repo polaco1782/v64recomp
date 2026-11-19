@@ -304,3 +304,16 @@ counter_hz = 0x2cb4178
 0x80000310 = 0x17d6
 0x80000314 = 0x1
 0x80000318 = 0x800000
+
+# Full task spans matched against the original ROM and a captured OSTask.
+[graphics]
+[[graphics.microcodes]]
+name = "F3DEX2 fifo 2.08"
+code = {rom_offset = 0x48050, size = 0x1000, sha256 = "cbcd59365486a01bc688ab296f72987583717f6e010b2c563e07d8180d2824be"}
+data = {rom_offset = 0x4a830, size = 0x800, sha256 = "e530550bc58330c4879be65dd51e83a3b0774d7999ae214de25a95e3b9a936d7"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x47160, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX2 fifo 2.08 with overlays", rom_offset = 0x48050, size = 0x1390, sha256 = "f220ae92941dfe08f2e2eaa1a45b4291314787bb4e1179e370293f603fc66c68"},
+]

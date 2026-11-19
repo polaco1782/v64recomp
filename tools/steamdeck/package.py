@@ -45,6 +45,7 @@ def glibc_requirement(path):
 
 def package(game, build):
     cache = (build / "CMakeCache.txt").read_text()
+    gles2 = 'RECOMP_RENDERER:STRING=gles2' in cache.splitlines()
     embedded_rom = bool(re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:ON|TRUE|1|YES|Y)$", cache, re.M | re.I))
     embedded_textures = bool(re.search(r"^RECOMP_EMBED_TEXTURE_PACK:FILEPATH=.+$", cache, re.M))
     defaults = (build / "generated" / game / "game_defaults.h").read_text()
@@ -97,6 +98,11 @@ def package(game, build):
         for name, value in GAMEPAD_DEFAULTS.get(game, {}).items()
     )
     rom_argument = "" if embedded_rom else f' --rom "$here/local/{rom}"'
+    texture_environment = '' if gles2 else (
+        f'export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"\n'
+    )
+    data_argument = '' if gles2 else f' --data "$here/local/rt64/{game}"'
+    driver = 'GLES2' if gles2 else 'Vulkan'
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
 here=$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")" && pwd)
@@ -104,10 +110,9 @@ export LD_LIBRARY_PATH="$here/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
 export SDL_VIDEODRIVER=x11
 export RECOMP_STEAM_DECK="${{RECOMP_STEAM_DECK-1}}"
 export RECOMP_LIVE_PATCH_DIR="${{RECOMP_LIVE_PATCH_DIR-off}}"
-export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"
-{gamepad_defaults}cd -- "$here"
-exec "$here/{game}"{rom_argument} \\
-    --data "$here/local/rt64/{game}" --save "$here/local/{save}" \\
+{texture_environment}{gamepad_defaults}cd -- "$here"
+exec "$here/{game}"{rom_argument}{data_argument} \\
+    --save "$here/local/{save}" \\
     --crash-dir "$here/local/crashes/{game}" "$@"
 ''')
     launcher.chmod(0o755)
@@ -145,7 +150,7 @@ exec "$here/{game}"{rom_argument} \\
         ("The texture ZIP is embedded and loads automatically.\n" if embedded_textures else "") +
         "Keep the entire directory together. local/ holds private saves and caches.\n"
         "Requires x86_64 Linux with glibc 2.36+, GCC 12+ runtime (GLIBCXX_3.4.30),\n"
-        "X11/Xwayland and a Vulkan driver.\n"
+        f"X11/Xwayland and a {driver} driver.\n"
         "For Steam Deck, add launch.sh as a non-Steam game with compatibility tools disabled.\n"
         "Native analog input: select the Gamepad template in Steam Input.\n"
         "For the v64recomp - N64 template, run ./install-controls.sh and restart Steam.\n"

@@ -157,6 +157,10 @@ You'll need your own ROM for the exact revision the game profile expects.
 The import tool checks it for you, so there's no need to rename files or convert
 byte order by hand. ROMs and texture packs aren't included.
 
+Build presets use RT64 by default. For games with verified graphics microcode,
+select `-DRECOMP_RENDERER=gles2` in a separate build directory. GLES2 runs the
+statically recompiled graphics RSP. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
+
 ### 1. Get the source and dependencies
 
 Clone with submodules so RT64 and its dependencies come along too:

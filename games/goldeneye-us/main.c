@@ -118,7 +118,7 @@ void recomp_ge_dp_counters(Runtime *rt, MipsContext *ctx) {
 void recomp_ge_dp_status(Runtime *rt, MipsContext *ctx) {
     (void)rt;
     (void)ctx;
-    /* RT64 executes RDP tasks synchronously; counter reset, freeze and flush
+    /* The RDP command sink completes synchronously; counter reset, freeze and flush
      * requests do not leave an asynchronous hardware operation outstanding. */
 }
 void recomp_ge_vi_framebuffer(Runtime *rt, MipsContext *ctx) {
@@ -190,7 +190,9 @@ int main(int argc, char **argv) {
     recomp_game_require(renderer != NULL, "GoldenEye renderer init failed", 0);
     recomp_renderer_set_fov_hook(renderer, goldeneye_fov_adjust);
     recomp_renderer_set_aspect_hook(renderer, goldeneye_aspect_update, &rt);
+#ifdef RECOMP_WITH_RT64
     recomp_renderer_set_graphics_hook(renderer, goldeneye_configure_graphics);
+#endif
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
         recomp_store(&rt, boot_parameters[i][0], boot_parameters[i][1], 4);

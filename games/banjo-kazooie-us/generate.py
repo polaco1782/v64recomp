@@ -61,3 +61,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append(f'    {{{section}, 0x{overlay["vram"]:x}, 0x{overlay["size"]:x}, {{{digest}}}}},')
     lines += ['};']
     (output / 'game_config.h').write_text('\n'.join(lines) + '\n')
+
+
+def graphics_images(rom, profile):
+    return {o['name']: decode_overlay(rom, o) for o in profile['discovery']['overlays']}

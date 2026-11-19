@@ -224,3 +224,21 @@ bindings = [
   {name = "side_speed", kind = "data_double", value = 250.0, pcs = [0x80075d10, 0x80075d14], words = [0x406f4000, 0x0]},
   {name = "pitch_min", kind = "data_double", value = -70.0, pcs = [0x80075cd0, 0x80075cd4], words = [0xc0518000, 0x0]},
 ]
+
+[graphics]
+[[graphics.microcodes]]
+name = "F3DEX.NoN 1.21"
+code = {rom_offset = 0x68910, size = 0x1000, sha256 = "4c3ddf9899c37c790185010a78c69019f0a904109b7af05ce9fd657273593884"}
+data = {rom_offset = 0x76dc0, size = 0x800, sha256 = "abf119071300cdcbb986c424e83c7db4b6162d2898418190e84090016a3c3c73"}
+
+[[graphics.microcodes]]
+name = "F3DLP.Rej 1.21"
+code = {rom_offset = 0x69d40, size = 0x1000, sha256 = "63324513782d6b5a5f3142a90fb261f41a15796ae3151c11a3b24ea75c20c256"}
+data = {rom_offset = 0x775c0, size = 0x800, sha256 = "9ae37b3f45596fea9c68fe76a6df9d491602382b2648dcd3d2d6c6e6b7a76f7f"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x68840, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX.NoN 1.21 with overlays", rom_offset = 0x68910, size = 0x1430, sha256 = "c38b7ad6cc6fc98688babf0960406648b9fde21397fa2b70d11389e7d510b7a8"},
+  {name = "F3DLP.Rej 1.21 with overlays", rom_offset = 0x69d40, size = 0x13c8, sha256 = "4568e072383a04492b623124f858651da18dc52be1e1a3d2f3dcb0946736c2cd"},
+]

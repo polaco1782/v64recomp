@@ -103,3 +103,7 @@ def finalize_metadata(rom, metadata, profile):
         if int.from_bytes(rom[offset:offset+4],'big')!=expected:
             raise RecompError('Perfect Dark nonlocal return call fingerprint mismatch')
     model['nonlocal_return_calls']=list(sites)
+
+
+def graphics_images(rom, profile):
+    return {name: raw for name, _, raw in images(rom)}

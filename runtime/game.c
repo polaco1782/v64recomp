@@ -140,8 +140,10 @@ static void directory(const char *path) {
     }
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
+#ifdef RECOMP_WITH_RT64
     const char *texture_pack = NULL;
     const char *texture_dump = NULL;
+#endif
     const char *profile_directory = NULL;
     unsigned profile_hz = 99, profile_delay = 0, profile_seconds = 0;
     *o = (RecompGameOptions){.rom = RECOMP_DEFAULT_ROM,
@@ -152,10 +154,14 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
             printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
+#ifdef RECOMP_WITH_RT64
                    "[--texture-pack ZIP] [--texture-dump DIR]\n"
                    "  --texture-pack ZIP    Load a texture pack and enable its F8 editor\n"
                    "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
                    "                        Skip textures below 64 pixels or with a single RGBA color\n"
+#else
+                   "\n"
+#endif
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
                    "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
                    "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
@@ -213,6 +219,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->capture_every = (uint32_t)n;
         }
 #endif
+#ifdef RECOMP_WITH_RT64
         else if (!strcmp(arg, "--texture-pack")) {
             struct stat source;
             if (stat(value, &source) || !S_ISREG(source.st_mode)) {
@@ -222,6 +229,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             texture_pack = value;
         } else if (!strcmp(arg, "--texture-dump"))
             texture_dump = value;
+#endif
         else if (!strcmp(arg, "--profile"))
             profile_directory = value;
         else if (!strcmp(arg, "--profile-hz") || !strcmp(arg, "--profile-delay") || !strcmp(arg, "--profile-seconds")) {
@@ -270,6 +278,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         directory(parent);
     }
     crash_dir = o->crash_dir;
+#ifdef RECOMP_WITH_RT64
     recomp_renderer_configure_texture_dump(texture_dump);
     recomp_renderer_enable_texture_editor(texture_pack != NULL);
     if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
@@ -289,6 +298,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         executable[n] = 0;
         recomp_game_require(!setenv("RECOMP_TEXTURE_PACK", executable, 1), "cannot select embedded texture ZIP", 0);
     }
+#endif
 #endif
     if (profile_directory && !recomp_profile_start(profile_directory, profile_hz, profile_delay, profile_seconds))
         return -1;

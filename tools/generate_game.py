@@ -84,12 +84,12 @@ def split_sources(output: Path) -> list[Path]:
     return [output/'functions.c',*paths]
 
 
-def generate(game: str, output: Path, report_only: bool) -> None:
+def generate(game: str, output: Path, report_only: bool, renderer: str = "rt64") -> None:
     with GenerationProgress(game) as progress:
-        _generate(game, output, report_only, progress)
+        _generate(game, output, report_only, progress, renderer)
 
 
-def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress) -> None:
+def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress, renderer: str) -> None:
     base = PROJECT/'games'/game
     profile = load_profile(base/'profile.toml')
     sys.path.insert(0,str(base))
@@ -107,6 +107,7 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
                      tools_dir / 'analysis' / 'inspect_function_candidates.py',
                      *base.glob('*.toml'),*base.glob('*.json'),*base.glob('*.py')])
     digest = hashlib.sha256(rom)
+    digest.update(renderer.encode())
     for path in inputs:
         digest.update(str(path.relative_to(PROJECT)).encode());digest.update(path.read_bytes())
     key = digest.hexdigest()
@@ -158,9 +159,17 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     sources=split_sources(output)
     # CMake reconfigures when this source manifest changes.
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
+    rsp_sources = []
+    if renderer == 'gles2' and 'rsp' in original_profile.get('graphics', {}):
+        from graphics_microcode import write_graphics_program
+        progress.stage('Compiling RSP graphics microcode')
+        images = generator.graphics_images(original_rom, original_profile) if hasattr(generator, 'graphics_images') else None
+        rsp_source = write_graphics_program(original_profile, original_rom, output, images)
+        manifest += f'set(RECOMP_RSP_SOURCE "{rsp_source.as_posix()}")\n'
+        rsp_sources.append(rsp_source)
     (output/'sources.cmake').write_text(manifest)
     progress.stage('Finalizing generated files and cache')
-    outputs=[p.name for p in [*sources,*output.glob('*.h'),output/'sources.cmake',
+    outputs=[p.name for p in [*sources,*rsp_sources,*output.glob('*.h'),output/'sources.cmake',
                              output/'symbols.json',output/'coverage.json',output/'function-candidates.json']]
     (output/'outputs.json').write_text(json.dumps(outputs))
     # Input changes can leave CPU bytes identical. Preserve their timestamps so
@@ -174,9 +183,10 @@ def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game',required=True,choices=GAMES)
     parser.add_argument('--output',required=True,type=Path)
+    parser.add_argument('--renderer',choices=('rt64','gles2'),default='rt64')
     parser.add_argument('--report-only',action='store_true')
     args=parser.parse_args()
-    try:generate(args.game,args.output.resolve(),args.report_only)
+    try:generate(args.game,args.output.resolve(),args.report_only,args.renderer)
     except (RecompError,OSError,ValueError,KeyError) as error:
         print(f'generation failed: {error}',file=sys.stderr);return 1
     return 0
