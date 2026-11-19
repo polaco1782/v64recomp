@@ -222,8 +222,8 @@ From the repository root, these commands build Super Mario 64 US:
 `python3 tools/build.py sm64-us` defaults to RT64 Release. Replace `sm64-us`
 with a [game ID](#games-and-progress) for desktop builds. GLES2 requires a
 [supported game](docs/armv8-gles2.md#checked-programs-and-acceptance); the
-[browser target](docs/webassembly.md) currently supports SM64 US and requires
-an activated Emscripten SDK.
+[browser target](docs/webassembly.md) currently supports SM64 US. The build
+reuses Emscripten from an existing Wasm configuration or finds an installed SDK.
 
 Run the executable from its build tree, or serve the browser build locally:
 

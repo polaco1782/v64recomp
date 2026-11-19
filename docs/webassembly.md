@@ -8,9 +8,15 @@ The browser loader currently accepts the pinned SM64 US ROM.
 ## Build and run
 
 Install the normal Python generation dependencies and import the pinned SM64 US
-ROM to `local/sm64.us.z64`, as described in the root README. Install and activate
-[Emscripten](https://emscripten.org/docs/getting_started/downloads.html)
-(the initial port uses SDK **6.0.13**), then run from the repository root:
+ROM to `local/sm64.us.z64`, as described in the root README. An existing Wasm
+build reuses its configured Emscripten toolchain. A fresh Debug or Release tree
+can reuse the other configuration's SDK.
+
+For a first build, [install Emscripten](https://emscripten.org/docs/getting_started/downloads.html)
+(tested with SDK **6.0.13**). Source `emsdk_env.sh` in your shell, set `EMSDK` to
+the installed SDK directory, or put the installed `emcc` on `PATH`. The launcher
+also recognizes SDKs installed under `build/emsdk`, `local/emsdk` or `emsdk` in
+the repository. Run from the repository root:
 
 ```sh
 python3 tools/build.py sm64-us --release --wasm
