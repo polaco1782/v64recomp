@@ -17,7 +17,7 @@ from translate import translate
 from symbol_database import DATABASE
 
 PROJECT = Path(__file__).resolve().parents[1]
-GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1','turok-us-v12','turok2-us','1080-us','banjo-kazooie-us','twine-us','bad-apple','media-player')
+GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','doom64-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1','turok-us-v12','turok2-us','turok3-us','mm-us','1080-us','banjo-kazooie-us','twine-us','bad-apple','media-player')
 
 
 class GenerationProgress:
@@ -126,6 +126,7 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
         rom,profile=generator.prepare(rom,profile,output)
     progress.stage('Discovering functions')
     metadata=discover(rom,profile)
+    metadata['cartridge_sha1'] = original_profile['game']['rom_sha1']
     progress.stage(f"Validating metadata for {len(metadata['functions'])} discovered functions")
     if hasattr(generator,'finalize_metadata'):generator.finalize_metadata(rom,metadata,profile)
     write_json(output/'symbols.json',metadata)
@@ -152,7 +153,9 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     report=translate(rom,metadata,profile,output,names=names,report_only=report_only)
     print(f"{game}: {report['summary']}; {report['instruction_count']} instruction words",flush=True)
     progress.stage('Writing reports and game configuration')
-    if hasattr(generator,'write_report'):generator.write_report(original_rom,original_profile,metadata,report,output)
+    report_files = []
+    if hasattr(generator, 'write_report'):
+        report_files = generator.write_report(original_rom, original_profile, metadata, report, output) or []
     if not report_only:generator.write_config(original_profile,metadata,output,True)
     if report_only:return
     progress.stage('Splitting CPU sources for parallel compilation')
@@ -169,7 +172,7 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
         rsp_sources.append(rsp_source)
     (output/'sources.cmake').write_text(manifest)
     progress.stage('Finalizing generated files and cache')
-    outputs=[p.name for p in [*sources,*rsp_sources,*output.glob('*.h'),output/'sources.cmake',
+    outputs=[p.name for p in [*report_files,*sources,*rsp_sources,*output.glob('*.h'),output/'sources.cmake',
                              output/'symbols.json',output/'coverage.json',output/'function-candidates.json']]
     (output/'outputs.json').write_text(json.dumps(outputs))
     # Input changes can leave CPU bytes identical. Preserve their timestamps so

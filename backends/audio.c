@@ -116,7 +116,7 @@ static void validate_nead(RecompAudio *a, uint32_t w1, uint32_t w2, uint32_t pc)
     struct alist_nead_t *s = &a->hle.alist_nead;
     unsigned op = w1 >> 24, flags = (w1 >> 16) & 255, count = s->count;
     unsigned lo = w1 & 65535, left = w2 >> 16, right = w2 & 65535, addr = w2 & 0xffffff;
-    if (op >= 24 || op == 0 || op == 3 || op == 23)
+    if (op >= 24 || op == 0 || (op == 3 && a->microcode != RECOMP_AUDIO_NEAD_MM) || op == 23)
         skip_audio_task(a, "unknown Zelda audio command", pc);
     a->stats.commands++;
     a->stats.opcodes[op]++;
@@ -311,7 +311,8 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
     a->debug.command_index++;
     if (a->debug.history_count < RECOMP_AUDIO_HISTORY)
         a->debug.history_count++;
-    if (a->microcode == RECOMP_AUDIO_NEAD_OOT || a->microcode == RECOMP_AUDIO_NEAD_1080) {
+    if (a->microcode == RECOMP_AUDIO_NEAD_OOT || a->microcode == RECOMP_AUDIO_NEAD_MM ||
+        a->microcode == RECOMP_AUDIO_NEAD_1080) {
         validate_nead(a, w1, w2, pc);
         return;
     }
@@ -614,7 +615,8 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
         (config->microcode != RECOMP_AUDIO_ABI1 && config->microcode != RECOMP_AUDIO_ABI1_LINEAR &&
          config->microcode != RECOMP_AUDIO_NEAD_OOT && config->microcode != RECOMP_AUDIO_NAUDIO_MP3 &&
          config->microcode != RECOMP_AUDIO_NAUDIO_CBFD && config->microcode != RECOMP_AUDIO_NAUDIO &&
-         config->microcode != RECOMP_AUDIO_MUSYX_V1 && config->microcode != RECOMP_AUDIO_NEAD_1080))
+         config->microcode != RECOMP_AUDIO_MUSYX_V1 && config->microcode != RECOMP_AUDIO_NEAD_1080 &&
+         config->microcode != RECOMP_AUDIO_NEAD_MM))
         return NULL;
     RecompAudio *a = calloc(1, sizeof(*a));
     if (!a)
@@ -722,6 +724,8 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
     if (setjmp(a->skip_task) == 0) {
         if (a->microcode == RECOMP_AUDIO_NEAD_OOT)
             alist_process_nead_oot(&a->hle);
+        else if (a->microcode == RECOMP_AUDIO_NEAD_MM)
+            alist_process_nead_mm(&a->hle);
         else if (a->microcode == RECOMP_AUDIO_NEAD_1080)
             alist_process_nead_1080(&a->hle);
         else if (a->microcode == RECOMP_AUDIO_NAUDIO)

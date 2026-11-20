@@ -18,13 +18,27 @@ python3 tools/build.py turok-us-v12 --release
 ./build/turok-us-v12-release/bin/turok-us-v12
 ```
 
+For desktop GLES2, build and launch with:
+
+```sh
+tools/build.py turok-us-v12 --gles2 --release
+./build/turok-us-v12-gles2-release/bin/turok-us-v12
+```
+
+GLES2 runs the recompiled F3DLX.NoN, F3DEX.NoN and L3DEX 1.00 graphics
+programs from the verified RNC-decoded ROM image. A 2,850-presentation Debug
+replay reached first-person gameplay, displayed the automap and opened the
+pause menu. RT64 remains the default renderer.
+
 The normalized ROM is `local/turok.us.v12.z64`, size `0x800000`, SHA-1
 `c7ed00dee20f4235823bcf50d32fa5d6862d6fce`. Other games and revisions are rejected.
 Controller Pak data persists at `local/saves/turok-us-v12.mpk`.
 
 Default [WASD/mouse controls](controller.md) provide native movement and strafing,
 mouse look, left-click fire, Space/right-click jump, wheel/Q/R weapon selection
-and F for the automap. Tab pauses, Escape releases the mouse, and F4 recaptures.
+and F for the automap. Press Enter or Tab during the opening logos to skip to
+the main menu on either renderer. Tab pauses during play, Escape releases the
+mouse, and F4 recaptures.
 Controller fallback retains the previous host remap; Debug replay keeps original
 N64 pad semantics. See the controller guide for sensitivity and scope.
 
@@ -63,11 +77,11 @@ checked against the actual shared build at O0 and O2.
 The automap switches to L3DEX 1.00 at `0x800b4ca0` with data `0x800f86b0`.
 RT64 recognizes this version but does not implement its command decoder. Treating
 it as a usable decoder skips `G_ENDDL` and runs beyond the submitted list, eventually
-causing `invalid RT64 DP receipt`. The game-local `graphics.cpp` adapter checks the
+causing `invalid RT64 DP receipt`. The shared `backends/rt64_l3dex.cpp` adapter checks the
 complete task text/data fingerprints, decodes the ordinary F3DEX commands and
 renders the map's line commands through RT64's RDP triangle path. Its orthographic
 projection uses constant homogeneous W=32; screen coordinates already divide by W.
-Perspective, lighting and fog line modes still fail explicitly. Core task token
+Lines with varying W, lighting or texture-coordinate generation produce a diagnostic. Core task token
 and duplicate completion checks remain enabled.
 
 ## Loading and checked boundaries

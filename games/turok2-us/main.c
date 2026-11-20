@@ -2,9 +2,10 @@
 #include "game.h"
 #include "generated.h"
 #include "renderer.h"
-#include "pager.h"
+#include "acclaim_pager.h"
 #include "audio.h"
-#include "graphics.h"
+#include "acclaim_controls.h"
+#include "acclaim_graphics.h"
 #include <stdlib.h>
 #include "game_config.h"
 
@@ -12,6 +13,30 @@ static RecompRenderer *renderer;
 static RecompAudio *audio;
 static uint64_t wall_origin;
 static bool boot_retired;
+static bool skip_second_prologue;
+
+void turok2_cinema_update(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    enum { ADON = 11, PORT_INTRO = 12, GAMEPLAY = 13 };
+    uint32_t engine = (uint32_t)ctx->gpr[4];
+    uint32_t mode = recomp_load32(rt, engine + 0x23fd8);
+    uint32_t destination = (uint32_t)ctx->gpr[6];
+    bool first = mode == ADON && destination == PORT_INTRO;
+    bool second = mode == PORT_INTRO && destination == GAMEPLAY;
+    if (!first && !second)
+        skip_second_prologue = false;
+
+    // The retail handler masks out Start in these two modes at 0x288e98.
+    // Use its normal button transition and let each scene run its own teardown.
+    if ((first || second) && recomp_load32(rt, engine + 0x23fdc) == mode &&
+        ((second && skip_second_prologue) || (recomp_load32(rt, 0x800f5d2c) & 0x9000))) {
+        skip_second_prologue = first;
+        recomp_store8(rt, engine + 0x23fe1, 2);
+        recomp_store32(rt, engine + 0x23fdc, destination);
+        recomp_store32(rt, 0x800f5d2c, 0);
+        return;
+    }
+    original(rt, ctx);
+}
 
 static uint64_t guest_time(void *opaque) {
     (void)opaque;
@@ -78,7 +103,7 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     recomp_game_require(task->words[0] == 1 || task->words[0] == 2, "unsupported Turok 2 RSP task",
                         task->guest_address);
     if (task->words[0] == 1)
-        turok2_graphics_verify(rt, task);
+        acclaim_graphics_verify(rt, task);
     bool okay = task->words[0] == 2 ? recomp_audio_submit(audio, task) : recomp_renderer_submit(renderer, task);
     recomp_game_require(okay, "Turok 2 task profile rejected", task->words[4]);
     return true;
@@ -95,7 +120,7 @@ int main(int argc, char **argv) {
                         "runtime init failed", 0);
     uint8_t *rom = recomp_game_rom(&rt, &options, BOOT_ROM_SIZE, boot_sha1);
     rt.prepare_call = prepare_call;
-    rt.resolve_address = turok2_resolve_address;
+    rt.resolve_address = acclaim_resolve_address;
     rt.interrupt_global_mask_address = 0x800b8908;
     recomp_copy_to_ram(&rt, BOOT_INITIAL_LOAD_ADDRESS, rom + BOOT_INITIAL_ROM_OFFSET, BOOT_INITIAL_LOAD_SIZE);
     for (size_t i = 0; i < sizeof(boot_parameters) / sizeof(boot_parameters[0]); i++)
@@ -120,7 +145,8 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Turok 2 IO init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Turok 2: Seeds of Evil");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-    turok2_graphics_init(renderer);
+    acclaim_graphics_init(renderer);
+    acclaim_controls_init(renderer);
     RecompAudioConfig config = {.output_enabled = true,
                                 .playback = !options.mute,
                                 .microcode = RECOMP_AUDIO_ABI1,
@@ -132,7 +158,7 @@ int main(int argc, char **argv) {
     uint64_t next_present = recomp_game_monotonic();
     for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!acclaim_controls_poll(&rt, renderer, &pad))
             break;
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "Turok 2 input update failed", 0);
         for (unsigned batch = 0; batch < 32; batch++)

@@ -1,0 +1,547 @@
+{
+  "format_version": 1,
+  "rom_sha1": "799a588d73da3fcce8031026a8187da92b91c817",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2147495120,
+      "origin": "checked-root",
+      "sha256": "70f609cf6ad343ec6ab664bae8d8ee7fb3f8926c135084d6e4ff73d596b06563",
+      "reason": "MiniLoop finale start a0 in call delay slot 0x80004928, consumed at 0x80002a08."
+    },
+    {
+      "vram": 2147495444,
+      "origin": "checked-root",
+      "sha256": "8a014111fefe625d0ff004e66ca10b6bae9a33f30e157ca0e2b458f45ffeb77f",
+      "reason": "MiniLoop argument a1 at 0x80004924; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147495492,
+      "origin": "checked-root",
+      "sha256": "eaec157ac908da3c1e47a2cf6a77a6b0d012a46209b82ea2cf7cb0d2860e6ff2",
+      "reason": "MiniLoop argument a2 at 0x80004924; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147495700,
+      "origin": "checked-root",
+      "sha256": "c574367429f297320bc78b0d352d471b09e24f6e1c2b8342f5f630d16a30fe1f",
+      "reason": "MiniLoop argument a3 at 0x80004924; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147496252,
+      "origin": "checked-root",
+      "sha256": "549fb2eebf51e06a53c91043fe242e9049f198f950311d5c07daecb1d1067b18",
+      "reason": "MiniLoop opening start a0 at 0x8000495c, consumed at 0x80002a08."
+    },
+    {
+      "vram": 2147496480,
+      "origin": "checked-root",
+      "sha256": "8a014111fefe625d0ff004e66ca10b6bae9a33f30e157ca0e2b458f45ffeb77f",
+      "reason": "MiniLoop argument a1 at 0x80004974; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147496536,
+      "origin": "checked-root",
+      "sha256": "35bd70fb41ad4c6361dbf6050d9b8fb498a39a513cb99623ae11d17ef468a7fc",
+      "reason": "MiniLoop argument a2 at 0x80004974; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147498460,
+      "origin": "checked-root",
+      "sha256": "15e93414c04032477785d67bee440989a0263539ad7c6a5e9de0ec50e7a87788",
+      "reason": "MiniLoop argument a3 at 0x80004974; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147501796,
+      "origin": "checked-root",
+      "sha256": "74aa2a1923244a68ae0117d618daa42622616e8b35d7cfdeb91d4f035897bdda",
+      "reason": "Level exit delay action passed at 0x8000e244 or 0x8000e284, stored in thinker +16 at 0x8000e1b8 and called at 0x8000e1f8."
+    },
+    {
+      "vram": 2147502832,
+      "origin": "checked-root",
+      "sha256": "982aa31749fbd79f51b78f58b9f082d7e806a6865c0a5e20ea92a1cf85882f9a",
+      "reason": "MiniLoop intermission start a0 at 0x80004864, consumed at 0x80002a08."
+    },
+    {
+      "vram": 2147503536,
+      "origin": "checked-root",
+      "sha256": "377e9aa6d8f81b5877db5709c7594ebe1c53ee94e682f5b54ecc53a07da15f2a",
+      "reason": "MiniLoop intermission stop a1 at 0x80004884, consumed at 0x80002ba8."
+    },
+    {
+      "vram": 2147503652,
+      "origin": "checked-root",
+      "sha256": "22d242bc5f8378f877e382bc1bea31461cd9638735e7fbce7429202b165516e7",
+      "reason": "MiniLoop argument a2 at 0x80004880; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147504484,
+      "origin": "checked-root",
+      "sha256": "d406d74c48bddd02b13c05527312d66b7943440f3c1f5cc41ec5700f0f40230a",
+      "reason": "MiniLoop argument a3 at 0x80004880; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147505788,
+      "origin": "checked-root",
+      "sha256": "5311e6a79e63d8f36e98351f125802ed81db4037b2e4f201885dbf1c1ce18fcb",
+      "reason": "I_Start materializes I_IdleGameThread into a2 at 0x8000563c/0x80005648 before osCreateThread at 0x80005658"
+    },
+    {
+      "vram": 2147514848,
+      "origin": "checked-root",
+      "sha256": "2497695be4605b2cb1f40aaffabc870c4fb9ee9785c00298bac31c68e1b9c1a0",
+      "reason": "MiniLoop argument a0 at 0x80007ad4; callback invoked at 0x80002a08."
+    },
+    {
+      "vram": 2147514872,
+      "origin": "checked-root",
+      "sha256": "b44700a269f7c3d614b9d98064f0a44154401de96446b0944f5ccc82919c7099",
+      "reason": "MiniLoop argument a0 at 0x80007b14; callback invoked at 0x80002a08."
+    },
+    {
+      "vram": 2147514900,
+      "origin": "checked-root",
+      "sha256": "70c8027cc5c5e57d41219cd7df647ba82d7c97bf4627a62e062a5cba4014d5f9",
+      "reason": "MiniLoop argument a2 at 0x80007ad4; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147515060,
+      "origin": "checked-root",
+      "sha256": "b68909471ac73adcae5a328e6bbf4649ca09151750412f86f17d8ec6f6b5794d",
+      "reason": "MiniLoop argument a0 at 0x800076c4; callback invoked at 0x80002a08."
+    },
+    {
+      "vram": 2147515116,
+      "origin": "checked-root",
+      "sha256": "3be6f5988b32b0c7ace9024cb76d3ff211183f2098b398ca492e87e3161df321",
+      "reason": "MiniLoop argument a1 at 0x800080f4; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147515464,
+      "origin": "checked-root",
+      "sha256": "33b7fdd44d8ae5da61b8b4b8696265a01d304d1e89a738af009f1cd7a712e4a3",
+      "reason": "MiniLoop argument a3 at 0x800076c4; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147515916,
+      "origin": "checked-root",
+      "sha256": "70c8027cc5c5e57d41219cd7df647ba82d7c97bf4627a62e062a5cba4014d5f9",
+      "reason": "MiniLoop argument a2 at 0x800076c4; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147520108,
+      "origin": "checked-root",
+      "sha256": "06ba363b294b64677d87e09bb813859c6f6a8abc2b4463dc3970de2434ef4270",
+      "reason": "MiniLoop argument a1 at 0x800076c4; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147520124,
+      "origin": "checked-root",
+      "sha256": "6cbd44c0adf9c89b585c67b6d100b6d99e5f2b4d3017d63f9616c3c64bde5cd5",
+      "reason": "Menu drawer stored at 0x80007684 to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147520960,
+      "origin": "checked-root",
+      "sha256": "bf9247ccc5f2dd0f7b35148a73ea7f8b0ec5604e2c8288cd31fda7e0a35af6ed",
+      "reason": "Menu drawer stored at 0x8000898c to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147521972,
+      "origin": "checked-root",
+      "sha256": "2554ee968a5ce4ee59d025ed3a5506338946ed40dea650a36d54ca2b93eaaf21",
+      "reason": "Menu drawer stored at 0x800081cc to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147522360,
+      "origin": "checked-root",
+      "sha256": "2554ee968a5ce4ee59d025ed3a5506338946ed40dea650a36d54ca2b93eaaf21",
+      "reason": "Menu drawer stored at 0x8000814c to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147522692,
+      "origin": "checked-root",
+      "sha256": "e9fe7b7a5c01c0730d9867117ab2f0e3a076f246967d6dd566a935025a5c9465",
+      "reason": "Menu drawer stored at 0x8000824c to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147524856,
+      "origin": "checked-root",
+      "sha256": "d740d85de3a3c91d366f2e2da3e9721ee61496a597ee341413676c3144ce5182",
+      "reason": "MiniLoop argument a2 at 0x80008e28; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147525604,
+      "origin": "checked-root",
+      "sha256": "7e0c1e7dfd57a12a181e5ac4eee21123f788b162491f3e6fa689114c60dae537",
+      "reason": "Menu drawer stored at 0x80008df8 to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147526376,
+      "origin": "checked-root",
+      "sha256": "595ae6de5d6cd66e13630bdcce8100977b8785564cae756b157ae7fa0cab57c5",
+      "reason": "MiniLoop save menu start a0 at 0x80004dec, consumed at 0x80002a08."
+    },
+    {
+      "vram": 2147526580,
+      "origin": "checked-root",
+      "sha256": "84c7a6a56162791882a77231ce88952119c2d6165247bf248acd40591203c1d0",
+      "reason": "MiniLoop argument a1 at 0x80004e04; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147526660,
+      "origin": "checked-root",
+      "sha256": "70c8027cc5c5e57d41219cd7df647ba82d7c97bf4627a62e062a5cba4014d5f9",
+      "reason": "MiniLoop argument a2 at 0x80004e04; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147527492,
+      "origin": "checked-root",
+      "sha256": "9510c1e6bf31b1104efc4f14bb1b8100d6eb393123b6fe8fd6dcd1c3c54b554d",
+      "reason": "MiniLoop argument a3 at 0x80004e04; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147528428,
+      "origin": "checked-root",
+      "sha256": "19e4be163de69958db83479ff3bd844731a985c7c2d65cdd726dcc49f79ae837",
+      "reason": "MiniLoop argument a0 at 0x800082f8; callback invoked at 0x80002a08."
+    },
+    {
+      "vram": 2147528588,
+      "origin": "checked-root",
+      "sha256": "84c7a6a56162791882a77231ce88952119c2d6165247bf248acd40591203c1d0",
+      "reason": "MiniLoop argument a1 at 0x800082f8; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147528676,
+      "origin": "checked-root",
+      "sha256": "70c8027cc5c5e57d41219cd7df647ba82d7c97bf4627a62e062a5cba4014d5f9",
+      "reason": "MiniLoop argument a2 at 0x800082f8; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147529328,
+      "origin": "checked-root",
+      "sha256": "aa838cfbf434704e6852119b89dc163c794b2f947c97c2de899c0d4a5c4b4a48",
+      "reason": "Menu drawer stored at 0x800082e8 to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147529924,
+      "origin": "checked-root",
+      "sha256": "c7a23895ffd156483774b636bff2ee7726ce27e736a6b728333ace39d3cde2f2",
+      "reason": "MiniLoop argument a2 at 0x80008a3c; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147530244,
+      "origin": "checked-root",
+      "sha256": "597e5d49a438f970d11b418aed739ea2d17ff143bf95624c5fe9d5dc722bc248",
+      "reason": "Menu drawer stored at 0x80008a2c to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147530388,
+      "origin": "checked-root",
+      "sha256": "70c8027cc5c5e57d41219cd7df647ba82d7c97bf4627a62e062a5cba4014d5f9",
+      "reason": "MiniLoop argument a2 at 0x800080f4; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147531144,
+      "origin": "checked-root",
+      "sha256": "4654714f7bd697726c2d91b2caadab4828bbba0b9b0321240f4345569e0289ff",
+      "reason": "Menu drawer stored at 0x800080c4 to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147534608,
+      "origin": "checked-root",
+      "sha256": "1077e10959bfc34be5879fb56c5f980ded9f13a279f57b56258b541cee798b0d",
+      "reason": "MiniLoop argument a0 at 0x80008340; callback invoked at 0x80002a08."
+    },
+    {
+      "vram": 2147534660,
+      "origin": "checked-root",
+      "sha256": "84c7a6a56162791882a77231ce88952119c2d6165247bf248acd40591203c1d0",
+      "reason": "MiniLoop argument a1 at 0x80008340; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147534708,
+      "origin": "checked-root",
+      "sha256": "27e16d25fbdc12478bfb6044d09f553a455ca63c655d7c26f6a501fa196501ae",
+      "reason": "MiniLoop argument a2 at 0x80008340; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147535600,
+      "origin": "checked-root",
+      "sha256": "7e0c1e7dfd57a12a181e5ac4eee21123f788b162491f3e6fa689114c60dae537",
+      "reason": "Menu drawer stored at 0x80008330 to 0x800a5584; consumed by JALR at 0x80007dec."
+    },
+    {
+      "vram": 2147540576,
+      "origin": "checked-root",
+      "sha256": "e5941a89b96bf8a0c1358dc87ecf41f417a52b9a4595a62fa2b5648aefffd4b4",
+      "reason": "Thinker registration at 0x8000dfe4 and function pointer store at 0x8000dff8, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147541452,
+      "origin": "checked-root",
+      "sha256": "50c31b498faef3daaa7ba4502f641b16f3fe6a7be48105480ae397d4a5b72417",
+      "reason": "Thinker registration at 0x8000e18c and function pointer store at 0x8000e1a0, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147543756,
+      "origin": "checked-root",
+      "sha256": "e25c076384b55a997b8144d468584753c4343ee6966784038cb54f3b06d2ed6f",
+      "reason": "Thinker registration at 0x8000ec4c and function pointer store at 0x8000ec58, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147544552,
+      "origin": "checked-root",
+      "sha256": "4ac7940411c90fa00e02bd1b31b189875d2e7e70c58ba8b299dd508ea686f7d4",
+      "reason": "Thinker registration at 0x8000eea4 and function pointer store at 0x8000eeb8, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147545108,
+      "origin": "checked-root",
+      "sha256": "cfd894f6aabe9ce2eaa990f8955ca277bd07d5aaeda4b2a1bf5f98106338db37",
+      "reason": "Thinker registration at 0x8000f320 and function pointer store at 0x8000f33c, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147546640,
+      "origin": "checked-root",
+      "sha256": "d0cdcae0fd104a38ca47069816d449a468c2d1383820c0a03c177ec67eed1ae0",
+      "reason": "Thinker registration at 0x80021ce4 and function pointer store at 0x80021cfc, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147546988,
+      "origin": "checked-root",
+      "sha256": "70648e2ba641fbcdab74a2105d68bc8f095e2e84b9ba04935b20c9bcc6e23f01",
+      "reason": "Thinker registration at 0x80011f6c and function pointer store at 0x80011f8c, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147547264,
+      "origin": "checked-root",
+      "sha256": "be29e258860a8ef86fd8a7fd7e366b504a1fb00acf2d1cfde2a4d76aca787204",
+      "reason": "Thinker registration at 0x8000fb1c and function pointer store at 0x8000fb28, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147550368,
+      "origin": "checked-root",
+      "sha256": "88250301748351e691a8fef742b518b879181127fc70e7147056e4094dd74e81",
+      "reason": "Thinker registration at 0x80010a84 and function pointer store at 0x80010aac, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147561840,
+      "origin": "checked-root",
+      "sha256": "70648e2ba641fbcdab74a2105d68bc8f095e2e84b9ba04935b20c9bcc6e23f01",
+      "reason": "Mobj XY movement queues this collision callback at 0x8000d130 in mobj+0x8c. The deferred pass loads that field at 0x8000ce3c and invokes it with the mobj at 0x8000ce4c."
+    },
+    {
+      "vram": 2147562156,
+      "origin": "checked-root",
+      "sha256": "ee949a7f04a0d954764dac608956951bf71fc002825088285fe1fc991070fb52",
+      "reason": "Mobj XY movement queues this collision callback at 0x8000d094 in mobj+0x8c. The deferred pass loads that field at 0x8000ce3c and invokes it with the mobj at 0x8000ce4c."
+    },
+    {
+      "vram": 2147563808,
+      "origin": "checked-root",
+      "sha256": "8fdacbeef0a530888d1401601db5bd96b90f50f9d0586ef0701ae7f2664021c3",
+      "reason": "Thinker registration at 0x80013aa8 and function pointer store at 0x80013ab4, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147565720,
+      "origin": "checked-root",
+      "sha256": "081f52808925d91fb9300caadb470354230809a758fc92cd9fc2f50ffd2985f2",
+      "reason": "Thinker registration at 0x800142d8 and function pointer store at 0x800142e4, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147571520,
+      "origin": "checked-root",
+      "sha256": "e684835192513c5239d25be2e048dece7ccefd50cfc1b676e5be3167d8b873a1",
+      "reason": "Thinker registration at 0x800157dc and function pointer store at 0x800157f8, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147571744,
+      "origin": "checked-root",
+      "sha256": "7ea87d3f326bc731851161f2c0b86098d341785098b8fad4ee24fc19b05a4116",
+      "reason": "Thinker registration at 0x80015994 and function pointer store at 0x800159b0, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147572244,
+      "origin": "checked-root",
+      "sha256": "e684835192513c5239d25be2e048dece7ccefd50cfc1b676e5be3167d8b873a1",
+      "reason": "Thinker registration at 0x80015adc and function pointer store at 0x80015af4, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147572520,
+      "origin": "checked-root",
+      "sha256": "e684835192513c5239d25be2e048dece7ccefd50cfc1b676e5be3167d8b873a1",
+      "reason": "Thinker registration at 0x80015be0 and function pointer store at 0x80015bf8, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147573340,
+      "origin": "checked-root",
+      "sha256": "3be608a541e6a223b4c47f00c9ab1b8574ff90c247c96020d16fcbd6c8296ffb",
+      "reason": "Thinker registration at 0x800160bc and function pointer store at 0x800160d4, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147574340,
+      "origin": "checked-root",
+      "sha256": "d6b3921932ddf9bc8c427c21b0cd4a62b6f7993d3f0ec14d8b4f614cba935d24",
+      "reason": "Thinker registration at 0x800161e8 and function pointer store at 0x80016200, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147575076,
+      "origin": "checked-root",
+      "sha256": "7abdb6955ce110757642743b00a88d118cccf8addf780343dc16d3015b75ebae",
+      "reason": "Thinker registration at 0x8001667c and function pointer store at 0x80016698, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147592336,
+      "origin": "checked-root",
+      "sha256": "88250301748351e691a8fef742b518b879181127fc70e7147056e4094dd74e81",
+      "reason": "Thinker registration at 0x8001ab58 and function pointer store at 0x8001ab68, read at 0x800217fc and called at 0x80021848."
+    },
+    {
+      "vram": 2147600824,
+      "origin": "checked-root",
+      "sha256": "18994cf32a751283db4e06906a39cea58016c2341473ebabb4fbaeed6bff4bcd",
+      "reason": "Thinker callback staged on the stack at 0x8001cc60 and stored in registered thinker +8 at 0x8001ce2c, called at 0x80021848."
+    },
+    {
+      "vram": 2147621376,
+      "origin": "checked-root",
+      "sha256": "eaec157ac908da3c1e47a2cf6a77a6b0d012a46209b82ea2cf7cb0d2860e6ff2",
+      "reason": "MiniLoop argument a2 at 0x80004a98; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147621560,
+      "origin": "checked-root",
+      "sha256": "a521eb3f9d81a8509af802d186110c5a3452dc8af85cbe85a9f58aea791cffb8",
+      "reason": "MiniLoop argument a3 at 0x80004a98; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147621968,
+      "origin": "checked-root",
+      "sha256": "1873e68c92e7fc40e0bf46d83d9d471e7740376085bd42a6adb5c104570eb890",
+      "reason": "MiniLoop argument a0 at 0x80004a98; callback invoked at 0x80002a08."
+    },
+    {
+      "vram": 2147622232,
+      "origin": "checked-root",
+      "sha256": "84c7a6a56162791882a77231ce88952119c2d6165247bf248acd40591203c1d0",
+      "reason": "MiniLoop argument a1 at 0x80004a98; callback invoked at 0x80002ba8."
+    },
+    {
+      "vram": 2147660776,
+      "origin": "checked-root",
+      "sha256": "70c8027cc5c5e57d41219cd7df647ba82d7c97bf4627a62e062a5cba4014d5f9",
+      "reason": "MiniLoop argument a2 at 0x8002b9b4; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147660848,
+      "origin": "checked-root",
+      "sha256": "595d17eb476e7a385929fefdee1e4f80d07381cce0b171f95fded86f7c6e3ff2",
+      "reason": "MiniLoop argument a3 at 0x8002b9b4; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147661304,
+      "origin": "checked-root",
+      "sha256": "a1dcc28c0e67e1c081d749568beb16848ca25c2ea0bb50f171122fa58c057774",
+      "reason": "MiniLoop argument a2 at 0x8002ba1c; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147661380,
+      "origin": "checked-root",
+      "sha256": "595d17eb476e7a385929fefdee1e4f80d07381cce0b171f95fded86f7c6e3ff2",
+      "reason": "MiniLoop argument a3 at 0x8002ba1c; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147661728,
+      "origin": "checked-root",
+      "sha256": "a1dcc28c0e67e1c081d749568beb16848ca25c2ea0bb50f171122fa58c057774",
+      "reason": "MiniLoop argument a2 at 0x8002b9ec; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147661780,
+      "origin": "checked-root",
+      "sha256": "595d17eb476e7a385929fefdee1e4f80d07381cce0b171f95fded86f7c6e3ff2",
+      "reason": "MiniLoop argument a3 at 0x8002b9ec; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147662472,
+      "origin": "checked-root",
+      "sha256": "b5baa550826faa1e37ce0e2ac268a7389a8aed9e0c5eb603915fffac612ce9f2",
+      "reason": "MiniLoop argument a2 at 0x8002ba70; callback invoked at 0x80002b60."
+    },
+    {
+      "vram": 2147662820,
+      "origin": "checked-root",
+      "sha256": "595d17eb476e7a385929fefdee1e4f80d07381cce0b171f95fded86f7c6e3ff2",
+      "reason": "MiniLoop argument a3 at 0x8002ba70; callback invoked at 0x80002b78."
+    },
+    {
+      "vram": 2147675508,
+      "origin": "checked-root",
+      "sha256": "3f1206b2376508f5bb01fb65b8f69892e57021d500d06f61c7d674fca9f3189f",
+      "reason": "DMA callback returned in v0 by factory at 0x8002ef70..0x8002ef78 and stored in voice +0x30 at 0x80045ae8; submits sample PI reads at 0x8002ef18."
+    },
+    {
+      "vram": 2147675976,
+      "origin": "checked-root",
+      "sha256": "6460e560624292517f3f43d24aad5112bb320367aadc681478ee1c8e0354dc0d",
+      "reason": "Synth DMA factory installed at 0x8002e478..0x8002e480, invoked at 0x80045adc with voice DMA state."
+    },
+    {
+      "vram": 2147676500,
+      "origin": "checked-root",
+      "sha256": "f374820af196fd7effd1eb9f453438069cba6b4bf76bf737332fd66a3cc1ebf7",
+      "reason": "WESS player handler installed at 0x8002f108..0x8002f114 on the ALPlayer registered at 0x8002f13c; alAudioFrame calls player +0x08 at 0x8003f824."
+    },
+    {
+      "vram": 2147770720,
+      "origin": "checked-root",
+      "sha256": "937a2f9f50af54448bb3013ef8fb55ecac900bac425557719840c097d711ee40",
+      "reason": "SDK main bus constructor passes its pull callback in a1 at 0x80045958; alFilterNew stores it in filter +0x04 at 0x80049164."
+    },
+    {
+      "vram": 2147772716,
+      "origin": "checked-root",
+      "sha256": "ab938b013c88555910f1a2530a6dead5061e5dcadb70b2c2a1d86e0ee658cb78",
+      "reason": "SDK sample loader constructor passes its pull callback in a1 at 0x80045a8c; alFilterNew stores it in filter +0x04 at 0x80049164."
+    },
+    {
+      "vram": 2147774140,
+      "origin": "checked-root",
+      "sha256": "d67274b1fde372808235ee4beb2687b0cd77d2c9b1704036d222cdc62ec317f8",
+      "reason": "SDK resampler constructor passes its pull callback in a1 at 0x800459fc; alFilterNew stores it in filter +0x04 at 0x80049164."
+    },
+    {
+      "vram": 2147776476,
+      "origin": "checked-root",
+      "sha256": "e50865db27aa6491a24e89ee4af723dfbf1d4967d568d5e802c56c3f57462e2a",
+      "reason": "SDK envelope mixer constructor passes its pull callback in a1 at 0x80045b2c; alFilterNew stores it in filter +0x04 at 0x80049164."
+    },
+    {
+      "vram": 2147777888,
+      "origin": "checked-root",
+      "sha256": "7ac4c86f60fa0f137cf96653f061a730f75f1bd3f0325e84e2a29ab15fae5002",
+      "reason": "SDK aux bus constructor passes its pull callback in a1 at 0x800459ac; alFilterNew stores it in filter +0x04 at 0x80049164."
+    },
+    {
+      "vram": 2147778164,
+      "origin": "checked-root",
+      "sha256": "49326cf085188baa48298f310efd137012f579267ba5ac7ccf3fa211a352c67b",
+      "reason": "SDK save constructor passes its pull callback in a1 at 0x8004590c; alFilterNew stores it in filter +0x04 at 0x80049164."
+    },
+    {
+      "vram": 2147784728,
+      "origin": "checked-root",
+      "sha256": "9f31d2a4394d1792b8030d2403a52f23e369979a5e3e09d8a8275828364feb62",
+      "reason": "SDK effects constructor installs its section-parameter callback at 0x80045cb4..0x80045cc4 in filter +0x28."
+    },
+    {
+      "vram": 2147785356,
+      "origin": "checked-root",
+      "sha256": "60b19b7386d429bad018395e447fb400fc917d295027314d890ff4148f0fdf5d",
+      "reason": "SDK effects constructor installs the pull callback at 0x80045cb0..0x80045cc0 in filter +0x04."
+    }
+  ]
+}

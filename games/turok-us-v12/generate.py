@@ -6,12 +6,16 @@ from rnc import decode_rnc1
 from controls_analysis import verify_controls
 
 
-def prepare(rom, profile, output):
+def graphics_images(rom, profile):
     boot = profile['bootstrap']
     raw = decode_rnc1(rom[boot['compressed_offset']:])
     if len(raw) != boot['decoded_size'] or hashlib.sha256(raw).hexdigest() != boot['decoded_sha256']:
         raise RecompError('Turok program fingerprint mismatch')
-    prepared = rom + raw
+    return {'program': raw}
+
+
+def prepare(rom, profile, output):
+    prepared = rom + graphics_images(rom, profile)['program']
     verify_controls(prepared, profile)
     return prepared, profile
 

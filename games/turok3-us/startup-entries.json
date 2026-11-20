@@ -1,0 +1,1111 @@
+{
+  "format_version": 1,
+  "rom_sha1": "a2e0a28dc0d3a48c7c02cb9e4c4b38fe04b2d436",
+  "complete": false,
+  "entries": [
+    {
+      "vram": 2140752,
+      "origin": "checked-root",
+      "sha256": "0add985691c94f1ebedf94b448696d7d6fcbad0dd26474305a8845c702474359",
+      "evidence": "SN64 boot materializes main in a0 and calls it at 0x8000047c."
+    },
+    {
+      "vram": 2223092,
+      "origin": "checked-root",
+      "sha256": "e8cc47599cbc70b63e2a5895cb0a688e58e89d74af7767ae2b8555174cb3ef06",
+      "evidence": "Call 0x417d60 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 2223280,
+      "origin": "checked-root",
+      "sha256": "f442a24af85effdc2bf71076044867c716425d9f5a34e572d99934c7f9f54b0d",
+      "evidence": "Call 0x4362dc pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 2223324,
+      "origin": "checked-root",
+      "sha256": "5ac6aa7ab7fc9846f130b2cfd6b8f826e7a5ba3ea227b8b5e7a19b9aacd2dc29",
+      "evidence": "At 0x436a3c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 2223428,
+      "origin": "checked-root",
+      "sha256": "61eff8913a90d186524a6f0101a2eb0952db7a035b2a04ae82c669ed105e007b",
+      "evidence": "Call 0x42a42c pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 2223684,
+      "origin": "checked-root",
+      "sha256": "f39c7f27f7031ffff456f78f96988515275c1c1dcbfde7b6518648f0fe7fbd87",
+      "evidence": "Call 0x2d73b4 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 2223784,
+      "origin": "checked-root",
+      "sha256": "f39c7f27f7031ffff456f78f96988515275c1c1dcbfde7b6518648f0fe7fbd87",
+      "evidence": "At 0x442260 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 2223976,
+      "origin": "checked-root",
+      "sha256": "4bee3072697df4443dbf5eef2f5cb93bf3d0b38b3d4a23e92bac05f514cac40b",
+      "evidence": "Call 0x418448 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 2224012,
+      "origin": "checked-root",
+      "sha256": "d4c9d93a6df6b0b251883416c1c818e3a369e95daa6d6d96433467d2a2c06bf0",
+      "evidence": "Call 0x4185a0 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 2253708,
+      "origin": "checked-root",
+      "sha256": "28ff1c061cb85b20251cf5a57d81066f6e9723f4465f0377702c0d7b30e76115",
+      "evidence": "VM initialization sets a2 to its server thread entry at 0x2256bc before creating it at 0x2256d4."
+    },
+    {
+      "vram": 2291968,
+      "origin": "checked-root",
+      "sha256": "f051dc6127171564153bde999a542f113cee3361d50277a0ac478760bbbf9468",
+      "evidence": "At 0x2301f8 the producer stores the proven address in its o32 stack argument to 0x23fd18 (call 0x230228). With a 0x30 stack frame, 0x23fd18 copies incoming stack +0x14 via sp+0x44 into its resource job +0x14; the worker invokes job +0x14 at 0x242540."
+    },
+    {
+      "vram": 2294644,
+      "origin": "checked-root",
+      "sha256": "1599c41e7e79080c38f528aea47c0910e8ce8cc65b6be51adbfbc53d8805624a",
+      "evidence": "Producer at 0x230320 passes this as stack +0x14 to the loader at 0x230334. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2326652,
+      "origin": "checked-root",
+      "sha256": "fee36fc0cb15c8386c6326c1e50f308c46fe453f11ed106fa665f7dc6ae5af5f",
+      "evidence": "Actor initialization materializes 0x23807c at 0x233ac4/0x233ac8 and stores it to object +0x2c4 when flag 8 is set (0x233abc). The draw path loads this field at 0x237d9c and calls it at 0x237da4."
+    },
+    {
+      "vram": 2329440,
+      "origin": "checked-root",
+      "sha256": "3bc6eb574e4f19c0b7f0320407bdd840fd037cefb522961a1687b3581d6a67cb",
+      "evidence": "The scene constructor sets object +0x2d4 at 0x44c620. The live actor loader called that field at 0x234088 with a0=actor and a1=actor+0x180."
+    },
+    {
+      "vram": 2337124,
+      "origin": "checked-root",
+      "sha256": "7a6c090d8838ee01cde85682191ffb46dfb66c8c1eb286b0c5488317b73b0825",
+      "evidence": "Store 0x238108 passes this callback to 0x23f734 at call 0x238128. The loader writes stack +0x14 to job +0x14 at 0x23fa0c. The worker calls this job field at 0x242540."
+    },
+    {
+      "vram": 2353644,
+      "origin": "checked-root",
+      "sha256": "743ed7772817bd8c5180151cce6a766a0c4e6ac00c4c377c4685e08694cfb1db",
+      "evidence": "Store 0x23de74 passes this callback to 0x23f734 at call 0x23de94. The loader writes stack +0x14 to job +0x14 at 0x23fa0c. The worker calls this job field at 0x242540."
+    },
+    {
+      "vram": 2353928,
+      "origin": "checked-root",
+      "sha256": "af68eef7dcbd83dd48c2fad59c56976e2ea5ffa9e384b0c680493ae9f8a3b348",
+      "evidence": "At 0x23df40 the producer stores the proven address in its o32 stack argument to 0x23fd18 (call 0x23df70). With a 0x30 stack frame, 0x23fd18 copies incoming stack +0x14 via sp+0x44 into its resource job +0x14; the worker invokes job +0x14 at 0x242540."
+    },
+    {
+      "vram": 2375836,
+      "origin": "checked-root",
+      "sha256": "ea8780736f30a7bbccffcd254d262702f9a619b595bd8c005a2cb65d1958d545",
+      "evidence": "The DMA factory materializes this callback as v0 at 0x24424c and returns it at 0x244254."
+    },
+    {
+      "vram": 2376224,
+      "origin": "checked-root",
+      "sha256": "fe4ba43729b4c366efb358364ee0e0b64805a634cd3466e9e5a9ad67e8bce144",
+      "evidence": "Audio loader installs the DMA factory in synth config +0x10 at 0x243af0. The leaf initializes its out parameter and returns a function pointer."
+    },
+    {
+      "vram": 2412124,
+      "origin": "checked-root",
+      "sha256": "a15b396406ccf92e2a55214f275af6f65e877cd1e07c178094f244e33afe5f98",
+      "evidence": "Producer at 0x24f05c passes this as stack +0x14 to the loader at 0x24f070. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2481232,
+      "origin": "checked-root",
+      "sha256": "f3002361059586ddef06704fff85598d22262f1f5661c7b957e26747f2c23e3f",
+      "evidence": "Producer at 0x2399ac passes this as stack +0x14 to the loader at 0x2399cc. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2481260,
+      "origin": "checked-root",
+      "sha256": "506433789dd1137152cc9f5b2334f75bb6797582e0184d72dae099dcf92ba1e1",
+      "evidence": "Producer at 0x23e2fc passes this as stack +0x14 to the loader at 0x23e31c. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2481292,
+      "origin": "checked-root",
+      "sha256": "506433789dd1137152cc9f5b2334f75bb6797582e0184d72dae099dcf92ba1e1",
+      "evidence": "Store 0x23d1d4 passes this callback to 0x23f734 at call 0x23d1f4. The loader writes stack +0x14 to job +0x14 at 0x23fa0c. The worker calls this job field at 0x242540."
+    },
+    {
+      "vram": 2481324,
+      "origin": "checked-root",
+      "sha256": "e48a9ad98c28412990e6604521539e7633e0d5ec67a0620ad523406cd0cc6e1a",
+      "evidence": "Producer at 0x239970 passes this as stack +0x14 to the loader at 0x239990. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2581072,
+      "origin": "checked-root",
+      "sha256": "1599c41e7e79080c38f528aea47c0910e8ce8cc65b6be51adbfbc53d8805624a",
+      "evidence": "Producer at 0x26af4c passes this as stack +0x14 to the loader at 0x26af64. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2591640,
+      "origin": "checked-root",
+      "sha256": "d8d3d61a91b909734cd084b88ce2b537cdcd0ae78893d88cc83b0739b6141879",
+      "evidence": "Producer at 0x279c94 passes this as stack +0x14 to the loader at 0x279ca8. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 2645776,
+      "origin": "checked-root",
+      "sha256": "54cc21606b4b21634ae7fbc2dbe497622264f29992c699e9f5a75546ff2e228b",
+      "evidence": "Boot passes idle as osCreateThread a2 at 0x285c34."
+    },
+    {
+      "vram": 2645816,
+      "origin": "checked-root",
+      "sha256": "6c5ee7452b9666be0327940e69f330c2725b1758546704dd8cb4484a1558a175",
+      "evidence": "Idle passes mainproc as osCreateThread a2 at 0x285cb0."
+    },
+    {
+      "vram": 2652112,
+      "origin": "checked-root",
+      "sha256": "0cb4891c15f605586c165d7f83a31b3594dcf889e24c3d43839c6a226e57842d",
+      "evidence": "Store 0x2869b8 passes this callback to 0x23f734 at call 0x2869cc. The loader writes stack +0x14 to job +0x14 at 0x23fa0c. The worker calls this job field at 0x242540."
+    },
+    {
+      "vram": 2703476,
+      "origin": "checked-root",
+      "sha256": "5aff524e11c4b5f1d5fc4f3655935b55d490859f559486ba0003193b927722fc",
+      "evidence": "Live camera selector zero in object +0x14 chose ROM 0x106384 at 0x28ead4. JALR at 0x28eae0 calls this original jr ra/nop leaf with the camera in a0."
+    },
+    {
+      "vram": 2712984,
+      "origin": "checked-root",
+      "sha256": "c98fcc015ec021b0417c5b54ca26a82cae520edf4a834c48eed55bc56194a8d7",
+      "evidence": "The constructor assigns this callback at 0x2972c8 to state +0x148. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2c2cf4."
+    },
+    {
+      "vram": 2715420,
+      "origin": "checked-root",
+      "sha256": "587072715f9bb4008473a491d99dd7d3dd33c454d6c9ddab975f0c61c43ac7f5",
+      "evidence": "The constructor assigns this callback at 0x2972a4 to state +0x144. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x237da4."
+    },
+    {
+      "vram": 2716168,
+      "origin": "checked-root",
+      "sha256": "c449fb3e148019fdd43bd0b6693b618e38116b11dd28268ea59af1d989c08303",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 1 of 0x80102bb0 selects 0x801069b8, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2716664,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 1 of 0x80102bb0 selects 0x801069b8, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2716996,
+      "origin": "checked-root",
+      "sha256": "76979b3b0075011b286780b87b807e2e2e839f7608dd913345c0075e39f01ded",
+      "evidence": "The constructor assigns this callback at 0x297298 to state +0x154. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x234088."
+    },
+    {
+      "vram": 2718076,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "evidence": "During the scene setup actor dispatch, selector 1 at 0x297e78 selected descriptor 0x801069d4 from table 0x801069e8; the original jalr at 0x297f04 calls field +4."
+    },
+    {
+      "vram": 2718536,
+      "origin": "checked-root",
+      "sha256": "57126befdc94c9d6b6299688e1d19d7f59cc5414010e96a865ebd34ef57a4d5b",
+      "evidence": "The constructor assigns this callback at 0x29728c to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2720856,
+      "origin": "checked-root",
+      "sha256": "6acb777ae2b40b4ef8d663e9ee6e415b5343db238a8e18a9b457ac06d0c69f70",
+      "evidence": "The constructor assigns this callback at 0x2972b0 to state +0x150. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x26f950."
+    },
+    {
+      "vram": 2728700,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "The constructor assigns this callback at 0x297384 to state +0x158. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x236948."
+    },
+    {
+      "vram": 2732064,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "evidence": "The constructor assigns this callback at 0x2972bc to state +0x14c. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x234828."
+    },
+    {
+      "vram": 2756096,
+      "origin": "checked-root",
+      "sha256": "628e53bc90ff1ee0bb31cc0237d78b5a194141d5cf3acd3758e4e08c1cbeef36",
+      "evidence": "The constructor assigns this callback at 0x2a149c to state +0x154. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x234088."
+    },
+    {
+      "vram": 2757740,
+      "origin": "checked-root",
+      "sha256": "49650c52359121a8cde27be8213c04eea1fb3118e037d0793f7a295c4af9024f",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 5 of 0x80102bb0 selects 0x80108220, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2757792,
+      "origin": "checked-root",
+      "sha256": "93ee86d94be7b265690e0ab53c97f0cb18fe4efc193c735c2db087ce8c9cbd3f",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 5 of 0x80102bb0 selects 0x80108220, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2757828,
+      "origin": "checked-root",
+      "sha256": "67022f5dc3996fb8ed0dbbfadc8710264ea580929e79d1d3f73aa751e12db922",
+      "evidence": "The constructor assigns this callback at 0x2a148c to state +0x14c. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x234828."
+    },
+    {
+      "vram": 2758000,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "The constructor assigns this callback at 0x2a1480 to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2759076,
+      "origin": "checked-root",
+      "sha256": "c9237fdf9179dcb2e94b1491a6d057827a4ae02f461ea15ee81ffdd1dadcbf1f",
+      "evidence": "The constructor assigns this callback at 0x2a2468 to state +0x154. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x234088."
+    },
+    {
+      "vram": 2761780,
+      "origin": "checked-root",
+      "sha256": "93de693f410926416b892d55fbdb1301565c3214d8b20f5272d08ee752c8ad9a",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 4 of 0x80102bb0 selects 0x80108330, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2761864,
+      "origin": "checked-root",
+      "sha256": "551f9443f2b801d5e4692adacb5b3475b1274c628b38da3c862e82c5aad62228",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 4 of 0x80102bb0 selects 0x80108330, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2762072,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "The constructor assigns this callback at 0x2a2448 to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2763036,
+      "origin": "checked-root",
+      "sha256": "76f9adc7329bb6fb8f7ffea8f936392f7856640aa02e5ea86ba5b3bf0a478d10",
+      "evidence": "The constructor assigns this callback at 0x2a246c to state +0x158. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x236948."
+    },
+    {
+      "vram": 2763172,
+      "origin": "checked-root",
+      "sha256": "0ada3f5939498aceb7662b861d797971278f2a6ab9b1447828165c25c341ed5b",
+      "evidence": "The constructor assigns this callback at 0x2a2454 to state +0x148. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2c2cf4."
+    },
+    {
+      "vram": 2801496,
+      "origin": "checked-root",
+      "sha256": "551f9443f2b801d5e4692adacb5b3475b1274c628b38da3c862e82c5aad62228",
+      "evidence": "The constructor assigns this callback at 0x2ac024 to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2801680,
+      "origin": "checked-root",
+      "sha256": "4375daed48c490e47cc11a4eaa91391a41b042745c417ba8759f9e7b65b478c5",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 10 of 0x80102bb0 selects 0x80109170, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2801776,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 10 of 0x80102bb0 selects 0x80109170, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2804004,
+      "origin": "checked-root",
+      "sha256": "1fb2f29fa310d4e20a5ac27f3bdf93af1cc8d8db4cd2217d1705bc7bd00752b9",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 6 of 0x80102bb0 selects 0x80109270, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2804032,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 6 of 0x80102bb0 selects 0x80109270, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2804156,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "The constructor assigns this callback at 0x2ac93c to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2805360,
+      "origin": "checked-root",
+      "sha256": "d6d0da0086e6fdc2cedd072e505c2774308256500ef2f887d4fd13464da356c3",
+      "evidence": "The constructor assigns this callback at 0x2ad330 to state +0x148. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2c2cf4."
+    },
+    {
+      "vram": 2806532,
+      "origin": "checked-root",
+      "sha256": "94d057fbee44342887740f89e0d1b86967b3984053073da8b212b7c42275892b",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 7 of 0x80102bb0 selects 0x80109350, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2806616,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 7 of 0x80102bb0 selects 0x80109350, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2806748,
+      "origin": "checked-root",
+      "sha256": "0b2bf47076edb3c5b977bddf8ebd4957798a6a6a7dada2f54433d861708211a0",
+      "evidence": "The constructor assigns this callback at 0x2ad318 to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2807476,
+      "origin": "checked-root",
+      "sha256": "86c379c45f3cc3df2365e3c2fe49cfc4cb671b59aa87cdba368858d2c9e48c96",
+      "evidence": "The constructor assigns this callback at 0x2ad324 to state +0x144. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x237da4."
+    },
+    {
+      "vram": 2811496,
+      "origin": "checked-root",
+      "sha256": "6614b62a107bdad2267000a83138d1ba3df00a745359db2ec3eb4c74ead82e86",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 3 of 0x80102bb0 selects 0x801094b4, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2811592,
+      "origin": "checked-root",
+      "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 3 of 0x80102bb0 selects 0x801094b4, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2811860,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "The constructor assigns this callback at 0x2ae680 to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2813756,
+      "origin": "checked-root",
+      "sha256": "5ca7313e9e614275dc989cf94254d8d0264f4a4f13658e6119d6e4147bc304e7",
+      "evidence": "Actor setup bounds-checks descriptor selector <16 at 0x233958. Slot 9 of 0x80102bb0 selects 0x80109540, whose field 0 is called with actor and state at 0x2be498."
+    },
+    {
+      "vram": 2813888,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 9 of 0x80102bb0 selects 0x80109540, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2814020,
+      "origin": "checked-root",
+      "sha256": "43387933a40d5fa56feba7ad54c545fc7307eaaf98a3c66425b0f7a01a0ee46e",
+      "evidence": "The constructor assigns this callback at 0x2aef54 to state +0x140. State is actor +0x180 (0x2339dc); the matching callback is invoked at 0x2be8f0."
+    },
+    {
+      "vram": 2818824,
+      "origin": "checked-root",
+      "sha256": "bf1b75dcf739d569565fcda9753d0ded63be6f612ad9ea7299203f41977ea746",
+      "evidence": "For actor type 0x642, the live descriptor at 0x80109670 points to this constructor. At 0x2be498 a2 receives descriptor field 0 and is called with actor and its state in a0/a1."
+    },
+    {
+      "vram": 2818988,
+      "origin": "checked-root",
+      "sha256": "51bed43e3f1142f8ecba8f5935d951891a16237e2ba034d816b4af19f0f2c9cc",
+      "evidence": "The actor dispatcher bounds-checks selector <16 at 0x238880. Slot 2 of 0x80102bb0 selects 0x80109670, whose field +4 is called at 0x238908 with the actor and state."
+    },
+    {
+      "vram": 2819188,
+      "origin": "checked-root",
+      "sha256": "d01f7639f1b7a9dba0b40b6180ef61f8e43339c82fa9b4c411a14124294a2b11",
+      "evidence": "The 0x2b0308 actor constructor stores this callback in state +0x154 at 0x2b0334."
+    },
+    {
+      "vram": 2819348,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "evidence": "The 0x2b0308 actor constructor stores this callback in state +0x140 at 0x2b0328."
+    },
+    {
+      "vram": 2910572,
+      "origin": "checked-root",
+      "sha256": "952cbe998a52a7002e760a105ac4dd714d90b208e85c172ac009fdbeee45ca4f",
+      "evidence": "The scene constructor stores this callback at object +0x2c4 at 0x44c65c; actor logic calls that field at 0x237da4."
+    },
+    {
+      "vram": 2985368,
+      "origin": "checked-root",
+      "sha256": "027bb917c867b8cff5fbdc8d40e845407d1942b70b5b3bd8fa7b2ee88e555986",
+      "evidence": "The scene constructor stores this at object +0x2d8 at 0x44c62c; actor logic calls through this field at 0x236948."
+    },
+    {
+      "vram": 2985588,
+      "origin": "checked-root",
+      "sha256": "41e2fe229f4576696bc2c1f46b25a851e7efc5edb38dc93feaaea356f43739fc",
+      "evidence": "The scene constructor stores this at object +0x2d0 at 0x44c644; the callback is invoked at 0x26f950."
+    },
+    {
+      "vram": 2990800,
+      "origin": "checked-root",
+      "sha256": "8fb23cc03735d0797572ec64b0ef99dd610eb9df39e400aa2909fcf32463fd5f",
+      "evidence": "The paired actor builder 0x44c5a0 initializes the second actor at base +0x368. Its store at 0x44c6c8 sets second actor +0x2d4; 0x238adc calls it with that actor and state +0x180 after entering the opening world."
+    },
+    {
+      "vram": 2991244,
+      "origin": "checked-root",
+      "sha256": "ff613c333cd39c8d5c21a9d9a6aa447b25385241740d9dc8fd025e8850301d0c",
+      "evidence": "The actor constructor 0x2dbde8 writes this callback to state +0x144 at 0x2dbe24. The actor dispatcher invokes that exact field at 0x237da4."
+    },
+    {
+      "vram": 2992372,
+      "origin": "checked-root",
+      "sha256": "58ec47b49c747c3b281a19d36f2e3e1541c1592e5e1010bf3234f34988cc8129",
+      "evidence": "The actor constructor 0x2dbde8 writes this callback to state +0x140 at 0x2dbe18. The actor dispatcher invokes that exact field at 0x2be8f0."
+    },
+    {
+      "vram": 2997736,
+      "origin": "checked-root",
+      "sha256": "82f25aecd33c9a1ab218a55d4d820dabf8792f88ac46d293d6679d3e135d433a",
+      "evidence": "Actor setup at 0x233970 supplies descriptor 0x8010aef4, whose field zero the guest loads and calls at 0x2be48c/0x2be498 with the actor and state."
+    },
+    {
+      "vram": 3015436,
+      "origin": "checked-root",
+      "sha256": "cb557ebb1d6837075bf7f5fa9dc0aebbdccdd7a7fa498d4d0765a5bade38a88d",
+      "evidence": "Sequence player constructor stores its callback at +8 at 0x2dfe8c. The frame scheduler calls the player through +8 at 0x2df928."
+    },
+    {
+      "vram": 3025120,
+      "origin": "checked-root",
+      "sha256": "e7fa776272b758d893055b2fe1f64dc2b122f62ae251ab773daeec9e2fcc106e",
+      "evidence": "Sound player constructor installs +8 at 0x2e28bc. The frame scheduler calls the player through +8 at 0x2df928."
+    },
+    {
+      "vram": 3045984,
+      "origin": "checked-root",
+      "sha256": "5c7ff62ed8223840458fc63bad0e3098d59ffd8d197d2daf394c9e5bf7a1c3a6",
+      "evidence": "Filter constructor at 0x2e8f14 passes this as a1 to 0x2ef820, which stores it at filter +4 for indirect dispatch."
+    },
+    {
+      "vram": 3048680,
+      "origin": "checked-root",
+      "sha256": "915e22bc91980bd87b91b22641a5cb80ea7867d50902365117565975061bd6e5",
+      "evidence": "Filter constructor at 0x2e8f14 passes this as a2 to 0x2ef820, which stores it at filter +8 for indirect dispatch."
+    },
+    {
+      "vram": 3049232,
+      "origin": "checked-root",
+      "sha256": "242d46fef6a0b1bc096dd721ed7ebe20d458c4a3e2a1aa7e92fc71ddf8d42bb1",
+      "evidence": "Filter constructor at 0x2e8df0 passes this as a1 to 0x2ef820, which stores it at filter +4 for indirect dispatch."
+    },
+    {
+      "vram": 3049452,
+      "origin": "checked-root",
+      "sha256": "4cacf66bc6b2799f45989a48407ff7cbbe115e35914a91655ff2397de94da19d",
+      "evidence": "Filter constructor at 0x2e8df0 passes this as a2 to 0x2ef820, which stores it at filter +8 for indirect dispatch."
+    },
+    {
+      "vram": 3051584,
+      "origin": "checked-root",
+      "sha256": "f93ad57246aaa21c8fddc5672c47ed3ab45c377afd5c9f9ecbf4beb23ce10b73",
+      "evidence": "Wave decoder selection stores this pull callback at filter +4 at 0x2e9a88."
+    },
+    {
+      "vram": 3052676,
+      "origin": "checked-root",
+      "sha256": "0f7a14db1a7e3b9cfb965976beb4d09b8a0d92362b99170edd52c3f3d764f703",
+      "evidence": "Wave decoder selection stores this pull callback at +4 at 0x2e9b00."
+    },
+    {
+      "vram": 3053576,
+      "origin": "checked-root",
+      "sha256": "3485ad8eaca44cc5488ce0d51e872d0d7a02fe278bc337480ba443d9215eccd3",
+      "evidence": "Wave decoder selection stores this pull callback at +4 at 0x2e9b38."
+    },
+    {
+      "vram": 3054100,
+      "origin": "checked-root",
+      "sha256": "f0106c1722a62d307675cf09ce178fb2e5ac5eca8327f33ea5cabce347b7e7c7",
+      "evidence": "Filter constructor at 0x2e8ce8 passes this as a2 to 0x2ef820, which stores it at filter +8 for indirect dispatch."
+    },
+    {
+      "vram": 3054880,
+      "origin": "checked-root",
+      "sha256": "c3542703176fae6cd35e0ab04ac23faefe4a6eaa9d2e3136510374643b8fb184",
+      "evidence": "Filter constructor at 0x2e8ec8 passes this as a1 to 0x2ef820, which stores it at filter +4 for indirect dispatch."
+    },
+    {
+      "vram": 3055136,
+      "origin": "checked-root",
+      "sha256": "d2c9f90e64b3248bfb703de4ead612846a2bf4ca99acccbaee106c99b046ce47",
+      "evidence": "Filter constructor at 0x2e8ec8 passes this as a2 to 0x2ef820, which stores it at filter +8 for indirect dispatch."
+    },
+    {
+      "vram": 3055216,
+      "origin": "checked-root",
+      "sha256": "96db0d7879f2c4196225bd7b44e1eb2bb94e1cff5e5ea98ebaebb12061af998d",
+      "evidence": "Filter constructor at 0x2e8d94 passes this as a1 to 0x2ef820, which stores it at filter +4 for indirect dispatch."
+    },
+    {
+      "vram": 3055536,
+      "origin": "checked-root",
+      "sha256": "4cacf66bc6b2799f45989a48407ff7cbbe115e35914a91655ff2397de94da19d",
+      "evidence": "Filter constructor at 0x2e8d94 passes this as a2 to 0x2ef820, which stores it at filter +8 for indirect dispatch."
+    },
+    {
+      "vram": 3055744,
+      "origin": "checked-root",
+      "sha256": "2866725026326076f6cb020d6f121ce88e16c6cd5389bfbc35d151e541ea6608",
+      "evidence": "Filter constructor at 0x2e8e44 passes this as a1 to 0x2ef820, which stores it at filter +4 for indirect dispatch."
+    },
+    {
+      "vram": 3056192,
+      "origin": "checked-root",
+      "sha256": "1b7d11cdfd17156dd946b169b63438aa22d42eb5e7f8d5dc9194775c3cf9c711",
+      "evidence": "Filter constructor at 0x2e8e44 passes this as a2 to 0x2ef820, which stores it at filter +8 for indirect dispatch."
+    },
+    {
+      "vram": 3075216,
+      "origin": "checked-root",
+      "sha256": "c28f68c9c1217ab161aaf73f45a45a321489e30c3435db8e95cdb86992225cf2",
+      "evidence": "Effect constructor stores pull callback at +4 at 0x2e8874."
+    },
+    {
+      "vram": 3076148,
+      "origin": "checked-root",
+      "sha256": "6f6b821e0db7ffd3225f978afbb7a56868ea9b118fc5fafe18518d9bac47f6f7",
+      "evidence": "Effect constructor installs parameter handler at +0x28 at 0x2e8880."
+    },
+    {
+      "vram": 4196520,
+      "origin": "checked-root",
+      "sha256": "e9f79e0a652ed365aafbbda877f2cda9e67b8538ebf8ca9c7d779a5485961f42",
+      "evidence": "Producer at 0x400cf0 passes this as stack +0x14 to the loader at 0x400d08. Loader stores it at job +0x14 at 0x23fa0c. The worker invokes this field at 0x242540."
+    },
+    {
+      "vram": 4279756,
+      "origin": "checked-root",
+      "sha256": "c03351c4dde5935c3f428b623331c5f9b88ab484c6e31013e51e1aa37c455879",
+      "evidence": "Texture setup code at 0x4158c8 installs the callback at 0x800ffdf0. The RDP display-list builder loads it at 0x287d68 and invokes it with the texture record and data (jalr 0x287d78)."
+    },
+    {
+      "vram": 4293044,
+      "origin": "checked-root",
+      "sha256": "3a1f373fb82a8b84fb0f5777f96a53c656a613fede85f923b7073cab12a0cfcf",
+      "evidence": "Call 0x4421a4 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4293144,
+      "origin": "checked-root",
+      "sha256": "3a1f373fb82a8b84fb0f5777f96a53c656a613fede85f923b7073cab12a0cfcf",
+      "evidence": "Call 0x4362cc pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4293260,
+      "origin": "checked-root",
+      "sha256": "1f9f987adc2d825df1669647d2201567a3efd75b9d84293e206f072c3d39da3a",
+      "evidence": "Call 0x4180ac passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4293552,
+      "origin": "checked-root",
+      "sha256": "11cbc8be73c25f1b60b78f1362bd4c6cce1b27ff96a6c8f4355fed4521994d1d",
+      "evidence": "Call 0x418788 passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4293800,
+      "origin": "checked-root",
+      "sha256": "dc480ec7b0b4f01e6215d68c449d36a0724f8a0452627efffae309aa06a4ed99",
+      "evidence": "Call 0x434958 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4294376,
+      "origin": "checked-root",
+      "sha256": "dc480ec7b0b4f01e6215d68c449d36a0724f8a0452627efffae309aa06a4ed99",
+      "evidence": "Call 0x4421b4 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4294760,
+      "origin": "checked-root",
+      "sha256": "dc480ec7b0b4f01e6215d68c449d36a0724f8a0452627efffae309aa06a4ed99",
+      "evidence": "Call 0x427a5c pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4294892,
+      "origin": "checked-root",
+      "sha256": "1a24943e9e0d682d659ca23efaddead10224cd274ea1cf6d8e3be7d994faf2db",
+      "evidence": "Call 0x4182fc passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4294936,
+      "origin": "checked-root",
+      "sha256": "0c45b00d0da87be5cd7ce7b0c8f5d0f1650e89433af3892e074add38e86cd435",
+      "evidence": "At 0x20313c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4294980,
+      "origin": "checked-root",
+      "sha256": "ba23370e1e7bc149035a3a501730ba1f088273584baa855b58c52a9c80666a0c",
+      "evidence": "Call 0x417d98 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295024,
+      "origin": "checked-root",
+      "sha256": "62467a9a35ad36f3d12ca622f49562dc1cc5b04dc0fc4b1f150123fee886bc95",
+      "evidence": "Call 0x417d10 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295112,
+      "origin": "checked-root",
+      "sha256": "30c6a3c067cff5e611470e5b6e5908cbea8112d69e1b0d210ba0d4a48b182278",
+      "evidence": "Call 0x4182ec passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4295156,
+      "origin": "checked-root",
+      "sha256": "730e62c5d389ba0b7a3dbb2fc5d331afa766201cc2ddff117899b65147507c37",
+      "evidence": "Call 0x418344 passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4295228,
+      "origin": "checked-root",
+      "sha256": "9aecc445e50dc358912203d93bb941d40ad1cbbead22d39367f6eb705fc1d3bb",
+      "evidence": "Call 0x417dd8 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295272,
+      "origin": "checked-root",
+      "sha256": "485186e1bb271604ff51019af587da2459d82dfdf624160f70f25e1a8e424b49",
+      "evidence": "Call 0x41837c passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4295316,
+      "origin": "checked-root",
+      "sha256": "4d0364aa95459cd0e3c535443716691e7bd1c7c86386c36a6cd873cd78308db6",
+      "evidence": "Call 0x224d30 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295416,
+      "origin": "checked-root",
+      "sha256": "58f9b1c79af0befcda11705c4db4bdc7ab6d8a4876d1aaeee22f6a5412d99428",
+      "evidence": "Call 0x2ccd64 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295668,
+      "origin": "checked-root",
+      "sha256": "4d0364aa95459cd0e3c535443716691e7bd1c7c86386c36a6cd873cd78308db6",
+      "evidence": "Call 0x2d3740 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295828,
+      "origin": "checked-root",
+      "sha256": "20413f2675023acc7dac426843fb0f4b0f0e236898e076f16b2104c278b6a88e",
+      "evidence": "Call 0x434ef8 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295872,
+      "origin": "checked-root",
+      "sha256": "edc0824a8e1a1dd81a3e600af4f2596706763c2abe25c4f6d2c91a25c354295c",
+      "evidence": "Call 0x419104 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295916,
+      "origin": "checked-root",
+      "sha256": "9284bdf6372c94b554082f3970468c32efbc6f5be974b4f162017f5aada729f8",
+      "evidence": "Call 0x224ef0 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4295960,
+      "origin": "checked-root",
+      "sha256": "5403b95fe78773fd2055ee2e801431bfca4f68e9246a04694e77d2663cffa501",
+      "evidence": "Call 0x434b48 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296004,
+      "origin": "checked-root",
+      "sha256": "0cb283f7674f5d67d29e78a6bd8ef2630476bb072d82db895cb24c5be62566de",
+      "evidence": "Call 0x418ba0 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296312,
+      "origin": "checked-root",
+      "sha256": "4e798aba02d5fd05cce05d7ae3ac31b5ffac425f9904b4edbe292de8af7e65e9",
+      "evidence": "Call 0x418dac passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296356,
+      "origin": "checked-root",
+      "sha256": "61eff8913a90d186524a6f0101a2eb0952db7a035b2a04ae82c669ed105e007b",
+      "evidence": "Call 0x21ee24 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296644,
+      "origin": "checked-root",
+      "sha256": "cd8f5be852260fb972d8f2998f4f42083673e3898ab5004106f5d7fdcfd1f631",
+      "evidence": "Call 0x419074 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296712,
+      "origin": "checked-root",
+      "sha256": "4e798aba02d5fd05cce05d7ae3ac31b5ffac425f9904b4edbe292de8af7e65e9",
+      "evidence": "At 0x418fe4 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4296756,
+      "origin": "checked-root",
+      "sha256": "3a1f373fb82a8b84fb0f5777f96a53c656a613fede85f923b7073cab12a0cfcf",
+      "evidence": "Call 0x418520 passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4296880,
+      "origin": "checked-root",
+      "sha256": "4d0364aa95459cd0e3c535443716691e7bd1c7c86386c36a6cd873cd78308db6",
+      "evidence": "Call 0x434ec8 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296940,
+      "origin": "checked-root",
+      "sha256": "4d0364aa95459cd0e3c535443716691e7bd1c7c86386c36a6cd873cd78308db6",
+      "evidence": "Call 0x4190c8 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4296992,
+      "origin": "checked-root",
+      "sha256": "4a090bab3833549a54b9c3de832af9df67d7d5cf34153806386ab6e8481681c3",
+      "evidence": "Call 0x41809c passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4297080,
+      "origin": "checked-root",
+      "sha256": "a33e97d92ec8f845fc2530cfde85b106829659266b523a900cfc1a37e59d22d3",
+      "evidence": "Call 0x4188a8 passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4297132,
+      "origin": "checked-root",
+      "sha256": "9aa1f620eb1a66692622a0bb2374f9b532de03e0f9c948cee0914426cc736a1d",
+      "evidence": "At 0x437100 the cartridge calls 0x41f8f0 with this address in a0 (LUI/ADDIU pair). The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918 and branches to its selected slot at 0x41f7f4 or 0x41f8b4."
+    },
+    {
+      "vram": 4297176,
+      "origin": "checked-root",
+      "sha256": "4813ae48ca36e4da9b1d630f05464c67a8faec2e90ebd063ac6f76d0dac45d31",
+      "evidence": "Call 0x418510 passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4297220,
+      "origin": "checked-root",
+      "sha256": "4813ae48ca36e4da9b1d630f05464c67a8faec2e90ebd063ac6f76d0dac45d31",
+      "evidence": "Call 0x43f1c4 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4297276,
+      "origin": "checked-root",
+      "sha256": "444024f78131502e02c57d9b5528b0358489ddc489a2aa7adfd02faa39f67c4b",
+      "evidence": "At 0x4431ac the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297440,
+      "origin": "checked-root",
+      "sha256": "444024f78131502e02c57d9b5528b0358489ddc489a2aa7adfd02faa39f67c4b",
+      "evidence": "At 0x43715c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297604,
+      "origin": "checked-root",
+      "sha256": "25ef36e744f8820c0221087a325286a6b9b72b330bb977ea320264bd2aade5dc",
+      "evidence": "Call 0x418f54 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4297648,
+      "origin": "checked-root",
+      "sha256": "77ee7f1038e857ceef8ddb9ba64f80c50f90f64eb7e66fd80bfd0b0d91b7c2d7",
+      "evidence": "At 0x43714c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297692,
+      "origin": "checked-root",
+      "sha256": "1ec42bf2ffc931e994cf0a4e35a7b2456f18f5a2354874049aef6e1d0c947ef2",
+      "evidence": "At 0x44319c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297736,
+      "origin": "checked-root",
+      "sha256": "046c409e20a9420945e971ba26f7329e4b39ff939425271816b7a0a6fd9061fb",
+      "evidence": "At 0x430470 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297780,
+      "origin": "checked-root",
+      "sha256": "5e00f08a82f4a1a63363871a09346141f40e63e9aa480589bfeab55be2ed17bf",
+      "evidence": "At 0x43cbc8 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297824,
+      "origin": "checked-root",
+      "sha256": "48e64d1205689c53fe45a72825d35f9aba2b958ac4cbd7f70be7fec1537d9e1f",
+      "evidence": "At 0x43cbf4 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297868,
+      "origin": "checked-root",
+      "sha256": "9c4b17d385d18679dc23d65c6ec41937016d6fedb8c815380c8221df6e2ff781",
+      "evidence": "At 0x43cc20 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297912,
+      "origin": "checked-root",
+      "sha256": "f1fa25f570f352bb2eed020356fd5ea4ad28f62a8fca27342455ced7b9af23bf",
+      "evidence": "At 0x43049c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4297956,
+      "origin": "checked-root",
+      "sha256": "928cb7bde15bef362fb5530c33c0164fd95c15a85d1a9914206dd398c3034d11",
+      "evidence": "At 0x429c28 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298008,
+      "origin": "checked-root",
+      "sha256": "fa531f6a4dd6af3bcd29def4587e3175040fb7489b147aa5c14100dea8ec039e",
+      "evidence": "At 0x42a748 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298096,
+      "origin": "checked-root",
+      "sha256": "e498350fece64b52fcb4e5d2f6b7332ccf694a5fd5e2291463a98365f4d01de2",
+      "evidence": "Call 0x438ed8 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4298140,
+      "origin": "checked-root",
+      "sha256": "a42ce4df1a312c46af8c5580d1c5f5d2e4d39c0a39dbd048eb7ffee2b061070d",
+      "evidence": "Call 0x439540 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4298184,
+      "origin": "checked-root",
+      "sha256": "787af7f994e434a0b549ea7f44d20c83082e2b4a676747c8dba45daa6fe23289",
+      "evidence": "Call 0x43770c pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4298228,
+      "origin": "checked-root",
+      "sha256": "bbcaf4f87f88e49f437de998bd8525275621475931673e1483bd87a2d53a4acb",
+      "evidence": "At 0x4216ac the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298460,
+      "origin": "checked-root",
+      "sha256": "4e798aba02d5fd05cce05d7ae3ac31b5ffac425f9904b4edbe292de8af7e65e9",
+      "evidence": "At 0x4196a0 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298536,
+      "origin": "checked-root",
+      "sha256": "267c494b3a546cbe8d78ab8e19d7af5a8183f27ee8b9efb413d937f606f9ba65",
+      "evidence": "At 0x42167c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298628,
+      "origin": "checked-root",
+      "sha256": "4193a59e0ed9dbb4d2a86524e96b4a217b3092e6bdf488a76ff76ada108f848c",
+      "evidence": "At 0x42169c the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298672,
+      "origin": "checked-root",
+      "sha256": "824cf0bfee300731414e6e319de7be1e1d485eb8c323028121f530bb337d0ad9",
+      "evidence": "At 0x439a04 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298716,
+      "origin": "checked-root",
+      "sha256": "9e977746a719850e9857b26fa1c36f9a1bbe58a0be5cf17d4c539aa0f9fea3b2",
+      "evidence": "Call 0x43906c pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4298760,
+      "origin": "checked-root",
+      "sha256": "b2a6698a1e02afbf353810f8db36117e46aa7b85f4d931e51b7d30e946f0fe08",
+      "evidence": "Call 0x4184f8 passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4298804,
+      "origin": "checked-root",
+      "sha256": "f4cd113fa75ecf3e7a9b07741873728c47c77d431cbf3743990879536f571ac7",
+      "evidence": "Call 0x418530 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4298848,
+      "origin": "checked-root",
+      "sha256": "949ad7f5bd8d689c9b98e20ecea6d764035941a7c74ab1a900b8e06c2b79812a",
+      "evidence": "At 0x4187b4 the cartridge calls 0x41f9c4 with this address in a0 (LUI/ADDIU pair). The 30-slot continuation stack stores a0 at 0x41f9ec, pops it at 0x41f7a0 and invokes it at 0x21fa44."
+    },
+    {
+      "vram": 4298956,
+      "origin": "checked-root",
+      "sha256": "949ad7f5bd8d689c9b98e20ecea6d764035941a7c74ab1a900b8e06c2b79812a",
+      "evidence": "The two paths at 0x4187a4 select the pause screen in a0. This entry is materialized at 0x41879c/0x4187a0 before the 0x4187b4 call to 0x41f9c4. The 30-slot screen stack is written at 0x41f9ec, popped at 0x41f7a0 and called through 0x21fa44."
+    },
+    {
+      "vram": 4299152,
+      "origin": "checked-root",
+      "sha256": "33acc4c5c04b7c4251e4b6f498efb0b19a27717c0a3feb91ec9f1cf7dca4d953",
+      "evidence": "Call 0x417d40 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299252,
+      "origin": "checked-root",
+      "sha256": "be50e6a17e8258cdb6605c8538f42c833925011c1a822de2ceb0a29eb54b4a9d",
+      "evidence": "Call 0x417d20 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299300,
+      "origin": "checked-root",
+      "sha256": "a16c92a5dcb2fe0ebc1335dd6f75a5b86670297c49f4f6bbb979a4afe77e5586",
+      "evidence": "Call 0x41832c passes the callback in a0. The bounded 20-slot menu list at 0x80125dcc stores a0 at 0x41f918; the next/previous handlers invoke the selected slot at 0x41f7f4 and 0x41f8b4."
+    },
+    {
+      "vram": 4299360,
+      "origin": "checked-root",
+      "sha256": "30ae867748aa9844dbb3a5a6b016fd0b67190cc811fed00725a8214a1d3eaaec",
+      "evidence": "Call 0x43907c pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299456,
+      "origin": "checked-root",
+      "sha256": "2323ae6fa383199f41a13e81a0cd71143cb59ece4d4f251f5a9a594a2ae3513f",
+      "evidence": "Call 0x417d30 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299564,
+      "origin": "checked-root",
+      "sha256": "d1bc5a811239ca6a347946390b135526302d33f204ddd264ad1daa7a995b687a",
+      "evidence": "Call 0x417d70 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299608,
+      "origin": "checked-root",
+      "sha256": "37cb0ce08e65c9e2c1d2a9f1af96b68eb14674a0530c26a3dece9406030d4fc2",
+      "evidence": "Call 0x418b90 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299648,
+      "origin": "checked-root",
+      "sha256": "b2d1dcd7f514a35842cd963f1bf7e36d082967bc743e2532a7897dec0680bbcb",
+      "evidence": "Call 0x417de8 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299684,
+      "origin": "checked-root",
+      "sha256": "959bdde6ad0692b1d7807692f6c8d037c067c0cd1f5a981ecab0aad61c3fa63d",
+      "evidence": "Call 0x224f00 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299760,
+      "origin": "checked-root",
+      "sha256": "152d205b4bc9f7112eda74932e0906cd6ad7352a7c996679220d1526e0d5072d",
+      "evidence": "Call 0x418418 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299836,
+      "origin": "checked-root",
+      "sha256": "ef2cbeec329bfaf9e19f88d87a1b5039361808037ed482f44e1bd8e87d47575c",
+      "evidence": "Call 0x418570 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299908,
+      "origin": "checked-root",
+      "sha256": "4377c42017e82841e7af52e736d919b43e9f0fa13359329efd51e80687929c35",
+      "evidence": "Call 0x418848 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4299952,
+      "origin": "checked-root",
+      "sha256": "4377c42017e82841e7af52e736d919b43e9f0fa13359329efd51e80687929c35",
+      "evidence": "Call 0x418478 passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4300012,
+      "origin": "checked-root",
+      "sha256": "af75c9d6f1b61f28d09c7eac28772c7a8ca31bd91dba349ee2cdcdba40263316",
+      "evidence": "Call 0x417d80 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4300048,
+      "origin": "checked-root",
+      "sha256": "875101d2c4789bba9df1c48e75dbf40b119b9742750380edde7d76753efca959",
+      "evidence": "Call 0x4187d4 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4300092,
+      "origin": "checked-root",
+      "sha256": "cecebda9f5531e5740c03b4d79691b3724e52cac3b26646865a05768072dae16",
+      "evidence": "Call 0x417db8 pushes this callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4300136,
+      "origin": "checked-root",
+      "sha256": "4d0364aa95459cd0e3c535443716691e7bd1c7c86386c36a6cd873cd78308db6",
+      "evidence": "Call 0x418aac passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4300244,
+      "origin": "checked-root",
+      "sha256": "7e356c42732810a8af3ae2a5ce2a27726f0ae379e331428abf7d287a3a2b688f",
+      "evidence": "Call 0x418c0c passes the callback in a0. The bounded 30-slot menu stack at 0x80125cd0 stores a0 at 0x41f9ec, pops into a0 at 0x41f7a0, and calls it through 0x21fa44."
+    },
+    {
+      "vram": 4461600,
+      "origin": "checked-root",
+      "sha256": "7333d15d05fbc19ff6fdaaa3c943e51a1fd722a190d6f33c8f5c4ae18963bae7",
+      "evidence": "At 0x43d8f4 the game passes this callback in a2 to 0x41cc5c. The constructor stores it at object +0x1c at 0x41ccf8 and sets flag 0x08000000 at 0x41cd0c. The dispatcher loads that field at 0x221048, tests the flag and calls it at 0x221068."
+    },
+    {
+      "vram": 4496084,
+      "origin": "checked-root",
+      "sha256": "fd458e075bc8ba8cb7663159885e7a207d87fce56224dae024239b7d63e58762",
+      "evidence": "At 0x278288 the game passes this resource callback to the wrapper at 0x241860. At 0x2418b0 it forwards incoming stack +0x10 to loader +0x14. The job worker calls that field at 0x242540."
+    },
+    {
+      "vram": 4496800,
+      "origin": "checked-root",
+      "sha256": "6155e821316bcb092f3404067709a9b141e8435eb91dbe1bcfda56ebfbabef12",
+      "evidence": "At 0x2780d8 the game passes this resource callback to the wrapper at 0x241860. At 0x2418b0 it forwards incoming stack +0x10 to loader +0x14. The job worker calls that field at 0x242540."
+    },
+    {
+      "vram": 4497792,
+      "origin": "checked-root",
+      "sha256": "dadedc7dd06782c88d78f7c2e9448ac896aca34489dfb15f8b2155d2b9858152",
+      "evidence": "At 0x278544 the game passes this resource callback to the wrapper at 0x241860. At 0x2418b0 it forwards incoming stack +0x10 to loader +0x14. The job worker calls that field at 0x242540."
+    },
+    {
+      "vram": 4503116,
+      "origin": "checked-root",
+      "sha256": "2a6ed436acbae811763694303b994b0ea0b15ff384e94d708e6d4c430912650c",
+      "evidence": "At 0x44933c the game passes this resource callback to the wrapper at 0x241860. At 0x2418b0 it forwards incoming stack +0x10 to loader +0x14. The job worker calls that field at 0x242540."
+    },
+    {
+      "vram": 4503420,
+      "origin": "checked-root",
+      "sha256": "6a7894dea5c02625607340bb12f76ed94d7e8d84ae44a3a5762d692dd0c721d7",
+      "evidence": "At 0x449308 the game passes this resource callback to the wrapper at 0x241860. At 0x2418b0 it forwards incoming stack +0x10 to loader +0x14. The job worker calls that field at 0x242540."
+    },
+    {
+      "vram": 4503716,
+      "origin": "checked-root",
+      "sha256": "5f5a2edbdb8f143d41ff2a940b1bab7db3aee74e56ec701d948931226d47df9f",
+      "evidence": "At 0x2782b8 the game passes this resource callback to the wrapper at 0x241860. At 0x2418b0 it forwards incoming stack +0x10 to loader +0x14. The job worker calls that field at 0x242540."
+    }
+  ]
+}

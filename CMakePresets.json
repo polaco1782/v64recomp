@@ -184,6 +184,27 @@
       "cacheVariables": {
         "RECOMP_OPT_LEVEL": "3"
       }
+    },
+    {
+      "name": "doom64-us",
+      "inherits": "game",
+      "cacheVariables": {
+        "RECOMP_OPT_LEVEL": "3"
+      }
+    },
+    {
+      "name": "turok3-us",
+      "inherits": "game",
+      "cacheVariables": {
+        "RECOMP_OPT_LEVEL": "3"
+      }
+    },
+    {
+      "name": "mm-us",
+      "inherits": "game",
+      "cacheVariables": {
+        "RECOMP_OPT_LEVEL": "3"
+      }
     }
   ],
   "buildPresets": [
@@ -421,6 +442,36 @@
       "name": "turok2-us-prepare",
       "inherits": "prepare",
       "configurePreset": "turok2-us"
+    },
+    {
+      "name": "doom64-us",
+      "inherits": "compile",
+      "configurePreset": "doom64-us"
+    },
+    {
+      "name": "doom64-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "doom64-us"
+    },
+    {
+      "name": "turok3-us",
+      "inherits": "compile",
+      "configurePreset": "turok3-us"
+    },
+    {
+      "name": "turok3-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "turok3-us"
+    },
+    {
+      "name": "mm-us",
+      "inherits": "compile",
+      "configurePreset": "mm-us"
+    },
+    {
+      "name": "mm-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "mm-us"
     }
   ],
   "workflowPresets": [
@@ -778,6 +829,57 @@
         {
           "type": "build",
           "name": "turok2-us"
+        }
+      ]
+    },
+    {
+      "name": "doom64-us",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "doom64-us"
+        },
+        {
+          "type": "build",
+          "name": "doom64-us-prepare"
+        },
+        {
+          "type": "build",
+          "name": "doom64-us"
+        }
+      ]
+    },
+    {
+      "name": "turok3-us",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "turok3-us"
+        },
+        {
+          "type": "build",
+          "name": "turok3-us-prepare"
+        },
+        {
+          "type": "build",
+          "name": "turok3-us"
+        }
+      ]
+    },
+    {
+      "name": "mm-us",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "mm-us"
+        },
+        {
+          "type": "build",
+          "name": "mm-us-prepare"
+        },
+        {
+          "type": "build",
+          "name": "mm-us"
         }
       ]
     }

@@ -237,6 +237,8 @@ reference_scope = "camera.c, tmove.c, tcontrol.c and tengine.c supplied semantic
 functions = [
   {name = "gameproc", vram = 0x8000167c, size = 0x28, sha256 = "e1e6dca7c329e633963a2a7ada33912db1cff46ed5c4f16aed1e77d15be46d7a"},
   {name = "CEngineApp__Main", vram = 0x80008690, size = 0x136c, sha256 = "ed4616e0e2f1c6620cf7c2f3cd33259985330a2bddad3fe451cb4fb738a6aff5"},
+  {name = "CEngineApp__UpdateLEGALSCREEN", vram = 0x80009b24, size = 0x1b0, sha256 = "8c800bee130f110803a6b35f03b10d4851b3a4fcb17eff09696133322583a342"},
+  {name = "CCamera__GotoNextIntroMode", vram = 0x80039d88, size = 0xe0, sha256 = "39ca1fce75bda4005b84b9ffe82f17dee362a8b188f4f37daf9f1da91a35c615"},
   {name = "CEngineApp__UpdateGAME", vram = 0x8000a044, size = 0xb20, sha256 = "6ed50f2874eeb1fcece5ec8f1477360f5a775bb2eac9f8ed83da37b938fc01e0"},
   {name = "CEngineApp__InitializeGameVars", vram = 0x80001860, size = 0x314, sha256 = "d1f4b057069682af64a8c059ae4059f86946d7f9963409ec6fa18581f95026f6"},
   {name = "CTControl__CTControl", vram = 0x80050390, size = 0xdd4, sha256 = "e494f20ef3d35dd894b01fc4947cd18647db9f73f82c63ec9daf037d523f3543"},
@@ -289,6 +291,12 @@ functions = [
 bindings = [
   {name = "engine", kind = "address", pcs = [0x80001688, 0x80001690], words = [0x3c048010, 0x24849fb0], value = 0x800f9fb0},
   {name = "mode", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x800089b4], words = [0x3c010001, 0x34218000, 0x8e2b76d4], value = 0x1f6d4},
+  {name = "game_pak_check", kind = "offset", pcs = [0x80009b7c, 0x80009b80, 0x80009bc4], words = [0x3c010001, 0x34218000, 0x8cab7828], value = 0x1f828},
+  {name = "legal_bypass", kind = "offset", pcs = [0x80009b7c, 0x80009b80, 0x80009c10], words = [0x3c010001, 0x34218000, 0x8cae7824], value = 0x1f824},
+  {name = "current_warp_id", kind = "offset", pcs = [0x8000a0e4, 0x8000a0e8, 0x8000a0f0], words = [0x3c010001, 0x34218000, 0x8d42790c], value = 0x1f90c},
+  {name = "intro_first_run", kind = "address", pcs = [0x80039d98, 0x80039da4], words = [0x3c0e800c, 0x8dceab54], value = 0x800bab54},
+  {name = "button_state", kind = "address", pcs = [0x80010ed4, 0x80010edc], words = [0x3c098012, 0x25299a70], value = 0x80119a70},
+  {name = "button_press", kind = "field", pcs = [0x80011140], words = [0x952e0004], value = 0x4},
   {name = "pause", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aa9c], words = [0x3c010001, 0x34218000, 0x8d4f788c], value = 0x1f88c},
   {name = "warp", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aaa8], words = [0x3c010001, 0x34218000, 0x8d587904], value = 0x1f904},
   {name = "death", kind = "offset", pcs = [0x8000898c, 0x80008990, 0x8000aab4], words = [0x3c010001, 0x34218000, 0x8d597928], value = 0x1f928},
@@ -360,3 +368,30 @@ bindings = [
 # 38b18: transform all five corners; 38b74: build view_volume; 38b88: enclose X/Z.
 # Particles use oriented 3D vertices; GetScreenCoordinates consumes that same
 # combined float projection. There is no separate depth-only billboard scale.
+
+[graphics]
+# Task setup at 0x80008114 selects the two triangle programs. The map uses L3DEX.
+[[graphics.microcodes]]
+name = "F3DLX.NoN 1.00"
+code = {image = "program", offset = 0xb11f0, size = 0x1000, sha256 = "a437c6a0aefcd9158ff0fa886b926e04a0e72eadc3aaccc7b332bede888f0f80"}
+data = {image = "program", offset = 0xf63b0, size = 0x800, sha256 = "fb175c35b30fe4ea6407cc9ecb177bea5cabc396d357d59f4ab11cb6c6731549"}
+
+[[graphics.microcodes]]
+name = "F3DEX.NoN 1.00"
+code = {image = "program", offset = 0xb25e0, size = 0x1000, sha256 = "9d9078632b5db73bff0892eb72f8a41564434ba0df017892c535cdcd72369d2f"}
+data = {image = "program", offset = 0xf6bb0, size = 0x800, sha256 = "f0cac10a5c41490b586a6d8af9a98419d16fc465757d0da13b46597fceef0a97"}
+
+[[graphics.microcodes]]
+name = "L3DEX 1.00"
+code = {image = "program", offset = 0xb39a0, size = 0x1000, sha256 = "5fa7e9a119c7933103a353b62c9100d71d2b869e168414cc27a69736279c1f18"}
+data = {image = "program", offset = 0xf73b0, size = 0x800, sha256 = "d686c116ae4f83d84dc7e514b69aa20fc8ca69f9907e278fc6914231ec4367fb"}
+
+[graphics.rsp]
+# The bootstrap loads 0xf80 bytes. The triangle programs also DMA the overlays
+# described by their DMEM tables (source offset, byte count minus one, IMEM target).
+images = [
+  {name = "RSP bootstrap", image = "program", offset = 0xb1120, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DLX.NoN 1.00", image = "program", offset = 0xb11f0, size = 0x13e8, sha256 = "a5428d09711a7ebcd026a78390aeb34f2356f002af2f88900a05fe697402389d"},
+  {name = "F3DEX.NoN 1.00", image = "program", offset = 0xb25e0, size = 0x13b8, sha256 = "9a532f151e6339564c9a6d2240b05a8ccdaa591d77a5858823ce27c5c7a7d356"},
+  {name = "L3DEX 1.00", image = "program", offset = 0xb39a0, size = 0xf80, sha256 = "c322304480bb63cef906fb5152aaac61b77e3d278587b7dcceba226aeb0026f1"},
+]

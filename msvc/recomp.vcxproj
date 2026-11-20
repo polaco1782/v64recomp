@@ -26,6 +26,11 @@
   <ItemGroup>
     <None Include="$(RecompRoot)CMakeLists.txt" />
     <None Include="$(RecompRoot)CMakePresets.json" />
+    <ClCompile Include="$(RecompRoot)backends\acclaim_controls.c" />
+    <ClCompile Include="$(RecompRoot)backends\acclaim_graphics.c" />
+    <ClCompile Include="$(RecompRoot)backends\acclaim_lighting.c" />
+    <ClInclude Include="$(RecompRoot)backends\acclaim_lighting.h" />
+    <ClCompile Include="$(RecompRoot)backends\acclaim_pager.c" />
     <ClCompile Include="$(RecompRoot)backends\audio.c" />
     <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp" />
     <ClInclude Include="$(RecompRoot)backends\cheat_database.h" />
@@ -39,6 +44,7 @@
     <ClCompile Include="$(RecompRoot)backends\rdp_gles2.c" />
     <ClCompile Include="$(RecompRoot)backends\rdp_triangle.c" />
     <ClCompile Include="$(RecompRoot)backends\rt64.cpp" />
+    <ClCompile Include="$(RecompRoot)backends\rt64_l3dex.cpp" />
     <ClInclude Include="$(RecompRoot)backends\texture_decode.h" />
     <ClCompile Include="$(RecompRoot)backends\texture_editor.cpp" />
     <ClInclude Include="$(RecompRoot)backends\texture_editor.h" />
@@ -67,6 +73,9 @@
     <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake" />
     <ClInclude Include="$(RecompRoot)cmake\softfloat\platform.h" />
     <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake" />
+    <ClInclude Include="$(RecompRoot)include\acclaim_controls.h" />
+    <ClInclude Include="$(RecompRoot)include\acclaim_graphics.h" />
+    <ClInclude Include="$(RecompRoot)include\acclaim_pager.h" />
     <ClInclude Include="$(RecompRoot)include\cheats.h" />
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h" />
     <ClInclude Include="$(RecompRoot)include\fov_control.h" />
@@ -125,6 +134,7 @@
     <None Include="$(RecompRoot)tools\analysis\inspect_rom.py" />
     <None Include="$(RecompRoot)tools\analysis\inspect_rsp_task.py" />
     <None Include="$(RecompRoot)tools\analysis\inspect_sdk_symbols.py" />
+    <None Include="$(RecompRoot)tools\analysis\inspect_transfers.py" />
     <None Include="$(RecompRoot)tools\analysis\probe_function_roots.py" />
     <None Include="$(RecompRoot)tools\analysis\review_candidates.py" />
     <None Include="$(RecompRoot)tools\analysis\review_discovery.py" />
@@ -155,6 +165,7 @@
     <None Include="$(RecompRoot)tools\profile_execution.py" />
     <None Include="$(RecompRoot)tools\profile_frames.py" />
     <None Include="$(RecompRoot)tools\promote_live_patches.py" />
+    <None Include="$(RecompRoot)tools\rnc.py" />
     <None Include="$(RecompRoot)tools\rsp_recompile.py" />
     <None Include="$(RecompRoot)tools\serve_web.py" />
     <None Include="$(RecompRoot)tools\setup_windows.ps1" />
@@ -166,6 +177,7 @@
     <None Include="$(RecompRoot)tools\symbol_database.py" />
     <None Include="$(RecompRoot)tools\symbols.json" />
     <None Include="$(RecompRoot)tools\translate.py" />
+    <None Include="$(RecompRoot)tools\yaz0.py" />
     <None Include="$(RecompRoot)vcpkg.json" />
     <None Include="$(RecompRoot)web\index.html.in" />
   </ItemGroup>

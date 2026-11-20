@@ -4,6 +4,10 @@ from common import RecompError
 
 
 def verify_input_evidence(rom, profile, metadata=None, coverage=None, *, identity_rom=None):
+    return verify_adapter_evidence(rom, profile, 'input_adapter', metadata, coverage, identity_rom=identity_rom)
+
+
+def verify_adapter_evidence(rom, profile, adapter, metadata=None, coverage=None, *, identity_rom=None):
     """Bind the reviewed command ABI to complete bodies and decoded operands.
 
     Compressed games may pass a verified prepared image as rom and the original
@@ -11,11 +15,11 @@ def verify_input_evidence(rom, profile, metadata=None, coverage=None, *, identit
     image before calling this checker; mappings refer to that prepared image.
     These checks establish static ROM evidence, not live gameplay acceptance.
     """
-    spec = profile['input_adapter']
+    spec = profile[adapter]
 
     def require(condition, message):
         if not condition:
-            raise RecompError(profile['game']['name'] + ' input: ' + message)
+            raise RecompError(profile['game']['name'] + ' ' + adapter + ': ' + message)
 
     def raw(address, size):
         regions = [r for r in profile['discovery']['regions']
@@ -55,7 +59,7 @@ def verify_input_evidence(rom, profile, metadata=None, coverage=None, *, identit
         require(words == binding['words'], name + ' instruction mismatch')
         if binding['kind'] == 'address':
             hi, low = words
-            require(hi >> 26 == 15 and low >> 26 in (9, 32, 33, 35, 36, 37, 40, 41, 43) and
+            require(hi >> 26 == 15 and low >> 26 in (9, 32, 33, 35, 36, 37, 40, 41, 43, 49) and
                     (hi >> 16) & 31 == (low >> 21) & 31, name + ' invalid global access')
             value = ((hi & 0xffff) << 16) + ((low & 0x7fff) - (low & 0x8000))
         elif binding['kind'] == 'immediate':
@@ -68,7 +72,7 @@ def verify_input_evidence(rom, profile, metadata=None, coverage=None, *, identit
             require(any(w['vram'] == target for w in profile['function_wrappers']), name + ' wrong wrapper target')
             value = pcs[0] + 8
         else:
-            raise RecompError(profile['game']['name'] + ' input: unknown binding kind')
+            raise RecompError(profile['game']['name'] + ' ' + adapter + ': unknown binding kind')
         require(value == binding['value'], name + ' decoded operand mismatch')
     return dict(verification='static ROM evidence', runtime_verified=False,
                 rom_sha1=profile['game']['rom_sha1'], functions=spec['functions'],

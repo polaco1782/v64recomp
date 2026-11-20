@@ -40,8 +40,26 @@ def function_at(metadata: dict, address: int, section: int) -> dict | None:
     return matches[0] if matches else None
 
 
-def read_published(patch_dir: Path, current: dict) -> list[dict]:
-    published = []
+def compiled_without_snapshot(snapshot: Path, coverage: dict, address: int) -> bool:
+    """An orphaned module needs no promotion if its sole entry already builds.
+    Coverage cannot verify a body fingerprint. Keep all repair files in this case.
+    """
+    old_path = snapshot.with_name('coverage.json')
+    if not old_path.is_file():
+        return False
+    old = json.loads(old_path.read_text())
+    if (not old.get('generated') or not coverage.get('generated')
+            or old.get('rom_sha1') != coverage['rom_sha1']):
+        return False
+    selected = [f for f in old['functions'] if f['selected']]
+    current = [f for f in coverage['functions'] if f['vram'] == address]
+    return (len(selected) == len(current) == 1 and selected[0]['vram'] == address
+            and selected[0]['status'] == 'ready' and current[0]['selected'] and current[0]['status'] == 'ready'
+            and all(selected[0][key] == current[0][key] for key in ('section', 'size')))
+
+
+def read_published(patch_dir: Path, current: dict, coverage_path: Path) -> tuple[list[dict], list[Path]]:
+    published, retained = [], []
     for control in sorted(patch_dir.glob('function-*.path')):
         match = CONTROL.fullmatch(control.name)
         if not match or control.is_symlink():
@@ -55,6 +73,10 @@ def read_published(patch_dir: Path, current: dict) -> list[dict]:
             raise RecompError(f'published module does not match {control.name}')
         snapshot = patch_dir / '.build' / f'{address:08x}-{match[1]}' / 'symbols.json'
         if not snapshot.is_file():
+            coverage = json.loads(coverage_path.read_text())
+            if coverage['rom_sha1'] == current['rom_sha1'] and compiled_without_snapshot(snapshot, coverage, address):
+                retained.append(control)
+                continue
             raise RecompError(f'live build metadata is missing: {snapshot}')
         metadata = json.loads(snapshot.read_text())
         same_rom = ((metadata['rom_sha1'], metadata['rom_size'])
@@ -87,7 +109,7 @@ def read_published(patch_dir: Path, current: dict) -> list[dict]:
                           'section_name': current_section['name'],
                           'sha256': function['sha256'], 'size': function['size'],
                           'registered': existing is not None})
-    return published
+    return published, retained
 
 
 def add_roots(source: bytes, additions: list[dict], name_prefix: str = 'live') -> bytes:
@@ -193,7 +215,12 @@ def promote(game: str, build_dir: Path, patch_dir: Path) -> None:
     if not current_path.is_file():
         raise RecompError(f'generate the game first: {current_path}')
     current = json.loads(current_path.read_text())
-    published = read_published(patch_dir, current)
+    published, retained = read_published(patch_dir, current, current_path.with_name('coverage.json'))
+    if retained:
+        for control in retained:
+            print(f'Already compiled {control.name}; missing live snapshot, preserving repair files')
+        if all(item['registered'] for item in published):
+            return
     if not published:
         if any(patch_dir.iterdir()):
             print(f'No published live functions in {patch_dir}; diagnostic files remain')
@@ -226,6 +253,9 @@ def promote(game: str, build_dir: Path, patch_dir: Path) -> None:
         if replacement != original:
             write_atomic(profile_path, original)
         raise
+    if retained:
+        print(f'Promoted {len(additions)} function roots; preserved {patch_dir} for review')
+        return
     shutil.rmtree(patch_dir)
     patch_dir.mkdir(parents=True)
     print(f'Promoted {len(additions)} function roots; {len(published) - len(additions)} '

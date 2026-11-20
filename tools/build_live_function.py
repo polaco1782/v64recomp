@@ -234,8 +234,12 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
     if len(selected) != 1 or selected[0]['status'] != 'ready':
         raise RecompError('selected function did not pass translation checks')
     if resume:
+        section_name = next(s['name'] for s in metadata['sections'] if s['id'] == function['section'])
+        word_results = {entry['pc']: group['handler'] for group in report.get('word_result_hooks', [])
+                        if group['vram'] == function['vram'] and group['section'] == section_name
+                        for entry in group['sites']}
         resume_code = emit_function(function, decode_function(rom, function), registry,
-                                    direct_targets={}, resume_entry=True)
+                                    direct_targets={}, resume_entry=True, word_results=word_results)
         with (output / 'functions.c').open('a') as stream:
             stream.write('\n\n' + resume_code + '\n')
     calls = sorted({(transfer['pc'], address, f['section'])
@@ -276,7 +280,7 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
     command = [compiler, '-std=c11', '-shared', '-fPIC', '-Wl,-Bsymbolic',
                '-fno-fast-math', '-frounding-math', '-ffp-contract=off',
                '-Wall', '-Wextra', '-Werror', '-Wno-unused-label',
-               '-DRECOMP_WITH_AUDIO=1',
+               '-DRECOMP_WITH_AUDIO=1', '-DRECOMP_LIVE_MODULE=1',
                '-I', str(PROJECT / 'include'), '-I', str(output),
                '-O0' if mode == 'Debug' else '-O2']
     if mode == 'Debug':

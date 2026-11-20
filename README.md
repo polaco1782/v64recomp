@@ -80,13 +80,16 @@ fallback.
 | Game | Keyboard and mouse | Adjustable FOV |
 | --- | --- | --- |
 | GoldenEye 007 | [WASD, mouse-look, aiming and menu cursor](games/goldeneye-us/README.md#mouse-and-keyboard) | [Original → 140°](games/goldeneye-us/README.md#field-of-view) |
+| Doom 64 | [WASD, mouse turning and combat](games/doom64-us/README.md#playing) | [90° → 140°](games/doom64-us/README.md#playing) |
 | Quake 64 | [WASD, mouse-look and weapon cycling](games/quake-us/controller.md) | [90° → 140°](games/quake-us/README.md) |
 | Quake II | [WASD, mouse-look and weapon cycling](games/quake2-us/controller.md) | — |
 | Duke Nukem 64 | [WASD, mouse-look and combat controls](games/duke-us/controller.md) | [Original → 140°](games/duke-us/README.md#field-of-view) |
 | Hexen | [WASD, mouse-look, combat and inventory](games/hexen-us/controller.md) | [Original → 140°](games/hexen-us/README.md#field-of-view) |
 | Ocarina of Time US V1.2 | [WASD and third-person camera orbit](games/oot-us-v12/controller.md) | [Original → 140°](games/oot-us-v12/README.md#field-of-view) |
+| Majora’s Mask | [WASD, actions and third-person mouse orbit](games/mm-us/README.md#desktop-controls) | [75.2° → 140°](games/mm-us/README.md#desktop-controls) |
 | Rayman 2 | [WASD and native mouse camera controls](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) | [Original → 140°](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) |
 | Turok US v1.2 | [WASD, mouse-look, weapons and automap](games/turok-us-v12/controller.md) | [Original → 140°](games/turok-us-v12/controller.md) |
+| Turok 2 and Turok 3 | WASD and first-person mouse-look in [Turok 2](games/turok2-us/README.md) and [Turok 3](games/turok3-us/README.md) | Original → 140° |
 | Nightmare Creatures | [WASD, mouse steering, dodges and combat](games/nightmare-us/controller.md) | — |
 
 **FOV** means field of view: how much of the world you can see at once. In the
@@ -248,15 +251,18 @@ keeps the detailed validation history and known gaps.
 | [Super Mario 64](games/sm64-us/README.md) | `sm64-us` | Castle Grounds gameplay and castle lobby transition. |
 | [GoldenEye 007](games/goldeneye-us/README.md) | `goldeneye-us` | Menus and playable Dam. |
 | [Ocarina of Time US V1.2](games/oot-us-v12/README.md) | `oot-us-v12` | File selection and new-game opening; broader validation in progress. |
+| [Majora’s Mask US](games/mm-us/README.md) | `mm-us` | File creation, FlashRAM reload and playable opening forest on desktop RT64. |
 | [Perfect Dark US V1.1](games/perfectdark-us-v11/README.md) | `perfectdark-us-v11` | Carrington Institute and a tested mission transition. |
 | [Quake 64](games/quake-us/README.md) | `quake-us` | Original menus and playable first level. |
 | [Quake II](games/quake2-us/README.md) | `quake2-us` | Strogg Outpost gameplay; Expansion Pak enabled. |
+| [Doom 64 US](games/doom64-us/README.md) | `doom64-us` | Staging Area gameplay, shotgun pickup and Controller Pak creation on RT64 and GLES2. |
 | [Duke Nukem 64](games/duke-us/README.md) | `duke-us` | Menus and first-level gameplay. |
 | [Hexen](games/hexen-us/README.md) | `hexen-us` | Class selection and first-level fighter gameplay. |
 | [Nightmare Creatures](games/nightmare-us/README.md) | `nightmare-us` | Character selection and playable Chelsea. |
 | [Shadow Man](games/shadowman-us/README.md) | `shadowman-us` | Menus, movement and rendered level progression. |
 | [Turok: Dinosaur Hunter US v1.2](games/turok-us-v12/README.md) | `turok-us-v12` | Experimental; first-person gameplay and automap. |
-| [Turok 2: Seeds of Evil US 1.0](games/turok2-us/README.md) | `turok2-us` | Experimental; copyright/Expansion Pak rendering, original paging and audio tasks. Title/gameplay bring-up in progress. |
+| [Turok 2: Seeds of Evil US 1.0](games/turok2-us/README.md) | `turok2-us` | Port of Adia gameplay with WASD, mouse-look and the native pause menu on desktop RT64. |
+| [Turok 3: Shadow of Oblivion US](games/turok3-us/README.md) | `turok3-us` | Playable opening of Chapter 1, The Breach, on desktop RT64 with WASD, mouse-look and adjustable FOV. |
 | [1080 Snowboarding JU revision 0](games/1080-us/README.md) | `1080-us` | Intro, title and Select Rider; riding unvalidated. |
 | [Banjo-Kazooie US revision 0](games/banjo-kazooie-us/README.md) | `banjo-kazooie-us` | Experimental; original startup and callback bring-up in progress. |
 | [Resident Evil 2 US revision 1](games/re2-us-v1/README.md) | `re2-us-v1` | Experimental; opening movie and title menu. |
@@ -275,11 +281,13 @@ Import is the easiest way to check your ROM: it verifies size and SHA-1 against
 | --- | --- |
 | `1080.ju.z64` | `fa27089c425dbab99f19245c5c997613` |
 | `banjo-kazooie.us.z64` | `b29599651a13f681c9923d69354bf4a3` |
+| `doom64.us.z64` | `b67748b64a2cc7efd2f3ad4504561e0e` |
 | `duke-zero-hour.us.z64` | `026789d47db5fe202a76f89797b33ac7` |
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
 | `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |
 | `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
 | `hexen.us.z64` | `eb98f1b8c6898af7417f6882946da9b3` |
+| `mm.us.z64` | `2a0a8acb61538235bc1094d297fb6556` |
 | `nightmare.us.z64` | `4116cf435db315a2481af8d1e9352feb` |
 | `oot.us.v12.z64` | `57a9719ad547c516342e1a15d5c28c3d` |
 | `perfectdark.us.v11.z64` | `e03b088b6ac9e0080440efed07c1e40f` |
@@ -290,6 +298,7 @@ Import is the easiest way to check your ROM: it verifies size and SHA-1 against
 | `shadowman.us.z64` | `b457298b87b85bbf950f24867daa9475` |
 | `sm64.us.z64` | `20b854b239203baf6c961b850a4a51a2` |
 | `turok.us.v12.z64` | `039875b92c0e4fef9797ec1744877b17` |
+| `turok3.us.z64` | `1211c556d77b169d81a666a9661e1777` |
 | `twine.us.z64` | `9d58996a8aa91263b5cd45c385f45fe4` |
 
 </details>
@@ -313,7 +322,7 @@ Keep these shortcuts handy while you play:
 | **F7** | Switch between original aspect ratio and widescreen expansion. |
 | **F8** | Pause and edit textures in the ZIP supplied with `--texture-pack`. |
 | **F5** | Reload texture packs and switch original/replacement textures. |
-| **Keypad + / −** | Adjust FOV in the [five supported games](#controls-that-feel-familiar). |
+| **Keypad + / −** | Adjust FOV in the [supported games](#controls-that-feel-familiar). |
 | **F12** | Open the shared GameShark cheat menu. |
 | **Escape / F4** | Release / recapture the mouse when a mouse adapter is enabled. |
 | **F10 (mouse mode) / close window** | Quit. With the original keyboard mapping, Escape quits. |

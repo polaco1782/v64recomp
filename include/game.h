@@ -13,7 +13,7 @@ typedef struct RecompGameOptions {
     uint32_t frames;
     bool mute;
 #ifdef RECOMP_DEBUG
-    const char *input, *wav, *audio_trace;
+    const char *input, *wav, *audio_trace, *edge_trace;
     uint32_t capture_every;
     bool trace_calls;
 #endif

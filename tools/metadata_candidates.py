@@ -85,6 +85,49 @@ def indirect_field_calls(rom: bytes, function: dict) -> list[dict]:
     return result
 
 
+def counted_record_calls(rom: bytes, function: dict):
+    """Recognize a countdown search for an ID followed by a call through the matched record."""
+    sites = [t['pc'] for t in function['indirect_transfers'] if t.get('registered_targets') and t['kind'] == 'call']
+    if not sites:
+        return
+    owned = set(function['instruction_addresses'])
+    for pc in sites:
+        start = pc - 14 * 4
+        if not all(p in owned for p in range(start, pc + 8, 4)):
+            continue
+        off = function['rom_offset'] + start - function['vram']
+        seq = decode(rom[off:off + 60], start)
+        hi, lo, count, stop, key, hit, _, dec, repeat, step, clear, miss, setup, load, call = seq
+        if ([i.opcode for i in seq[:4]] != ['lui', 'addiu', 'addiu', 'addiu']
+                or key.opcode not in ('lh', 'lhu', 'lw', 'lb', 'lbu')
+                or [i.opcode for i in seq[5:10]] != ['beq', 'nop', 'addiu', 'bne', 'addiu']
+                or clear.opcode not in ('addu', 'or') or miss.opcode != 'beq'
+                or load.opcode != 'lw' or call.opcode != 'jalr'):
+            continue
+        ptr = hi.rt
+        selector = hit.rt if hit.rs == key.rt else hit.rs
+        key_width = {'lb': 1, 'lbu': 1, 'lh': 2, 'lhu': 2, 'lw': 4}[key.opcode]
+        # The pointer, ID, count and -1 sentinel must survive independently.
+        if (len({0, ptr, count.rt, stop.rt, key.rt}) != 5 or lo.rs != ptr or lo.rt != ptr
+                or count.rs or stop.rs or not 0 <= count.immediate < 8192 or stop.immediate != -1):
+            continue
+        # A failed comparison must advance one record and consume one iteration.
+        if (dec.rs != count.rt or dec.rt != count.rt or dec.immediate != -1
+                or {repeat.rs, repeat.rt} != {count.rt, stop.rt} or target(repeat) != key.pc
+                or step.rs != ptr or step.rt != ptr or step.immediate < 4 or step.immediate % 4
+                or key.rs != ptr or not 0 <= key.immediate <= step.immediate - key_width or key.immediate % key_width
+                or key.rt not in (hit.rs, hit.rt) or selector in (0, ptr, count.rt, stop.rt, key.rt)):
+            continue
+        # Exhaustion clears the pointer. Only a match reaches the field load and JALR.
+        if (target(hit) != miss.pc or clear.rd != ptr or clear.rs or clear.rt or {miss.rs, miss.rt} != {0, ptr}
+                or target(miss) < pc + 8 or setup.opcode not in ('nop', 'addu', 'or') or setup.gpr_write_mask & (1 << ptr)
+                or load.rs != ptr or not 0 <= load.immediate <= step.immediate - 4 or load.immediate % 4
+                or call.rs != load.rt or not call.rs or call.rd != 31):
+            continue
+        yield dict(pc=pc, table_vram=((hi.immediate << 16) + lo.immediate) & 0xffffffff,
+                   table_count=count.immediate + 1, table_stride=step.immediate, table_field_offset=load.immediate)
+
+
 def owned_ranges(function: dict) -> list[dict]:
     """Contiguous owned runs, excluding gaps inside a function's span."""
     runs = []
@@ -266,7 +309,7 @@ def indirect_parameter_uses(rom: bytes, function: dict, preserves_stack=None, ca
     return {r:[sites[pc] for pc in sorted(sites)] for r,sites in uses.items()}
 
 
-def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False) -> list[dict]:
+def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False, bounded=False) -> list[dict]:
     """Find owned LW -> JALR flows through constant-base, scaled-index arrays.
 
     This proves an address expression, not table bounds or immutable contents.
@@ -274,7 +317,8 @@ def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False) -> lis
     Collect uses after convergence so an optimistic early path cannot survive
     a conflicting predecessor. Delay slots cannot change an already read target.
     """
-    if fixed_slots and (function.get('fallthrough_transfers') or function.get('tail_continuations')):
+    if (fixed_slots or bounded) and (function.get('fallthrough_transfers') or function.get('tail_call_continuations')
+                                     or function.get('tail_continuations')):
         return []
     instructions = {i.pc: i for i in decode_function(rom, function)}
     if not any(i.opcode == 'jalr' for i in instructions.values()):
@@ -291,7 +335,7 @@ def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False) -> lis
         if left[0] == 'constant' and right[0] == 'constant':
             return ('constant', (left[1] + right[1]) & 0xffffffff)
         if left[0] == 'constant' and right[0] == 'indexed':
-            return ('indexed', (left[1] + right[1]) & 0xffffffff, right[2])
+            return ('indexed', (left[1] + right[1]) & 0xffffffff, *right[2:])
         if left[0] == 'indexed' and right[0] == 'constant':
             return add(right, left)
         return None
@@ -307,6 +351,12 @@ def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False) -> lis
             value = ('constant', (i.word & 65535) << 16)
         elif i.opcode in ('addiu', 'addi'):
             value = add(left, ('constant', i.immediate))
+        elif i.opcode == 'andi' and bounded:
+            mask = i.word & 0xffff
+            if left and left[0] == 'constant':
+                value = ('constant', left[1] & mask)
+            elif 0 < mask < 8192 and mask & (mask + 1) == 0:
+                value = ('selector', mask + 1, i.pc)
         elif i.opcode == 'ori' and left and left[0] == 'constant':
             value = ('constant', left[1] | (i.word & 65535))
         elif i.opcode in ('addu', 'or'):
@@ -322,14 +372,17 @@ def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False) -> lis
             if right and right[0] == 'constant':
                 value = ('constant', (right[1] << i.shift) & 0xffffffff)
             elif 2 <= i.shift <= 5:
-                value = ('indexed', 0, 1 << i.shift)
+                bound = right[1:] if right and right[0] == 'selector' else ()
+                value = ('indexed', 0, 1 << i.shift, *bound)
             elif i.shift == 0:
                 value = right
-        elif i.opcode == 'lw' and left and left[0] == ('constant' if fixed_slots else 'indexed'):
-            base = (left[1] + i.immediate) & 0xffffffff
-            if base % 4 == 0:
-                value = (('fixed', base, frozenset({i.pc})) if fixed_slots
-                         else ('loaded', base, i.pc, left[2]))
+        elif i.opcode == 'lw' and left:
+            if fixed_slots and left[0] == 'constant':
+                value = ('fixed', (left[1] + i.immediate) & 0xffffffff, frozenset({i.pc}))
+            elif left[0] == 'indexed' and (not fixed_slots or bounded and len(left) == 5):
+                value = ('loaded', (left[1] + i.immediate) & 0xffffffff, i.pc, *left[2:])
+            if value and value[1] % 4:
+                value = None
         if destination and value is not None:
             result[destination] = value
         result[0] = ('constant', 0)
@@ -391,7 +444,10 @@ def indexed_call_tables(rom: bytes, function: dict, *, fixed_slots=False) -> lis
         if value[0] == 'fixed':
             uses.append(dict(pc=pc, expected_word=i.word, slot_vram=value[1], load_pcs=sorted(value[2])))
         elif value[0] == 'loaded':
-            uses.append(dict(pc=pc, expected_word=i.word, table_vram=value[1], load_pc=value[2], stride=value[3]))
+            site = dict(pc=pc, expected_word=i.word, table_vram=value[1], load_pc=value[2], stride=value[3])
+            if len(value) == 6:
+                site.update(table_count=value[4], selector_pc=value[5])
+            uses.append(site)
     return uses
 
 

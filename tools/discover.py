@@ -10,9 +10,9 @@ import sys
 
 from common import RecompError, load_profile, load_rom, validate_recomp_prefix, write_json, shared_return_delay_slot
 from code_inventory import load_inventory, load_entry_inventory, complete_code
-from emit import constant_condition, decode, target
+from emit import SUPPORTED, constant_condition, decode, target
 from native_hooks import classify_native_bodies, resolve_native_hooks
-from metadata_candidates import (fixed_callback_stores, indexed_call_tables, indirect_parameter_uses, initializer_callback_stores,
+from metadata_candidates import (counted_record_calls, fixed_callback_stores, indexed_call_tables, indirect_parameter_uses, initializer_callback_stores,
                                  materialized_entries, preserves_stack_words, section_pages, shared_entry_slots,
                                  visible_shared_slots)
 
@@ -200,6 +200,7 @@ def discover(rom: bytes, profile: dict) -> dict:
             native_callbacks[key] = {6:hook['handler']}
     transfers_by_section = {}
     table_transfers = []
+    partial_call_targets = {}
     tables = [(t, 'jump') for t in config.get('jump_tables', [])]
     tables.extend((t, 'call') for t in config.get('function_tables', []))
     for table, kind in tables:
@@ -229,6 +230,22 @@ def discover(rom: bytes, profile: dict) -> dict:
         if nullable:
             pointers.discard(0)
         targets = sorted(pointers)
+        # Several descriptor arrays, and callbacks installed directly in RAM,
+        # can feed the same JALR. Validate each array independently and keep
+        # the site's existing registered-function lookup in that case.
+        partial = table.get('partial', False)
+        if type(partial) is not bool:
+            raise RecompError('partial dispatch table flag must be boolean')
+        if partial:
+            call = read(table['pc'])
+            if (kind != 'call' or not dynamic_calls or inventory is not None or not targets
+                    or call is None or call.opcode != 'jalr' or call.rd != 31 or call.word != table['expected_word']):
+                raise RecompError(f"invalid partial callback table at {address:#010x}")
+            caller = mapping(call.pc)
+            partial_call_targets.setdefault((caller['id'], call.pc), set()).update(targets)
+            for address_target in targets:
+                add_entry(address_target, origin='checked-table')
+            continue
         table_transfers.append(dict(pc=table['pc'], expected_word=table['expected_word'], kind=kind,
                                     targets=targets, table_vram=address, table_count=count,
                                     table_indices=indexes, table_sha256=table['sha256'], section=section['name'],
@@ -293,32 +310,48 @@ def discover(rom: bytes, profile: dict) -> dict:
         continuations_by_section[key] = site
     current_section = None
 
-    def infer_local_switch(jump, start, section, expanded, visited):
-        # The shift may be in the guard's delay slot or immediately after it.
-        # In the latter layout the slot must preserve the checked index.
-        first = jump.pc - 24
-        if first < start:
+    def switch_bound(jump, scale, start, expanded, visited):
+        guard = read(scale.pc - 4)
+        if guard.opcode == 'andi' and guard.pc in expanded and guard.rt == scale.rt:
+            mask = guard.word & 0xffff
+            if 0 < mask < 8192 and mask & (mask + 1) == 0 and guard.rt and scale.pc in expanded:
+                return guard.pc, mask + 1
             return None
-        scale, high, add, load = (read(pc) for pc in range(jump.pc - 16, jump.pc, 4))
-        if read(first).opcode == 'beq':
+        if scale.pc - 8 < start:
+            return None
+        branch = guard
+        if branch.opcode != 'beq':
+            branch = read(scale.pc - 8)
+        if branch.opcode != 'beq':
+            return None
+
+        # SN64 often schedules register saves and unrelated loads between the
+        # unsigned comparison and its branch. Both the tested index and the
+        # comparison result must reach the branch along one straight-line path.
+        first = branch.pc - 4
+        scheduled = []
+        while first >= start and branch.pc - first <= 64:
+            bound = read(first)
+            if bound.opcode == 'sltiu':
+                break
+            if first not in expanded or bound.opcode not in (
+                    'sw', 'sd', 'swc1', 'sdc1', 'lw', 'lwc1', 'ldc1', 'addu', 'or', 'lui', 'addiu', 'mfc1', 'trunc.w.s'):
+                return None
+            scheduled.append(bound)
             first -= 4
-        if first < start or first not in visited:
+        else:
             return None
-        bound, branch = read(first), read(first + 4)
-        if ([i.opcode for i in (bound, branch, scale, high, add, load)] !=
-                ['sltiu', 'beq', 'sll', 'lui', 'addu', 'lw']):
+        if first not in visited or any(i.gpr_write_mask & ((1 << bound.rs) | (1 << bound.rt)) for i in scheduled):
             return None
         if scale.pc != branch.pc + 4:
             slot = read(branch.pc + 4)
             if (scale.pc not in expanded or slot.gpr_write_mask & (1 << bound.rs)
-                    or not (slot.opcode in ('or', 'addu', 'sll') or (slot.opcode == 'sw' and slot.rs == 29))):
+                    or not (slot.opcode in ('or', 'addu', 'addiu', 'sll')
+                            or (slot.opcode in ('sw', 'sd', 'swc1', 'sdc1') and slot.rs == 29))):
                 return None
         if (not 0 < bound.immediate <= 8192 or not bound.rs or not bound.rt or bound.rt == bound.rs
                 or {branch.rs, branch.rt} != {0, bound.rt} or target(branch) < jump.pc + 8
-                or scale.rt != bound.rs or scale.shift != 2 or not scale.rd
-                or not high.rt or high.rt == scale.rd
-                or {add.rs, add.rt} != {scale.rd, high.rt} or not add.rd
-                or load.rs != add.rd or not load.rt or jump.rs != load.rt):
+                or scale.rt != bound.rs):
             return None
 
         # The comparison can itself be a delay slot. On the not-taken
@@ -329,14 +362,30 @@ def discover(rom: bytes, profile: dict) -> dict:
                     ('beq', 'bne', 'bltz', 'bgez', 'blez', 'bgtz', 'bc1t', 'bc1f')
                     or constant_condition(before) is True):
                 return None
-        if any(pc not in expanded for pc in (branch.pc, high.pc, add.pc, load.pc)):
+        if branch.pc in expanded:
+            return first, bound.immediate
+        return None
+
+    def infer_local_switch(jump, start, section, expanded, visited):
+        if jump.pc - 20 < start:
             return None
+        scale, high, add, load = (read(pc) for pc in range(jump.pc - 16, jump.pc, 4))
+        if ([i.opcode for i in (scale, high, add, load)] != ['sll', 'lui', 'addu', 'lw']
+                or scale.shift != 2 or not scale.rd or not high.rt or high.rt == scale.rd
+                or {add.rs, add.rt} != {scale.rd, high.rt} or not add.rd
+                or load.rs != add.rd or not load.rt or jump.rs != load.rt
+                or any(pc not in expanded for pc in (high.pc, add.pc, load.pc))):
+            return None
+        bound = switch_bound(jump, scale, start, expanded, visited)
+        if bound is None:
+            return None
+        first, count = bound
         if any((section['id'], pc) in fallthroughs_by_section or
                (section['id'], pc) in continuations_by_section for pc in range(first, jump.pc, 4)):
             return None
 
         base = (((high.word & 0xffff) << 16) + load.immediate) & 0xffffffff
-        size = 4 * bound.immediate
+        size = 4 * count
         tables = [s for s in sections if s['vram'] <= base < s['vram'] + s['size']]
         if len(tables) != 1 or base % 4 or base + size > tables[0]['vram'] + tables[0]['size']:
             return None
@@ -355,7 +404,7 @@ def discover(rom: bytes, profile: dict) -> dict:
                for pc in targets):
             return None
         return dict(pc=jump.pc, expected_word=jump.word, kind='jump', targets=targets,
-                    table_vram=base, table_count=bound.immediate, table_sha256=hashlib.sha256(raw).hexdigest(),
+                    table_vram=base, table_count=count, table_sha256=hashlib.sha256(raw).hexdigest(),
                     origin='bounded-switch', guard_pc=first)
 
     def walk(key):
@@ -457,7 +506,13 @@ def discover(rom: bytes, profile: dict) -> dict:
                         error(pc,'indirect call metadata kind mismatch');continue
                     if override:
                         for address in override['targets']:call(address,pc)
-                    used_transfers.append(dict(pc=pc,expected_word=i.word,kind='call',targets=[],registered_targets=True))
+                    transfer = dict(pc=pc, expected_word=i.word, kind='call', targets=[], registered_targets=True)
+                    known = set(partial_call_targets.get((section_id, pc), ()))
+                    if override:
+                        known.update(override['targets'])
+                    if known:
+                        transfer['known_targets'] = sorted(known)
+                    used_transfers.append(transfer)
                     pending.append(pc+8)
                     continue
                 if override is None and i.opcode == 'jr' and inventory is None:
@@ -592,10 +647,18 @@ def discover(rom: bytes, profile: dict) -> dict:
         }
         shared_slots = visible_shared_slots(sections, overlapping_sections, shared_entry_slots(rom, functions))
         called_slots = {s['id']: {} for s in sections}
+        bounded_tables = {}
         for f in functions:
             if f['discovery_errors'] or not any(t['kind'] == 'call' for t in f['indirect_transfers']):
                 continue
-            for site in indexed_call_tables(rom, f, fixed_slots=True):
+            for site in indexed_call_tables(rom, f, fixed_slots=True, bounded=True):
+                if 'table_count' in site:
+                    table = dict(pc=site['pc'], expected_word=site['expected_word'], kind='masked-table-call',
+                                 table_vram=site['table_vram'], table_count=site['table_count'],
+                                 table_stride=site['stride'], table_field_offset=0,
+                                 selector_pc=site['selector_pc'], load_pc=site['load_pc'])
+                    bounded_tables.setdefault((f['section'], f['vram']), []).append(table)
+                    continue
                 address = site['slot_vram']
                 if 0x80000000 <= address < 0x80000000 + game['ram_size']:
                     called_slots[f['section']].setdefault(address, []).append(
@@ -628,6 +691,42 @@ def discover(rom: bytes, profile: dict) -> dict:
             if function['discovery_errors'] or function['origin'] in ('native-replacement','unsupported-boundary'):
                 continue
             current_section = function['section']
+            visible = text_by_section[current_section]
+            for table in (*counted_record_calls(rom, function), *bounded_tables.get((current_section, function['vram']), ())):
+                address, stride = table['table_vram'], table['table_stride']
+                field = table['table_field_offset']
+                masked = table.get('kind') == 'masked-table-call'
+                # A masked load identifies its own field and stride. No bytes
+                # beyond the last loaded word belong to the proven range.
+                span = (table['table_count'] - 1) * stride + (4 if masked else stride)
+                data = next((s for s in visible if s['vram'] <= address and
+                             address + span <= s['vram'] + s['size']), None)
+                if data is None or address % 4:
+                    continue
+                offset = data['rom_offset'] + address - data['vram']
+                raw = rom[offset:offset + span]
+                targets = {int.from_bytes(raw[i:i + 4], 'big') for i in range(field, span, stride)}
+                valid = {}
+                for pc in sorted(targets):
+                    matches = [s for s in visible if s['vram'] <= pc < s['vram'] + s['size']]
+                    if not pc or pc % 4 or len(matches) != 1:
+                        continue
+                    sid = matches[0]['id']
+                    if (sid, pc) not in entries and (pc in owned_by_section[sid]
+                                                     or masked and read(pc).opcode not in SUPPORTED):
+                        continue
+                    valid[pc] = sid
+                if masked and len(valid) != len(targets):
+                    continue
+                source = dict(table, section=current_section, function=function['vram'],
+                              table_sha256=hashlib.sha256(raw).hexdigest())
+                source.setdefault('kind', 'counted-record-call')
+                partial_call_targets.setdefault((current_section, table['pc']), set()).update(valid)
+                for pc, sid in valid.items():
+                    key = add_entry(pc, origin='inferred-callback', preferred=sid)
+                    sources = entries[key].setdefault('sources', [])
+                    if source not in sources:
+                        sources.append(source)
             # Infer callbacks only where the caller selects a mapping, or the
             # target has one unambiguous mapping. Other overlay roots require
             # a checked inventory entry with an explicit section.
@@ -641,6 +740,7 @@ def discover(rom: bytes, profile: dict) -> dict:
                                   pc=use['pc'],expected_word=read(use['pc']).word,kind=use['kind'])
                     if use['kind']=='constant-indirect-call':
                         sources.append(source)
+                        partial_call_targets.setdefault((current_section, use['pc']), set()).add(candidate['vram'])
                     elif use['kind'] == 'stored-address':
                         for proof in initializer_stores.get((current_section, use['pc']), []):
                             sources.append(dict(source, initializer_flow=proof))
@@ -688,6 +788,16 @@ def discover(rom: bytes, profile: dict) -> dict:
                     entries[key].setdefault('sources',[]).extend(sources)
         if not queue:
             break
+    # The final fixed-point pass can prove a new edge to an already known entry.
+    # Attach that evidence even when discovery did not have to queue a new root.
+    for f in functions:
+        for transfer in f['indirect_transfers']:
+            known = partial_call_targets.get((f['section'], transfer['pc']))
+            if known and transfer.get('registered_targets'):
+                transfer['known_targets'] = sorted(set(transfer.get('known_targets', ())) | known)
+        sources = entries[f['section'], f['vram']].get('sources')
+        if sources:
+            f['entry_sources'] = sources
     owners, issues = {}, []
     functions_by_key = {(f['section'], f['vram']): f for f in functions}
     conflicts = set()

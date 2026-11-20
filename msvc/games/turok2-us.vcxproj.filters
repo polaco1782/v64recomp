@@ -10,27 +10,9 @@
     <None Include="$(RecompRoot)games\turok2-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)games\turok2-us\graphics.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok2-us\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)games\turok2-us\lighting.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok2-us\lighting.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\turok2-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)games\turok2-us\pager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok2-us\pager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <None Include="$(RecompRoot)games\turok2-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>

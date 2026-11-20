@@ -109,6 +109,28 @@ void turok_update_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     original(rt, ctx);
     gameplay_update = command_ready = false;
 }
+static void allow_intro_skip(Runtime *rt) {
+    const uint32_t buttons = T_CTL_BUTTON_STATE + T_CTL_BUTTON_PRESS;
+    uint16_t down_edges = recomp_load16(rt, buttons);
+    enum { button_start = 0x1000, button_b = 0x4000, button_a = 0x8000 };
+    if (!(down_edges & (button_a | button_b | button_start)))
+        return;
+    uint32_t mode = recomp_load32(rt, T_CTL_ENGINE + T_CTL_MODE);
+    if (mode == 1) { // Give the boot-time Controller Pak shortcut priority.
+        if (recomp_load32(rt, T_CTL_ENGINE + T_CTL_GAME_PAK_CHECK) &&
+            (recomp_load16(rt, T_CTL_BUTTON_STATE) & button_start))
+            return;
+        recomp_store32(rt, T_CTL_ENGINE + T_CTL_LEGAL_BYPASS, 1);
+    } else {
+        // The four opening logos share intro mode with later story cinematics.
+        uint32_t warp = recomp_load32(rt, T_CTL_ENGINE + T_CTL_CURRENT_WARP_ID);
+        if (mode != 2 || warp < 32000 || warp > 32003)
+            return;
+    }
+    // Let the game run the same transition it uses on a repeat viewing.
+    recomp_store32(rt, T_CTL_INTRO_FIRST_RUN, 0);
+    recomp_store16(rt, buttons, down_edges | button_start);
+}
 void turok_controller_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     bool scoped = enabled && gameplay_update && live_player(rt) && (uint32_t)ctx->gpr[31] == T_CTL_CONTROLLER_RETURN;
     if (scoped && poll_live_input)
@@ -119,6 +141,7 @@ void turok_controller_hook(Runtime *rt, MipsContext *ctx, RecompFunction origina
         recomp_mouse_clear(&mouse);
         previous_actions = 0;
         original(rt, ctx);
+        allow_intro_skip(rt);
         return;
     }
     pressed = command.actions & ~previous_actions;

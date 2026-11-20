@@ -1952,6 +1952,12 @@
       "origin": "checked-root",
       "sha256": "1406ea7076d9c41b615d55d56245cfad2ca7728c85d1b3506867c1e87972b521",
       "evidence": "The event dispatcher scales s5 by eight at 0x236f00. Rows at 0x800ad080 contain a function pointer and flags. The recorded JALR v0 at 0x236f8c selected row 1 at 0x800ad088 via the LW at 0x236f88. The pointer word and complete 56-byte body match the ROM and the saved RAM. This entry has its own frame, calls 0x246690 and returns via jr ra."
+    },
+    {
+      "vram": 2491920,
+      "origin": "checked-root",
+      "sha256": "c19c25bdd4521f99ba4f6b9d47787d8499e8074e3277b8dafa967bc0b3192933",
+      "evidence": "At 0x25c6ec..0x25c6fc the caller indexes the descriptor pointers at 0x800b1790 with a four-byte stride. Slot 2 at 0x800b1798 points to 0x800b1940, whose first word is 0x00260610. LW v0,0(s1) at 0x25c768 feeds the observed JALR v0 at 0x25c774 with s3 and s0 in a0 and a1. The nine-instruction leaf at ROM 0x61210 clears words at a1+0x6c, +0x70 and +0x74, then clears bit 17 at a0+0xd4 in the delay slot of JR ra at 0x26062c."
     }
   ]
 }

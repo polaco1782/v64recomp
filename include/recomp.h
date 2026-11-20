@@ -145,8 +145,39 @@ struct Runtime {
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t, const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
 #ifdef RECOMP_DEBUG
+typedef struct RecompTraceSection {
+    uint32_t vram, size;
+} RecompTraceSection;
+void recomp_debug_open_edges(Runtime *, const char *path, const uint8_t sha1[20], const char *layout,
+                             const RecompTraceSection *, size_t);
+void recomp_debug_close_edges(Runtime *);
+extern Runtime *recomp_edge_owner;
+enum RecompEdgeKind {
+    RECOMP_EDGE_CALL,
+    RECOMP_EDGE_JUMP,
+    RECOMP_EDGE_TAIL,
+    RECOMP_EDGE_RETURN,
+    RECOMP_EDGE_RELOCATED_CALL
+};
+void recomp_debug_edge(Runtime *, uint32_t section, uint32_t pc, uint32_t destination, enum RecompEdgeKind kind);
+#ifdef RECOMP_LIVE_MODULE
+#pragma weak recomp_debug_edge
+#define RECOMP_EDGE(rt, section, pc, dst, kind)                                                                        \
+    do {                                                                                                               \
+        if (recomp_debug_edge)                                                                                         \
+            recomp_debug_edge(rt, section, pc, dst, kind);                                                             \
+    } while (0)
+#else
+#define RECOMP_EDGE(rt, section, pc, dst, kind)                                                                        \
+    do {                                                                                                               \
+        if (recomp_edge_owner == (rt))                                                                                 \
+            recomp_debug_edge(rt, section, pc, dst, kind);                                                             \
+    } while (0)
+#endif
 extern bool recomp_debug_trace_calls;
 void recomp_debug_trace_call(uint32_t address);
+#else
+#define RECOMP_EDGE(...) ((void)0)
 #endif
 static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #ifdef RECOMP_DEBUG
@@ -162,8 +193,18 @@ static inline void recomp_record_call(Runtime *rt, uint32_t address) {
 #endif
 }
 RecompFunction recomp_lookup(Runtime *, uint32_t);
+RecompFunction recomp_lookup_at(Runtime *, uint32_t address, uint32_t site, uint32_t section);
+#ifdef RECOMP_LIVE_MODULE
+/* A running executable may predate site-aware lookup in its repair module. */
+#pragma weak recomp_lookup_at
+static inline RecompFunction recomp_module_lookup_at(Runtime *rt, uint32_t address, uint32_t site, uint32_t section) {
+    return recomp_lookup_at ? recomp_lookup_at(rt, address, site, section) : recomp_lookup(rt, address);
+}
+#define recomp_lookup_at recomp_module_lookup_at
+#endif
 bool recomp_has_function(Runtime *, uint32_t);
 RecompFunction recomp_live_lookup(Runtime *, uint32_t);
+RecompFunction recomp_live_lookup_at(Runtime *, uint32_t address, uint32_t site, uint32_t section);
 /* Called only at an explicitly checked indirect-call miss. */
 void recomp_live_checked_call(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section);
 void recomp_live_checked_jump(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section,

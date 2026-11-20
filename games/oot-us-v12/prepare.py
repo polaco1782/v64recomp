@@ -7,34 +7,9 @@ import hashlib
 import struct
 from pathlib import Path
 from common import RecompError
+from yaz0 import yaz0
 
 DMA_TABLE = 0x7960
-
-def yaz0(data: bytes, expected: int) -> bytes:
-    if data[:4] != b'Yaz0' or int.from_bytes(data[4:8], 'big') != expected:
-        raise RecompError('invalid OOT Yaz0 header')
-    out = bytearray()
-    pos = 16
-    try:
-        while len(out) < expected:
-            flags = data[pos]; pos += 1
-            for bit in range(7, -1, -1):
-                if len(out) == expected: break
-                if flags & (1 << bit):
-                    out.append(data[pos]); pos += 1
-                else:
-                    a, b = data[pos:pos+2]; pos += 2
-                    distance = ((a & 15) << 8 | b) + 1
-                    length = a >> 4
-                    if length == 0:
-                        length = data[pos] + 0x12; pos += 1
-                    else: length += 2
-                    if distance > len(out) or len(out) + length > expected:
-                        raise RecompError('invalid OOT Yaz0 backreference')
-                    for _ in range(length): out.append(out[-distance])
-    except (IndexError, ValueError) as error:
-        raise RecompError('truncated OOT Yaz0 stream') from error
-    return bytes(out)
 
 def file_bytes(rom: bytes, index: int) -> tuple[bytes, int]:
     start, end, physical, compressed_end = struct.unpack_from('>4I', rom, DMA_TABLE+index*16)

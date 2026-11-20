@@ -1,6 +1,9 @@
 #define _GNU_SOURCE
 #include "game.h"
 #include "game_defaults.h"
+#ifdef RECOMP_DEBUG
+#include "generated.h"
+#endif
 #ifdef RECOMP_EMBED_ROM
 #include "embedded_rom.h"
 #endif
@@ -168,9 +171,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                    "  --profile-seconds N    Stop profiling after N seconds; 0 = until exit (default)\n",
                    argv[0]);
 #ifdef RECOMP_DEBUG
-            puts("Debug: --trace-calls --input FILE --wav FILE --audio-trace FILE --capture-every N\n"
-                 "  Input rows: frame buttons stick_x stick_y (decimal, starting at frame 0).\n"
-                 "  Captures: " RECOMP_DEBUG_OUTPUT "/frame-NNNNNN.ppm");
+            puts(
+                "Debug: --trace-calls --trace-edges FILE --input FILE --wav FILE --audio-trace FILE --capture-every N\n"
+                "  Input rows: frame buttons stick_x stick_y (decimal, starting at frame 0).\n"
+                "  Captures: " RECOMP_DEBUG_OUTPUT "/frame-NNNNNN.ppm");
 #endif
             return 1;
         }
@@ -206,6 +210,8 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->input = value;
         else if (!strcmp(arg, "--wav"))
             o->wav = value;
+        else if (!strcmp(arg, "--trace-edges"))
+            o->edge_trace = value;
         else if (!strcmp(arg, "--audio-trace"))
             o->audio_trace = value;
         else if (!strcmp(arg, "--capture-every")) {
@@ -507,6 +513,9 @@ static void failure(const RecompFailureInfo *info, void *opaque) {
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, const uint8_t sha1[20]) {
 #ifdef RECOMP_DEBUG
     recomp_debug_trace_calls = o->trace_calls;
+    if (o->edge_trace)
+        recomp_debug_open_edges(rt, o->edge_trace, sha1, recomp_trace_layout, recomp_trace_sections,
+                                recomp_section_count);
 #endif
     /* Callers may supply options directly; keep a default crash destination. */
     if (o->crash_dir)

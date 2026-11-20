@@ -3100,6 +3100,450 @@
         ]
       },
       "group": "build"
+    },
+    {
+      "label": "Configure Debug: Doom 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "doom64-us",
+        "-B",
+        "build/doom64-us-debug",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DRECOMP_RENDERER=rt64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "doom64-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Debug: Doom 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/doom64-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Doom 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "doom64-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Doom 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "doom64-us",
+        "-B",
+        "build/doom64-us-release",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DRECOMP_RENDERER=rt64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "doom64-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Doom 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/doom64-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Doom 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "doom64-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Debug: Turok 3 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "turok3-us",
+        "-B",
+        "build/turok3-us-debug",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DRECOMP_RENDERER=rt64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok3-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Debug: Turok 3 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/turok3-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Turok 3 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok3-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Turok 3 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "turok3-us",
+        "-B",
+        "build/turok3-us-release",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DRECOMP_RENDERER=rt64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok3-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Turok 3 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/turok3-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Turok 3 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "turok3-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Debug: Majora's Mask US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "mm-us",
+        "-B",
+        "build/mm-us-debug",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DRECOMP_RENDERER=rt64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "mm-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Debug: Majora's Mask US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/mm-us-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Majora's Mask US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "mm-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Configure Release: Majora's Mask US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "mm-us",
+        "-B",
+        "build/mm-us-release",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DRECOMP_RENDERER=rt64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "mm-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Build Release: Majora's Mask US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/mm-us-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Majora's Mask US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "mm-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
     }
   ]
 }

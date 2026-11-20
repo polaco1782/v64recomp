@@ -275,3 +275,35 @@ raw addresses. Generated game frames point into the build directory's C sources.
 The inspector prefers the saved locations so rebuilding does not change them.
 
 Game code does not provide its own failure callback or crash-report serializer.
+
+### Finding missing indirect targets across games
+
+To record the indirect transfers taken during play, give a Debug build a new
+CSV path. Play the scene and exit normally. The runtime flushes each distinct
+edge before dispatch, so the file is also usable if the game stops at a missing
+target. For example, these commands capture and inspect a Turok 3 session.
+
+```sh
+tools/build.py turok3-us --debug
+build/turok3-us-debug/bin/turok3-us --trace-edges build/turok3-first-run.csv
+.venv/bin/python tools/analyze.py transfers \
+    build/turok3-us-debug/generated/turok3-us/coverage.json \
+    build/turok3-first-run.csv --output build/turok3-transfers.json
+```
+
+Use the same commands with another game ID. Pass additional CSV paths from
+other levels or saves to merge the distinct edges. Add `--site 0x00269c0c`
+to inspect one instruction, or omit the CSVs to inspect static coverage alone.
+Each trace records the cartridge SHA-1 and a digest of the analysis section
+layout, including the section bytes. A blank destination section means the
+loaded mappings could not identify a unique section at that instant.
+
+The report covers translated register calls, computed jumps, returns and
+relocated direct calls. Ordinary direct branches and calls already carry a
+destination in the instruction. `bounded` identifies an inferred local switch
+with a checked index bound, `checked` a declared target set, `partial` known
+targets at an open call site, and `unknown` a site without an enumerated target.
+Returns are counted separately. A `registered-target` observation identifies a
+compiled function reached at a site without a matching static edge. A `review`
+or `unlisted-site` observation gives the source PC and destination to investigate.
+Gameplay observations leave the static classification intact.

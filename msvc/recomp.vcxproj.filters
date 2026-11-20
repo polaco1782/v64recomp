@@ -7,6 +7,21 @@
     <None Include="$(RecompRoot)CMakePresets.json">
       <Filter>Configuration</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)backends\acclaim_controls.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\acclaim_graphics.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\acclaim_lighting.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\acclaim_lighting.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\acclaim_pager.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -44,6 +59,9 @@
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\rt64.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\rt64_l3dex.cpp">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClInclude Include="$(RecompRoot)backends\texture_decode.h">
@@ -130,6 +148,15 @@
     <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake">
       <Filter>Configuration\cmake\toolchains</Filter>
     </None>
+    <ClInclude Include="$(RecompRoot)include\acclaim_controls.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\acclaim_graphics.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\acclaim_pager.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\cheats.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -304,6 +331,9 @@
     <None Include="$(RecompRoot)tools\analysis\inspect_sdk_symbols.py">
       <Filter>Source Files\tools\analysis</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\analysis\inspect_transfers.py">
+      <Filter>Source Files\tools\analysis</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\analysis\probe_function_roots.py">
       <Filter>Source Files\tools\analysis</Filter>
     </None>
@@ -394,6 +424,9 @@
     <None Include="$(RecompRoot)tools\promote_live_patches.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\rnc.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\rsp_recompile.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -425,6 +458,9 @@
       <Filter>Configuration\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\translate.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\yaz0.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)vcpkg.json">

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{14F57162-D780-5BEC-8051-6376CBE8E272}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>mm-us</ProjectName>
+    <RecompGame>mm-us</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\Recomp.props" />
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\mm-us\CMakeLists.txt" />
+    <ClInclude Include="$(RecompRoot)games\mm-us\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\mm-us\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\mm-us\controls.h" />
+    <ClCompile Include="$(RecompRoot)games\mm-us\flash.c" />
+    <ClInclude Include="$(RecompRoot)games\mm-us\flash.h" />
+    <None Include="$(RecompRoot)games\mm-us\function-entries.json" />
+    <None Include="$(RecompRoot)games\mm-us\generate.py" />
+    <ClInclude Include="$(RecompRoot)games\mm-us\jpeg.h" />
+    <ClCompile Include="$(RecompRoot)games\mm-us\main.c" />
+    <ClCompile Include="$(RecompRoot)games\mm-us\overlays.c" />
+    <ClInclude Include="$(RecompRoot)games\mm-us\overlays.h" />
+    <None Include="$(RecompRoot)games\mm-us\profile.toml" />
+    <ClCompile Include="$(RecompBuildDir)\generated\mm-us\cpu-*.c" />
+    <ClCompile Include="$(RecompBuildDir)\generated\mm-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\mm-us\functions.c')" />
+    <ClInclude Include="$(RecompBuildDir)\generated\mm-us\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recomp.vcxproj">
+      <Project>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

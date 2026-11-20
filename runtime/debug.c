@@ -62,3 +62,97 @@ void recomp_debug_os(Runtime *rt, const MipsContext *ctx, const char *name, uint
                      name, count, guest ? "guest" : "host", id, object, ctx->pc, (uint32_t)ctx->gpr[31],
                      (uint32_t)ctx->gpr[4], (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], (uint32_t)ctx->gpr[7]);
 }
+
+/* Game diagnostics run on the serialized guest execution thread. Keep live
+ * module Runtime layout stable. Flush each distinct edge before dispatch can
+ * block or fail, so an interrupted gameplay run still yields a usable trace. */
+typedef struct TraceEdge {
+    struct TraceEdge *next;
+    uint32_t section, pc, target_section, target;
+    enum RecompEdgeKind kind;
+} TraceEdge;
+
+Runtime *recomp_edge_owner;
+static FILE *edge_file;
+static TraceEdge **edge_buckets;
+enum { EDGE_BUCKETS = 4096 };
+static const RecompTraceSection *edge_sections;
+
+void recomp_debug_open_edges(Runtime *rt, const char *path, const uint8_t sha1[20], const char *layout,
+                             const RecompTraceSection *sections, size_t count) {
+    if (recomp_edge_owner || count != rt->section_count)
+        recomp_fail("invalid transfer trace session", 0);
+    edge_file = fopen(path, "wx");
+    if (!edge_file)
+        recomp_fail("cannot create new transfer trace file", 0);
+    edge_buckets = calloc(EDGE_BUCKETS, sizeof(*edge_buckets));
+    if (!edge_buckets)
+        recomp_fail("cannot allocate transfer trace index", 0);
+    edge_sections = sections;
+    fputs("# v64recomp-edges-v1 ", edge_file);
+    for (unsigned i = 0; i < 20; ++i)
+        fprintf(edge_file, "%02x", sha1[i]);
+    fprintf(edge_file, " %s\nsection,pc,kind,target_section,target\n", layout);
+    if (fflush(edge_file) || ferror(edge_file))
+        recomp_fail("cannot write transfer trace header", 0);
+    recomp_edge_owner = rt;
+}
+
+void recomp_debug_edge(Runtime *rt, uint32_t section, uint32_t pc, uint32_t destination, enum RecompEdgeKind kind) {
+    if (rt != recomp_edge_owner)
+        return;
+    uint32_t target = destination;
+    uint32_t target_section = UINT32_MAX;
+    for (size_t i = 0; i < rt->section_count; ++i) {
+        if (!rt->section_loaded[i])
+            continue;
+        /* The canonical lookup hook can activate a new overlay. Observing a
+         * transfer must never run it. Inspect only already loaded mappings. */
+        uint32_t base = recomp_relocated_address(rt, (uint32_t)i, edge_sections[i].vram);
+        uint32_t offset = destination - base;
+        if (offset >= edge_sections[i].size)
+            offset = destination - edge_sections[i].vram;
+        if (offset < edge_sections[i].size) {
+            if (target_section != UINT32_MAX) {
+                target_section = UINT32_MAX;
+                target = destination;
+                break;
+            }
+            target_section = (uint32_t)i;
+            target = edge_sections[i].vram + offset;
+        }
+    }
+    size_t slot = ((pc >> 2) * 31u + (target >> 2) * 17u + section * 11u + target_section + kind) % EDGE_BUCKETS;
+    for (TraceEdge *e = edge_buckets[slot]; e; e = e->next)
+        if (e->section == section && e->pc == pc && e->target_section == target_section && e->target == target &&
+            e->kind == kind)
+            return;
+    TraceEdge *entry = malloc(sizeof(*entry));
+    if (!entry)
+        recomp_fail("cannot allocate transfer trace edge", pc);
+    *entry = (TraceEdge){edge_buckets[slot], section, pc, target_section, target, kind};
+    edge_buckets[slot] = entry;
+    static const char *const names[] = {"call", "jump", "tail", "return", "relocated-call"};
+    fprintf(edge_file, "%u,0x%08x,%s,", section, pc, names[kind]);
+    if (target_section != UINT32_MAX)
+        fprintf(edge_file, "%u", target_section);
+    if (fprintf(edge_file, ",0x%08x\n", target) < 0 || fflush(edge_file) || ferror(edge_file))
+        recomp_fail("cannot write transfer trace edge", pc);
+}
+
+void recomp_debug_close_edges(Runtime *rt) {
+    if (rt != recomp_edge_owner)
+        return;
+    recomp_edge_owner = NULL;
+    for (size_t i = 0; i < EDGE_BUCKETS; ++i) {
+        TraceEdge *e = edge_buckets[i];
+        while (e) {
+            TraceEdge *next = e->next;
+            free(e);
+            e = next;
+        }
+    }
+    free(edge_buckets);
+    if (fclose(edge_file))
+        recomp_fail("cannot close transfer trace", 0);
+}

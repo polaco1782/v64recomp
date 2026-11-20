@@ -271,8 +271,12 @@ static bool wait_for_repair(Runtime *rt, uint32_t a, uint32_t s, uint32_t n, boo
 }
 #endif
 RecompFunction recomp_live_lookup(Runtime *rt, uint32_t address) {
+    return recomp_live_lookup_at(rt, address, 0, 0);
+}
+
+RecompFunction recomp_live_lookup_at(Runtime *rt, uint32_t address, uint32_t site, uint32_t section) {
     const RecompFunctionEntry *entry = find_entry(rt, address, 0, 0, false);
-    if (!entry && wait_for_repair(rt, address, 0, 0, false, false))
+    if (!entry && wait_for_repair(rt, address, site, section, false, false))
         entry = find_entry(rt, address, 0, 0, false);
     if (!entry)
         return NULL;

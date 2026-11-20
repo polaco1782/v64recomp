@@ -19,6 +19,7 @@ COMMANDS = {
     'rom': 'inspect_rom',
     'rsp-task': 'inspect_rsp_task',
     'sdk-symbols': 'inspect_sdk_symbols',
+    'transfers': 'inspect_transfers',
 }
 
 

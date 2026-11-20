@@ -28,11 +28,12 @@ def decode_rnc1(data: bytes) -> bytes:
         value = 0
         for index in range(count):
             if not left:
-                if pos + 2 > len(source):
+                if pos >= len(source):
                     raise RecompError('RNC truncated bit stream')
                 buffer = int.from_bytes(source[pos:pos+4], 'little')
-                pos += 2
-                left = 16
+                available = min(2, len(source) - pos)
+                pos += available
+                left = available * 8
             value |= (buffer & 1) << index
             buffer >>= 1
             left -= 1

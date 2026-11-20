@@ -237,6 +237,10 @@ void recomp_renderer_mouse_mode(RecompRenderer *s, bool enabled, bool gameplay) 
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
     return recomp_rdp_gles2_mouse_frame(s->gpu);
 }
+void recomp_renderer_separate_mouse_actions(RecompRenderer *s, bool enabled) {
+    s->input_config.separate_mouse_actions = enabled;
+    recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
+}
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
     s->input_config.keyboard_c_buttons = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);

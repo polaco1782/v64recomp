@@ -1,3 +1,15 @@
+# Native camera, player and cinematic boundaries verified against this cartridge.
+function_wrappers = [
+  {section = ".engine", vram = 0x00288e58, size = 0x108, sha256 = "a6eb575a1eea23900ec9a2b23015042e8eebb4a66b4d48181ae5863502168fbe", handler = "turok2_cinema_update"},
+  {section = ".engine", vram = 0x0024ef70, size = 0x204, sha256 = "d494e94b16cf808f53f0f9ab5422f32e0af3296c460a3eb63067af19ac1c6334", handler = "acclaim_player_look"},
+  {section = ".engine", vram = 0x0024fc08, size = 0x208, sha256 = "7ca78ec57214c5aa561f3306085f09f26e37cc3a93e9ed2c7fa67d02874dc7fd", handler = "acclaim_player_idle"},
+  {section = ".engine", vram = 0x002117dc, size = 0x84, sha256 = "0a15e7958449b374ad6ea5d6dd0cf3c4fd705ba8fb1af2e1387f0ea9071920a2", handler = "acclaim_player_axis"},
+  {section = ".engine", vram = 0x0027d160, size = 0xea0, sha256 = "56c805772e74948cf3fa6737bfae6836f0626d24b9f8c418f6256f8391379011", handler = "acclaim_world_camera"},
+  {section = ".engine", vram = 0x0029815c, size = 0x18c, sha256 = "aecac42c870819ff0e2a40c4a448c925f4754a31bacaa78ec449b1d090da3750", handler = "acclaim_perspective"},
+  {section = ".engine", vram = 0x0020cc94, size = 0x5e0, sha256 = "8b6b28b6b90cb8498c0e10117cdd2a794664a81f373d2905035e37c4b59633c3", handler = "acclaim_fixed_matrix"},
+  {section = ".engine", vram = 0x0020f908, size = 0xcc, sha256 = "bc808a7a46136f27fc91656991db7eb82459c6f95bfed02e8d5234805a0fc7fc", handler = "acclaim_frustum_points"},
+]
+
 [game]
 name = "Turok 2: Seeds of Evil (US 1.0)"
 rom = "../../local/turok2.us.z64"
@@ -18,10 +30,31 @@ regions = [
   {name = ".resident", vram = 0x80000500, rom_offset = 0x1100, size = 0x105f00},
   {name = ".virtual", vram = 0x00400000, rom_offset = 0x14a000, size = 0x3cae0},
 ]
-roots = [{name = "sn64_main", vram = 0x0028d380}]
+roots = [
+  {name = "sn64_main", vram = 0x0028d380},
+  # ROM-verified function roots.
+  {name = "live_0023d050", vram = 0x0023d050, section = ".engine"},
+  {name = "live_0023e4a0", vram = 0x0023e4a0, section = ".engine"},
+  {name = "live_0024032c", vram = 0x0024032c, section = ".engine"},
+  {name = "live_00240e90", vram = 0x00240e90, section = ".engine"},
+  {name = "live_00241010", vram = 0x00241010, section = ".engine"},
+  {name = "live_002664d8", vram = 0x002664d8, section = ".engine"},
+  {name = "live_00266924", vram = 0x00266924, section = ".engine"},
+  {name = "live_0026e3a8", vram = 0x0026e3a8, section = ".engine"},
+  {name = "live_0026e3ec", vram = 0x0026e3ec, section = ".engine"},
+  {name = "live_0026e44c", vram = 0x0026e44c, section = ".engine"},
+  # ROM-verified function roots.
+  {name = "live_0023f524", vram = 0x0023f524, section = ".engine"},
+]
 
 # Unsigned selector bounds and JR table loads verified in this ROM.
 jump_tables = [
+  # Menu selectors check unsigned index < 11 before indexing these case vectors.
+  {pc = 0x41a4fc, expected_word = 0x00400008, table_vram = 0x800c11b0, count = 11, sha256 = "28aecc9849002f3ae01238239cd574680fa2325e836be9ad8d0d00d394711e44"},
+  {pc = 0x41a770, expected_word = 0x00400008, table_vram = 0x800c1210, count = 11, sha256 = "e2f256096465a5fd178bbad46f40d14a680acb7da80ed2196951fce7e64398b4"},
+  {pc = 0x41a858, expected_word = 0x00400008, table_vram = 0x800c1240, count = 11, sha256 = "7606400805ab5939e372b0780e3e9de24806724f645b7a8e63d3ce8b33c03acf"},
+  # Six clipping planes indexed by the bounded loop at 0x23f908, including its backedge.
+  {pc = 0x23f920, expected_word = 0x00400008, table_vram = 0x800a67d0, count = 6, sha256 = "5b412f42fba33636710147f03f75bdbb0cddca3f44a5765431a71f77225a241b"},
   # Unsigned type minus 0x36 < 6 at 0x21ec1c.
   {pc = 0x21ec34, expected_word = 0x00400008, table_vram = 0x800a5cf8, count = 6, sha256 = "96dfbc2ef9e7d990eed249f8ee1c830ab6ace06c03ac9a8a3be5fe124f08b2e5"},
   # Unsigned event command < 9 at 0x2356d0.
@@ -107,12 +140,124 @@ jump_tables = [
 
 # Eighteen engine modes, each {init, retrace, draw}; state 17 performs mode handoff.
 function_tables = [
+  # The Port of Adia actor state at +0x30 points to this record. Its +0x10 word is either a callable or a resource ID.
+  # 0x267024 checks the code address before the resident JALR. This row matches both Debug and Release RAM snapshots.
+  {pc = 0x2431f0, expected_word = 0x0200f809, table_vram = 0x800ae534, count = 1, stride = 32, field_offset = 16, partial = true, sha256 = "cae09ada4008653783cf205d404e599b6c027f8466c471e5e13be4c58c74a55f"},
+  # The 13 actor-event group pointers at 0x800b2628 use event byte +0x11.
+  # Byte +0x12 selects an 8-byte row; local and remote dispatch read +0 and +4.
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b06b8, count = 9, stride = 8, field_offset = 0, indices = [1, 2, 3, 4, 5], nullable = true, partial = true, sha256 = "e463697bd3603a6b230ba64f0048558ac5aa1e5c93a4c1dd23c2c3516b86e2e7"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b06b8, count = 9, stride = 8, field_offset = 4, indices = [5, 6, 7, 8], nullable = true, partial = true, sha256 = "e463697bd3603a6b230ba64f0048558ac5aa1e5c93a4c1dd23c2c3516b86e2e7"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b2178, count = 9, stride = 8, field_offset = 0, indices = [1, 2, 3, 4, 5, 6, 7, 8], nullable = true, partial = true, sha256 = "1b5fc6b85651a3ae76f1d12fed32ee8cb6eba893040f447fd1849feda8eac627"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b2178, count = 9, stride = 8, field_offset = 4, indices = [3, 4], nullable = true, partial = true, sha256 = "1b5fc6b85651a3ae76f1d12fed32ee8cb6eba893040f447fd1849feda8eac627"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b2090, count = 3, stride = 8, field_offset = 0, indices = [1, 2], nullable = true, partial = true, sha256 = "bbc03fe2bab03ede41a5ab6c654a6372cd19ac32e2158753d44e0bb5490db9fc"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b2090, count = 3, stride = 8, field_offset = 4, indices = [1, 2], nullable = true, partial = true, sha256 = "bbc03fe2bab03ede41a5ab6c654a6372cd19ac32e2158753d44e0bb5490db9fc"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b1ec8, count = 3, stride = 8, field_offset = 0, indices = [1, 2], nullable = true, partial = true, sha256 = "8d23623f9ad4a77b0b83069f10db50c54e64a9509ac88b71e5d6697305ca711b"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b2318, count = 3, stride = 8, field_offset = 0, indices = [1, 2], nullable = true, partial = true, sha256 = "1ac0c1fa9960e0df8330671cba6193a2c4dacdf6b2f97481b93fe8fc3e798b6b"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b2318, count = 3, stride = 8, field_offset = 4, indices = [1, 2], nullable = true, partial = true, sha256 = "1ac0c1fa9960e0df8330671cba6193a2c4dacdf6b2f97481b93fe8fc3e798b6b"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b23d8, count = 6, stride = 8, field_offset = 0, indices = [1, 2, 3, 4, 5], nullable = true, partial = true, sha256 = "3cf2817d2256fe77455ee4838659fd96ae6ae6f44c95b08aba70475944bf1e75"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b23d8, count = 6, stride = 8, field_offset = 4, indices = [1], nullable = true, partial = true, sha256 = "3cf2817d2256fe77455ee4838659fd96ae6ae6f44c95b08aba70475944bf1e75"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b2578, count = 9, stride = 8, field_offset = 0, indices = [3, 4, 8], nullable = true, partial = true, sha256 = "2c3e456556c41bf6b3a7f596c6f35fe5ddc715b338e416206a4d0600250dd728"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b2578, count = 9, stride = 8, field_offset = 4, indices = [2, 3, 4, 5, 6, 7], nullable = true, partial = true, sha256 = "2c3e456556c41bf6b3a7f596c6f35fe5ddc715b338e416206a4d0600250dd728"},
+  {pc = 0x26e0d8, expected_word = 0x00e0f809, table_vram = 0x800b24b8, count = 11, stride = 8, field_offset = 0, indices = [2, 3, 4, 8, 9, 10], nullable = true, partial = true, sha256 = "8243a3e6af27718dd9b17e0526dd0801fc340fdf83370de176d809f9992a0115"},
+  {pc = 0x26e0f4, expected_word = 0x0040f809, table_vram = 0x800b24b8, count = 11, stride = 8, field_offset = 4, indices = [1, 2, 3, 5, 6, 7], nullable = true, partial = true, sha256 = "8243a3e6af27718dd9b17e0526dd0801fc340fdf83370de176d809f9992a0115"},
+  # 0x414ea8 retains each menu descriptor at object +0x14 and each item descriptor at item +0x18.
+  # Menu teardown calls descriptor +0xc at 0x416a48. These sites also serve other menus.
+  {pc = 0x416a48, expected_word = 0x0040f809, table_vram = 0x439640, count = 1, stride = 36, field_offset = 0xc, nullable = true, partial = true, sha256 = "2b3938c0195802545d3651149ffcddf980cead5989eb2d3f3db8c9e972a32109"},
+  {pc = 0x416a48, expected_word = 0x0040f809, table_vram = 0x43bed0, count = 2, stride = 36, field_offset = 0xc, nullable = true, partial = true, sha256 = "6a53ceef2f7689d45ad22a44a6f4e2b8b61385fb8906227e69ff4665f7498cde"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438550, count = 8, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [7], sha256 = "a3a3a5fd5a658a09b2d459f15535fef830e8b0b2318f2d0173f8c2ee2ec52216"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x438670, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "05bae716000a601d17965647e66c12cd57638c7d47fd3da01eb8101b10df8a44"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x438694, count = 5, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3], sha256 = "f1a733d5d068ad7c63349074afa8c03f0e94ee9cea486ef471fc31ed15650c9a"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438694, count = 5, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [0, 2, 3, 4], sha256 = "f1a733d5d068ad7c63349074afa8c03f0e94ee9cea486ef471fc31ed15650c9a"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x438748, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "def3850c41693868cf6023baa18bf7bfa07a15d37ee70d1aabb6cd946c90e15e"},
+  {pc = 0x415c8c, expected_word = 0x0040f809, table_vram = 0x43879c, count = 3, stride = 36, field_offset = 0x14, nullable = true, partial = true, indices = [1], sha256 = "65de8cc58d157c8e80f2e82b9b4d207b9267a802b7e19870a81acfe976269380"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43879c, count = 3, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2], sha256 = "65de8cc58d157c8e80f2e82b9b4d207b9267a802b7e19870a81acfe976269380"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43879c, count = 3, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [1, 2], sha256 = "65de8cc58d157c8e80f2e82b9b4d207b9267a802b7e19870a81acfe976269380"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x438808, count = 2, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "ca33dcdc2f945f98c49eb7b041dc0266579fc9d92afb1f71149c3e22aa677beb"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x438808, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "df86c95e70f31a5db88b1592896b24dca67b2f21f07f71cc5255ecbfd3a07208"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438850, count = 4, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3], sha256 = "461fc5e858110721ca7170eb8d3911f2133e9a74682e67435524c85a5c012b66"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x4388e0, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "ea25afa0a4a0c1403f0df803e3601e67d08695ef2a28e72d91a02e11e4062d3f"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x438944, count = 10, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7], sha256 = "ef57a4910acb19efd27dbadf4c7de18e722439d4c5c38574e7ec59cdef992445"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438944, count = 10, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9], sha256 = "ef57a4910acb19efd27dbadf4c7de18e722439d4c5c38574e7ec59cdef992445"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x438ad0, count = 10, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7], sha256 = "359231ad4e6156d4b17bc57e203faed66f743c1e233f75b5dc28c353691483ac"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438ad0, count = 10, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9], sha256 = "359231ad4e6156d4b17bc57e203faed66f743c1e233f75b5dc28c353691483ac"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x438c5c, count = 10, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7], sha256 = "94851dcb0dea2e06dfc83f0bc260638cb2387879ccedf58caa715abed22a27aa"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438c5c, count = 10, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9], sha256 = "94851dcb0dea2e06dfc83f0bc260638cb2387879ccedf58caa715abed22a27aa"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x438de8, count = 11, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9], sha256 = "243b602bf93fc05ec171b338778ab1632eef57fd2560f9265658063367be3d14"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438de8, count = 11, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9, 10], sha256 = "243b602bf93fc05ec171b338778ab1632eef57fd2560f9265658063367be3d14"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x438f98, count = 7, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6], sha256 = "c30f11be95e07df2568ba551b659970047675b778bc79b77f04cd4b8985bd939"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x4390b8, count = 5, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4], sha256 = "ac5b53854b0b373aafca0f1199e53a1215c3b6a00602b0003deb2085bfcf1fda"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43916c, count = 2, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "7b0543df92cb2259c96fe9df8002a645d4f04ac014b1711b2595a36f12b190ab"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x4391b4, count = 7, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2], sha256 = "4241c17c1f6eb9eea346c4133acd874aacfedccb459485751d3409c66cea34a2"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x4391b4, count = 7, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [1, 2, 3, 4, 5, 6], sha256 = "4241c17c1f6eb9eea346c4133acd874aacfedccb459485751d3409c66cea34a2"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x4392e0, count = 5, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [3, 4], sha256 = "25d43771272ebd69e1a58ce0df5d365df0a0fdd3d2c2c1e3e498d7f49b7c0065"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x439394, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "601e0c71bec8100c669f29563973899dfb3ab12c22869df8a355d10b4c7d5ec5"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x4393b8, count = 7, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5], sha256 = "179d48fab92f011e2721018be2c1aeabf1ff33fe48c684688dad2eb8a412bd7b"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x4393b8, count = 7, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6], sha256 = "179d48fab92f011e2721018be2c1aeabf1ff33fe48c684688dad2eb8a412bd7b"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x4394d8, count = 10, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9], sha256 = "ce61415d695b0f6bafee81565f5af112df3d4b873d0c59354dfe4f174500a7c8"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x439640, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "2b3938c0195802545d3651149ffcddf980cead5989eb2d3f3db8c9e972a32109"},
+  {pc = 0x416ad0, expected_word = 0x0040f809, table_vram = 0x439640, count = 1, stride = 36, field_offset = 0x10, nullable = true, partial = true, sha256 = "2b3938c0195802545d3651149ffcddf980cead5989eb2d3f3db8c9e972a32109"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x439670, count = 3, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [1, 2], sha256 = "ebc958760a068707d4f25126ce03251cdaa6488add8522bcb1ca46b7abb7e4bc"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x439700, count = 2, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1], sha256 = "57b59b72e9177434cc14fca9fadd4448653e72022b87b72339c303d30d51a5dc"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x439748, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "21b0c6612a04b60650a34deb407d3900754e232442c0605ed1ab6df17a003b04"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x439748, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "21b0c6612a04b60650a34deb407d3900754e232442c0605ed1ab6df17a003b04"},
+  {pc = 0x415c8c, expected_word = 0x0040f809, table_vram = 0x439830, count = 33, stride = 36, field_offset = 0x14, nullable = true, partial = true, indices = [2], sha256 = "d52e55f4247d6b212abf46fa084bc22cb046bc5e932c1a353ecebc471a30fd34"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x439830, count = 33, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 31], sha256 = "d52e55f4247d6b212abf46fa084bc22cb046bc5e932c1a353ecebc471a30fd34"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x439830, count = 33, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32], sha256 = "d52e55f4247d6b212abf46fa084bc22cb046bc5e932c1a353ecebc471a30fd34"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x439cd4, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "38072f1a26f2c46c33aaad7a7c35bba88d948b6637198e4ad740992074a36008"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x439cf8, count = 20, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], sha256 = "23d586ab638fa679d6117f8d2cf2a1a956d6c434364b4ce49cd2f8bd33555daf"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x439cf8, count = 20, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], sha256 = "23d586ab638fa679d6117f8d2cf2a1a956d6c434364b4ce49cd2f8bd33555daf"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x439fc8, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "ceed1f88943d24aa2cb99375615e57544fbe0319b15dcc6c667a681944e95fb4"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x439ff0, count = 16, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], sha256 = "5a107c2dd1dec82390ff649f26f79b10605c98560185932ae955eaabda92a180"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x439ff0, count = 16, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], sha256 = "5a107c2dd1dec82390ff649f26f79b10605c98560185932ae955eaabda92a180"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43a230, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "2caa56599d31f0e50d0a90af2e9fdba4cd721100b4c5a7c460d23a8043cc5366"},
+  {pc = 0x415c8c, expected_word = 0x0040f809, table_vram = 0x43ad10, count = 45, stride = 36, field_offset = 0x14, nullable = true, partial = true, indices = [1, 2, 3, 4], sha256 = "1d39a46430392c1e9055a7b949cc723c3f000eee0994305ac2630b34b1e313e7"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43ad10, count = 45, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3, 4], sha256 = "1d39a46430392c1e9055a7b949cc723c3f000eee0994305ac2630b34b1e313e7"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43ad10, count = 45, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44], sha256 = "1d39a46430392c1e9055a7b949cc723c3f000eee0994305ac2630b34b1e313e7"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43b364, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "c6ee1f584211cb5e853fc790501fa075675f97945d1af317f552f1613a82debd"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x43b364, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "c6ee1f584211cb5e853fc790501fa075675f97945d1af317f552f1613a82debd"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43b75c, count = 10, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3, 4, 5, 6, 7], sha256 = "72b9c4f00e001db2966ae909d587171210faf7e4bd63bfc02b105073548e605b"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43b75c, count = 10, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [8, 9], sha256 = "72b9c4f00e001db2966ae909d587171210faf7e4bd63bfc02b105073548e605b"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43b8c4, count = 2, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "43c6bda2aa75562fa270acd0eaef96ddb3f2dd64a49db2301f513e8f31efb7ea"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43b90c, count = 9, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3, 4, 5, 6], sha256 = "d1aa997d964c8dce411d16269e6a63a04d9df360e2653c4712ea32ddc5216d94"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43b90c, count = 9, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [7, 8], sha256 = "d1aa997d964c8dce411d16269e6a63a04d9df360e2653c4712ea32ddc5216d94"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43ba50, count = 3, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "f7a941e37b39100c9290b20779e9ef07b04c56093ea53dd540cad48e0e4bd34d"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43babc, count = 8, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3, 4, 5, 6, 7], sha256 = "d9772a61e39329e4b1a4e51c19440ec2fbce2d4bb7bb066372b993c1d115e1b8"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43babc, count = 8, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [7], sha256 = "d9772a61e39329e4b1a4e51c19440ec2fbce2d4bb7bb066372b993c1d115e1b8"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43bbdc, count = 17, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "41e2913129c392b0bc5e46c3011ad1b7da839eeb601c84d677a7706fcd11849f"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43be40, count = 4, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2], sha256 = "ea979ecbb1c08be49158e301665e39c2ae56696071b658da1e71bcdef22b8f94"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43be40, count = 4, stride = 36, field_offset = 0x1c, nullable = true, partial = true, sha256 = "ea979ecbb1c08be49158e301665e39c2ae56696071b658da1e71bcdef22b8f94"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43bed0, count = 2, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "6a53ceef2f7689d45ad22a44a6f4e2b8b61385fb8906227e69ff4665f7498cde"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x43bed0, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "cc38978d63f8c9c75d0920ba9b378e078402be51c4393c627846f2e2f0857e0c"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43bf18, count = 8, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [2, 3, 4, 7], sha256 = "1cfb89c49e712e29bf867ad757df6da7f3ba01f73c73adea8cfcc933f17c1916"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43bf18, count = 8, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [5, 6, 7], sha256 = "1cfb89c49e712e29bf867ad757df6da7f3ba01f73c73adea8cfcc933f17c1916"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43c038, count = 2, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "37b8b9d5dc4bd68b2a83877d7337f800c861e9cfa4acada8ad1c6d02863b417d"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x43c038, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "5fe0c373384d944afffcb9568c68f40f2d1ba493abad212f2b8975efb59c87c7"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43c080, count = 8, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3, 4, 5, 6, 7], sha256 = "57871f722b3a59614e3166d95146544b96da86b71b7a0d49723499846c871be8"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43c080, count = 8, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [6, 7], sha256 = "57871f722b3a59614e3166d95146544b96da86b71b7a0d49723499846c871be8"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43c1a0, count = 5, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "7427cfd4feae84364b032750d8f89730192c3436ed11b796e1be7c63c72afa62"},
+  {pc = 0x415354, expected_word = 0x0040f809, table_vram = 0x43c1a0, count = 1, stride = 36, field_offset = 0x14, nullable = true, partial = true, sha256 = "ad4f9231f7b61101b2a735f8ee12dbe344e90fab5a10ef0c86758dca6978ff7f"},
+  {pc = 0x415c8c, expected_word = 0x0040f809, table_vram = 0x43c260, count = 49, stride = 36, field_offset = 0x14, nullable = true, partial = true, indices = [3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 36, 37, 38, 39, 40, 41, 42, 44, 45, 46, 47], sha256 = "cb51bf5a562a68dc7642a0bf27ba8d7858533eb7bffead9b3ed963d1d277bf66"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43c260, count = 49, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [48], sha256 = "cb51bf5a562a68dc7642a0bf27ba8d7858533eb7bffead9b3ed963d1d277bf66"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43c944, count = 1, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "323da3148b769b63e2d243b854083eddf06205508a06b8ab87f70500f676e17b"},
+  {pc = 0x41538c, expected_word = 0x0040f809, table_vram = 0x43c970, count = 8, stride = 36, field_offset = 0x18, nullable = true, partial = true, indices = [1, 2, 3, 4, 5, 6], sha256 = "19530efb6f05ebedc7f36f9dee51ef2ff8eec91747a016763e0d78de9104a111"},
+  {pc = 0x4156bc, expected_word = 0x0040f809, table_vram = 0x43c970, count = 8, stride = 36, field_offset = 0x1c, nullable = true, partial = true, indices = [7], sha256 = "19530efb6f05ebedc7f36f9dee51ef2ff8eec91747a016763e0d78de9104a111"},
+  {pc = 0x415134, expected_word = 0x0060f809, table_vram = 0x43ca90, count = 2, stride = 36, field_offset = 0x8, nullable = true, partial = true, sha256 = "e805a478532ac0b5403459efd99a91c7d6502a3ffa6a62ae7a44ab4e8df5b07e"},
+  # Event router 0x236ea0 uses eight-byte records and branches on flag bits 1 and 3.
+  {pc = 0x236f8c, expected_word = 0x0040f809, table_vram = 0x800ad080, count = 33, stride = 8, indices = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32], sha256 = "71b48649995f4fcab0f1eb614d6a97547fb173aac468f172c22c8bbf7b9dfd41"},
+  {pc = 0x237034, expected_word = 0x0040f809, table_vram = 0x800ad080, count = 33, stride = 8, indices = [5], sha256 = "71b48649995f4fcab0f1eb614d6a97547fb173aac468f172c22c8bbf7b9dfd41"},
+  {pc = 0x2370dc, expected_word = 0x0040f809, table_vram = 0x800ad080, count = 33, stride = 8, indices = [5], sha256 = "71b48649995f4fcab0f1eb614d6a97547fb173aac468f172c22c8bbf7b9dfd41"},
+  {pc = 0x237188, expected_word = 0x0040f809, table_vram = 0x800ad080, count = 33, stride = 8, indices = [3, 4, 15, 16, 17, 18, 19, 20, 25], sha256 = "71b48649995f4fcab0f1eb614d6a97547fb173aac468f172c22c8bbf7b9dfd41"},
+  {pc = 0x237230, expected_word = 0x0040f809, table_vram = 0x800ad080, count = 33, stride = 8, indices = [3, 4, 15, 16, 17, 18, 19, 20, 25], sha256 = "71b48649995f4fcab0f1eb614d6a97547fb173aac468f172c22c8bbf7b9dfd41"},
   {pc = 0x289f10, expected_word = 0x0040f809, table_vram = 0x800b6d78, count = 54, indices = [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51], sha256 = "1a4e4b1fca675838d05603ecce0f2e36fd4ad03717df8ac49e4130f4880714ee"},
   {pc = 0x288cd8, expected_word = 0x0040f809, table_vram = 0x800b6d78, count = 54, indices = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52], sha256 = "1a4e4b1fca675838d05603ecce0f2e36fd4ad03717df8ac49e4130f4880714ee"},
   {pc = 0x287310, expected_word = 0x0040f809, table_vram = 0x800b6d78, count = 54, indices = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53], sha256 = "1a4e4b1fca675838d05603ecce0f2e36fd4ad03717df8ac49e4130f4880714ee"},
 ]
 
 [bootstrap]
+# Original VM region-list head, first asset address and SDK faulted-thread pointer.
+vm_asset_base = 0x00480000
+vm_region_list = 0x80121378
+vm_faulted_thread = 0x800b8924
 initial_rom_offset = 0x1000
 initial_load_address = 0x80000400
 initial_load_size = 0x100000
@@ -164,3 +309,47 @@ vram = 0x28eec0
 kind = "replace_function"
 handler = "recomp_turok2_unmap_page"
 expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x40801800, 0x0, 0x42000002, 0x0, 0x0, 0x0, 0x0, 0x40885000, 0x3e00008, 0x0]
+
+# The world camera submits a float perspective at its first SDK call. A second
+# projection is the weapon. The separate five-corner transform feeds the room
+# planes, bounds and camera radius. The same fixed conversion retains a float
+# copy for per-object rejection. Both yaw and pitch call the interpolation helper.
+[input_adapter]
+functions = [
+  {name = "fixed_matrix", vram = 0x0020cc94, size = 0x5e0, sha256 = "8b6b28b6b90cb8498c0e10117cdd2a794664a81f373d2905035e37c4b59633c3"},
+  {name = "frustum_points", vram = 0x0020f908, size = 0xcc, sha256 = "bc808a7a46136f27fc91656991db7eb82459c6f95bfed02e8d5234805a0fc7fc"},
+  {name = "player_axis", vram = 0x002117dc, size = 0x84, sha256 = "0a15e7958449b374ad6ea5d6dd0cf3c4fd705ba8fb1af2e1387f0ea9071920a2"},
+  {name = "func_00219bc0", vram = 0x00219bc0, size = 0x3b4, sha256 = "44a4f10dcbda4d432f038711c3d5a7860a32400e591098ef81b6c62bb2181f2f"},
+  {name = "player_look", vram = 0x0024ef70, size = 0x204, sha256 = "d494e94b16cf808f53f0f9ab5422f32e0af3296c460a3eb63067af19ac1c6334"},
+  {name = "idle_update", vram = 0x0024fc08, size = 0x208, sha256 = "7ca78ec57214c5aa561f3306085f09f26e37cc3a93e9ed2c7fa67d02874dc7fd"},
+  {name = "climb_update", vram = 0x00250ec0, size = 0x7d8, sha256 = "c0907d9a779f7ccda779f88d59483ce25143e19fef2472390288c7b4b8ea2057"},
+  {name = "func_0027cab0", vram = 0x0027cab0, size = 0x6b0, sha256 = "e9cc560f754790ab9007c0d55d680db62fb61f35e4f194fb324b3bad4f3821fd"},
+  {name = "world_camera", vram = 0x0027d160, size = 0xea0, sha256 = "56c805772e74948cf3fa6737bfae6836f0626d24b9f8c418f6256f8391379011"},
+  {name = "func_00284188", vram = 0x00284188, size = 0x48, sha256 = "cde48ee4595124079e1e00cbc6c4a36093b8c86dca84aa5b2c1e4c3b5df28dc9"},
+  {name = "perspective", vram = 0x0029815c, size = 0x18c, sha256 = "aecac42c870819ff0e2a40c4a448c925f4754a31bacaa78ec449b1d090da3750"},
+]
+data = []
+bindings = [
+  {name = "mode", kind = "address", pcs = [0x0027cb10, 0x0027cb14], words = [0x3c038012, 0x8c63ac88], value = 0x8011ac88},
+  {name = "next_mode", kind = "address", pcs = [0x0027cb20, 0x0027cb24], words = [0x3c028012, 0x8c42ac8c], value = 0x8011ac8c},
+  {name = "cinema", kind = "address", pcs = [0x00284188, 0x0028418c], words = [0x3c03800c, 0x8c631bb0], value = 0x800c1bb0},
+  {name = "player", kind = "address", pcs = [0x00219e1c, 0x00219e20], words = [0x3c038012, 0x8c639874], value = 0x80119874},
+  {name = "main_camera", kind = "address", pcs = [0x0027cb00, 0x0027cb04], words = [0x3c028012, 0x8c4298b4], value = 0x801198b4},
+  {name = "play_mode", kind = "immediate", pcs = [0x0027cb0c], words = [0x2402000d], value = 0xd},
+  {name = "cinema_active", kind = "immediate", pcs = [0x00284190], words = [0x8c620038], value = 0x38},
+  {name = "yaw", kind = "immediate", pcs = [0x0024f0e0], words = [0x26440050], value = 0x50},
+  {name = "pitch_low", kind = "immediate", pcs = [0x0024f118], words = [0xc6010010], value = 0x10},
+  {name = "pitch_high", kind = "immediate", pcs = [0x0024f130], words = [0xc6010014], value = 0x14},
+  {name = "pitch_return", kind = "return", pcs = [0x0024f14c, 0x0024f150], words = [0x0c0845f7, 0x26240ac8], value = 0x24f154},
+  # The attached ladder update uses wall-relative yaw and adjusts pitch near the ends.
+  {name = "climb_idle_return", kind = "return", pcs = [0x0025147c, 0x00251480], words = [0x0c093f02, 0x02602821], value = 0x00251484},
+  {name = "climb_yaw_return", kind = "return", pcs = [0x00250f90, 0x00250f94], words = [0x0c0845f7, 0x26040acc], value = 0x00250f98},
+  {name = "climb_yaw", kind = "immediate", pcs = [0x00250f94], words = [0x26040acc], value = 0xacc},
+  {name = "climb_pitch_return", kind = "return", pcs = [0x00251190, 0x00251194], words = [0x0c0845f7, 0x26040ac8], value = 0x00251198},
+  {name = "climb_pitch", kind = "immediate", pcs = [0x00251194], words = [0x26040ac8], value = 0xac8},
+  {name = "climb_pitch_stick", kind = "immediate", pcs = [0x00250f98], words = [0xc6000a58], value = 0xa58},
+  {name = "climb_yaw_limit", kind = "address", pcs = [0x00250f7c, 0x00250f80], words = [0x3c01800a, 0xc4206f7c], value = 0x800a6f7c},
+  {name = "projection_return", kind = "return", pcs = [0x0027d9e4, 0x0027d9e8], words = [0x0c0a6057, 0xe7a00018], value = 0x27d9ec},
+  {name = "fixed_return", kind = "return", pcs = [0x0027da4c, 0x0027da50], words = [0x0c083325, 0x02852821], value = 0x27da54},
+  {name = "corners_return", kind = "return", pcs = [0x0027dd00, 0x0027dd04], words = [0x0c083e42, 0x24070005], value = 0x27dd08},
+]

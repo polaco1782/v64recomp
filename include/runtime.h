@@ -211,6 +211,8 @@ typedef struct RecompIOStats {
     bool query_pending;
 } RecompIOStats;
 /* Owner-thread input snapshots; adapters submit N64 button masks and stick values. */
+/* Atomically replace the complete on-disk image after a guest save operation. */
+bool recomp_save_image(const char *path, const uint8_t *bytes, size_t size);
 bool recomp_io_init(Runtime *, const RecompIOConfig *);
 void recomp_io_destroy(Runtime *);
 bool recomp_input_set(Runtime *, unsigned, const RecompPad *);

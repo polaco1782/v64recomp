@@ -74,7 +74,9 @@ Only the exact ROM revisions pinned by the game profiles are covered.
 | GoldenEye US / Fast3D fifo 2.0G | Debug and Release menu-to-Dam replay, movement, turning, firing and Release watch. |
 | Perfect Dark US v1.1 / F3DPD | Debug file menus and Carrington Institute room with input and nonzero PCM. VI framing needs broader review. |
 | Quake US / F3DEX.NoN + F3DLP.Rej 1.21 | Debug and Release new-game transition, first-level movement/turning/firing. Shared Z-image storage and depth precision corrected; broader geometry acceptance remains pending. |
+| Turok US v1.2 / F3DLX.NoN, F3DEX.NoN and L3DEX 1.00 | Debug replay through title, first-person gameplay, automap and pause. |
 | Quake II US / F3DLP.Rej + F3DEX.NoN 1.23 | Intro and menu program switch. |
+| Doom 64 US / F3DEX.NoN and L3DEX 1.00 | Staging Area, shotgun pickup, textured and line automaps, and pause in a 1,750-presentation Debug replay. |
 | Duke Nukem 64 US / Fast3D 2.0H | Textured main menu after correcting rectangle shade. |
 | Duke Zero Hour US / F3DEX2.NoN 2.08 | Original intro logos. |
 | Nightmare Creatures US / F3DEX2 2.06 | Animated opening scene. |

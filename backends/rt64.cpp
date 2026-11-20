@@ -90,6 +90,7 @@ struct RecompRenderer {
     SDL_Window *window = nullptr;
     std::unique_ptr<RecompInput, decltype(&recomp_input_destroy)> input{nullptr, recomp_input_destroy};
     bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
+    bool separate_mouse_actions = false;
     bool texture_editor_escape = false;
     bool keyboard_c_buttons = false;
     bool gamepad_camera = false;
@@ -337,9 +338,8 @@ static void display_draw(plume::RenderCommandList *list, plume::RenderFramebuffe
 }
 static int menu_event_filter(void *opaque, SDL_Event *event) {
     auto *s = static_cast<RecompRenderer *>(opaque);
-    if (s->texture_editor &&
-        (s->texture_editor->open() || ((event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) &&
-                                      event->key.keysym.scancode == SDL_SCANCODE_F8)))
+    if (s->texture_editor && (s->texture_editor->open() || ((event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) &&
+                                                            event->key.keysym.scancode == SDL_SCANCODE_F8)))
         return 1;
     // Owner shortcuts must reach the app before RT64 consumes them (notably
     // F4, which otherwise opens the replacements inspector instead of recapturing).
@@ -781,6 +781,10 @@ void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
     s->check_owner();
     s->keyboard_c_buttons = enabled;
 }
+void recomp_renderer_separate_mouse_actions(RecompRenderer *s, bool enabled) {
+    s->check_owner();
+    s->separate_mouse_actions = enabled;
+}
 void recomp_renderer_gamepad_camera_mode(RecompRenderer *s, bool enabled) {
     s->check_owner();
     s->gamepad_camera = enabled;
@@ -799,6 +803,18 @@ RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
 void recomp_renderer_set_fov_hook(RecompRenderer *s, void (*adjust)(int)) {
     s->check_owner();
     s->fov_hook = adjust;
+}
+float recomp_renderer_projection_expansion(RecompRenderer *s, float source_aspect) {
+    s->check_owner();
+    using AspectRatio = RT64::UserConfiguration::AspectRatio;
+    const auto& config = s->app->userConfig;
+    if (config.aspectRatio == AspectRatio::Manual)
+        return config.aspectTarget / source_aspect;
+    if (config.aspectRatio != AspectRatio::Expand)
+        return 1.0f;
+    int width, height;
+    SDL_GetWindowSize(s->window, &width, &height);
+    return height > 0 ? std::max(1.0f, float(width) / height / source_aspect) : 1.0f;
 }
 static void update_native_aspect(RecompRenderer *s) {
     if (!s->aspect_hook)
@@ -1028,6 +1044,8 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
                 s->mouse_frame.actions |= RECOMP_MOUSE_DEFEND;
             if (keys[SDL_SCANCODE_F])
                 s->mouse_frame.actions |= RECOMP_MOUSE_STATUS;
+            if (s->separate_mouse_actions)
+                pad->buttons &= 0x1000;
         }
         recomp_input_poll(s->input.get(), pad, s->gamepad_camera ? &s->camera_stick : nullptr);
         return true;
@@ -1040,6 +1058,14 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
                     {SDL_SCANCODE_F, 0x0200}, {SDL_SCANCODE_H, 0x0100}, {SDL_SCANCODE_C, 0x0020},
                     {SDL_SCANCODE_V, 0x0010}, {SDL_SCANCODE_I, 0x0008}, {SDL_SCANCODE_K, 0x0004},
                     {SDL_SCANCODE_J, 0x0002}, {SDL_SCANCODE_L, 0x0001}};
+    if (s->separate_mouse_actions) {
+        if (keys[SDL_SCANCODE_RETURN])
+            pad->buttons |= 0x8000;
+        if (keys[SDL_SCANCODE_TAB])
+            pad->buttons |= 0x1000;
+        if (keys[SDL_SCANCODE_E])
+            pad->buttons |= 0x4000;
+    }
     for (const auto& binding : bindings)
         if (keys[binding.key])
             pad->buttons |= binding.button;

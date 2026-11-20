@@ -1,11 +1,10 @@
 # Turok 2: Seeds of Evil US 1.0
 
-Experimental partial port of the US header-revision-0 cartridge. Debug and Release
-build. Original startup, worker threads, resource decompression, Expansion Pak
-code loading, virtual-memory paging and ABI1 audio tasks run. A game-owned C11
-Acclaim microcode adapter renders the copyright and 3D Expansion Pak notice.
-Title/menu and gameplay bring-up remain in progress. Playable gameplay, audio
-quality and save/reload acceptance are not established.
+The US revision-0 desktop port reaches first-person play in the Port of Adia.
+Debug and Release use RT64, the Acclaim graphics adapter and ABI1 audio.
+Desktop validation covered the title, new-game menus, both opening cinematics,
+on-foot movement, mouse look, pausing and returning to play. Later levels and Controller
+Pak save/reload still need gameplay validation.
 
 ## Build and run
 
@@ -24,6 +23,37 @@ The game uses 8 MiB RDRAM and a Controller Pak at
 `local/saves/turok2-us.mpk`. Save configuration is integrated; persistence has
 not been accepted in gameplay. The corresponding Debug workflow is
 `python3 tools/build.py turok2-us --debug`.
+
+## Desktop controls and field of view
+
+WASD keeps the cartridge's C-button movement on foot and while climbing ladders.
+Move the mouse to look around, including relative to the wall while climbing.
+Left-click fires, Space or right-click jumps, Q and R select
+weapons, and F operates the map. Tab pauses while the mouse is captured.
+In menus, Tab or S presses Start, Enter or A confirms, and E or X goes back.
+During either New Game prologue scene, press **Tab** or **Enter** (controller **Start** or **A**) once to go straight to the Port of Adia. Leave the buttons released to watch the scenes.
+Escape releases the mouse and F4 captures it again. Menus and physical
+controllers use the standard N64 bindings. Set `RECOMP_TUROK_MOUSE=0` for those
+bindings throughout, `RECOMP_MOUSE_SENSITIVITY` for degrees per count (default
+0.08), or `RECOMP_MOUSE_INVERT_Y=1` to invert vertical look. Debug controller
+replays retain the recorded pad values.
+
+Keypad + and − adjust horizontal FOV in one-degree steps from the first on-foot
+camera's original angle to 140°. The change preserves the guest's focal-length
+ratio during area transitions and zoom. The world matrix, object tests, room
+planes and bounds use the expanded view. The HUD retained its screen position
+in the Port of Adia; the equipped weapon appeared smaller at the wider angle.
+
+The local ROM confirms the on-foot look at `0x0024ef70`, world camera at
+`0x0027d160`, and their caller-specific input and projection boundaries.
+The generator checks the original function bodies and instructions against
+`profile.toml` and records them in `input-hooks.json`. An isolated run of the generated guest
+routines checked the projection at 140°, restored the original matrix, and
+verified widened corners, bounded mouse pitch and native stick input. In a live
+Port of Adia run, keypad + widened the stationary player’s view from 59.4° to
+104.4°. The world projection’s X/Y scale changed from 1.753/2.338 to
+0.776/1.034, and keypad − restored both original values. Mouse input rotated
+the player by 49.9°, and W and D moved the player across the dock. [Retail recompilation reference](https://github.com/n64hub/turok-2-recomp/blob/da8f3d2d50f06af034ed3a74f5f09b23729f8aa9/us.toml)
 
 ## Verified loading and callback discovery
 
@@ -84,11 +114,10 @@ RT64's checked-out database matches the text's first `0x1390` bytes with XXH3
 `GBIUCode::Unknown`. The diagnostic hashes use RT64's word-swapped memory layout;
 its text hash extends beyond the OSTask's nominal `0x1000` text size.
 
-`graphics.c` binds a standard F3DEX2 command map through the renderer's generic
+`backends/acclaim_graphics.c` binds a standard F3DEX2 command map through the renderer's generic
 C microcode interface and overrides vertex loading and MOVEMEM for this ROM's
-Acclaim variant. All game-specific command decoding, fingerprints, reset data
-and lighting are in this folder; the shared backend only bridges the C callbacks
-to RT64. RT64's sources and shader ABI are unchanged.
+Acclaim variant. Turok 3 uses identical text and initialization data. Both
+ports share the command decoding, fingerprint checks and lighting in `backends/`.
 
 Every submitted graphics task verifies the complete `0x1390`-byte program and
 `0x420`-byte data span in guest memory, including the RSP overlay images beyond
@@ -99,7 +128,7 @@ the task descriptor's nominal text size:
 | Text and overlays | `6734f26b67b25c6a521dc2ee56d343d33c8005ea4001c2db83fbabf539e62e57` |
 | Microcode data | `462006091cd750bfb2f191d8da8f6221d64fd4257852cacab4aacd94e27b3ff1` |
 
-`lighting.c` implements the compact 16-byte light layout and the original RSP's
+`backends/acclaim_lighting.c` implements the compact 16-byte light layout and the original RSP's
 signed-halfword Manhattan attenuation and Q16/Q7 arithmetic. It supplies computed
 vertex shades while retaining the original normals for texture generation.
 The exact ROM's forced-matrix MOVEMEM returns directly to command dispatch and
@@ -108,19 +137,20 @@ skipping an extra command based on another microcode variant.
 
 The initial black output also required complete-body native bindings for this
 SDK's VI mode, special-feature and current-framebuffer routines. Guest SDK
-context writes alone did not configure the native VI service. Copyright/Expansion
-Pak captures verify that boundary; point-light scenes, title/menu and gameplay
-still require rendered acceptance. The Acclaim L3DEX2 line/automap variant is not
-implemented by this adapter. The bounded copyright run submitted
-ABI1 audio and AI buffers but its captured PCM was silent, so it does not prove
-audible output.
+context writes alone did not configure the native VI service. Captures include
+the legal screen, Expansion Pak notice, opening cinematics and first-person
+Port of Adia. Individual point lights still need validation. The separate
+Acclaim L3DEX2 automap requires a line-microcode adapter. The title-to-gameplay replay produced stereo PCM at 22,047 Hz.
 
-The maintained Debug replay `boot-menu.txt` presses Start/A through the startup
-notices. Use `--input games/turok2-us/boot-menu.txt --capture-every 120` with a
-bounded `--frames` run to reproduce this bring-up path.
-The latest replay stops at the unregistered CPU callback `0x2668d4`, called at
-`0x26e0d8`. This remains a callback-discovery boundary beyond the verified startup
-graphics; the replay has not reached an accepted title/menu or gameplay frame.
+The Debug replay enters New Game and presses Start once at frame 2,640.
+Both prologue scenes finish through the original mode transitions. Player
+control returned by frame 2,771 in the recorded run. A separate replay let
+Adon’s scene play through and skipped the Port introduction with A.
+
+```sh
+./build/turok2-us-debug/bin/turok2-us --frames 3250 \
+  --input games/turok2-us/boot-menu.txt --capture-every 300
+```
 
 The shared snapshot inspector can reproduce the capability check without
 launching the game (optional `--rt64` requires system `libxxhash`). Its database

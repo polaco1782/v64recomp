@@ -383,6 +383,9 @@ void recomp_runtime_destroy(Runtime *rt) {
         rt->destroy_clock(rt);
     recomp_timing_destroy(rt);
     recomp_live_destroy(rt);
+#ifdef RECOMP_DEBUG
+    recomp_debug_close_edges(rt);
+#endif
     free(rt->rdram);
     free(rt->section_loaded);
     free(rt->function_index);
@@ -393,6 +396,10 @@ void recomp_runtime_destroy(Runtime *rt) {
 }
 
 RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
+    return recomp_lookup_at(rt, address, 0, 0);
+}
+
+RecompFunction recomp_lookup_at(Runtime *rt, uint32_t address, uint32_t site, uint32_t section) {
     recomp_record_call(rt, address);
     address = recomp_canonical_function_address(rt, address);
     RecompFunction result = NULL;
@@ -417,7 +424,7 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
         }
     }
     if (!result && first == rt->function_count)
-        result = recomp_live_lookup(rt, address);
+        result = recomp_live_lookup_at(rt, address, site, section);
     if (!result)
         recomp_fail("unregistered or unloaded function", address);
     if (rt->prepare_call)

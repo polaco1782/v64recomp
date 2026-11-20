@@ -1,0 +1,209 @@
+# P_RefreshBrightness is also called by the slider and lighting effects.
+function_wrappers = [
+  {section = ".main", vram = 0x80023448, size = 0x724, sha256 = "61a371468e3bb3fb23af4c6df6520bbf44ca6146a57529a7eb6cb43d2839f1c0", handler = "doom64_world_view"},
+  {section = ".main", vram = 0x80026590, size = 0xa8, sha256 = "dc643d7f229234e7e340a5cace244aba39a2ed870143fbdb52db204058c777fb", handler = "doom64_world_geometry"},
+  {section = ".main", vram = 0x80021a00, size = 0xb8, sha256 = "a5dc22e6dc1687886927acab392909b87aa6b112510e139f513956cbff8ee6c0", handler = "doom64_player_tick"},
+  {section = ".main", vram = 0x8002282c, size = 0xe8, sha256 = "8ecc32b40fcd9d1f8994c74014be2839e786d0509936f0f8d1de9e078da6beac", handler = "doom64_move_player"},
+  {section = ".main", vram = 0x8000f410, size = 0x48, sha256 = "8dbd8394ccd43a4c90472d5079d743e84d87a85cdbda63648e06d46e2c7dddb0", handler = "doom64_refresh_brightness"},
+  {section = ".main", vram = 0x8000f458, size = 0x1b8, sha256 = "9c9520018802adad92fd4b39541c63277f81d3aee9859ea493faadb609e341b1", handler = "doom64_set_light_factor"},
+]
+
+# The five lateral coordinates feed the original 320-column occluder or sprite side test.
+word_result_hooks = [
+  {section = ".main", vram = 0x80024170, size = 0x3ac, sha256 = "0b6e700b9dd493ac6b038211761c9558176796daf7b200a07cdf70d7ef4f7ad6", handler = "doom64_fov_lateral", sites = [{pc = 0x80024284, expected_word = 0x02026823, register = 13}, {pc = 0x80024308, expected_word = 0x02023823, register = 7}]},
+  {section = ".main", vram = 0x80024604, size = 0x494, sha256 = "152982647ab0c3777e0a456bd45d3bad3d70de9478a72fc869e548106df4764f", handler = "doom64_fov_lateral", sites = [{pc = 0x8002468c, expected_word = 0x00c23823, register = 7}, {pc = 0x80024768, expected_word = 0x00c23823, register = 7}]},
+  {section = ".main", vram = 0x80024a98, size = 0x3cc, sha256 = "1024e5386370ed36f23e10102605bf54718b1a6ac000fa37892754c8589b7f5a", handler = "doom64_fov_lateral", sites = [{pc = 0x80024bac, expected_word = 0x014b3023, register = 6}]},
+]
+
+[game]
+name = "Doom 64 (US)"
+rom = "../../local/doom64.us.z64"
+rom_sha1 = "799a588d73da3fcce8031026a8187da92b91c817"
+rom_size = 0x800000
+ram_size = 0x400000
+entry_symbol = "entry_point"
+code_sections = [".main"]
+boot_sections = [".main"]
+
+[discovery]
+regions = [{name = ".main", vram = 0x80000400, rom_offset = 0x1000, size = 0x62d10}]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+transfers = [
+  {pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80005620]},
+  # Block iterators retain a2 in s5/s1. The two line callers are 0x80016d88 and
+  # 0x800184a8. The three object callers are 0x80010448, 0x80017060 and 0x80018480.
+  {pc = 0x800180cc, expected_word = 0x02a0f809, kind = "call", targets = [0x80016a28, 0x80018574]},
+  {pc = 0x8001819c, expected_word = 0x0220f809, kind = "call", targets = [0x80010234, 0x80016e3c, 0x8001860c]},
+  # The six P_PathTraverse callers pass one of four callbacks on the stack.
+  # P_TraverseIntercepts receives that argument at 0x8001854c and calls it here.
+  {pc = 0x800189bc, expected_word = 0x0280f809, kind = "call", targets = [0x80012654, 0x800170ac, 0x80017508, 0x800177a8]},
+  # Sky type switch at 0x80025118 installs these routines in 0x800a8130.
+  {pc = 0x80023590, expected_word = 0x0320f809, kind = "call", targets = [0x80025440, 0x800255b8, 0x800256b4, 0x80025738, 0x80025f68]},
+]
+# Each switch checks its unsigned index before loading a 32-bit local target.
+jump_tables = [
+  {pc = 0x8000259c, expected_word = 0x01e00008, table_vram = 0x8005f258, count = 6, sha256 = "bcac8d0f6b08522bf13482b6ce60cf589b397032258d74a8f77aa441220c28be"},
+  {pc = 0x800032e8, expected_word = 0x03200008, table_vram = 0x8005fa08, count = 5, sha256 = "a1f7e971cde211cafe307fc805124c892edbdbcf114feb0396c16eb492bfb1a4"},
+  {pc = 0x800038d0, expected_word = 0x01a00008, table_vram = 0x8005fa1c, count = 41, sha256 = "c869ae20564acbd32262c33af8af5d5d8ee72efa65deef0d80b5389fb9bf49b9"},
+  {pc = 0x80003b08, expected_word = 0x03000008, table_vram = 0x8005fac0, count = 5, sha256 = "411142e4271fcc1c8fbcd5b54610e0a92b8ac937c411c231914ccb23b75d6c76"},
+  {pc = 0x80004f58, expected_word = 0x03000008, table_vram = 0x8005fd28, count = 5, sha256 = "e4018f85de14bcb8d39b549578d81ebec27d2aa80ec2ce0219c017f3f0cce58e"},
+  {pc = 0x80008098, expected_word = 0x01600008, table_vram = 0x80060450, count = 48, sha256 = "21eab7f10dacc7611989acc4060723a9b325b2a815d780340f8eb37f3ddf26bf"},
+  {pc = 0x800092e4, expected_word = 0x01600008, table_vram = 0x80060510, count = 17, sha256 = "d35519e61c102ebbdfcbe04dcf6a24cd5bbe0ffcff6eb5901dacde954992f595"},
+  {pc = 0x8000f93c, expected_word = 0x01200008, table_vram = 0x80060608, count = 8, sha256 = "9175d97e1bf4897c338aa90712e4454bf5e7f067dbc9097ad6c0946f2986cb47"},
+  {pc = 0x8000f9ec, expected_word = 0x01e00008, table_vram = 0x80060628, count = 9, sha256 = "e8edc0506481a171fcef5083facf89c47e670a6dd00a13e27dd7a4cd73c923a8"},
+  {pc = 0x8000fb70, expected_word = 0x01200008, table_vram = 0x8006064c, count = 9, sha256 = "019dc2bda21bb01958bfadf3bcee6ce3c7364b45cffe877d58ea1a9fe81b3442"},
+  {pc = 0x80010600, expected_word = 0x01400008, table_vram = 0x80060670, count = 8, sha256 = "447317f60e7eb7bc77f85e6e87b2ab1f3b8712ec091d48754505b55fb71bd3c7"},
+  {pc = 0x80010718, expected_word = 0x03200008, table_vram = 0x80060690, count = 7, sha256 = "0f0087dc361935b6d50068b418ba8c6c7c1b43b6bde86089bda632e59c7250d1"},
+  {pc = 0x80010854, expected_word = 0x01800008, table_vram = 0x800606ac, count = 8, sha256 = "deefe1f924b645d4453c44a2a62a28645a9499402e268466646361661b84784a"},
+  {pc = 0x800113e0, expected_word = 0x01400008, table_vram = 0x800606f8, count = 13, sha256 = "17044de244a7c6938d1b6b41b01987a5407d69151f2bff3f2df67ac4a545f566"},
+  {pc = 0x80011784, expected_word = 0x03000008, table_vram = 0x8006072c, count = 12, sha256 = "75340a953045366ccee4a7d898998b0741b09ad3ca3c95f9205854b7aca7c66a"},
+  {pc = 0x80013548, expected_word = 0x01400008, table_vram = 0x8006075c, count = 12, sha256 = "febf57676ee719a3a558285ad2c1cf98cacfb64765d8679b3668cdc7bdd91d15"},
+  {pc = 0x80013b0c, expected_word = 0x01400008, table_vram = 0x80060790, count = 13, sha256 = "49b91a3eb7e2760f015cebf0c27c8d2fa99af259a8f0b5ebbe01fd8e297c0068"},
+  {pc = 0x80014750, expected_word = 0x01c00008, table_vram = 0x80060c64, count = 6, sha256 = "216cf24fbb74421cbb1b0b1093c7375e618266495be371f479687073e40d4ff9"},
+  {pc = 0x80014888, expected_word = 0x01a00008, table_vram = 0x80060c7c, count = 64, sha256 = "567cdb5af198c0735326ea132fd50a496b22c6221dc10d475dbe2af601e6a745"},
+  {pc = 0x80015df4, expected_word = 0x03200008, table_vram = 0x80060d80, count = 5, sha256 = "bcc05b727d041651bf0a0ebb24e174828306dafa507c376945b2e1e7b8e7e5ff"},
+  {pc = 0x80016608, expected_word = 0x01e00008, table_vram = 0x80060d94, count = 17, sha256 = "fa7013464b930fe88b3e3bb74d3c8babcb31aef06edaf00cb059741b0a1c0480"},
+  {pc = 0x8001a9f0, expected_word = 0x03200008, table_vram = 0x80060e68, count = 8, sha256 = "1ba6f00968f6da0d0d7b31360902ba04a66ec7016048597e6bb8f198d19c4d36"},
+  {pc = 0x8001ab9c, expected_word = 0x01400008, table_vram = 0x80060e88, count = 11, sha256 = "3c641da9890b0bd43ccfb5ea7905abb26c68751ab12efc1af4842437397f1b34"},
+  {pc = 0x800203c0, expected_word = 0x03200008, table_vram = 0x8006107c, count = 7, sha256 = "1941c9b9b75299147c149aa3514e740e392caac7524a2ccb33117aaab45adf41"},
+  {pc = 0x800203e4, expected_word = 0x01000008, table_vram = 0x80061098, count = 18, sha256 = "bfd7d8c0a143b5a762abd671a450079e9780a98f90403a4f4eb56ea584746ba3"},
+  {pc = 0x80020790, expected_word = 0x01400008, table_vram = 0x800610e0, count = 55, sha256 = "57df6e38623794e5fd2a92540c6eb317044e6c5d8fc1a5712c8c4a30eca4425e"},
+  {pc = 0x800207b8, expected_word = 0x03200008, table_vram = 0x800611bc, count = 142, sha256 = "688683abcfdfb35f1d8c1ca7bd5f7fe7ad697ffd86bca957b9e4a0da18234c42"},
+  {pc = 0x80025118, expected_word = 0x03200008, table_vram = 0x800614c8, count = 11, sha256 = "9eb303b10b328fd1adaf3739d401b4ad930851f5cdf0a11e8828f9f7f403d260"},
+  {pc = 0x80046df8, expected_word = 0x01c00008, table_vram = 0x80061ca0, count = 9, sha256 = "f20b34a6a00e6588a129cce264e78856357635d9a96b228738af9079486e7e74"},
+  {pc = 0x80049848, expected_word = 0x01c00008, table_vram = 0x80061e20, count = 8, sha256 = "c5ee56ef76f89db7364efbe1a6b1669a517c61e7da54ee73fd0f01ac0e12a0fd"},
+]
+function_tables = [
+  # WESS CmdFuncArr at 0x8005d920 selects the engine table at 0x8005da40,
+  # except driver 1 selects the N64 table at 0x8005daf0 (44 words later).
+  # Driver setup and shutdown address each table directly.
+  {pc = 0x8002ffd4, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 36, indices = [0], sha256 = "f3a89f68ecdf552bf319799ada99cccfccb764f95a8ebe895c914fdfd385166a"},
+  {pc = 0x8002fff4, expected_word = 0x0320f809, table_vram = 0x8005daf0, count = 19, indices = [0], sha256 = "354b96efd68345e11e09448c99e0b6e35956d438f0513c53b6d51d8e89aa4bed"},
+  {pc = 0x8002f72c, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 36, indices = [1], sha256 = "f3a89f68ecdf552bf319799ada99cccfccb764f95a8ebe895c914fdfd385166a"},
+  {pc = 0x8002f748, expected_word = 0x0320f809, table_vram = 0x8005daf0, count = 19, indices = [1], sha256 = "354b96efd68345e11e09448c99e0b6e35956d438f0513c53b6d51d8e89aa4bed"},
+  # WESS timer: track end, patch commands 7..18, sequence commands 19..35,
+  # invalid-command SeqEnd and driver entry 2. Each two-table lookup pins both banks.
+  {pc = 0x800374b8, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 63, indices = [5, 49], sha256 = "f2d11b4b6a54c9706d1fb243ba1d838ad9599d21ebacc215a511b872d0b44814"},
+  {pc = 0x80037720, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 63, indices = [2, 46], sha256 = "f2d11b4b6a54c9706d1fb243ba1d838ad9599d21ebacc215a511b872d0b44814"},
+  {pc = 0x80031944, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 63, indices = [6, 50], sha256 = "f2d11b4b6a54c9706d1fb243ba1d838ad9599d21ebacc215a511b872d0b44814"},
+  {pc = 0x80037550, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 63, indices = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62], sha256 = "f2d11b4b6a54c9706d1fb243ba1d838ad9599d21ebacc215a511b872d0b44814"},
+  {pc = 0x800375d4, expected_word = 0x0320f809, table_vram = 0x8005da8c, count = 17, sha256 = "bc4021a1304db84c71e6d764d763aa7573e375f641eec57611a7b84a8803cd88"},
+  {pc = 0x80037658, expected_word = 0x0320f809, table_vram = 0x8005da40, count = 36, indices = [29], sha256 = "f3a89f68ecdf552bf319799ada99cccfccb764f95a8ebe895c914fdfd385166a"},
+  # All 15 queue_the_function call sites pass immediate command IDs 0..14.
+  {pc = 0x80035ea4, expected_word = 0x0320f809, table_vram = 0x8005d9a0, count = 15, sha256 = "1d2f3e18c0967cebc1f17b9cd89ff2fd344ed37e5488557ef3790b38e8af6270"},
+  # Doom object and weapon state action callbacks (20-byte state records).
+  {pc = 0x800191f0, expected_word = 0x0060f809, table_vram = 0x8004d3f4, count = 705, stride = 20, field_offset = 12, nullable = true, sha256 = "7230147d3409e02411d5885c8e098c1de27d02e1edce6d9e3fff967d209e99f7"},
+  {pc = 0x8001b474, expected_word = 0x0060f809, table_vram = 0x80050b08, count = 92, stride = 20, field_offset = 12, nullable = true, sha256 = "5d91b1206f3ca762bda7fd4f7c925490436762f0638d33ddfffc007fa18b777a"},
+]
+roots = [
+  # osCreateThread entry operands for the original idle, main and ticker threads.
+  {name = "I_IdleGameThread", vram = 0x8000567c},
+  {name = "I_Main", vram = 0x80005710},
+  {name = "I_SystemTicker", vram = 0x80005730},
+]
+
+[bootstrap]
+# Display options use a 0..100 slider. Default Display clears this word at
+# 0x80008af8 and then calls P_RefreshBrightness at 0x80008b08.
+brightness_address = 0x8005a7c8
+brightness_default = 100
+display_reset_return = 0x80008b10
+# P_SetLightFactor writes RGBA at +0 of each 8-byte light record.
+light_count = 0x800a5efc
+light_table = 0x800a5e9c
+# The IWAD header starts at ROM 0x63d10, directly after the static segment.
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0x62d10
+bss_start = 0x80063110
+bss_end = 0x800ba2f0
+idle_object = 0x800a4a18
+# osInitialize reads the clock nibble-masked ROM header and takes 3/4.
+counter_hz = 45637500
+thread_tail = 0x8005e980
+run_queue = 0x8005e988
+active_queue = 0x8005e98c
+running_thread = 0x8005e990
+clock_rate = 0x8005db60
+final_rom = 0x800b6ab0
+vi_clock = 0x8005ea28
+interrupt_global_mask = 0x8005db6c
+boot_object = 0x803ff000
+boot_stack = 0x803fd000
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x400000
+
+[controls]
+# P_Start stores 1 to DrawerStatus and clears gamepaused. MiniLoop checks
+# recording/playback at 0x80002a6c..0x80002a94 before selecting tick input.
+drawer = 0x8005a470
+paused = 0x800a6270
+recording = 0x800633a4
+playback = 0x800633a8
+# P_BuildMove loads BT_DATA[0], ticbuttons and oldticbuttons at 0x80022154.
+button_layout = 0x800a559c
+buttons = 0x80063148
+old_buttons = 0x8006314c
+# P_Ticker passes players[0] to AM_Control then P_PlayerThink. The latter
+# calls P_MovePlayer at 0x80022f78 after teleport/death checks. Actor yaw is
+# the u32 at +0x38 written by P_MovePlayer at 0x80022854.
+player = 0x80063240
+
+[graphics]
+# The two OSTask templates at ROM 0x5b190 and 0x5b1d0 default to F3DEX.NoN.
+# The automap replaces their text and data pointers at 0x80001508 and 0x80001520.
+[[graphics.microcodes]]
+name = "F3DEX.NoN 1.00"
+code = {rom_offset = 0x4acb0, size = 0x1000, sha256 = "9d9078632b5db73bff0892eb72f8a41564434ba0df017892c535cdcd72369d2f"}
+data = {rom_offset = 0x62a50, size = 0x800, sha256 = "f0cac10a5c41490b586a6d8af9a98419d16fc465757d0da13b46597fceef0a97"}
+
+[[graphics.microcodes]]
+name = "L3DEX 1.00"
+code = {rom_offset = 0x4c070, size = 0x1000, sha256 = "5fa7e9a119c7933103a353b62c9100d71d2b869e168414cc27a69736279c1f18"}
+data = {rom_offset = 0x63250, size = 0x800, sha256 = "d686c116ae4f83d84dc7e514b69aa20fc8ca69f9907e278fc6914231ec4367fb"}
+
+[graphics.rsp]
+# The bootstrap transfers 0xf80 bytes to IMEM. F3DEX also loads the overlays
+# whose DMA descriptors are in the first 0x28 bytes of its task data.
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x4abe0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX.NoN 1.00", rom_offset = 0x4acb0, size = 0x13b8, sha256 = "9a532f151e6339564c9a6d2240b05a8ccdaa591d77a5858823ce27c5c7a7d356"},
+  {name = "L3DEX 1.00", rom_offset = 0x4c070, size = 0xf80, sha256 = "c322304480bb63cef906fb5152aaac61b77e3d278587b7dcceba226aeb0026f1"},
+]
+
+[fov_adapter]
+reference = "https://github.com/Erick194/DOOM64-RE/tree/6931e678a0b2958be1b49598f2fe60712c6596e1/doom64"
+# R_Init calls guFrustum with L/R=-8/8, B/T=-6/6, near=8 and far=3808.
+# P_Drawer loads the stock projection before either the automap or player view.
+# The sky draws before R_RenderAll. Sprites use world vertices, while the
+# on-screen weapon and HUD use texture rectangles after R_RenderAll.
+functions = [
+  {name = "R_Init", vram = 0x800233e0, size = 0x68, sha256 = "a3209cfe78341d5853dc4ad4dad43aefbc0f1e5cdb626d90110634c5b5bbde27"},
+  {name = "I_ClearFrame", vram = 0x8000637c, size = 0x1f4, sha256 = "991f990932b74d2467d799cf1bdda25f40c484b8296ff7a4fec75d61b62b5486"},
+  {name = "P_Drawer", vram = 0x80021ab8, size = 0x198, sha256 = "98f0494f32e2bf5df21a6cadc782ede044508d0e72c55749a4db502b1f43cd84"},
+  {name = "R_RenderPlayerView", vram = 0x80023448, size = 0x724, sha256 = "61a371468e3bb3fb23af4c6df6520bbf44ca6146a57529a7eb6cb43d2839f1c0"},
+  {name = "R_RenderAll", vram = 0x80026590, size = 0xa8, sha256 = "dc643d7f229234e7e340a5cace244aba39a2ed870143fbdb52db204058c777fb"},
+  {name = "R_RenderThings", vram = 0x80028248, size = 0xa84, sha256 = "ba3a11b99ce41ca56ef3c508d7a8ede5c19e3e34ae98790778449e182b1ed106"},
+  {name = "R_RenderPSprites", vram = 0x80028f20, size = 0x65c, sha256 = "d4754428a4ad99d9861421cd689105fac43692c425395ef10283550ab745e53a"},
+]
+data = []
+bindings = [
+  {name = "world_return", kind = "return", pcs = [0x80021bd8, 0x80021bdc], words = [0xc008d12, 0x0], value = 0x80021be0},
+  {name = "geometry_return", kind = "return", pcs = [0x80023b2c, 0x80023b30], words = [0xc009964, 0xac580000], value = 0x80023b34},
+  {name = "demo_playback", kind = "address", pcs = [0x80021be0, 0x80021be4], words = [0x3c0d8006, 0x8dad33a8], value = 0x800633a8},
+  {name = "camera", kind = "address", pcs = [0x80023464, 0x80023468], words = [0x3c02800a, 0x8c425d70], value = 0x800a5d70},
+  {name = "player", kind = "address", pcs = [0x8002344c, 0x80023454], words = [0x3c0e8006, 0x25ce3240], value = 0x80063240},
+  {name = "projection", kind = "address", pcs = [0x80023410, 0x80023418], words = [0x3c04800a, 0x248468b8], value = 0x800a68b8},
+  {name = "matrix_pool", kind = "address", pcs = [0x800063f0, 0x800063f8], words = [0x3c0f8008, 0x25ef93e0], value = 0x800793e0},
+  {name = "matrix_cursor", kind = "address", pcs = [0x80006410, 0x80006420], words = [0x3c01800a, 0xac384a10], value = 0x800a4a10},
+  {name = "gfx_cursor", kind = "address", pcs = [0x800063b4, 0x800063bc], words = [0x3c03800a, 0x24634a00], value = 0x800a4a00},
+  {name = "gfx_base", kind = "address", pcs = [0x800063b0, 0x800063b8], words = [0x3c01800a, 0xac2e4a04], value = 0x800a4a04},
+]

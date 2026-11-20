@@ -55,7 +55,6 @@ static void result(MipsContext *ctx, int32_t value) {
     mips_set(ctx, 2, mips_s32((uint32_t)value));
 }
 
-static bool persist_image(const char *path, const uint8_t *bytes, size_t size);
 static unsigned pak_u16(const uint8_t *p) {
     return (unsigned)p[0] * 256 + p[1];
 }
@@ -227,7 +226,7 @@ bool recomp_io_init(Runtime *rt, const RecompIOConfig *config) {
             if (fclose(file))
                 valid = false;
         } else {
-            valid = errno == ENOENT && persist_image(pak->path, pak->bytes, PAK_SIZE);
+            valid = errno == ENOENT && recomp_save_image(pak->path, pak->bytes, PAK_SIZE);
         }
         RECOMP_LOG("save", "Controller Pak port=%u path=%s result=%s", n, pak->path,
                    valid ? "ok" : "load/create failed");
@@ -383,7 +382,7 @@ static void transfer_pak(Runtime *rt, MipsContext *ctx, bool write_data) {
         memcpy(next, pak->bytes, sizeof(next));
         for (unsigned n = 0; n < PAK_BLOCK_SIZE; n++)
             next[block * PAK_BLOCK_SIZE + n] = (uint8_t)recomp_load(rt, address + n, 1);
-        if (!persist_image(pak->path, next, sizeof(next))) {
+        if (!recomp_save_image(pak->path, next, sizeof(next))) {
             s->stats.persistence_failures++;
             result(ctx, PFS_ERR_CONTRFAIL);
             return;
@@ -570,7 +569,7 @@ void recomp_os_eeprom_probe(Runtime *rt, MipsContext *ctx) {
     result(ctx, s->eeprom_size == 2048 ? 2 : s->eeprom_size == 512 ? 1 : 0);
     RECOMP_LOG("save", "EEPROM probe bytes=%" PRIu32 " result=%" PRId32, s->eeprom_size, (int32_t)ctx->gpr[2]);
 }
-static bool persist_image(const char *path, const uint8_t *bytes, size_t size) {
+bool recomp_save_image(const char *path, const uint8_t *bytes, size_t size) {
     if (!path)
         return true;
     size_t length = strlen(path) + 16;
@@ -667,7 +666,7 @@ static void transfer_eeprom(Runtime *rt, MipsContext *ctx, bool write_data, uint
         memcpy(next, s->eeprom, sizeof(next));
         for (uint32_t n = 0; n < count; n++)
             next[block * 8 + n] = (uint8_t)recomp_load(rt, address + n, 1);
-        if (!persist_image(s->path, next, s->eeprom_size)) {
+        if (!recomp_save_image(s->path, next, s->eeprom_size)) {
             RECOMP_LOG("save", "EEPROM write failed: persistence failure result=-1");
             s->stats.persistence_failures++;
             result(ctx, -1);

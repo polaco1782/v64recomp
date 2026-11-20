@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\doom64-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\doom64-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\doom64-us\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\doom64-us\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\doom64-us\fov.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\doom64-us\fov.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\doom64-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\doom64-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\doom64-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\doom64-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\doom64-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\doom64-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\doom64-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{32044BFF-FDFD-5054-AA0B-5B91DD4C690D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{2A0769FB-6F8F-5529-B00C-C7D8CD32F765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{38BBC04A-AB9B-50DD-AB4F-3FBC2E70A24B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{475D9EAF-7294-5263-9C7D-25A71BCF3739}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

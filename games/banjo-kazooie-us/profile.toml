@@ -26,6 +26,12 @@ regions = [{name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0x4e7
 roots = [
   {name = "core1_main", vram = 0x8023da20},
   # ROM-verified function roots.
+  # The callback at 0x802c8aa8 calls this entry directly at 0x802c8ae0.
+  {name = "live_802c8580", vram = 0x802c8580, section = ".core2"},
+  # Direct JAL at 0x802d75f8 in the callback at 0x802d75b4.
+  {name = "live_802d7484", vram = 0x802d7484, section = ".core2"},
+  # Overlay ID 2 init slot 0x8036e2fc feeds jalr 0x80322f44; both JALs match checked .CC entries.
+  {name = "overlay_cc_init", vram = 0x80322a28, section = ".core2"},
   {name = "live_8032b5c0", vram = 0x8032b5c0, section = ".core2"},
 ]
 # ROM-verified callback arguments and a representative indirect consumer.
@@ -102,6 +108,8 @@ function_tables = [
 # IDO sltiu bounds, beqz default, sll index,2, lui/addu/lw/jr.
 # Complete table bytes and every local destination checked against decoded images.
 jump_tables = [
+  # 0x802c8720 bounds the selector at 0x8037dd94 to unsigned <6 before lookup.
+  {section = ".core2", pc = 0x802c8738, expected_word = 0x03000008, table_vram = 0x803763ec, count = 6, sha256 = "bca5308f089cad3313fa1ab572b13927d1c8bdf58cead0d1fe11cdf8361cb599"},
   # Jiggy-shine sprite selector minus 0x3bb: computed in the range-test
   # branch delay slot, then guarded by unsigned <8 before table scaling.
   {section = ".core2", pc = 0x80354af0, expected_word = 0x03200008, table_vram = 0x8037948c, count = 8, sha256 = "0201737c9f7acf8a4ba462e6cbfeaba9c2f2e282aba232cea8bd0b7d15b472b6"},

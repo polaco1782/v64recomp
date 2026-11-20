@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\turok3-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\turok3-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\turok3-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\turok3-us\level_events.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\turok3-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\turok3-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\turok3-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\turok3-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\turok3-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\turok3-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{6E452C01-B433-521D-9619-0F57DE99DDCD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{D78C79E8-2428-5B9D-B714-847259AB60A8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{48DFA78A-142A-5832-97F2-E7DE51470378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7F1AD673-9BC8-5C9D-91A6-A76EBD50558F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

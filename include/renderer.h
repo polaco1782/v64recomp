@@ -89,6 +89,13 @@ void recomp_renderer_set_graphics_hook(RecompRenderer *, RecompGraphicsHook);
 /* A game may bind a verified custom GBI before the normal RT64 lookup. Return
  * false to use RT64's database; true requires a configured interpreter GBI. */
 void recomp_renderer_set_microcode_hook(RecompRenderer *, RecompMicrocodeHook);
+#ifdef RECOMP_WITH_RT64
+/* Horizontal projection expansion applied by RT64 to a native world view. */
+float recomp_renderer_projection_expansion(RecompRenderer *, float source_aspect);
+/* Call only for the game's checked L3DEX 1.00 task address. This validates the
+ * live text/data and binds the constant-depth automap line decoder. */
+bool recomp_renderer_bind_l3dex_1_00(void *interpreter, size_t ram_size, uint32_t code, uint32_t data);
+#endif
 void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
 /* Bare-metal RDP DMA, without an RSP microcode task. Registers describe the
@@ -109,6 +116,9 @@ void recomp_renderer_set_aspect_hook(RecompRenderer *, bool (*update)(void *, fl
 /* Opt-in PC controls. Gameplay false releases capture and clears motion.
  * Escape toggles capture; F4 recaptures; F10 quits. Other games are unchanged. */
 void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);
+/* A game handling captured keyboard/mouse actions itself can omit their N64
+ * button aliases. Start and physical controller input still reach the pad. */
+void recomp_renderer_separate_mouse_actions(RecompRenderer *, bool enabled);
 /* Opt into arrow keys as C-buttons and WASD as the analog stick. This mapping
  * remains available when mouse capture ends, including dialog/instrument modes. */
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *, bool enabled);

@@ -1,5 +1,12 @@
 """Generate runtime constants for the verified Turok 2 US cartridge."""
 from pathlib import Path
+from common import write_json
+from input_evidence import verify_input_evidence
+
+
+def write_report(rom, profile, metadata, coverage, output):
+    evidence = verify_input_evidence(rom, profile, metadata, coverage)
+    write_json(output / "input-hooks.json", evidence)
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:
@@ -14,3 +21,6 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+    bindings = profile["input_adapter"]["bindings"]
+    header = [f'#define AC_{b["name"].upper()} UINT32_C(0x{b["value"]:x})' for b in bindings]
+    (output / "acclaim_controls_config.h").write_text("\n".join(header) + "\n")

@@ -547,7 +547,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                   yield_sites: set[int] | None = None,
                   hooks: dict[tuple[int, int], str] | None = None,
                   direct_targets: dict[int, DirectCallTarget] | None = None,
-                  resume_entry: bool = False) -> str:
+                  resume_entry: bool = False,
+                  word_results: dict[int, str] | None = None) -> str:
     log_emission('Emit %s s%s 0x%08x -> %s (%d instructions)',
                  function['name'], function['section'], function['vram'], cname(function), len(instructions),
                  verbose=True)
@@ -621,6 +622,11 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         immediate = (f'(int16_t)recomp_load32(runtime, recomp_relocated_address(runtime, '
                      f'{function["section"]}, UINT32_C(0x{instruction.pc:08x})))') if relocated else None
         statement = body(instruction, immediate, ram_offset)
+        if word_results and instruction.pc in word_results:
+            # The verifier restricts this to signed word results in rd.
+            dst = reg(instruction.rd)
+            handler = word_results[instruction.pc]
+            statement += f'\n{indent}{dst} = mips_s32({handler}((int32_t){dst}));'
         if LOG_EMISSION and LOG_EMISSION_VERBOSE and ('recomp_load' in statement or 'recomp_store' in statement):
             log_emission('Memory %s s%s 0x%08x: %s -> %s',
                          function['name'], function['section'], instruction.pc, instruction.assembly, statement,
@@ -799,6 +805,15 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         lines.extend(emit_body(slot, '        '))
         checked = transfers.get(i.pc)
 
+        if i.opcode in ('jr', 'jalr') or relocated_jal:
+            kind = 'RECOMP_EDGE_RELOCATED_CALL' if relocated_jal else 'RECOMP_EDGE_CALL'
+            if i.opcode == 'jr':
+                if not checked or checked['kind'] == 'return':
+                    kind = 'destination == return_address ? RECOMP_EDGE_RETURN : RECOMP_EDGE_JUMP'
+                else:
+                    kind = 'RECOMP_EDGE_' + checked['kind'].upper()
+            lines.append(f'        RECOMP_EDGE(runtime, {function["section"]}, UINT32_C(0x{i.pc:08x}), destination, {kind});')
+
         if i.opcode == 'jr' and checked and checked['kind'] == 'return':
             lines.extend(flush('        '))
             lines.extend(['        if (destination != return_address)',
@@ -851,7 +866,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 if i.opcode == 'jalr' or relocated_jal:
                     log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                                  function['name'], function['section'], i.pc, i.assembly, verbose=True)
-                    call = around(["        recomp_lookup(runtime, destination)(runtime, ctx);"], '        ')
+                    call = around([f'        recomp_lookup_at(runtime, destination, UINT32_C(0x{i.pc:08x}), '
+                                   f'{function["section"]})(runtime, ctx);'], '        ')
                 else:
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))

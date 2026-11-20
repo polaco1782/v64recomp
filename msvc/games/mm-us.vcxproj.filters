@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\mm-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\mm-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\mm-us\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\mm-us\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\mm-us\flash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\mm-us\flash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\mm-us\function-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\mm-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\mm-us\jpeg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\mm-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)games\mm-us\overlays.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\mm-us\overlays.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\mm-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\mm-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\mm-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\mm-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{2975A806-9B50-52D9-891B-11A0F57C325B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{42483007-D142-514E-8384-2A93E1939D47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{ED984C55-A13B-5EE2-99E8-6A51E5274918}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{53A6C5D9-5D33-5F01-A44A-81AEDF956B6F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

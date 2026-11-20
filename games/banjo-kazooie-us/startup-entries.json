@@ -1884,6 +1884,62 @@
       "vram": 2150962944
     },
     {
+      "evidence": "Map-prop callback slot 5 at 0x8037261c holds 0x80387940. The .core2 caller indexes 0x803725f4 by 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 select consecutive .CC wrappers for 0x803878f0. This wrapper passes a2=1 in the jal delay slot, restores ra and sp, and returns at 0x80387958 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "156cb096314b2e98c57802401159a22751bfc16b9ae042db0614f9044957f657",
+      "vram": 2151184704
+    },
+    {
+      "evidence": "Map-prop callback slot 6 at 0x80372624 holds 0x80387960. The .core2 caller indexes 0x803725f4 by 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 select consecutive .CC wrappers for 0x803878f0. This wrapper passes a2=2 in the jal delay slot, restores ra and sp, and returns at 0x80387978 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "db0773483065f00094478ce15290e5f2b8f59ab990a83672eb7257accf7b0ee3",
+      "vram": 2151184736
+    },
+    {
+      "evidence": "Map-prop callback slot 7 at 0x8037262c holds 0x80387980. The .core2 caller loads 0x803725f4 + 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 point to eight consecutive .CC wrappers that pass a2=1..8 to 0x803878f0. This wrapper passes 3 in the jal delay slot, restores ra and sp, and returns at 0x80387998 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "6163ad504af6bc9d81d4cc86f9cd9be64990b31f3b408f6d2c98e21f73d8786e",
+      "vram": 2151184768
+    },
+    {
+      "evidence": "Map-prop callback slot 8 at 0x80372634 holds 0x803879a0. The .core2 caller indexes 0x803725f4 by 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 select eight consecutive .CC wrappers for 0x803878f0. This wrapper passes a2=4 in the jal delay slot, restores ra and sp, and returns at 0x803879b8 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "0e2d846f242d59f48e8cc0549f78bec83c566787530fa0b50a4d9cdec36a4f1b",
+      "vram": 2151184800
+    },
+    {
+      "evidence": "Map-prop callback slot 9 at 0x8037263c holds 0x803879c0. The .core2 caller indexes 0x803725f4 by 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 select consecutive .CC wrappers for 0x803878f0. This wrapper passes a2=5 in the jal delay slot, restores ra and sp, and returns at 0x803879d8 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "07ed37374cc3a44905662ee50475ebd088d3f416569cd37b41d601843ab8caa4",
+      "vram": 2151184832
+    },
+    {
+      "evidence": "Map-prop callback slot 11 at 0x8037264c holds 0x80387a00. The .core2 caller indexes 0x803725f4 by 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 select eight consecutive .CC wrappers for 0x803878f0. This wrapper passes a2=7 in the jal delay slot, restores ra and sp, and returns at 0x80387a18 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "9b64354cad24914b0fdea225538296ab1a475365e97a22f887a6403c0b6b6fe9",
+      "vram": 2151184896
+    },
+    {
+      "evidence": "Map-prop callback slot 12 at 0x80372654 holds 0x80387a20. The .core2 caller loads 0x803725f4 + 8 * prop[0x31] and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. Slots 5..12 select consecutive .CC wrappers for 0x803878f0. This eighth wrapper passes a2=8 in the jal delay slot, restores ra and sp, and returns at 0x80387a38 with a nop delay slot.",
+      "origin": "checked-root",
+      "section": ".CC",
+      "sha256": "4ecb72fe90a65c8a864d3d9e58d612a39d9370922262e0545dee66d188b9251a",
+      "vram": 2151184928
+    },
+    {
+      "evidence": "Map-prop callback slot 13 at 0x8037265c holds 0x80351fe0. Caller 0x80351538 loads 0x803725f4 + 8 * prop[0x31], skips null, and calls a2 at 0x803515d0 with a0=prop+0x34 and a1=prop. The 77-instruction body uses both arguments, restores s0, ra and sp, and returns at 0x8035210c.",
+      "origin": "checked-root",
+      "section": ".core2",
+      "sha256": "f1c7e2b3b0624c5736137d9dffb13c2084ef9f5313082cd9dfdf299587de68fb",
+      "vram": 2150965216
+    },
+    {
       "evidence": "Camera path actor ActorInfo 0x80367160, callback field +0xc, exact pointer slot 0x8036716c. Actor registry setup registers the two 0x24-byte records (actor IDs 0x66/0x6c); actor_new reads update/update2/draw at +0xc/+0x10/+0x14 and installs marker methods. Actor update consumer 0x803268b4 calls the secondary method at 0x803269a4 with Actor*. Runtime reaches 0x802cd8c0 during Rareware intro; matching ch/code_468E0.c corroborates these distinct primary/secondary callbacks and ABI.",
       "origin": "checked-root",
       "section": ".core2",

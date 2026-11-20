@@ -17,6 +17,61 @@ from emit import FunctionRegistry, analyze, cname, decode_function, direct_call_
 from native_hooks import resolve_native_hooks
 
 
+def checked_word_results(rom, profile, functions, decoded, sections, replaced):
+    """Bind a signed word result to a callback at a reviewed arithmetic instruction."""
+    result = {}
+    for group in profile.get('word_result_hooks', []):
+        owners = [f for f in functions if f['vram'] == group['vram'] and sections[f['section']] == group['section']]
+        if len(owners) != 1:
+            raise RecompError('word result hook owner missing or ambiguous')
+        f = owners[0]
+        key = (f['section'], f['vram'])
+        raw = rom[f['rom_offset']:f['rom_offset'] + f['size']]
+        if (key in replaced or f['size'] != group['size'] or hashlib.sha256(raw).hexdigest() != group['sha256']
+                or not group['sites'] or not re.fullmatch(r'[A-Za-z_]\w*', group['handler'])):
+            raise RecompError(f"invalid word result hook for {f['name']}")
+        instructions = {i.pc: i for i in decoded[key]}
+        delay_slots = {i.pc + 4 for i in decoded[key] if i.delay}
+        sites = result.setdefault(key, {})
+        for site in group['sites']:
+            pc = site['pc']
+            i = instructions.get(pc)
+            if (not i or pc in sites or pc in delay_slots or pc in f.get('relocation_pcs', [])
+                    or i.opcode not in ('addu', 'subu', 'sll', 'sra', 'srl')
+                    or not i.rd or i.rd != site['register'] or i.word != site['expected_word']):
+                raise RecompError(f'invalid word result hook at {pc:#010x}')
+            sites[pc] = group['handler']
+    return result
+
+
+def transfer_sites(function, instructions, registry):
+    transfers = {t['pc']: t for t in function.get('indirect_transfers', [])}
+    relocated = set(function.get('relocation_pcs', ()))
+    for i in instructions:
+        if i.opcode not in ('jr', 'jalr') and not (i.opcode == 'jal' and i.pc in relocated):
+            continue
+        transfer = transfers.get(i.pc, {})
+        kind = transfer.get('kind')
+        if kind is None:
+            kind = ('return' if i.opcode == 'jr' and i.rs == 31 else 'jump' if i.opcode == 'jr'
+                    else 'relocated-call' if i.opcode == 'jal' else 'call')
+        targets = []
+        for pc in sorted(set(transfer.get('targets', ())) | set(transfer.get('known_targets', ()))):
+            callee = resolve_function(registry, function['section'], pc)
+            section = function['section'] if kind == 'jump' else callee['section'] if callee else None
+            targets.append(dict(section=section, pc=pc))
+        if kind == 'return':
+            status = 'return'
+        elif transfer.get('origin') == 'bounded-switch':
+            status = 'bounded'
+        elif transfer.get('targets') and not transfer.get('registered_targets'):
+            status = 'checked'
+        else:
+            status = 'partial' if targets else 'unknown'
+        yield dict(section=function['section'], function=function['vram'], pc=i.pc, kind=kind,
+                   status=status, targets=targets)
+
+
 def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
               names: list[str] | None = None, report_only: bool = False,
               live_mode: bool = False) -> dict:
@@ -146,6 +201,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
                              f['name'], f['section'], error['pc'], error['reason'], error.get('assembly', ''))
         if index % 100 == 0 or index == len(functions):
             log_emission('Analyzed %d/%d functions; %d instructions', index, len(functions), sum(counts.values()))
+    word_results = checked_word_results(rom, profile, functions, decoded, section_names, hooks.keys() | boundaries.keys())
     yield_sites = {}
     checkpoints = profile.get('checkpoints', [])
     for site in checkpoints:
@@ -170,7 +226,18 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
               'metadata_issues': metadata.get('issues', []), 'functions': results,
               'code_inventory':metadata.get('code_inventory'),
               'checkpoints': checkpoints, 'generated': False}
+    # Unlike the analysis image hash, the cartridge hash also identifies a run
+    # of a game with decompressed overlays. Bind section IDs to their mappings.
+    layout = [(s['id'], s['vram'], s['size'], s['sha256']) for s in metadata['sections']]
+    layout_hash = hashlib.sha256(json.dumps(layout, separators=(',', ':')).encode()).hexdigest()
+    report['cartridge_sha1'] = metadata.get('cartridge_sha1', metadata['rom_sha1'])
+    report['section_layout_sha256'] = layout_hash
+    native = hooks.keys() | boundaries.keys()
+    report['transfer_sites'] = [site for f in functions if (f['section'], f['vram']) not in native
+                                for site in transfer_sites(f, decoded[f['section'], f['vram']], registry)]
     report['function_wrappers'] = profile.get('function_wrappers', [])
+    if word_results:
+        report['word_result_hooks'] = profile['word_result_hooks']
     report['registered_direct_calls'] = [dict(section=f['section'], **site)
                                         for f in functions for site in f.get('registered_direct_calls', [])]
     write_json(output / 'coverage.json', report)
@@ -189,6 +256,8 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
                  'OS/HW services use the verified native hooks.')
     bindings = {**hooks, **{key: f'recomp_wrap_s{key[0]}_{key[1]:08x}' for key in wrappers}}
     direct_targets = {} if live_mode else direct_call_targets(registry, bindings, selected)
+    for handler in sorted({handler for key in selected_keys for handler in word_results.get(key, {}).values()}):
+        header.append(f'int32_t {handler}(int32_t);')
     for f in selected:
         key = (f['section'], f['vram'])
         symbol = hooks.get(key, cname(f))
@@ -204,7 +273,8 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
         elif key in hooks:
             log_emission('Bind native hook %s s%s 0x%08x -> %s', f['name'], f['section'], f['vram'], symbol)
         else:
-            source.append(emit_function(f, decoded[key], registry, yield_sites.get(key), bindings, direct_targets))
+            source.append(emit_function(f, decoded[key], registry, yield_sites.get(key), bindings, direct_targets,
+                                        word_results=word_results.get(key)))
             if key in wrappers:
                 thunk = bindings[key]
                 header.extend([f'void {thunk}(Runtime *, MipsContext *);',
@@ -219,6 +289,10 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
     source.extend(['};', 'const size_t recomp_function_count = sizeof(recomp_functions) / sizeof(recomp_functions[0]);',
                    'const bool recomp_boot_sections[] = {' + ', '.join('true' if s['loaded_at_boot'] else 'false' for s in metadata['sections']) + '};',
                    'const size_t recomp_section_count = sizeof(recomp_boot_sections) / sizeof(recomp_boot_sections[0]);'])
+    source.extend(['#ifdef RECOMP_DEBUG', f'const char recomp_trace_layout[] = "{layout_hash}";', 'const RecompTraceSection recomp_trace_sections[] = {',
+                   *(f'    {{UINT32_C(0x{s["vram"]:08x}), UINT32_C(0x{s["size"]:x})}},' for s in metadata['sections']),
+                   '};', '#endif'])
+    header.extend(['#ifdef RECOMP_DEBUG', 'extern const char recomp_trace_layout[];', 'extern const RecompTraceSection recomp_trace_sections[];', '#endif'])
     header.extend(['extern const RecompFunctionEntry recomp_functions[];', 'extern const size_t recomp_function_count;',
                    'extern const bool recomp_boot_sections[];', 'extern const size_t recomp_section_count;', '#endif'])
     for filename,value in (('generated.h','\n'.join(header)+'\n'),('functions.c','\n\n'.join(source)+'\n')):

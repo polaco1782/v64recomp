@@ -83,7 +83,7 @@ def main() -> int:
         reason = str(error)
         report = patch_dir / f'review-{args.address:08x}.json'
         report.write_text(json.dumps({'game': args.game, 'address': f'0x{args.address:08x}',
-                                      'site': f'0x{args.site:08x}', 'kind': args.kind,
+                                      'site': f'0x{args.site:08x}', 'section': args.section, 'kind': args.kind,
                                       'reason': reason, 'build_log': str(log_path)}, indent=2) + '\n')
         print(f'live repair: automatic build stopped: {reason}; review {report}', file=sys.stderr)
         if args.ai or os.environ.get('RECOMP_LIVE_AI') == '1':

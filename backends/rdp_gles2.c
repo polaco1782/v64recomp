@@ -1562,6 +1562,8 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
                 m->actions |= RECOMP_MOUSE_DEFEND;
             if (key[SDL_SCANCODE_F])
                 m->actions |= RECOMP_MOUSE_STATUS;
+            if (s->input_config.separate_mouse_actions)
+                pad->buttons &= 0x1000;
         }
         recomp_input_poll(s->input, pad, s->input_config.gamepad_camera ? &s->camera_stick : NULL);
         return true;
@@ -1574,6 +1576,12 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
                {SDL_SCANCODE_V, 0x10},   {SDL_SCANCODE_I, 8},           {SDL_SCANCODE_K, 4},
                {SDL_SCANCODE_J, 2},      {SDL_SCANCODE_L, 1},           {SDL_SCANCODE_T, 0x800},
                {SDL_SCANCODE_G, 0x400},  {SDL_SCANCODE_F, 0x200},       {SDL_SCANCODE_H, 0x100}};
+    if (s->input_config.separate_mouse_actions) {
+        if (key[SDL_SCANCODE_TAB])
+            pad->buttons |= 0x1000;
+        if (key[SDL_SCANCODE_E])
+            pad->buttons |= 0x4000;
+    }
     for (unsigned i = 0; i < sizeof(map) / sizeof(*map); i++)
         if (key[map[i].key])
             pad->buttons |= map[i].button;

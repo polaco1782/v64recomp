@@ -27,13 +27,7 @@
     <None Include="$(RecompRoot)games\turok2-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\turok2-us\audio.h" />
     <None Include="$(RecompRoot)games\turok2-us\generate.py" />
-    <ClCompile Include="$(RecompRoot)games\turok2-us\graphics.c" />
-    <ClInclude Include="$(RecompRoot)games\turok2-us\graphics.h" />
-    <ClCompile Include="$(RecompRoot)games\turok2-us\lighting.c" />
-    <ClInclude Include="$(RecompRoot)games\turok2-us\lighting.h" />
     <ClCompile Include="$(RecompRoot)games\turok2-us\main.c" />
-    <ClCompile Include="$(RecompRoot)games\turok2-us\pager.c" />
-    <ClInclude Include="$(RecompRoot)games\turok2-us\pager.h" />
     <None Include="$(RecompRoot)games\turok2-us\profile.toml" />
     <None Include="$(RecompRoot)games\turok2-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\turok2-us\cpu-*.c" />

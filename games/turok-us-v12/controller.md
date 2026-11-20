@@ -1,6 +1,9 @@
 # Turok US v1.2 keyboard, mouse and FOV
 
-The desktop adapter is enabled by default in Debug and Release.
+The desktop adapter is enabled by default in Debug and Release. At startup,
+press Enter or Tab (controller A, B or Start) to skip the opening sequence
+and reach the main menu. Holding Start while powering on opens the Controller
+Pak menu.
 
 | Control | Action |
 | --- | --- |
@@ -59,6 +62,11 @@ supplied semantic hypotheses from `control.c`, `tcontrol.c`, `tmove.c`,
 `camera.c` and `tengine.c`. Retail addresses, fields and function bodies were
 checked independently; this reference is not a build dependency.
 
+- The retail legal-screen update at `0x80009b24` gates Start on the legal
+  bypass flag. The camera transition at `0x80039d88` checks the first-run flag
+  at `0x800bab54` before taking the direct route to the title. The controller hook
+  enables that route for a fresh button press during the legal screen or opening
+  logo warps 32000–32003. Later story cinematics use different warp IDs.
 - `CEngineApp__UpdateGAME` at `0x8000a044` scopes one game update. Its call to
   `ProcessPlayerController` at `0x8000aa54` latches one mouse/keyboard command.
   SDL polling runs on the owner thread through `recomp_on_host`, before the

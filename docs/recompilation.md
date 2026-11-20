@@ -52,6 +52,15 @@ their targets, and explores both possible branch paths unless the instruction
 itself proves one impossible. N64 branch delay slots are included in that
 analysis. This stage does not need gameplay or a recorded execution trace.
 
+For partial inventories with registered indirect calls, the scanner also follows
+a masked selector through a shift, table address, word load and `jalr`. It uses
+the mask to bound the rows, checks the ROM mapping and instruction ownership,
+and follows newly discovered entries through the same discovery queue. Because
+guest code can replace a pointer in RAM, these tables add known destinations
+while keeping dynamic dispatch active. A bounded local `jr` switch contributes
+case labels to the owning function. Debug can record the targets seen in play.
+[Comparing transfer coverage](debugging.md#finding-missing-indirect-targets-across-games)
+
 For partial inventories, discovery recognizes a local switch when an unsigned
 `sltiu` bound feeds a `beq` to the default case, the guarded path scales the
 same index by four in or immediately after the delay slot, and `lui/addu/lw` loads the destination for `jr`. Discovery
@@ -93,11 +102,22 @@ Computed local jumps can select a target from a switch table. Profiles can suppl
 checked targets and jump tables, and registered indirect calls can resolve
 against the compiled function registry at runtime.
 
+Discovery recognizes a counted MIPS record search when the loop initializes a
+ROM table pointer and counter, compares each record's ID, advances by a fixed
+stride, and calls a fixed field only on a match. Look for `counted-record-call`
+in a function's `entry_sources` to see the call site and hashed table span.
+For a missing target at an ordinary generated indirect call, the live-repair
+request records the caller's guest PC and section in both build configurations.
+
 For a function table stored as records, set `count` to the number of records,
 `stride` to their size in bytes, and `field_offset` to the callback's byte
 offset within each record. The SHA-256 covers all records, including their
 non-pointer fields. Optional `indices` select record numbers. Set
 `nullable = true` when the consumer checks for a null method before calling it.
+When several arrays or runtime-installed callbacks feed one call, `partial = true`
+registers the reviewed rows of each array. This requires registered indirect
+calls, a checked entry inventory, and a matching JALR instruction. The call can
+still reach other entries registered for the game.
 A contiguous pointer table uses the defaults of four-byte stride and offset zero.
 
 Callback discovery follows a literal function pointer through a straight-line

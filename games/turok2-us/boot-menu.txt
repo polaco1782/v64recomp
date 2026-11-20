@@ -1,5 +1,5 @@
-# Shared Debug replay: allow startup, then advance the legal/logo screens.
-# Frame, N64 buttons, analog X, analog Y; presentation frames at 60 Hz.
+# Advance through the title and menus. Skip the two prologue scenes with one Start press.
+# Presentation frame, N64 buttons, stick X, stick Y.
 0 0 0 0
 420 4096 0 0
 438 0 0 0
@@ -13,3 +13,17 @@
 1278 0 0 0
 1500 32768 0 0
 1518 0 0 0
+1860 4096 0 0
+1870 0 0 0
+1980 4096 0 0
+1990 0 0 0
+2100 4096 0 0
+2110 0 0 0
+2220 4096 0 0
+2230 0 0 0
+2340 4096 0 0
+2350 0 0 0
+2640 4096 0 0
+2652 0 0 0
+2940 8 0 0
+3000 0 0 0
