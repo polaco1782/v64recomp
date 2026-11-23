@@ -688,7 +688,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                         f'{indent}    recomp_call_generated(runtime, ctx, &recomp_functions[{direct.registry_index}]);',
                         f'{indent}}}']
         else:
-            call = [f"{indent}recomp_lookup(runtime, UINT32_C(0x{address:08x}))(runtime, ctx);"]
+            call = [f"{indent}recomp_call_at(runtime, ctx, UINT32_C(0x{address:08x}), UINT32_C(0x{i.pc:08x}), {function['section']});"]
         return around(call, indent, resume)
 
     def transfer(address: int, indent: str = '        ') -> list[str]:
@@ -866,8 +866,8 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
                 if i.opcode == 'jalr' or relocated_jal:
                     log_emission('Indirect call %s s%s 0x%08x: %s -> recomp_lookup(runtime, destination)',
                                  function['name'], function['section'], i.pc, i.assembly, verbose=True)
-                    call = around([f'        recomp_lookup_at(runtime, destination, UINT32_C(0x{i.pc:08x}), '
-                                   f'{function["section"]})(runtime, ctx);'], '        ')
+                    call = around([f'        recomp_call_at(runtime, ctx, destination, UINT32_C(0x{i.pc:08x}), '
+                                   f'{function["section"]});'], '        ')
                 else:
                     log_call(target(i), 'Direct call')
                     call = emit_call(target(i))

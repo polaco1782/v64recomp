@@ -5,7 +5,7 @@ game=$1
 jobs=$2
 renderer=${3:-rt64}
 build=/src/build/steamdeck/$game
-if [[ $renderer == gles2 ]]; then build+=-gles2; fi
+if [[ $renderer != rt64 ]]; then build+=-"$renderer"; fi
 mkdir -p "$build"
 # A private venv avoids the host .venv (which can require a newer glibc).
 if [[ ! -x /src/build/steamdeck/python/bin/python ]]; then

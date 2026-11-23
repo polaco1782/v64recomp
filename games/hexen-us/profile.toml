@@ -226,3 +226,29 @@ bindings = [
   {name = "screen_center_bits", value = 0x47200000, kind = "upper_bits", pcs = [0x803bbb94], words = [0x3c014720]},
   {name = "screen_max_bits", value = 0x47a00080, kind = "data_word", pcs = [0x803d1a50], words = [0x47a00080]},
 ]
+
+[graphics]
+# Stock VI mode at ROM 0x1e5e0 is loaded at 0x800689e0; VI width is
+# 0x140 and both fields use origin 0x280. Native RGBA16 buffers are
+# 0x25800 bytes apart (320 * 240 * 2); VI active scan lines are separate.
+framebuffers = [{width = 320, height = 240}]
+
+[[graphics.microcodes]]
+name = "F3DEX 1.21"
+code = {rom_offset = 0x1ac60, size = 0x1000, sha256 = "f6d276d18a4fa73887438825ac1eab22ea07e73bfbf0bad46e44243f894eb432"}
+data = {rom_offset = 0x1fd30, size = 0x800, sha256 = "2eabbaafd46e17f1d81509f3dcbe76b65f937e8353c9c489016ac4ba4870a6d6"}
+
+[[graphics.microcodes]]
+name = "L3DEX 1.21"
+code = {rom_offset = 0x1c090, size = 0x1000, sha256 = "b9cb7c92ed3f1ead3f6351aee0ec6f2b3f9efd19b401f394a6e6a978387d42c4"}
+data = {rom_offset = 0x20530, size = 0x800, sha256 = "d8663347a3633b01d4f2ffc147a557f7f8ec5f1b40fb1113d01f9953ef3c15cc"}
+
+[graphics.rsp]
+# Task data begins with the primary IMEM load and relative overlays.
+# F3DEX's last overlay is 0x70 bytes at 0x13c0; L3DEX's only
+# overlay is 0x70 bytes at 0xf80.
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x1ab90, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX 1.21 with overlays", rom_offset = 0x1ac60, size = 0x1430, sha256 = "03f8b29315156a07641248e19f20f2e1e51e85a0e60c487e4e7dc733a68fcf00"},
+  {name = "L3DEX 1.21 with overlay", rom_offset = 0x1c090, size = 0xff0, sha256 = "efdd2a5522c78f077abbde5b18986309c50abd64ac67b68a6aea196887ec236d"},
+]

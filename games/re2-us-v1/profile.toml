@@ -606,3 +606,27 @@ vram = 0x80135cb0
 kind = "replace_function"
 handler = "recomp_re2_cache_allocate"
 expected_words = [0x00041025, 0x24420010, 0x0045082b, 0x1420fffd, 0xbc4dfff0, 0x03e00008, 0]
+
+# Opening graphics tasks captured from this revision and matched to the
+# decoded .main image. Their fixed-size task identities are separate from the
+# longer instruction spans that include RSP overlays.
+[graphics]
+# The first S2DEX task selects the 512x327 depth surface. The guest's VI
+# mode and restored scissor use the 436x383 extent at this boot milestone.
+framebuffers = [{width = 320, height = 240}, {width = 436, height = 383}, {width = 512, height = 327}]
+[[graphics.microcodes]]
+name = "F3DEX.Rej fifo 2.06"
+code = {image = ".main", offset = 0x6d40, size = 0x1000, sha256 = "f98f57261d8e6d9a03c7a5a8e669b375edce80c6e5188a17c2b17471002e1cc3"}
+data = {image = ".main", offset = 0xa3bb0, size = 0x800, sha256 = "c6ce15d390642a5dcc1977e6a24898e602e7c393c3f3a70926990681e2e16bc8"}
+
+[[graphics.microcodes]]
+name = "S2DEX fifo 2.06"
+code = {image = ".main", offset = 0x2cc0, size = 0x1000, sha256 = "113170608dd15590fbb67f456797cc2724c381ccb9eca8caab989fe381205b21"}
+data = {image = ".main", offset = 0xa2c00, size = 0x800, sha256 = "f527162af1ff474c756e56ec0dcd12030297590aca8dcb0d5d0cd440df85f895"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", image = ".main", offset = 0x0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX.Rej fifo 2.06 with overlays", image = ".main", offset = 0x6d40, size = 0x1190, sha256 = "3041162c55128109feb8415a935662a756a3d84eaeab52fc84496535ac25a4b6"},
+  {name = "S2DEX fifo 2.06 with overlays", image = ".main", offset = 0x2cc0, size = 0x18c0, sha256 = "b6daf6d558a303726b556731122df6c7db127ca7b4a658d95c84059a8fdb8753"},
+]

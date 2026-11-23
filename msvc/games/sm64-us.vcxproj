@@ -27,6 +27,8 @@
     <None Include="$(RecompRoot)games\sm64-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\sm64-us\audio.h" />
     <None Include="$(RecompRoot)games\sm64-us\code-inventory.json" />
+    <ClCompile Include="$(RecompRoot)games\sm64-us\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\sm64-us\controls.h" />
     <None Include="$(RecompRoot)games\sm64-us\game_config.py" />
     <None Include="$(RecompRoot)games\sm64-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\sm64-us\main.c" />

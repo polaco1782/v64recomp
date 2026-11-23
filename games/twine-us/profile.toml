@@ -260,3 +260,17 @@ final_rom = 0x80112f8c
 "0x80000308" = 0
 "0x8000030c" = 0
 "0x80000318" = 0x800000
+
+[graphics]
+# The resident OSTask initializer at 0x80006eb8..0x80006ee0 binds the
+# bootstrap, F3DEX text, and initialized data in the pinned cartridge.
+[[graphics.microcodes]]
+name = "F3DEX fifo 2.08"
+code = {rom_offset = 0xacde0, size = 0x1000, sha256 = "cbcd59365486a01bc688ab296f72987583717f6e010b2c563e07d8180d2824be"}
+data = {rom_offset = 0xd2310, size = 0x800, sha256 = "bc01f678d2edc81fdf89b0b8379720980e648566ba95889f03c9ea2afdc34dbe"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xacd10, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX fifo 2.08 with overlays", rom_offset = 0xacde0, size = 0x1390, sha256 = "f220ae92941dfe08f2e2eaa1a45b4291314787bb4e1179e370293f603fc66c68"},
+]

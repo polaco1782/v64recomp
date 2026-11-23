@@ -5,5 +5,6 @@
 void nightmare_input_init(void);
 bool nightmare_input_enabled(void);
 bool nightmare_input_playable(Runtime *rt);
+bool nightmare_world_playable(Runtime *rt);
 void nightmare_input_submit(RecompMouseFrame frame, RecompPad *pad);
 #endif

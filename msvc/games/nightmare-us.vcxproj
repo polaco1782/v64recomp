@@ -26,6 +26,8 @@
   <ItemGroup>
     <None Include="$(RecompRoot)games\nightmare-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\nightmare-us\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\nightmare-us\fov.c" />
+    <ClInclude Include="$(RecompRoot)games\nightmare-us\fov.h" />
     <None Include="$(RecompRoot)games\nightmare-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\nightmare-us\input.c" />
     <ClCompile Include="$(RecompRoot)games\nightmare-us\main.c" />

@@ -1,4 +1,13 @@
 # Banjo-Kazooie US revision 0. All offsets below are original cartridge offsets.
+function_wrappers = [
+  {section = ".core2", vram = 0x802c0394, size = 0x28, sha256 = "ba3545110597d895e5af6e3a1baaa8cd40a3d9ac6fecd5df791aa8effeb3fdd8", handler = "banjo_camera_goal"},
+  {section = ".core2", vram = 0x802be190, size = 0xa0, sha256 = "7d755f77f24d61904fd819e75dfce4b318b0a291f010d39a76861551b18e6105", handler = "banjo_camera_goal"},
+  {section = ".core2", vram = 0x80334540, size = 0x370, sha256 = "c0c344b059a4844712f9ba0d4aafb56d292222a7997090996a90953010c1c00f", handler = "banjo_world_fov"},
+  {section = ".core2", vram = 0x803163a8, size = 0x108, sha256 = "bc9ac4d8c91a04a4d62129a5fef450b4146c5117f2ab855f345af0bebdfe4fad", handler = "banjo_zoombox_backdrop"},
+  {section = ".core1", vram = 0x8024c904, size = 0x60, sha256 = "43250d05aeda68940604ad06b384346464088c36fd77b4420484cd7bc1c75519", handler = "banjo_world_projection"},
+  {section = ".core1", vram = 0x8024cfd4, size = 0x218, sha256 = "3ba9b0b3a305edca5c9105337351f3ffd1a42423d9a5cd44c944da0f86496c99", handler = "banjo_view_planes"},
+]
+
 hooks = [
   # Handwritten bkGetSR: used by the VI worker to test the pre-NMI mask.
   {symbol = "bkGetSR", vram = 0x8025afe0, kind = "replace_function", handler = "recomp_banjo_get_sr", expected_words = [0x40026000, 0x03e00008, 0x00000000]},
@@ -24,6 +33,10 @@ entry_inventory = "startup-entries.json"
 allow_registered_indirect_calls = true
 regions = [{name = ".boot", vram = 0x80000400, rom_offset = 0x1000, size = 0x4e70}]
 roots = [
+  # Direct JAL at 0x802b0504 passes selector 1 in its delay slot.
+  {name = "live_802b01f8", vram = 0x802b01f8, section = ".core2"},
+  # Both 0x803118ac and 0x803119bc install this callback. Its guarded 12-way switch dispatches at 0x80312a10.
+  {name = "core2_callback_803129dc", vram = 0x803129dc, section = ".core2"},
   {name = "core1_main", vram = 0x8023da20},
   # ROM-verified function roots.
   # The callback at 0x802c8aa8 calls this entry directly at 0x802c8ae0.
@@ -33,6 +46,11 @@ roots = [
   # Overlay ID 2 init slot 0x8036e2fc feeds jalr 0x80322f44; both JALs match checked .CC entries.
   {name = "overlay_cc_init", vram = 0x80322a28, section = ".core2"},
   {name = "live_8032b5c0", vram = 0x8032b5c0, section = ".core2"},
+  # ROM-verified function roots.
+  {name = "live_80388080", vram = 0x80388080, section = ".SM"},
+  {name = "live_803899b0", vram = 0x803899b0, section = ".SM"},
+  # ROM-verified function roots.
+  {name = "live_8038bcf0", vram = 0x8038bcf0, section = ".lair"},
 ]
 # ROM-verified callback arguments and a representative indirect consumer.
 callback_parameters = [
@@ -108,6 +126,8 @@ function_tables = [
 # IDO sltiu bounds, beqz default, sll index,2, lui/addu/lw/jr.
 # Complete table bytes and every local destination checked against decoded images.
 jump_tables = [
+  # 0x802b0208 tests unsigned (a0 - 1) < 9. All nine cases share the return at 0x802b045c.
+  {section = ".core2", pc = 0x802b0228, expected_word = 0x01c00008, table_vram = 0x803758e0, count = 9, sha256 = "e546f49e54a0c94d7b2b1e4c0f95074e7478d788678573fe77f7f3acba3292fa"},
   # 0x802c8720 bounds the selector at 0x8037dd94 to unsigned <6 before lookup.
   {section = ".core2", pc = 0x802c8738, expected_word = 0x03000008, table_vram = 0x803763ec, count = 6, sha256 = "bca5308f089cad3313fa1ab572b13927d1c8bdf58cead0d1fe11cdf8361cb599"},
   # Jiggy-shine sprite selector minus 0x3bb: computed in the range-test
@@ -311,3 +331,4809 @@ images = [
   {name = "RSP bootstrap", rom_offset = 0xb70, size = 0x100, sha256 = "41a5f4f68d34a88f8f849be2ccc0cb7ea616ced19de16c2c1460b66995d99e0f"},
   {name = "F3DEX 1.21 with overlays", image = ".core1", offset = 0x357d0, size = 0x1430, sha256 = "7d7b4767f80ded79bada554c591d2f793572607bf8c74986bf85855cc9332410"},
 ]
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80316eb0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c44d0
+size = 0x1c
+sha256 = "c51768faa47c80fd1b385869e096b55a878bec0823e5f8e2485284158ccdcb85"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80316eb0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x8030f754
+size = 0x23c
+sha256 = "6e2c473d900862d1a377048adc45ea7871a2b75f32d2512294a29bf864d18610"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8031c820
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031c640
+size = 0x48
+sha256 = "7e326ee073e6e83338d42765dc0e0b30fcff428e78c277d842d0997fe080d55d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032559c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c71f0
+size = 0x128
+sha256 = "9f9c7fb7cae960ae32de2c9ca528b64f07482c2e89e4764a4e97a6e51613abb9"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x8038a3b0
+size = 0xa8
+sha256 = "3d3150cfe53b4d3332c8b25e6d04b515f85d1a542f56660cae161f0a82a11747"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80361f5c
+expected_word = 0x60f809
+kind = "call"
+target_section = ".SM"
+target = 0x80386420
+size = 0xb4
+sha256 = "1f4d7895dccf86edaeb274ce7f74dab0702bc460c8c145e75def6307c20c2e5b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8031c65c
+expected_word = 0xc0cf47b
+kind = "call"
+target_section = ".core2"
+target = 0x8033d1ec
+size = 0x50
+sha256 = "6902ac1af17dac5203d153d938878884c1d20e0ea227c12cde437ab0692545f5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae3f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aede8
+size = 0x60
+sha256 = "016bb38c67bb75d19e3fc16de14350635afa5d29d05a06f4cea1af1ecf8d3fdb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae438
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aee48
+size = 0x54
+sha256 = "d90f695188486337b17d1484127f0647c3110a552fafcc3814a3772a69596a64"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae478
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aee9c
+size = 0x28
+sha256 = "413b2d5c122ea66d60eb4328dfb1f1d05023ab3db1b0cd43e66069b00312a3e0"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aedf8
+expected_word = 0xc0c7e7d
+kind = "call"
+target_section = ".core2"
+target = 0x8031f9f4
+size = 0xc
+sha256 = "6143c3e61587e828fbc6e8ecfd3682475aa0668f76c26a002ddd0ad3a8dc25d3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aee10
+expected_word = 0xc0a6f7a
+kind = "call"
+target_section = ".core2"
+target = 0x8029bde8
+size = 0x28
+sha256 = "b0a75418dd68fc5882a3493b7e76ecb34ce864fd0d03d0519fc669b5ec24f03c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aee20
+expected_word = 0xc0abad8
+kind = "call"
+target_section = ".core2"
+target = 0x802aeb60
+size = 0xa8
+sha256 = "abdbe61b36ffaf6b518d6b8d72458070fa6b835737b447c9ea2c54abfb26f389"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aee74
+expected_word = 0xc0abb0a
+kind = "call"
+target_section = ".core2"
+target = 0x802aec28
+size = 0x48
+sha256 = "f474a49fe9bdb899d8db38ea43d80dacdeb22cc8d5f4a3784c3e892742e27c13"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aee84
+expected_word = 0xc0abb39
+kind = "call"
+target_section = ".core2"
+target = 0x802aece4
+size = 0xe4
+sha256 = "c83d47b1592a70c1f11a2ccf2da4bc5aeb501a01b5ba2a8bc8fcf7f561aea622"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeea4
+expected_word = 0xc0abad8
+kind = "call"
+target_section = ".core2"
+target = 0x802aeb60
+size = 0xa8
+sha256 = "abdbe61b36ffaf6b518d6b8d72458070fa6b835737b447c9ea2c54abfb26f389"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeeac
+expected_word = 0xc0c7e7d
+kind = "call"
+target_section = ".core2"
+target = 0x8031f9f4
+size = 0xc
+sha256 = "6143c3e61587e828fbc6e8ecfd3682475aa0668f76c26a002ddd0ad3a8dc25d3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3abc
+expected_word = 0x320f809
+kind = "call"
+target_section = ".SM"
+target = 0x80389948
+size = 0x3c
+sha256 = "f43fd725e49ee69d9a3d6922ea7b52f74c55de7009700f2b9d3b130fd1eea469"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032607c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x80389984
+size = 0x2c
+sha256 = "bf2ba13167d163fe47d40894105331f0089af1f10da8c038a3f9f9d32811d03c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032607c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d07a8
+size = 0x20
+sha256 = "a59e5ba877d5a0064c35b05ff7256649fecb09a14197e21f07174aacde93b466"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x80386a00
+size = 0x104
+sha256 = "cd009f60ab03c1b46ccf1e7ae46bdb443680b41004f1b4cde84cc6aa8d4847ae"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x80386ef4
+size = 0xe8
+sha256 = "8922b2b388cff9018072a039ed98109a9f7042cbfe584ceac1f63ef77052e71b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x80386fe0
+size = 0x108
+sha256 = "02f4bbb0e2e669ec10ccce73c55616f5fbe6cb7506cca158fd7cb73044a753eb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x80387514
+size = 0x17c
+sha256 = "326b0328b1c9a173459d51a4215f4be89752bcff379ecedf5e18eaddfeafefcc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x8038a5d8
+size = 0x2e4
+sha256 = "0d616015679f356fe8294e6e048dda9e2030db739ff223559ebfefa0eab03946"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".SM"
+target = 0x8038a8f8
+size = 0x1b8
+sha256 = "6b952d14b829925e9e33af6e4cb473945f2b5f1e9d183da1a17d16ee4f4e1988"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802ca1e0
+size = 0x138
+sha256 = "0ee99e6b6590bdf6ca685e716a6cd60e7f1f6ca7119d184826f326f625e324e6"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031f654
+size = 0x24
+sha256 = "6a2845f4c9876e5cfa38a9fd0987db81b83a04cbbfd8d8903f0fa70d6d569df2"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80361f5c
+expected_word = 0x60f809
+kind = "call"
+target_section = ".SM"
+target = 0x803863f0
+size = 0x30
+sha256 = "a53058db00833465a7d6c3fb318f1183a6bed6eb6d3dc94560c052ef8f46d835"
+
+[[discovery.observed_transfers]]
+section = ".SM"
+pc = 0x80387628
+expected_word = 0xc0e1d31
+kind = "call"
+target_section = ".SM"
+target = 0x803874c4
+size = 0x50
+sha256 = "7f9d721d6d300512fedfa6a201fce90b6d80781ba4ea6c2b4e4da1cf3b45d91c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeb94
+expected_word = 0xc0abb1c
+kind = "call"
+target_section = ".core2"
+target = 0x802aec70
+size = 0x8
+sha256 = "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeba8
+expected_word = 0xc0abb72
+kind = "call"
+target_section = ".core2"
+target = 0x802aedc8
+size = 0x20
+sha256 = "f2f92a749eb990fc92bd681f696ad8439aeb7e9e5dca9646bc580e33b951be6e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aebe0
+expected_word = 0xc0abb02
+kind = "call"
+target_section = ".core2"
+target = 0x802aec08
+size = 0x20
+sha256 = "bd16a32e5b6d6bccc5bc8eadd7a9db095bd7cd1c4a0b40f7e915aded7e7022b7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aebf0
+expected_word = 0xc0abb1e
+kind = "call"
+target_section = ".core2"
+target = 0x802aec78
+size = 0x6c
+sha256 = "2ad4764e4b55e58837ec5c94b42d73f82c9138abc599d25be23d4569cfe0b0e7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aec58
+expected_word = 0xc0abad8
+kind = "call"
+target_section = ".core2"
+target = 0x802aeb60
+size = 0xa8
+sha256 = "abdbe61b36ffaf6b518d6b8d72458070fa6b835737b447c9ea2c54abfb26f389"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aec84
+expected_word = 0xc0a6f18
+kind = "call"
+target_section = ".core2"
+target = 0x8029bc60
+size = 0x4c
+sha256 = "a06b963b78b2570238d88a9e1a8284d7c7755729b54fe1cd9f0b5ec415cf0860"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aec9c
+expected_word = 0xc0a497e
+kind = "call"
+target_section = ".core2"
+target = 0x802925f8
+size = 0x38
+sha256 = "5ecd261b4939611b3c07dd236c713bbd8e74e848d10802067043065da549cafc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeca4
+expected_word = 0xc0a5ef1
+kind = "call"
+target_section = ".core2"
+target = 0x80297bc4
+size = 0x28
+sha256 = "826a6ab67cc042f0a9acce8e10c4cbae3bf7bb03f54b1ed8e292261b3caf5386"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aecac
+expected_word = 0xc0a5eee
+kind = "call"
+target_section = ".core2"
+target = 0x80297bb8
+size = 0xc
+sha256 = "7f7db4e43375c7e589d7b42ae81c069fbaf88740d90454447a14a1fcf8dae9e5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aecc8
+expected_word = 0xc0a50db
+kind = "call"
+target_section = ".core2"
+target = 0x8029436c
+size = 0xc
+sha256 = "3d90564bea16b365a33f9313720cb802c8b75c83caa0318217143b4ccc8fc7ca"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aed90
+expected_word = 0xc0a5f12
+kind = "call"
+target_section = ".core2"
+target = 0x80297c48
+size = 0x14
+sha256 = "3e95e483228449226533cbb582872dca46b1aa21d00957eea621e9d1de02e77a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aedb0
+expected_word = 0xc0a49da
+kind = "call"
+target_section = ".core2"
+target = 0x80292768
+size = 0x34
+sha256 = "bd4a772483196dc49ae1a77a3b2285a0d387941f00a602dec3eec4144c06c77d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aedd0
+expected_word = 0xc0a50db
+kind = "call"
+target_section = ".core2"
+target = 0x8029436c
+size = 0xc
+sha256 = "3d90564bea16b365a33f9313720cb802c8b75c83caa0318217143b4ccc8fc7ca"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ca23c
+expected_word = 0xc096bbb
+kind = "call"
+target_section = ".core1"
+target = 0x8025aeec
+size = 0x4c
+sha256 = "f77636eb9ebecaa2b67c4a7860cb6c93f2366c6154a0739b0953c2705ea0f84f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80292784
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x8028e0b0
+size = 0x40
+sha256 = "4f93b6a34733a7d211eb5eb1717c5f440a0bf88122c936c167ec561fc67e5cac"
+
+[controls]
+# US getters at 802e49fc (mode), 803348c0 (map), 803114b0 (dialog),
+# 80321900 (level), 8030bdac (transition) and 802bc248 (camera type).
+game_mode = 0x8037e8e4
+map = 0x803835d4
+level = 0x80383301
+dialog_text = 0x80382f50
+transition = 0x80382438
+camera_type = 0x8037d8c0
+camera_state = 0x8037d9f4
+# ncba1p_getState (802c2b00): entering, idle, exiting, done.
+first_person_state = 0x8037dcac
+# The two follow cameras both build the focus vector immediately after the eye goal.
+follow_goal_return = 0x802c05c0
+climb_goal_return = 0x802bf230
+# Spiral Mountain camera node uses sp+0x24 for the eye and sp+0x64 for the focus.
+node_goal_return = 0x802bf718
+follow_yaw = 0x8037db70
+climb_yaw = 0x8037daa0
+# ncba1p_getZoomedInRotation (802c2adc) reads the three Euler angles here.
+look_rotation = 0x8037dc84
+viewport_fovy = 0x80275d20
+viewport_aspect = 0x80275d24
+world_viewport_first_return = 0x803345bc
+world_viewport_second_return = 0x80334624
+viewport_aspect_load = 0x8024ca04
+frustum_planes = 0x80280ed0
+zoombox_backdrop_return = 0x80316c08
+load_viewport_perspective = 0x8024c904
+
+[controls_evidence]
+zoombox_backdrop_call = "0c0c58ea8fa60038"
+world_viewport_call = "0c09324102202825"
+viewport_perspective_arguments = "e7ac00108cc65d208ce75d240c0918b5e7a40018"
+load_viewport_perspective_sha256 = "43250d05aeda68940604ad06b384346464088c36fd77b4420484cd7bc1c75519"
+
+[[discovery.observed_transfers]]
+section = ".core1"
+pc = 0x80257c8c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core1"
+target = 0x80257658
+size = 0x28
+sha256 = "3e002744f393a968b227cab233c981af7f9a5550c17cf3e4dc535f898ad52eb3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae3f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aeef4
+size = 0xbc
+sha256 = "9210ac02a45ae271164db0fa078f6060b5388bc8322fdcf2caf9fff4e2e018d4"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae438
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aefb0
+size = 0x1b4
+sha256 = "8afed3d6f7b7ec54cdf1ce09fca003d79c4021165f99337a9e031d7c931f404a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aef14
+expected_word = 0xc0a6f3e
+kind = "call"
+target_section = ".core2"
+target = 0x8029bcf8
+size = 0x4c
+sha256 = "57a473c3140e4be151d8413ce51718baef2c0644e367663ce28b977154fdf4ed"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aef58
+expected_word = 0xc0abbb4
+kind = "call"
+target_section = ".core2"
+target = 0x802aeed0
+size = 0x24
+sha256 = "fafc78792fe90328a0e50d7fafbe8da2d0d4cfdfc90da362f9aa6e95e59f8313"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af13c
+expected_word = 0xc0abbb4
+kind = "call"
+target_section = ".core2"
+target = 0x802aeed0
+size = 0x24
+sha256 = "fafc78792fe90328a0e50d7fafbe8da2d0d4cfdfc90da362f9aa6e95e59f8313"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032495c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031f678
+size = 0x24
+sha256 = "b05c74deea78d65856c60a95b64b7227b17dd8226d76d8689b994b3b4d1f3346"
+
+[[discovery.observed_transfers]]
+section = ".core1"
+pc = 0x80257660
+expected_word = 0xc095d6f
+kind = "call"
+target_section = ".core1"
+target = 0x802575bc
+size = 0x5c
+sha256 = "c94d56094bd3b73b80aa93e38fcb33d9d897dc9e7319b1f51d3671b937bead5c"
+
+[[discovery.observed_transfers]]
+section = ".core1"
+pc = 0x80257668
+expected_word = 0xc095d6f
+kind = "call"
+target_section = ".core1"
+target = 0x802575bc
+size = 0x5c
+sha256 = "c94d56094bd3b73b80aa93e38fcb33d9d897dc9e7319b1f51d3671b937bead5c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80292784
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038ef58
+size = 0x80
+sha256 = "4f4b7f3e631ec19855186ba1ed0aaacbddaa8f05ea298cdbbca2081f2f1f6e1b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80295d44
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802b0ba8
+size = 0x3c
+sha256 = "7f8461b29f48a9339436c88dbf165e8492a4c05d15aa265c7b42e50466b768fc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae3f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802ae9c8
+size = 0x64
+sha256 = "52fe1de5d48bf805eb8195fdecb901c8ec0d9c3d2a13a0a886c36d8d42eddcf4"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae438
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aea2c
+size = 0xf8
+sha256 = "7175bad04dfe3d09b971671de0bae35e86a54a83f58acc758e65b7e76dfb935b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae478
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802aeb24
+size = 0x30
+sha256 = "24972b77cb9e9839af3a89595cebf81abbc37637b78d7f2ee409c981e0eace5b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aea04
+expected_word = 0xc0aba29
+kind = "call"
+target_section = ".core2"
+target = 0x802ae8a4
+size = 0x70
+sha256 = "0b009797c192c16bc6ffad2b4c813d8d0e22fd57d71e469ffe9aa74dc31deceb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aea14
+expected_word = 0xc0ab938
+kind = "call"
+target_section = ".core2"
+target = 0x802ae4e0
+size = 0xb8
+sha256 = "08d1aca38a7d0fe78b392b83a032514832a38673bc20c5a3cc25451c9128b3ef"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aea64
+expected_word = 0xc0aba45
+kind = "call"
+target_section = ".core2"
+target = 0x802ae914
+size = 0xb4
+sha256 = "cce9bc849c21545e482600b931311dd448612ed9463467b2c715d36646806d85"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aea7c
+expected_word = 0xc0ab938
+kind = "call"
+target_section = ".core2"
+target = 0x802ae4e0
+size = 0xb8
+sha256 = "08d1aca38a7d0fe78b392b83a032514832a38673bc20c5a3cc25451c9128b3ef"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aea8c
+expected_word = 0xc0aba45
+kind = "call"
+target_section = ".core2"
+target = 0x802ae914
+size = 0xb4
+sha256 = "cce9bc849c21545e482600b931311dd448612ed9463467b2c715d36646806d85"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeacc
+expected_word = 0xc0a47ee
+kind = "call"
+target_section = ".core2"
+target = 0x80291fb8
+size = 0xc
+sha256 = "96e1bf1fec11c67982bb82aaa42baaed2891fed7ef8d76e4f727014334e7726d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeae0
+expected_word = 0xc0ab938
+kind = "call"
+target_section = ".core2"
+target = 0x802ae4e0
+size = 0xb8
+sha256 = "08d1aca38a7d0fe78b392b83a032514832a38673bc20c5a3cc25451c9128b3ef"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802aeb2c
+expected_word = 0xc0aba1d
+kind = "call"
+target_section = ".core2"
+target = 0x802ae874
+size = 0x30
+sha256 = "fd073783e3b5dbb18e79237ba2c25f98cb081e442890cfd74292c78ad0ccf407"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802f042c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802edd68
+size = 0x24
+sha256 = "ad6410ca9232e37c9f1d7863c607eca27e49074cd9d70ef4d6d687be5500445f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802f042c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802f3fc0
+size = 0x24
+sha256 = "ad6410ca9232e37c9f1d7863c607eca27e49074cd9d70ef4d6d687be5500445f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80305760
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c8a54
+size = 0x54
+sha256 = "e7c672eb1afb05299e9c7eb8d3e3849a997292d918ed0825ff24d4412df58649"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80305760
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d7558
+size = 0x5c
+sha256 = "11a90543fadc5ac321ce30a73f12a69d7acb78afce3b785747b522e647e4a899"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".SM"
+target = 0x803892c8
+size = 0x1cc
+sha256 = "35ce76075f69f8da94447013db1c913c6d06b03d49186a0b36675e2c57d3e460"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038f078
+size = 0x48
+sha256 = "b6e9287abbf9646b4d7a9babee6cd10e32038bc349e8c06d6318c36cf10ba266"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038f0c0
+size = 0x2c
+sha256 = "f1a49b4555ee2c4aee3f3b9d4c1269d02d956a55dc06cf023cf457dd0ec52504"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802da9a0
+size = 0x74
+sha256 = "ba91b8ceeff1bcd643f2cb51e935ea252c8ba783f14dcf5c5e4643da7f95717b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030fd34
+expected_word = 0x320f809
+kind = "call"
+target_section = ".SM"
+target = 0x80389214
+size = 0xb4
+sha256 = "bcef7c0ec97deee4835b321f8ec73870cdaa4d7fcfc157b8fe15619e50c32ada"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8031c820
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031c688
+size = 0x5c
+sha256 = "2246e88c5674c6ce162756f9e22be20ceb3078aab6f52101a42a0521678dd4a5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322e7c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322bf8
+size = 0x20
+sha256 = "8e1048085f2a107f5137fcd11bc719e97905fb2c01d5cdc95fa06f2e534e709c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322f04
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322c18
+size = 0x20
+sha256 = "830739a25748d4c5ed34ac4fc2b1b484befe337344057d9de55e0e52183c7143"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322f44
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322c38
+size = 0x20
+sha256 = "b8d4baa7a1bbc6adf3b85fc812b94c507accb0a67149897cd26680a29d76fad8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230b0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322c78
+size = 0xc
+sha256 = "691e766163b1b8288cf1e76b4dc9eb7dde764cde7f749bf5aef916d919300f2b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230e0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322c58
+size = 0x20
+sha256 = "cb05e0fd4fe35ccddc96910383f0017a25b74e96d6b4b3ddf31ab78d45ceeb3e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324914
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d6494
+size = 0x2bc
+sha256 = "62bfaa83ebed7573aba9ae6dae3c4804ca5ef68bfa01d25d09bb1b14dab0b772"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324934
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038ebec
+size = 0xa8
+sha256 = "8f4bdbe9a970d91730fbcd6421e6cd2b736c3489fc95b13ae30786d9738c4e42"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324934
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80324a48
+size = 0x20
+sha256 = "7e2d92dccc01d1786a6c9084a6b6ee7de32ecb7f25e517d4a83a55727d0a9e85"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324934
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80324ba0
+size = 0x90
+sha256 = "44894f1d117272bf41845ee1b1f1ca2e8148854a87c26b37de09c01c30adb049"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324934
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x803252b0
+size = 0x20
+sha256 = "f7856d173f49d00e5c1c4ad36c9f8de58f87b40498d608339f210b05bed3595c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032495c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80324a28
+size = 0x20
+sha256 = "845b810c8938c4b7b487bde34768a78793aae99aa33b01a57de160f067f8a1c7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324984
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x803863f0
+size = 0x54
+sha256 = "b2f92cc0bdb021773247acaecb461d7f9e1d7e8570c8f07791c3059ea97cacfd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324a0c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80324aec
+size = 0xb4
+sha256 = "ed62964cba7f3b98066bc72b1ae2b6e7c232f778e3841fb9ae03882ef718c4be"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x803870dc
+size = 0x484
+sha256 = "76a9f11137cfb70fa32bd7a5b8a8cfb2fd026d98de2894014efb3287232dcd52"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80387730
+size = 0x678
+sha256 = "dd3afc0003897090669d21c4837824e3d958a086fd5af048e0c7ee8044ecfbec"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80388524
+size = 0xaa4
+sha256 = "161d1a03e44a76d6c8e93a375c77c833004d3aa9ca08bdc8fd32d9e8f7d47f82"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038f924
+size = 0x708
+sha256 = "86e6095cdcc1b8be55f1781207a14c9a5d7a262b6ccf0f279eb5ae0d3cff64cc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d1c0
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8034fcdc
+size = 0xc4
+sha256 = "a99aa7257de36bab8f9ee4db132c1ba60011446032c0fd9fec6ce82679ec0b02"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".SM"
+target = 0x80387df4
+size = 0x70
+sha256 = "89d0c98c8d1cc39830add19fd60b8d0b7baa003b850f74e36c9912df8ed85052"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x80387560
+size = 0x90
+sha256 = "c48a849d0ec7e591bb886a437fb5ead6889038ee1368bb43db76497b2054c0b5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x80387da8
+size = 0xec
+sha256 = "1e4753dd101948f0f702923d8ffb1aa093fe82309212ded7f04ec63e7acb213d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330028
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038ec94
+size = 0x14
+sha256 = "b75b95d37f543ae3294c99de6c927be6ce24635a19ccc7d6ceaf91ce5c142c2e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330028
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c60ac
+size = 0xa4
+sha256 = "9c046054da04e383addec428f1cd967660aee09c461c81a7bfca54e3d30725c9"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330028
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802cdba8
+size = 0xf4
+sha256 = "720b8a4ec057f948a486845e95424f96a3faf88e8cc43e40c91a28dc7d981ea0"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330044
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c6150
+size = 0x70
+sha256 = "bf0ed6cd36b2b81043c8bab00dfc408e7bb5f4147940fdd93ed8dae36a093b21"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330060
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c61c0
+size = 0x80
+sha256 = "480a2bc46411c14a36f3821ec696960e17b6c4d2259b34ae6bd039dfb38b53e1"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8033314c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347e34
+size = 0x2c
+sha256 = "43a67ae967c6642c809e893f75d41099624aa604dd9eb8ce4dd10cc145515880"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031de08
+size = 0x24
+sha256 = "48f1c4a94e4ef8d7ffdf9dca0fbb517beeab66db6a85c0044ccaccd24fd9d1b8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031fb14
+size = 0x58
+sha256 = "5418b3a486504bdfd28b252bb25b1c0d4b381082fb836ae90ce295af16c17f8c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x80386744
+size = 0x24
+sha256 = "73f650d41d342da117912dd17e49ee122e1e67e1359499f961adf91cd7617b07"
+
+[[discovery.observed_transfers]]
+section = ".MM"
+pc = 0x80386750
+expected_word = 0xc0e1911
+kind = "call"
+target_section = ".MM"
+target = 0x80386444
+size = 0x300
+sha256 = "c82ff2ad1cfafcf1d42860f73f9a4d324d10398e64c47bc2284beabe2696c027"
+
+[[discovery.observed_transfers]]
+section = ".SM"
+pc = 0x80387e28
+expected_word = 0xc0ce91c
+kind = "call"
+target_section = ".core2"
+target = 0x8033a470
+size = 0x18
+sha256 = "b743ebb46658dee30915e2e643825b3fe7282b874359bfffc6dd79d35f92004c"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80387258
+expected_word = 0xc0c933f
+kind = "call"
+target_section = ".core2"
+target = 0x80324cfc
+size = 0x30
+sha256 = "a68c3ef50d206a930d29da5776fe7d18221362cf9779c03cdb83f06f21360190"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80387268
+expected_word = 0xc0c934b
+kind = "call"
+target_section = ".core2"
+target = 0x80324d2c
+size = 0x28
+sha256 = "67bd72996462969bb039153801ba1ca896120cbb358cc7eae1f2eacd38985b9f"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80387758
+expected_word = 0xc0b4f5d
+kind = "call"
+target_section = ".core2"
+target = 0x802d3d74
+size = 0x30
+sha256 = "6aa514b3d2eb748d1bec6170355600475f3d0ad6a8b766dcfe0edccc3e7cf571"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80387e08
+expected_word = 0xc0d383f
+kind = "call"
+target_section = ".core2"
+target = 0x8034e0fc
+size = 0x24
+sha256 = "b79f61aeecbbef915723fdcb9d7e438920b84f1c978fed52d448716e2b1efb35"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80387e2c
+expected_word = 0xc0d383f
+kind = "call"
+target_section = ".core2"
+target = 0x8034e0fc
+size = 0x24
+sha256 = "b79f61aeecbbef915723fdcb9d7e438920b84f1c978fed52d448716e2b1efb35"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388534
+expected_word = 0xc0b59df
+kind = "call"
+target_section = ".core2"
+target = 0x802d677c
+size = 0x30
+sha256 = "9132895eeb9ea6ddbdc95f76bfc1368c37b003576612e61f9c7cd50d2378bafe"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388548
+expected_word = 0xc0b59df
+kind = "call"
+target_section = ".core2"
+target = 0x802d677c
+size = 0x30
+sha256 = "9132895eeb9ea6ddbdc95f76bfc1368c37b003576612e61f9c7cd50d2378bafe"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038856c
+expected_word = 0xc0b59eb
+kind = "call"
+target_section = ".core2"
+target = 0x802d67ac
+size = 0x30
+sha256 = "24543a2f54610d7086e3cdc72a38f5c379d097027c6491316c68f9dafd2a22af"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388584
+expected_word = 0xc0b59eb
+kind = "call"
+target_section = ".core2"
+target = 0x802d67ac
+size = 0x30
+sha256 = "24543a2f54610d7086e3cdc72a38f5c379d097027c6491316c68f9dafd2a22af"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388598
+expected_word = 0xc0b59f7
+kind = "call"
+target_section = ".core2"
+target = 0x802d67dc
+size = 0x30
+sha256 = "443469e23bffc9707afe9bd957f0d56e7a32bb87ef7d1319916d2818190ab719"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x803885bc
+expected_word = 0xc0b4f5d
+kind = "call"
+target_section = ".core2"
+target = 0x802d3d74
+size = 0x30
+sha256 = "6aa514b3d2eb748d1bec6170355600475f3d0ad6a8b766dcfe0edccc3e7cf571"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388a7c
+expected_word = 0xc0b5a03
+kind = "call"
+target_section = ".core2"
+target = 0x802d680c
+size = 0x30
+sha256 = "625f074a5db9d3eede9e2f77f908358796bb442f3ce975042fb23739d182eb49"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388a94
+expected_word = 0xc0b5a03
+kind = "call"
+target_section = ".core2"
+target = 0x802d680c
+size = 0x30
+sha256 = "625f074a5db9d3eede9e2f77f908358796bb442f3ce975042fb23739d182eb49"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388a9c
+expected_word = 0xc0b5a03
+kind = "call"
+target_section = ".core2"
+target = 0x802d680c
+size = 0x30
+sha256 = "625f074a5db9d3eede9e2f77f908358796bb442f3ce975042fb23739d182eb49"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388ccc
+expected_word = 0xc0e2101
+kind = "call"
+target_section = ".lair"
+target = 0x80388404
+size = 0x4c
+sha256 = "54b0e4967cd72eb09602ecc3d1b23f714f61c2eac44b3aa6c5c4fa67da4fca5e"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ec14
+expected_word = 0xc0e3ae1
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb84
+size = 0x10
+sha256 = "6db73b3e7594db4e34d0dcb7a79166d6a94e035a8458ab3faedc3485d4439e25"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ef74
+expected_word = 0xc0e3b62
+kind = "call"
+target_section = ".lair"
+target = 0x8038ed88
+size = 0x34
+sha256 = "2558e3ad959100b4881369d92bac94ee78e94e6849951364758a575427ae049a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ef8c
+expected_word = 0xc0a39bb
+kind = "call"
+target_section = ".core2"
+target = 0x8028e6ec
+size = 0x30
+sha256 = "4ee1a426d7b93cbcdf0e0ad9c9c80b9f0f4a5e343e2b5821b1a966d67332e39d"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038efc0
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f0a8
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f378
+expected_word = 0xc0e3b62
+kind = "call"
+target_section = ".lair"
+target = 0x8038ed88
+size = 0x34
+sha256 = "2558e3ad959100b4881369d92bac94ee78e94e6849951364758a575427ae049a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f3cc
+expected_word = 0xc0e3bf6
+kind = "call"
+target_section = ".lair"
+target = 0x8038efd8
+size = 0xa0
+sha256 = "a2befb580f1761743dc344fa280911b60f6dc13805e020432670291c259e4a8c"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f550
+expected_word = 0xc0e3ac9
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb24
+size = 0x34
+sha256 = "71b2965fa348da33495eba2c9d29c871e6e9bd93c988ea900c05f2b752629874"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f58c
+expected_word = 0xc0e3c3b
+kind = "call"
+target_section = ".lair"
+target = 0x8038f0ec
+size = 0x100
+sha256 = "f2275ebc96486ffae42f110e50a3312e031e69e27713f9e854a06f2433d3926f"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f5a0
+expected_word = 0xc0e3c7b
+kind = "call"
+target_section = ".lair"
+target = 0x8038f1ec
+size = 0x64
+sha256 = "b8d6bb23c2d7cc7651b1acaa169ded40b708a75fc88adf77e0a27b662c1dd6e3"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f5f4
+expected_word = 0xc0e3c94
+kind = "call"
+target_section = ".lair"
+target = 0x8038f250
+size = 0x100
+sha256 = "7a535377aee87b14bc0fa7d3bc30ab8cb4db05c4217d0ec19be7a72b42f37951"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f9a4
+expected_word = 0xc0e3b2a
+kind = "call"
+target_section = ".lair"
+target = 0x8038eca8
+size = 0x54
+sha256 = "f0068fdad357b430490c508936750d070a3f777fb14739f39829f7e523e80182"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fa2c
+expected_word = 0xc0e3e00
+kind = "call"
+target_section = ".lair"
+target = 0x8038f800
+size = 0x94
+sha256 = "3a7ad3f5e1d16647a9809af2c0a54eefa65b0055c0082fb6ecc0052988576043"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fc9c
+expected_word = 0xc0e3b6f
+kind = "call"
+target_section = ".lair"
+target = 0x8038edbc
+size = 0x19c
+sha256 = "b0de61ffa3498dc0643b8227c99994303d1570950e6e21fa5a0bbbfdc48cfabd"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fdc4
+expected_word = 0xc0e3b2a
+kind = "call"
+target_section = ".lair"
+target = 0x8038eca8
+size = 0x54
+sha256 = "f0068fdad357b430490c508936750d070a3f777fb14739f39829f7e523e80182"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fde4
+expected_word = 0xc0e3ad6
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb58
+size = 0x2c
+sha256 = "d9c6b3857c6bf122591fe3399d18f28a7e73320efd16f491c57ef8250003db0d"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fe18
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fe60
+expected_word = 0xc0e3e25
+kind = "call"
+target_section = ".lair"
+target = 0x8038f894
+size = 0x90
+sha256 = "af121d8de01d9e7c9c06ae9e70ef114faf6692d29e6249f8c62112428e3b96a5"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fe7c
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038fef0
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ff28
+expected_word = 0xc0e3ad6
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb58
+size = 0x2c
+sha256 = "d9c6b3857c6bf122591fe3399d18f28a7e73320efd16f491c57ef8250003db0d"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ff40
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ff7c
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae54c
+expected_word = 0xc0a47ee
+kind = "call"
+target_section = ".core2"
+target = 0x80291fb8
+size = 0xc
+sha256 = "96e1bf1fec11c67982bb82aaa42baaed2891fed7ef8d76e4f727014334e7726d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae8e0
+expected_word = 0xc0ab9eb
+kind = "call"
+target_section = ".core2"
+target = 0x802ae7ac
+size = 0xc8
+sha256 = "447b19fae79574c857b4379d29b327cc7423e3760cd43f03e693a3c2158601dc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae8f8
+expected_word = 0xc0ab9eb
+kind = "call"
+target_section = ".core2"
+target = 0x802ae7ac
+size = 0xc8
+sha256 = "447b19fae79574c857b4379d29b327cc7423e3760cd43f03e693a3c2158601dc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae960
+expected_word = 0xc0ab966
+kind = "call"
+target_section = ".core2"
+target = 0x802ae598
+size = 0x214
+sha256 = "45e026313cb93c465d95afaf26766409e46233ea3fb0c1a0b60cada0cd43bb00"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cdbf8
+expected_word = 0xc0b36d4
+kind = "call"
+target_section = ".core2"
+target = 0x802cdb50
+size = 0x58
+sha256 = "ca0d8639e34795f55b19d747157c48346a2452b506c38f1c7463e80c5a31b10d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8034e108
+expected_word = 0xc0d3822
+kind = "call"
+target_section = ".core2"
+target = 0x8034e088
+size = 0x74
+sha256 = "3b6401cb703cd139132c522037ca2e4376b999311cad6aed707eb41141fed27b"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038eb60
+expected_word = 0xc0e3ac9
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb24
+size = 0x34
+sha256 = "71b2965fa348da33495eba2c9d29c871e6e9bd93c988ea900c05f2b752629874"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ee60
+expected_word = 0xc0e3b2a
+kind = "call"
+target_section = ".lair"
+target = 0x8038eca8
+size = 0x54
+sha256 = "f0068fdad357b430490c508936750d070a3f777fb14739f39829f7e523e80182"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038eea8
+expected_word = 0xc0e3b2a
+kind = "call"
+target_section = ".lair"
+target = 0x8038eca8
+size = 0x54
+sha256 = "f0068fdad357b430490c508936750d070a3f777fb14739f39829f7e523e80182"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ef0c
+expected_word = 0xc0d37cc
+kind = "call"
+target_section = ".core2"
+target = 0x8034df30
+size = 0x80
+sha256 = "a518afcaf6b8a3ba51b62af0585d7b8b2debe16a733f2affd1237355e5a763e6"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ef40
+expected_word = 0xc0d37cc
+kind = "call"
+target_section = ".core2"
+target = 0x8034df30
+size = 0x80
+sha256 = "a518afcaf6b8a3ba51b62af0585d7b8b2debe16a733f2affd1237355e5a763e6"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f188
+expected_word = 0xc0e3ac9
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb24
+size = 0x34
+sha256 = "71b2965fa348da33495eba2c9d29c871e6e9bd93c988ea900c05f2b752629874"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f1f4
+expected_word = 0xc0e3b44
+kind = "call"
+target_section = ".lair"
+target = 0x8038ed10
+size = 0x78
+sha256 = "2c128bd3894b2a70e7b5ae7d0cf80904b6dd1b544e186b5e64ad9232369f5dbf"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f238
+expected_word = 0xc0d3822
+kind = "call"
+target_section = ".core2"
+target = 0x8034e088
+size = 0x74
+sha256 = "3b6401cb703cd139132c522037ca2e4376b999311cad6aed707eb41141fed27b"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f818
+expected_word = 0xc0e3ac9
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb24
+size = 0x34
+sha256 = "71b2965fa348da33495eba2c9d29c871e6e9bd93c988ea900c05f2b752629874"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f828
+expected_word = 0xc0e3b44
+kind = "call"
+target_section = ".lair"
+target = 0x8038ed10
+size = 0x78
+sha256 = "2c128bd3894b2a70e7b5ae7d0cf80904b6dd1b544e186b5e64ad9232369f5dbf"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f844
+expected_word = 0xc0e3b3f
+kind = "call"
+target_section = ".lair"
+target = 0x8038ecfc
+size = 0x14
+sha256 = "1c8d5db4911b92ec1bc3188abd5b0769525713d2cbf235feaa5d7e242987148a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f85c
+expected_word = 0xc0d383f
+kind = "call"
+target_section = ".core2"
+target = 0x8034e0fc
+size = 0x24
+sha256 = "b79f61aeecbbef915723fdcb9d7e438920b84f1c978fed52d448716e2b1efb35"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f868
+expected_word = 0xc0e3ac9
+kind = "call"
+target_section = ".lair"
+target = 0x8038eb24
+size = 0x34
+sha256 = "71b2965fa348da33495eba2c9d29c871e6e9bd93c988ea900c05f2b752629874"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038f8b4
+expected_word = 0xc0e3cd4
+kind = "call"
+target_section = ".lair"
+target = 0x8038f350
+size = 0x4b0
+sha256 = "1c731defd0a19c373137c0a4cb4c84add3a2a77d13187d7934a1b35359793542"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80289d00
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802b0060
+size = 0xec
+sha256 = "97ce92c686bca4e7fbde9352178dc23b98abf8e18190382933b6d443eeed16e4"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae3f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802af604
+size = 0x64
+sha256 = "743549d1639bdf299c7f83aee39e8369282788d3b56ad57d7245d62061276250"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae3f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802b0464
+size = 0xb8
+sha256 = "f687f2fb419e165c1ef17f3c285b06c1c9fa000e9c6139ba89452e9906417969"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae438
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802af668
+size = 0x100
+sha256 = "ee726039bf215e6c2e4c67a1325ad9ff9b29d2c7e70c35b297060e2b4438b43b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae438
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802b0560
+size = 0x4a4
+sha256 = "44807d4a9fbe78ccb3716a96f65397f1de1d456b92b4f4ed9a2be51cfb23592c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae478
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802af768
+size = 0x30
+sha256 = "6733292d4d8148fe9523c4c6fb6cfd950b2b6099399bb0b3986cd28f93281e23"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae478
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802b0a04
+size = 0x50
+sha256 = "558c0471a4fb72f7914f7f162fef7d17e15fdf0e138fe9a59e62eb50d62494a2"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ae4c0
+expected_word = 0x60f809
+kind = "call"
+target_section = ".core2"
+target = 0x802b0a54
+size = 0x8
+sha256 = "78aa5094d5ec7291c79f799c009d04f06c2f20187988e3dcc8d35ee5efdbb378"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af640
+expected_word = 0xc0abd38
+kind = "call"
+target_section = ".core2"
+target = 0x802af4e0
+size = 0x70
+sha256 = "684104b39b87c40512862abff3b610c16dfdca67d575a6126ce911c6c8a95cdc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af650
+expected_word = 0xc0abc6c
+kind = "call"
+target_section = ".core2"
+target = 0x802af1b0
+size = 0xb8
+sha256 = "43acafa8dff9cdfd6b1a98c34c757296735c114502b266473b0b4474bc69ce50"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af6a0
+expected_word = 0xc0abd54
+kind = "call"
+target_section = ".core2"
+target = 0x802af550
+size = 0xb4
+sha256 = "4e9f6d6325fe2307a045b5483b196cff9a616360eff25b9f743e515eb889f852"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af6b8
+expected_word = 0xc0abc6c
+kind = "call"
+target_section = ".core2"
+target = 0x802af1b0
+size = 0xb8
+sha256 = "43acafa8dff9cdfd6b1a98c34c757296735c114502b266473b0b4474bc69ce50"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af6c8
+expected_word = 0xc0abd54
+kind = "call"
+target_section = ".core2"
+target = 0x802af550
+size = 0xb4
+sha256 = "4e9f6d6325fe2307a045b5483b196cff9a616360eff25b9f743e515eb889f852"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af724
+expected_word = 0xc0abc6c
+kind = "call"
+target_section = ".core2"
+target = 0x802af1b0
+size = 0xb8
+sha256 = "43acafa8dff9cdfd6b1a98c34c757296735c114502b266473b0b4474bc69ce50"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af770
+expected_word = 0xc0abd2c
+kind = "call"
+target_section = ".core2"
+target = 0x802af4b0
+size = 0x30
+sha256 = "32c5630ed285e9d55280fc21f212428773e49b8013a0a8227730cac90d17d360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b00e4
+expected_word = 0xc095eb5
+kind = "call"
+target_section = ".core1"
+target = 0x80257ad4
+size = 0x44
+sha256 = "d9e6f2d545041b4419b1070b58f85103d73e7e5144023d9135b74bd708e96d78"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0470
+expected_word = 0xc0a6f2b
+kind = "call"
+target_section = ".core2"
+target = 0x8029bcac
+size = 0x4c
+sha256 = "057c8d9afee378c9f638908faf661b30370fba62f63f0fecf01ded781865ef97"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b04c8
+expected_word = 0xc0abec3
+kind = "call"
+target_section = ".core2"
+target = 0x802afb0c
+size = 0x88
+sha256 = "8a87f2a3c9c863825c49fdf44078322928f9c642e7d90ac05b5c0b6e6b27f769"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b04d0
+expected_word = 0xc0ac05b
+kind = "call"
+target_section = ".core2"
+target = 0x802b016c
+size = 0x44
+sha256 = "0c62d7582fca7b4a2b10f077452d1403ee6fb1b19f2907977954b8e975af8828"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b04e4
+expected_word = 0xc0a5293
+kind = "call"
+target_section = ".core2"
+target = 0x80294a4c
+size = 0xc
+sha256 = "644b3447b74e50754b47d77f0582fa55c2b8f29078a8654ea4f395dda9a533b7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0578
+expected_word = 0xc0abfeb
+kind = "call"
+target_section = ".core2"
+target = 0x802affac
+size = 0xb4
+sha256 = "12082c26ccdfe6384a2124cc2cacdda30e44e049303513dc7557b38df62abdcd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0580
+expected_word = 0xc0ac072
+kind = "call"
+target_section = ".core2"
+target = 0x802b01c8
+size = 0x30
+sha256 = "3e9bab824a7e4b0de47db2cac7846beaacbff75d3da3bcfcc52aa0df81071af0"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b05d0
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b05e0
+expected_word = 0xc0a6132
+kind = "call"
+target_section = ".core2"
+target = 0x802984c8
+size = 0xc
+sha256 = "fd91c0a8bce445e5956c197c6f99a62256543dc3e245fa7e6d979e1a8affbb47"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b05fc
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0604
+expected_word = 0xc0abee5
+kind = "call"
+target_section = ".core2"
+target = 0x802afb94
+size = 0xc
+sha256 = "0d63e330d760dd8463c34a892f047e0ece498a9f7553803d252e85466195843b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b061c
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0624
+expected_word = 0xc0abee8
+kind = "call"
+target_section = ".core2"
+target = 0x802afba0
+size = 0xc
+sha256 = "2ab3e716f096b779084c4334b61b89645e78eaba2ecbd7fd5d1236c474ea54bd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0644
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b064c
+expected_word = 0xc0abeeb
+kind = "call"
+target_section = ".core2"
+target = 0x802afbac
+size = 0xc
+sha256 = "6fde25a36e49c58e441006be0fb07211ba967109336f90bfa15fbaec1004ead3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0668
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0670
+expected_word = 0xc0ac06f
+kind = "call"
+target_section = ".core2"
+target = 0x802b01bc
+size = 0xc
+sha256 = "7637f4b0adb8a7478942d9d0c4677f17d36d5068acfd7f432f4a31c364c3f2bb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0690
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0698
+expected_word = 0xc0ac06c
+kind = "call"
+target_section = ".core2"
+target = 0x802b01b0
+size = 0xc
+sha256 = "5801461994519d527e69fd355244885bdf5a970393e7b34013abde539fca4a6a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b06b0
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b06cc
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b06e8
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0710
+expected_word = 0xc0c6e64
+kind = "call"
+target_section = ".core2"
+target = 0x8031b990
+size = 0x20
+sha256 = "5a6d101564af28b331ee2567365df204cde5c6c1fb54523d931c213a0bd884ae"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0754
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b075c
+expected_word = 0xc0ac06c
+kind = "call"
+target_section = ".core2"
+target = 0x802b01b0
+size = 0xc
+sha256 = "5801461994519d527e69fd355244885bdf5a970393e7b34013abde539fca4a6a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b07a4
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b07ac
+expected_word = 0xc0ac06f
+kind = "call"
+target_section = ".core2"
+target = 0x802b01bc
+size = 0xc
+sha256 = "7637f4b0adb8a7478942d9d0c4677f17d36d5068acfd7f432f4a31c364c3f2bb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b07f4
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b07fc
+expected_word = 0xc0ac06f
+kind = "call"
+target_section = ".core2"
+target = 0x802b01bc
+size = 0xc
+sha256 = "7637f4b0adb8a7478942d9d0c4677f17d36d5068acfd7f432f4a31c364c3f2bb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0880
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0888
+expected_word = 0xc0ac06f
+kind = "call"
+target_section = ".core2"
+target = 0x802b01bc
+size = 0xc
+sha256 = "7637f4b0adb8a7478942d9d0c4677f17d36d5068acfd7f432f4a31c364c3f2bb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b08c0
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b08c8
+expected_word = 0xc0abeeb
+kind = "call"
+target_section = ".core2"
+target = 0x802afbac
+size = 0xc
+sha256 = "6fde25a36e49c58e441006be0fb07211ba967109336f90bfa15fbaec1004ead3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b08e4
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b08ec
+expected_word = 0xc0ac06c
+kind = "call"
+target_section = ".core2"
+target = 0x802b01b0
+size = 0xc
+sha256 = "5801461994519d527e69fd355244885bdf5a970393e7b34013abde539fca4a6a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0900
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0918
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0930
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0958
+expected_word = 0xc0c6e64
+kind = "call"
+target_section = ".core2"
+target = 0x8031b990
+size = 0x20
+sha256 = "5a6d101564af28b331ee2567365df204cde5c6c1fb54523d931c213a0bd884ae"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b09c0
+expected_word = 0xc0ac147
+kind = "call"
+target_section = ".core2"
+target = 0x802b051c
+size = 0x44
+sha256 = "eca26f64398dae4b57d7c083d8a3b28b5e6939e24f2aa0d15cc142c55aa620e3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b09d0
+expected_word = 0xc0a6132
+kind = "call"
+target_section = ".core2"
+target = 0x802984c8
+size = 0xc
+sha256 = "fd91c0a8bce445e5956c197c6f99a62256543dc3e245fa7e6d979e1a8affbb47"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0a1c
+expected_word = 0xc0c6e64
+kind = "call"
+target_section = ".core2"
+target = 0x8031b990
+size = 0x20
+sha256 = "5a6d101564af28b331ee2567365df204cde5c6c1fb54523d931c213a0bd884ae"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0a24
+expected_word = 0xc0abeb7
+kind = "call"
+target_section = ".core2"
+target = 0x802afadc
+size = 0x30
+sha256 = "2435de9a41f633f49e4ddcf8f4539649860afa5c70201663f238a3becf60f817"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0a2c
+expected_word = 0xc0ac053
+kind = "call"
+target_section = ".core2"
+target = 0x802b014c
+size = 0x20
+sha256 = "4b4b3b9a9252a34be9015ecb9d371531fa22c14f89fe96504c72b9defdaab047"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3abc
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x80387e94
+size = 0x88
+sha256 = "b2b73a0c745061799cb19ff8f621da8a23e4f82dea2f7f7fb406612af96dd8db"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3abc
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347b10
+size = 0x44
+sha256 = "2f66d45627eff2f8f0d5a64a0946a1980fd623b236b3c95373588b04e475bb79"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3b44
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d096c
+size = 0x4c
+sha256 = "9a51257c15a71ad81521e4fdd04db5523457e09d8cfcf2a7be5ab04f2581831f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3b44
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x803891e8
+size = 0x5c
+sha256 = "699fa8f4f2980e8a40681a4b2e05b4e69637fa4916eb61ce487f520164054b08"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802f042c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80359b20
+size = 0x9c
+sha256 = "e2b78b54eb8e34094c0b8464849894ee1e3bb185277345bc4af329487e74b9b3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80303d04
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802cb76c
+size = 0x54
+sha256 = "568e686eed9bf78c8130974e57819216082eead4cc8bfbce20826df91e14ff48"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80305760
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802c8aa8
+size = 0x50
+sha256 = "a2fa75ddc6fd3ab1fdac2535e2242bc2731e25c33bf5b5c5b5c4ca3d01323f50"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80305760
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d75b4
+size = 0x5c
+sha256 = "d36a7d83f6403e148d3926fbb90a08a76adf15ba1092c02c6b4b5eb90febe22d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80305760
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d7610
+size = 0x5c
+sha256 = "c4e05e23664850ce35f845660f9745f3a63bc7c147cbb5faadd666fa4dd3fc71"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038badc
+size = 0xe4
+sha256 = "df2188ccf574671cecfc89efb36cd9db45a915d5fd14c12bf08caa183d86d707"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d1998
+size = 0x1f4
+sha256 = "44c1af2e0aec28419c736a8dbdea131f3f26902da06b5b50c0a4e43904b80f04"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d9698
+size = 0x198
+sha256 = "669d4631c90f893d9ca8d77dcccb0455387aa2ac456402b0ff8973926ef21baf"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8035e810
+size = 0x3c
+sha256 = "7c2e74e3385c281134fecf173faa03e09c8b5c8cd49e99f942c1037fa5009038"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x80387370
+size = 0x58
+sha256 = "ae6399c28b0ade35d1df129a8b5489878f45b8fcf34195d9a99bac784de858b8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030fd34
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d9830
+size = 0x14c
+sha256 = "0c35708f555411fa874f6f1eb1fbfbdc57e27d5446732b3d31f811cc0073a6d9"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803101b0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d5140
+size = 0x38
+sha256 = "f8ed6dc519f85b75969d8ccce294f112254191741186b93057b0c1811f050d0f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8031c820
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031c6e4
+size = 0xe4
+sha256 = "1a2db7db4dd3e3db9febc142e7ed8d648daa78b36a15012945ab5d01b2d1133b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322e7c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x803229e0
+size = 0x20
+sha256 = "e92fed274a4179d311f837715512bd859e3eeab47b127bc6b9d7d8bcfd7bbed3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322f04
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322a00
+size = 0x28
+sha256 = "522720b0ba4c184cb0a2133776630e6fe8c00b3963978ce41ae891b2c30944a7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322f44
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322d38
+size = 0x54
+sha256 = "079f6fd481dd6726e4c19c6e8a685ae3ba824d7598a19f05fa6a5e9193cc3001"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230b0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322a78
+size = 0xc
+sha256 = "691e766163b1b8288cf1e76b4dc9eb7dde764cde7f749bf5aef916d919300f2b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230b0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322d94
+size = 0xc
+sha256 = "691e766163b1b8288cf1e76b4dc9eb7dde764cde7f749bf5aef916d919300f2b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230e0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322a50
+size = 0x28
+sha256 = "30fc2b9f82451bd56aa1f921d37f96b544d4aa34dc591635317af7de92d67f37"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324914
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8029cbc4
+size = 0x30
+sha256 = "164608d3bf4c2121103e0b293beea0bc2de3b36b4f45fa1de68fed196e33edab"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324914
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8029cbf4
+size = 0xd0
+sha256 = "d8e2caeb49c4f6b9e9bbb6f3bf68006eee5c917cb1afe1f71913824e2e540125"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324914
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80332b90
+size = 0x20
+sha256 = "e955e2a9285397f19b881a8979822b9d4c4f100ec6880c08ec720b2cfa77cb0b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324914
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80332bb0
+size = 0x3c
+sha256 = "a113833359695b9bc506d7caa8d9efe27c85b6a893e01ffa09333bd852521638"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324934
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d61fc
+size = 0x68
+sha256 = "228a7b317ccdd988e6b2dab52185b8434dad36e3bf69f71aacfd5c9fa961592e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324934
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8035646c
+size = 0x20
+sha256 = "7f8a09416c1f70b8b6c4be9a6899933cce8ecf8f72d8068d73aac7a23d0425b6"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032495c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d4d3c
+size = 0x2c4
+sha256 = "261c29702ce229cb92241ace2dde224f49266ed07d1e32bc581476cdc6cfda46"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80324984
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x803884c0
+size = 0x54
+sha256 = "40da3b61198c54804be5c6556c3d8b3713e742de6737a02aba0a5a87ea6ac75e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803249b0
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x80389244
+size = 0x64
+sha256 = "a584053069922a36201850908eb2c5bda89ccb231e4bb6c59190dc0a1b138c9e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032559c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80325760
+size = 0x34
+sha256 = "93080afb19c8120d9f74c8436ae9e1efebff6ea6987e4806f4192ba8e40f8fac"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032607c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038bbc0
+size = 0x64
+sha256 = "b2d4868f830b153dcd91ebb609bd00376cfb0857bce634e63453a7355dc9a037"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x803875f0
+size = 0x140
+sha256 = "bf10cc25d453fa4819dcae30b358f8e3cbae0b9f3f4303252d8746ab7809aa72"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x803880bc
+size = 0x190
+sha256 = "b84089e8cae06e83b1817c7c92ae3d26d036281178e419aecd9b9e2f67922b7e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038824c
+size = 0x2c
+sha256 = "1329621abcc926b5cbdde2c80cc0fc915b0c9b95ebc03dd0038890653d8e5ad3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80388fc8
+size = 0x23c
+sha256 = "b43a4cfec7bd146056dba8928d70623801863e9a4754ace1b5de7826e1eefdcc"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80389204
+size = 0x1b4
+sha256 = "8fe89d0a0fe923f2f69fcd45f9ff0af2dd74b20b2a533e7094d182620964437d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x803896d4
+size = 0x20
+sha256 = "55e726b003ce2b50c79d03f356fe959fed7743786bd9d95a3ab09cb6633a4a1e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x803896f4
+size = 0x20
+sha256 = "9173d9535ea9d3af207e1d6953c7bd0e9e53f9204e3683a9dd20a1334070483f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80389714
+size = 0x20
+sha256 = "95604aeb83d513665594af829ad79fd55174dbec6dc79e3eb892b33c6752476b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038ae2c
+size = 0xa6c
+sha256 = "ad6fb14638843fab56e26e68c4f675df9e1f62530ba6f63fdb244fa5bd856564"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80390ae8
+size = 0x114
+sha256 = "8aaead89edb8d5aafdd5bb1989df5e04eeee686263e77fe0cf94e2a7d3508507"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802cbaac
+size = 0x7e8
+sha256 = "ee12a915deb3d6968e525feaa0102e13a684bb2fb5d7b0a0531ea26805716e3c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802ccc5c
+size = 0xc10
+sha256 = "ce8e65e48af997bdd0606e6439ae3026b717b450b5a45d3ca53fa6e5c5828f7a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x80387584
+size = 0x228
+sha256 = "b4bb62ab89e79d8c5984a38f3b592dc095a592409765c01136bacf0ff7f41a8c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".BGS"
+target = 0x803870b4
+size = 0x928
+sha256 = "9ec0cf47f2b073aeb63d574a84de44c4db50269b40ba88780dc7fa4071482ac0"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".BGS"
+target = 0x80387b80
+size = 0x108
+sha256 = "3bc7b2200ff456c651a857c8222d93f654e01bcabe9b77db3fe65b34f10794c6"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".BGS"
+target = 0x80387fd4
+size = 0x608
+sha256 = "f7fb60d0abcda6568fa42072951f5cfba9526ec63baf3314a984b0864b2665c3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d1c0
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80350e90
+size = 0xec
+sha256 = "7c54898fe15b274514611a2152b94a606eb433edc2c5c25e2609b4195b53bb64"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".lair"
+target = 0x8038b898
+size = 0x194
+sha256 = "d1db610c3152217d37121209cc4a9d9cd36a3a81c875b28136e7b792c22f434e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330028
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d7c24
+size = 0x1c4
+sha256 = "f5d685323be91665d27bc912c3824a0ebed8f2fe8e6e665c1ab75b1c787f408f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330044
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802cb22c
+size = 0xe4
+sha256 = "8604244e7e01f1ecdc3317add62277db09a996e417730b2a1a588a43cb887429"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330060
+expected_word = 0x40f809
+kind = "call"
+target_section = ".lair"
+target = 0x80390890
+size = 0x104
+sha256 = "c90de21a6836309467a2788554e9d4bb47002d6cb87d11fc4ec96030adf32c04"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330060
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802cb7c0
+size = 0x274
+sha256 = "0ceb0500c0a9c3e564690f81480daef563fb12807094d87697d1a13386ec7d86"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803315e0
+expected_word = 0x60f809
+kind = "call"
+target_section = ".core2"
+target = 0x80350f7c
+size = 0x138
+sha256 = "b55b2ab5dca6c65dac9008cc89f3aef2eddf2c613595f2d063813a62679301e2"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80331964
+expected_word = 0x60f809
+kind = "call"
+target_section = ".core2"
+target = 0x803510b4
+size = 0xe4
+sha256 = "97113d0b544f4a4c6168fb0bed52b99ab1df1e4a572e6003e1eb8cd95249b5f9"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80331cc8
+expected_word = 0x60f809
+kind = "call"
+target_section = ".core2"
+target = 0x80351198
+size = 0xd4
+sha256 = "4839a41ec2fdc926d2278c89f5b25050d200d0eb8dc008a92a0ff2a915cdb951"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80332e6c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347b80
+size = 0xdc
+sha256 = "4954ada192e567956adf45bded5e75f25c621f4daf30e25eb34193d52a2685ae"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80332e6c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347e60
+size = 0x144
+sha256 = "50f1d472efcf97aeb990e3f787ec91646bb5f0e131f94fe1c7ee2a0086e5212c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80332fd0
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347c5c
+size = 0x14
+sha256 = "7008cedc7bc7666823ccb635b2fcb91203276ea030284707c9e8f52db2ea3448"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80332fd0
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347fa4
+size = 0x14
+sha256 = "7008cedc7bc7666823ccb635b2fcb91203276ea030284707c9e8f52db2ea3448"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8033314c
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347b54
+size = 0x2c
+sha256 = "066288c096f456e9c47ba9d91bba3d7370554b2ae823548df77fe0d58c987916"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80333314
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347c70
+size = 0x8
+sha256 = "aab9a3b4a314f107dee9217d6d10144c96feaf7d3f083e0f94c1ee0811c96054"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80333314
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80347fb8
+size = 0x8
+sha256 = "aab9a3b4a314f107dee9217d6d10144c96feaf7d3f083e0f94c1ee0811c96054"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80333408
+expected_word = 0x40f809
+kind = "call"
+target_section = ".MM"
+target = 0x803870d0
+size = 0x30
+sha256 = "0e4b6c6a0fced3b2445fbb42f3341cd3bead62d1608ef282804e48e525bb9b39"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d11c
+size = 0x24
+sha256 = "3fa5b3221dd3309dbd2771d0e5f018c1e2ead079e102ed467dda61d788b05ec3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d140
+size = 0x24
+sha256 = "11ef46336148b0410309edf56547e80bf6663080ec4e922c6900fa38ee47ef7a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d164
+size = 0x24
+sha256 = "4192338c1fb1f2b44ce46150e3ff633d940dd1ab808dc9901162fb0e099e7203"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d188
+size = 0x24
+sha256 = "28bd4901c6d4a97093668e422f1aca55c3443f03ee7a2a3c33965464f358a5c9"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d1ac
+size = 0x24
+sha256 = "7606df94c20f2237bdf8a9ede985e3fd911c50e8c72870a021ed8609ea8c2de8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d1d0
+size = 0x24
+sha256 = "28014dc4937ef902ed25f4b4a8a0b7362c5ea82c531be4e236a6a0d212d55b41"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031ef44
+size = 0x24
+sha256 = "7bc3b61bc39faf6d0f351b97d96592407ba4a30ac1159c2432afea35ddf803e5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031efb0
+size = 0x24
+sha256 = "a0d7e7253ed8a1b0539a84fe60620d1adbd8ca4b217dcf49230579fa8ca6ea36"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031efd4
+size = 0x24
+sha256 = "4c58177b0804ad55346e420a3c27dad5e2434bb838e16cdb654492031ad04d0e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031eff8
+size = 0x24
+sha256 = "9825c5285db56980f40f12f7e0b00737bbfd35ad334c2749a288122e71185635"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031f064
+size = 0x24
+sha256 = "a543f76ba58d945178a25231c815115bd7bb203e62bc7fc687d3ea5e8af6ac7d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031f088
+size = 0x24
+sha256 = "ed4cd5ed1a850af7bda7e9598d43ad5b678fd43e643e548d10664a5a64b6c5f5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".MM"
+target = 0x80388bec
+size = 0x128
+sha256 = "c3beb30db2b43ff039bb3c83d69709a7559bc13c1386125ac485a10bb405bbf1"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80347f54
+expected_word = 0xc0d5718
+kind = "call"
+target_section = ".core2"
+target = 0x80355c60
+size = 0xf0
+sha256 = "769853dfc001cf0868b4e42618e034bbcd0d00862fb232cb66001b64d7258b35"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80350f24
+expected_word = 0x60f809
+kind = "call"
+target_section = ".CC"
+target = 0x803877b0
+size = 0xfc
+sha256 = "0b4c4ba840211afa128c0939641ee78a41b8f9e9db9bbee7a23018c345f3b645"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803515d0
+expected_word = 0xc0f809
+kind = "call"
+target_section = ".core2"
+target = 0x80351de0
+size = 0x80
+sha256 = "eb483f850a7eff5cbe7a87bb2b819b534394983aa7e12575c3e633e3e3ff58eb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803515d0
+expected_word = 0xc0f809
+kind = "call"
+target_section = ".CC"
+target = 0x803879e0
+size = 0x20
+sha256 = "ba35623a3cfb02e6138b6129e85c364e213b047c257c5684c23115c761ebc84e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80351d5c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80351e60
+size = 0x17c
+sha256 = "2ebbf4d85527fd78474eddc4918be264c1b85b8ec015f2a4cdbfd9694257dbba"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80351d5c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80352114
+size = 0x484
+sha256 = "b0e66dc426dcd31f76fa867bfca1528f260586d8fbf4943eef19a8f55c69a8a8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80351d5c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x80387a40
+size = 0x280
+sha256 = "bebf323e2a6ab52fe52d53999cdcf0dc280af2ce2f6b262126066860853bcd4a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80351f84
+expected_word = 0xc0d46ca
+kind = "call"
+target_section = ".core2"
+target = 0x80351b28
+size = 0x104
+sha256 = "9d7e53999da058bcd338e7d3b44d12bb11c2bbe3340fddef31557ccf646c774c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80351fc0
+expected_word = 0xc0d470b
+kind = "call"
+target_section = ".core2"
+target = 0x80351c2c
+size = 0x1c
+sha256 = "700b3ac60025e0f557eb6799564de0ad9696fd07432470ce953f0bbede9911dd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80352494
+expected_word = 0xc0d46ca
+kind = "call"
+target_section = ".core2"
+target = 0x80351b28
+size = 0x104
+sha256 = "9d7e53999da058bcd338e7d3b44d12bb11c2bbe3340fddef31557ccf646c774c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8035257c
+expected_word = 0xc0d470b
+kind = "call"
+target_section = ".core2"
+target = 0x80351c2c
+size = 0x1c
+sha256 = "700b3ac60025e0f557eb6799564de0ad9696fd07432470ce953f0bbede9911dd"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x803876a4
+expected_word = 0xc0e1d44
+kind = "call"
+target_section = ".CC"
+target = 0x80387510
+size = 0x74
+sha256 = "4887eaf4c3a155133afde01bea4c91a613825d5032dc53e0972688456769a886"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80387a60
+expected_word = 0xc0e2004
+kind = "call"
+target_section = ".CC"
+target = 0x80388010
+size = 0x2c
+sha256 = "d52b254605241442ecc6cad01cdfb85a7e8393676c8db33da8e0af040b9d22f0"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80387c6c
+expected_word = 0xc0d460c
+kind = "call"
+target_section = ".core2"
+target = 0x80351830
+size = 0x8
+sha256 = "8bfbab9fa0d3955e31a09a1cbc117ad97f9fa6fe2a779ad7a85bcceec22dc348"
+
+[[discovery.observed_transfers]]
+section = ".MM"
+pc = 0x80388ca4
+expected_word = 0xc0e22cc
+kind = "call"
+target_section = ".MM"
+target = 0x80388b30
+size = 0xbc
+sha256 = "898f932396432dfc9ff79a7fab87c0bc7fdff87e2b412efc0aace94eb60d9b16"
+
+[[discovery.observed_transfers]]
+section = ".MM"
+pc = 0x80388cd0
+expected_word = 0xc0e24aa
+kind = "call"
+target_section = ".MM"
+target = 0x803892a8
+size = 0x174
+sha256 = "fbb17e4d060506eff7283244ece8e6663535018a675ae0d861075f389c455a8d"
+
+[[discovery.observed_transfers]]
+section = ".MM"
+pc = 0x80388cd8
+expected_word = 0xc0d4d60
+kind = "call"
+target_section = ".core2"
+target = 0x80353580
+size = 0x20
+sha256 = "0068fc26a5cd81c3aab4ba86e0bc7337b778ed2337241baeb8cb81aa6efcf8fa"
+
+[[discovery.observed_transfers]]
+section = ".BGS"
+pc = 0x80387190
+expected_word = 0xc0e1abb
+kind = "call"
+target_section = ".BGS"
+target = 0x80386aec
+size = 0x344
+sha256 = "f72b570e1de2a13df4645b98644a1f4121d9f8d7355e0fc82628aaad4156c3d0"
+
+[[discovery.observed_transfers]]
+section = ".BGS"
+pc = 0x80387334
+expected_word = 0xc0ca484
+kind = "call"
+target_section = ".core2"
+target = 0x80329210
+size = 0x50
+sha256 = "5c4555815acdb6a91eee02351d80eb1aba9238b0d4574959ed59ce9bde05504c"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80387700
+expected_word = 0xc0b522e
+kind = "call"
+target_section = ".core2"
+target = 0x802d48b8
+size = 0x38
+sha256 = "9588259b444738a3480b8e9ca79afc354fe54ecdaa0474eb742177900d75d7dd"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388230
+expected_word = 0xc0e1fde
+kind = "call"
+target_section = ".lair"
+target = 0x80387f78
+size = 0x144
+sha256 = "37ce05301139fbcf3db7b2c9d6598cb8d709cae0a828525afd81b58af18f6a68"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80388260
+expected_word = 0xc0e1fde
+kind = "call"
+target_section = ".lair"
+target = 0x80387f78
+size = 0x144
+sha256 = "37ce05301139fbcf3db7b2c9d6598cb8d709cae0a828525afd81b58af18f6a68"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x803891d0
+expected_word = 0xc0b522e
+kind = "call"
+target_section = ".core2"
+target = 0x802d48b8
+size = 0x38
+sha256 = "9588259b444738a3480b8e9ca79afc354fe54ecdaa0474eb742177900d75d7dd"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80389384
+expected_word = 0xc0b522e
+kind = "call"
+target_section = ".core2"
+target = 0x802d48b8
+size = 0x38
+sha256 = "9588259b444738a3480b8e9ca79afc354fe54ecdaa0474eb742177900d75d7dd"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ae38
+expected_word = 0xc0e2a19
+kind = "call"
+target_section = ".lair"
+target = 0x8038a864
+size = 0x108
+sha256 = "3d2e67f8f7e06fe31bcf0ae0385af6a5cbb0c38bc1ec5b4f0c002f39104adbe8"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038af3c
+expected_word = 0xc0e29b7
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6dc
+size = 0x10
+sha256 = "a2aa0613dbe3c4f17751f65e0cb3ec4a7f7d065eaa92a5173856f575ae2a9d34"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b0c0
+expected_word = 0xc0e2a5b
+kind = "call"
+target_section = ".lair"
+target = 0x8038a96c
+size = 0x224
+sha256 = "c0e8192f9763b7e9a595f67c9e28a0bca93ab5c5896b5e87b10ffe04da133896"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b0f4
+expected_word = 0xc0e29a4
+kind = "call"
+target_section = ".lair"
+target = 0x8038a690
+size = 0x4c
+sha256 = "fc58d373232d9d908f41650b1a56d2aabf2f144c928f6eb195c6ebe5a89a6ff0"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b128
+expected_word = 0xc0e2a5b
+kind = "call"
+target_section = ".lair"
+target = 0x8038a96c
+size = 0x224
+sha256 = "c0e8192f9763b7e9a595f67c9e28a0bca93ab5c5896b5e87b10ffe04da133896"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b150
+expected_word = 0xc0b426e
+kind = "call"
+target_section = ".core2"
+target = 0x802d09b8
+size = 0x44
+sha256 = "ab026d3c0c71d5234bd9efdde950c64c785b36c6cff4d6df519daac03191b9de"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b158
+expected_word = 0xc0e29bb
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6ec
+size = 0x18
+sha256 = "1f782ddc2a55be38fda29739e2ac00e2aa359af8e5b49f1299562b495c92165a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b190
+expected_word = 0xc0e29bb
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6ec
+size = 0x18
+sha256 = "1f782ddc2a55be38fda29739e2ac00e2aa359af8e5b49f1299562b495c92165a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b1c0
+expected_word = 0xc0e29bb
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6ec
+size = 0x18
+sha256 = "1f782ddc2a55be38fda29739e2ac00e2aa359af8e5b49f1299562b495c92165a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b3a8
+expected_word = 0xc0e29c1
+kind = "call"
+target_section = ".lair"
+target = 0x8038a704
+size = 0x2c
+sha256 = "dd876e65821ffb0e58ce0ba18b3b1e9bebc809d2a6eafbde3844a693f09a174a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b3b0
+expected_word = 0xc0e29b7
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6dc
+size = 0x10
+sha256 = "a2aa0613dbe3c4f17751f65e0cb3ec4a7f7d065eaa92a5173856f575ae2a9d34"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b424
+expected_word = 0xc0e2ae4
+kind = "call"
+target_section = ".lair"
+target = 0x8038ab90
+size = 0xec
+sha256 = "85350321bc43a6e1d5d7d02b981752dfacc47ff883a5b3f8cb5a14bc0e56fd31"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b444
+expected_word = 0xc0e2ae4
+kind = "call"
+target_section = ".lair"
+target = 0x8038ab90
+size = 0xec
+sha256 = "85350321bc43a6e1d5d7d02b981752dfacc47ff883a5b3f8cb5a14bc0e56fd31"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b450
+expected_word = 0xc0e2a5b
+kind = "call"
+target_section = ".lair"
+target = 0x8038a96c
+size = 0x224
+sha256 = "c0e8192f9763b7e9a595f67c9e28a0bca93ab5c5896b5e87b10ffe04da133896"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b490
+expected_word = 0xc0e2a5b
+kind = "call"
+target_section = ".lair"
+target = 0x8038a96c
+size = 0x224
+sha256 = "c0e8192f9763b7e9a595f67c9e28a0bca93ab5c5896b5e87b10ffe04da133896"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b4e0
+expected_word = 0xc0a3f2b
+kind = "call"
+target_section = ".core2"
+target = 0x8028fcac
+size = 0x10
+sha256 = "bd4c83b1b7785e0dc984d212784c916352eb469f0dc66d5df3513802ea0f37ef"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038b56c
+expected_word = 0xc0e29c1
+kind = "call"
+target_section = ".lair"
+target = 0x8038a704
+size = 0x2c
+sha256 = "dd876e65821ffb0e58ce0ba18b3b1e9bebc809d2a6eafbde3844a693f09a174a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x80390b70
+expected_word = 0xc0e4265
+kind = "call"
+target_section = ".lair"
+target = 0x80390994
+size = 0x154
+sha256 = "abf7faec6af943c4192210f704799da6399cce2590ce95890e825f6a15c59a6c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af224
+expected_word = 0xc0c52cc
+kind = "call"
+target_section = ".core2"
+target = 0x80314b30
+size = 0x78
+sha256 = "16715c97542f12b04e247ebf9379753b7b5bb00602525a64cb73afc7e4600e1e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af51c
+expected_word = 0xc0abced
+kind = "call"
+target_section = ".core2"
+target = 0x802af3b4
+size = 0xfc
+sha256 = "e1b73c5a4bb37dd8f623b2d6b99c6e109e0a9919440766356e9132dd41e8b64c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af534
+expected_word = 0xc0abced
+kind = "call"
+target_section = ".core2"
+target = 0x802af3b4
+size = 0xfc
+sha256 = "e1b73c5a4bb37dd8f623b2d6b99c6e109e0a9919440766356e9132dd41e8b64c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af59c
+expected_word = 0xc0abc9a
+kind = "call"
+target_section = ".core2"
+target = 0x802af268
+size = 0x14c
+sha256 = "b9c49b24d63e63c91ebec76aeffeb723c479963e99a0721db2b9594b0ff8393d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802afb30
+expected_word = 0xc0abde8
+kind = "call"
+target_section = ".core2"
+target = 0x802af7a0
+size = 0xec
+sha256 = "c46ce2bbd0a2e67038161089580f67c9ce08544e44396caf712d03064f7de1e2"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802afb48
+expected_word = 0xc0abde8
+kind = "call"
+target_section = ".core2"
+target = 0x802af7a0
+size = 0xec
+sha256 = "c46ce2bbd0a2e67038161089580f67c9ce08544e44396caf712d03064f7de1e2"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802afff8
+expected_word = 0xc0abe40
+kind = "call"
+target_section = ".core2"
+target = 0x802af900
+size = 0x1dc
+sha256 = "99e1a4672ecf5df8d5a30ebb0e071f5147402a8b898524fb8b97dc5bc81ce4a0"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0154
+expected_word = 0xc0a27af
+kind = "call"
+target_section = ".core2"
+target = 0x80289ebc
+size = 0xc
+sha256 = "9ace9728ff49ca485cbeed10459fd71a443dc0572dbde1f7a829b3d5ee0092b8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802b0198
+expected_word = 0xc0a27af
+kind = "call"
+target_section = ".core2"
+target = 0x80289ebc
+size = 0xc
+sha256 = "9ace9728ff49ca485cbeed10459fd71a443dc0572dbde1f7a829b3d5ee0092b8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cb99c
+expected_word = 0xc0b2cf2
+kind = "call"
+target_section = ".core2"
+target = 0x802cb3c8
+size = 0xf0
+sha256 = "4a5a885aba0ed01630b3aa75acdc36c7973182971906c64645a9cbbd4fc3d00c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cb9dc
+expected_word = 0xc0b2d2e
+kind = "call"
+target_section = ".core2"
+target = 0x802cb4b8
+size = 0xf0
+sha256 = "2b22832d964d20ac8d9f28fef8ac5e1224036c26740e0e72dcb212990f6cdf22"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cba1c
+expected_word = 0xc0b2d6a
+kind = "call"
+target_section = ".core2"
+target = 0x802cb5a8
+size = 0xf8
+sha256 = "0da84b3631e7d354e24ae9e75125cb1f10bbb20f09d75ba2aed5e645b651be1b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cbb18
+expected_word = 0xc0cc030
+kind = "call"
+target_section = ".core2"
+target = 0x803300c0
+size = 0x8
+sha256 = "ad5861b78902e853feb67be644315723bb76cbb701b05dc143f42d9063f24c1e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cbe4c
+expected_word = 0xc0b2c10
+kind = "call"
+target_section = ".core2"
+target = 0x802cb040
+size = 0x38
+sha256 = "c654922c72c2a337c3d64a8b09b16b2cee5f63a4bd5ac69a762318707ba1aabd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cbe54
+expected_word = 0xc0b2c1e
+kind = "call"
+target_section = ".core2"
+target = 0x802cb078
+size = 0xc8
+sha256 = "71e3044db57315c9db934250a165903b41d05b293a6d7ac5cc8a9134fa777d03"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cbf2c
+expected_word = 0xc0b2c1e
+kind = "call"
+target_section = ".core2"
+target = 0x802cb078
+size = 0xc8
+sha256 = "71e3044db57315c9db934250a165903b41d05b293a6d7ac5cc8a9134fa777d03"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cc094
+expected_word = 0xc0b2c50
+kind = "call"
+target_section = ".core2"
+target = 0x802cb140
+size = 0x64
+sha256 = "140856aa8dd19a73e09681ff131235307da4c1e50f685f967f3463af3a07e68d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cc254
+expected_word = 0xc0b2e8d
+kind = "call"
+target_section = ".core2"
+target = 0x802cba34
+size = 0x78
+sha256 = "59e2bdb7a6d90f6d6840cd20870da535f2f18ff6d04bb4f78b68c01d0ce22a15"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cc278
+expected_word = 0xc0b2e8d
+kind = "call"
+target_section = ".core2"
+target = 0x802cba34
+size = 0x78
+sha256 = "59e2bdb7a6d90f6d6840cd20870da535f2f18ff6d04bb4f78b68c01d0ce22a15"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ccd70
+expected_word = 0xc0b3190
+kind = "call"
+target_section = ".core2"
+target = 0x802cc640
+size = 0x3bc
+sha256 = "18ad7e460aadade247ad77f202bb8f0a2a1f84113d9cf73d9348ead26eca8626"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802ccdb8
+expected_word = 0xc0b32fd
+kind = "call"
+target_section = ".core2"
+target = 0x802ccbf4
+size = 0x68
+sha256 = "934fff540bd1dce8c9b676cf2f1ad129d90dd079151cb6f05c277c656b39aa07"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cd404
+expected_word = 0xc0ca484
+kind = "call"
+target_section = ".core2"
+target = 0x80329210
+size = 0x50
+sha256 = "5c4555815acdb6a91eee02351d80eb1aba9238b0d4574959ed59ce9bde05504c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d7cdc
+expected_word = 0xc0d591b
+kind = "call"
+target_section = ".core2"
+target = 0x8035646c
+size = 0x20
+sha256 = "7f8a09416c1f70b8b6c4be9a6899933cce8ecf8f72d8068d73aac7a23d0425b6"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d7dc8
+expected_word = 0xc0a3c0c
+kind = "call"
+target_section = ".core2"
+target = 0x8028f030
+size = 0x20
+sha256 = "5eb2ac79b664b248be22dfa68afd04a8a8f1ff9019da33633ecc73bd3e1a15ac"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d976c
+expected_word = 0xc0b64fb
+kind = "call"
+target_section = ".core2"
+target = 0x802d93ec
+size = 0xc8
+sha256 = "11c6c5b5a1726ab8b33059909a7be3aca4d8dfbf0c1f64e75b932e5cf13317bf"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d9784
+expected_word = 0xc0b64c1
+kind = "call"
+target_section = ".core2"
+target = 0x802d9304
+size = 0xe8
+sha256 = "3d12baa84828cb7b31e952200f42e75acf5b19592ce74297e251d02f1e76d595"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d9814
+expected_word = 0xc0b654c
+kind = "call"
+target_section = ".core2"
+target = 0x802d9530
+size = 0xd0
+sha256 = "f035a2e22debec7397fdb6d8b9420d7ed7a176a965cb3aef440fc0042a575436"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80353588
+expected_word = 0xc0cfa6a
+kind = "call"
+target_section = ".core2"
+target = 0x8033e9a8
+size = 0x20
+sha256 = "b83ac73f010264f13c8124f2c453513f1593d7fc645b50c0e26525ef765c770e"
+
+[[discovery.observed_transfers]]
+section = ".BGS"
+pc = 0x80386b74
+expected_word = 0xc0cd69d
+kind = "call"
+target_section = ".core2"
+target = 0x80335a74
+size = 0xc
+sha256 = "8124ccd5d039b373b1e963413c7ce727d48b3741b051cb5acbb9470fae95c575"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038a8c8
+expected_word = 0xc0e29cc
+kind = "call"
+target_section = ".lair"
+target = 0x8038a730
+size = 0x134
+sha256 = "68e04f44e489537fdba4ad6d23e18716412faa3640dc2363ad67de95eda35b1a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038a8ec
+expected_word = 0xc0e29cc
+kind = "call"
+target_section = ".lair"
+target = 0x8038a730
+size = 0x134
+sha256 = "68e04f44e489537fdba4ad6d23e18716412faa3640dc2363ad67de95eda35b1a"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038a9dc
+expected_word = 0xc0e29b7
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6dc
+size = 0x10
+sha256 = "a2aa0613dbe3c4f17751f65e0cb3ec4a7f7d065eaa92a5173856f575ae2a9d34"
+
+[[discovery.observed_transfers]]
+section = ".lair"
+pc = 0x8038ab34
+expected_word = 0xc0e29b7
+kind = "call"
+target_section = ".lair"
+target = 0x8038a6dc
+size = 0x10
+sha256 = "a2aa0613dbe3c4f17751f65e0cb3ec4a7f7d065eaa92a5173856f575ae2a9d34"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8028f038
+expected_word = 0xc0a37c8
+kind = "call"
+target_section = ".core2"
+target = 0x8028df20
+size = 0x28
+sha256 = "794afb90200b2b7bffbaf5385032d28e4632f51e0184fb471a09d33cf686cfbf"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802af9c4
+expected_word = 0xc0abe23
+kind = "call"
+target_section = ".core2"
+target = 0x802af88c
+size = 0x74
+sha256 = "13cb38eb10baaaeb353dff1937c2d24dced5109d8809844f5e733da07abe52b1"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802afaa8
+expected_word = 0xc0abe23
+kind = "call"
+target_section = ".core2"
+target = 0x802af88c
+size = 0x74
+sha256 = "13cb38eb10baaaeb353dff1937c2d24dced5109d8809844f5e733da07abe52b1"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cb158
+expected_word = 0xc0b2c10
+kind = "call"
+target_section = ".core2"
+target = 0x802cb040
+size = 0x38
+sha256 = "c654922c72c2a337c3d64a8b09b16b2cee5f63a4bd5ac69a762318707ba1aabd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cb3d8
+expected_word = 0xc0b2cc4
+kind = "call"
+target_section = ".core2"
+target = 0x802cb310
+size = 0xb8
+sha256 = "0dc679dc39900474b2904abba18118747acf35c93082868933b2e386fad8d8ce"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cb4c8
+expected_word = 0xc0b2cc4
+kind = "call"
+target_section = ".core2"
+target = 0x802cb310
+size = 0xb8
+sha256 = "0dc679dc39900474b2904abba18118747acf35c93082868933b2e386fad8d8ce"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802cb5b8
+expected_word = 0xc0b2cc4
+kind = "call"
+target_section = ".core2"
+target = 0x802cb310
+size = 0xb8
+sha256 = "0dc679dc39900474b2904abba18118747acf35c93082868933b2e386fad8d8ce"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3abc
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d0b24
+size = 0x30
+sha256 = "a327c89d8cdb749b061792e899920cbc3ace182b025b375929a7944c6bfc8753"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802c3abc
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388d04
+size = 0x30
+sha256 = "be737bf713408ce35716834fb075ad72490ce4d20c4e6f8b19513827efb3befd"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322e7c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322b48
+size = 0x10
+sha256 = "f9e77de3221db6174e0d87d3101de46b81de1684d1061988be35c3c3951e8a9b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322f04
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322b58
+size = 0x20
+sha256 = "655d3ad240284bb1faf02417a4139de1898defc9b824b09c35c1145c3dc42808"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80322f44
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322b78
+size = 0x20
+sha256 = "c96c52b10b758a4464a7ec0f2dd8b51f3b78e31812651016ded774c69a46c2ed"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230b0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322bb8
+size = 0xc
+sha256 = "691e766163b1b8288cf1e76b4dc9eb7dde764cde7f749bf5aef916d919300f2b"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803230e0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80322b98
+size = 0x20
+sha256 = "d81e85b38c28fb2bd9439354326a3caacd1adf282c013e052a15fb5322255310"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d10a4
+size = 0x304
+sha256 = "04b09823db7a6e7eb371e4d42ca18e1af71263b478f1531ba08776b7b4326c2a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80386fdc
+size = 0x4b4
+sha256 = "73e326e3b37a02946f9d07861bf47521f40dc2043ca0e5db41b5c17543b9a515"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x803878cc
+size = 0x428
+sha256 = "7b96e39fd74854293de88e9612a35a482e3f5dc33011ca60d380e96381c30d61"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388434
+size = 0x610
+sha256 = "b0fd6c6d2118e8e87537f26739cb67bcfe7a484426a9d969f8d95dcd6e9fc52a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388c78
+size = 0x40
+sha256 = "832bcf6e6e30d2a511fceefc744f05d4a19426fdf87735c32d715af13b0286e7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388d34
+size = 0x58
+sha256 = "6de0873f99023521390b34ca7f1e71c54b5c30fe2965aea5b4c922d4cf51349d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388d8c
+size = 0x1dc
+sha256 = "27db1f72caac7b514bbfdb7849a03d15831755a9648b3c8335183ed719e46d20"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388fbc
+size = 0x2cc
+sha256 = "2cb773d81857db19ae6ee98383b59bb2eb82ce39874aa2eca79bd44d5ec9896c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80389600
+size = 0x3b4
+sha256 = "bf9b782b8def5d7d64abe1e689535059292942af9503e6f7a9959ed168a2dc68"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80389e90
+size = 0x240
+sha256 = "302f882178601a974d0332057147a51283e43d77b64e80e1fc3efe482fa6e0eb"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x8038c154
+size = 0x254
+sha256 = "e7d66fac7386775a37c9529c0d55f7f03374eb6b6143414d7090f5748ddbc340"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80387d6c
+size = 0x48
+sha256 = "3fa72003399a5236310a242580f0a2b27144ee59e9602afc1c8f804d65345a31"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80387eb0
+size = 0x68
+sha256 = "361319f8e5694efcddfcd5fec5243ad8d506af5bb4a0a8b07dedef77cd9685c3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x803894c0
+size = 0x70
+sha256 = "b9a8131aec58233ec9cdae9485c87fe03d84d19bc5f2a0abffad82576dde1e23"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x8038a0d0
+size = 0x148
+sha256 = "c8226f2bd849c8c2d8f746ce4897fc911eb6c504c3654059e847e5e298904f34"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330044
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80386f44
+size = 0x98
+sha256 = "e3ca600771422582492dd1b1656da4264f9fd62892dcd700789ce1d23bcec2a3"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330060
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x802d0f30
+size = 0x98
+sha256 = "5d3b2cb28d357225a75ccf3f2b5fe5045e133b335050ed19818e82d9dd218391"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d454
+size = 0x24
+sha256 = "7deea051a44056954e68201c242ca30d1b7842fdfe2bf322b5b6682543ac720a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031d52c
+size = 0x24
+sha256 = "51556dedf37c326e625c0cb44209f006c9ef7e92b85b3bbb49a2e6c0bf3ab8e5"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031e860
+size = 0x24
+sha256 = "dde5cc9c0272504038de14c1cc42f9a8f7431a171b77b8751fc8b6eb57cbbac4"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031f040
+size = 0x24
+sha256 = "e7a1d3adce1652151250604d2c47264718f2da36a6f04985d37b9aeb6e22feda"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80334500
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80389c74
+size = 0x28
+sha256 = "db9e552396d7ad360189f06a4f5c46e431805f6a3e609d42b6490acb177a4c01"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80386fac
+expected_word = 0xc0e1bb7
+kind = "call"
+target_section = ".TTC"
+target = 0x80386edc
+size = 0x68
+sha256 = "51a38cfbb84eba8ca9e0494d3088c0c3ec38433b2cf3ccd9098e78aa4a99e0a8"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80386fc4
+expected_word = 0xc0e1bb7
+kind = "call"
+target_section = ".TTC"
+target = 0x80386edc
+size = 0x68
+sha256 = "51a38cfbb84eba8ca9e0494d3088c0c3ec38433b2cf3ccd9098e78aa4a99e0a8"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80387170
+expected_word = 0xc0e19d8
+kind = "call"
+target_section = ".TTC"
+target = 0x80386760
+size = 0x33c
+sha256 = "73ba402314f96fb90930ac0e838462951f2cf9f1c284f6d017c3306dc8d1989e"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x803871ec
+expected_word = 0xc0e18fc
+kind = "call"
+target_section = ".TTC"
+target = 0x803863f0
+size = 0x64
+sha256 = "47849087ac699b92798368edfc174c65035dd1f2fe9b181ecb2dbddc4e9a5264"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80387264
+expected_word = 0xc0e18fc
+kind = "call"
+target_section = ".TTC"
+target = 0x803863f0
+size = 0x64
+sha256 = "47849087ac699b92798368edfc174c65035dd1f2fe9b181ecb2dbddc4e9a5264"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x803872c4
+expected_word = 0xc0e1915
+kind = "call"
+target_section = ".TTC"
+target = 0x80386454
+size = 0x5c
+sha256 = "435d90374506131a3566de9727d0838a175c48681de0504bba53b258d1de8a7e"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80387410
+expected_word = 0xc0e18fc
+kind = "call"
+target_section = ".TTC"
+target = 0x803863f0
+size = 0x64
+sha256 = "47849087ac699b92798368edfc174c65035dd1f2fe9b181ecb2dbddc4e9a5264"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80387468
+expected_word = 0xc0e1b5a
+kind = "call"
+target_section = ".TTC"
+target = 0x80386d68
+size = 0x8c
+sha256 = "2fde564cb8e38eefe6831ed224636ea2ef20b550c08dd638b26a7a73b7d8df22"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80388488
+expected_word = 0xc0caf06
+kind = "call"
+target_section = ".core2"
+target = 0x8032bc18
+size = 0x24
+sha256 = "2d3bd169560575587d3f9a2efcc0ed1ccdbd1e08630d66260dce730e00cc79cc"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x8038860c
+expected_word = 0xc0e204b
+kind = "call"
+target_section = ".TTC"
+target = 0x8038812c
+size = 0x4c
+sha256 = "45d46b02dab07d072b291834d2306f246a60776863c1f2752739bba8bb34dbff"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80388d3c
+expected_word = 0xc0e231e
+kind = "call"
+target_section = ".TTC"
+target = 0x80388c78
+size = 0x40
+sha256 = "832bcf6e6e30d2a511fceefc744f05d4a19426fdf87735c32d715af13b0286e7"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x803897cc
+expected_word = 0xc0e2567
+kind = "call"
+target_section = ".TTC"
+target = 0x8038959c
+size = 0x64
+sha256 = "5f4beed21b64bfbc5813a767f1877e5a22885037646f6c07b27fdc5da161739a"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80389920
+expected_word = 0xc0e254c
+kind = "call"
+target_section = ".TTC"
+target = 0x80389530
+size = 0x6c
+sha256 = "1824fc92eb0f2c8a97bc7c999d17b54af2ac25a48dae7194dc7499c0d55c03dc"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80389c84
+expected_word = 0xc0e26ce
+kind = "call"
+target_section = ".TTC"
+target = 0x80389b38
+size = 0xc4
+sha256 = "167b8a7034fbc5650460363d5fc473aa7a160e74637fdb8feaa4ba23c8173309"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d0f70
+expected_word = 0xc0b42d5
+kind = "call"
+target_section = ".core2"
+target = 0x802d0b54
+size = 0x160
+sha256 = "8006f4576c5b4a66d3874b9df570aa072a45ae386e36307b1f3d877fecdfe05a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d0f78
+expected_word = 0xc0b432d
+kind = "call"
+target_section = ".core2"
+target = 0x802d0cb4
+size = 0x128
+sha256 = "b051e637681c3760969e0b7ad5d1c8b7cc0faa73a574253fb88594477e52612f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d0f88
+expected_word = 0xc0b4377
+kind = "call"
+target_section = ".core2"
+target = 0x802d0ddc
+size = 0x154
+sha256 = "5897f7037ae9cd533e5cad429474b9af5cbc039a76daeda82a963299fa89496e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d0f98
+expected_word = 0xc0b4377
+kind = "call"
+target_section = ".core2"
+target = 0x802d0ddc
+size = 0x154
+sha256 = "5897f7037ae9cd533e5cad429474b9af5cbc039a76daeda82a963299fa89496e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d0fa8
+expected_word = 0xc0b4377
+kind = "call"
+target_section = ".core2"
+target = 0x802d0ddc
+size = 0x154
+sha256 = "5897f7037ae9cd533e5cad429474b9af5cbc039a76daeda82a963299fa89496e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d1100
+expected_word = 0xc0b43f2
+kind = "call"
+target_section = ".core2"
+target = 0x802d0fc8
+size = 0xdc
+sha256 = "5f2fa5aca93692dd59fb3d3bbbc7636420c84d3722a195371d71b25df4c5c62a"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x802d11e0
+expected_word = 0xc0b428e
+kind = "call"
+target_section = ".core2"
+target = 0x802d0a38
+size = 0x80
+sha256 = "7ca8938fa60ba98ec20bfa97fda92d8ae539523814fe1bf47234cf74753262a9"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80386804
+expected_word = 0xc0e192c
+kind = "call"
+target_section = ".TTC"
+target = 0x803864b0
+size = 0x2b0
+sha256 = "6dcedf24d6c593ab2ddb417de167dd23d663ba5ead1725023fc602442c2f710b"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x803895a4
+expected_word = 0xc0e251a
+kind = "call"
+target_section = ".TTC"
+target = 0x80389468
+size = 0x4c
+sha256 = "ab4a4dd837127d12d8794caed746a75432ea16eb193b1a094a0c6f9530bc5765"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80386740
+expected_word = 0xc0e18fc
+kind = "call"
+target_section = ".TTC"
+target = 0x803863f0
+size = 0x64
+sha256 = "47849087ac699b92798368edfc174c65035dd1f2fe9b181ecb2dbddc4e9a5264"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80320c0c
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x80388360
+size = 0xc8
+sha256 = "8a1f3d82658f4d0538a10919f6dec0762c88aa619a53cbebe20bd58b25b9dc12"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80320d20
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x80388428
+size = 0x80
+sha256 = "f7724d893369c8c06e03d6e8897a970a1b22e59f242194ed709f6bb0e7bac4a8"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80320e28
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x803884a8
+size = 0x70
+sha256 = "a8f3fcfbf9bcb39ce6de7bf8bedf13746e966287948eb5b01b3c352baad1ed7f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80356ccc
+size = 0x484
+sha256 = "e2975282fe13ad433c26e2999ed2bc09e08fdbfcf21a6ecc86b303f5d42a6b72"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x803864d4
+size = 0x444
+sha256 = "bd090416c231e8486b45aa79f45f308197d178dcad65d3c925883e919e2aa077"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x80386b28
+size = 0x4ac
+sha256 = "e77461ed80401803909d0885a6c3dd807bd4531ccf5af236be8aee2175dd27c7"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x803870f8
+size = 0x418
+sha256 = "b01d3a9381dee666bb481225a1aae0b9e019270c79de55053414cb5057ee182f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803269f0
+expected_word = 0x40f809
+kind = "call"
+target_section = ".CC"
+target = 0x80389900
+size = 0x198
+sha256 = "b1c63fb4a5364645508591ba5a3caebb6d5d087a1a3422d0d064808bc6cb1656"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8032d2f8
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x80356c50
+size = 0x7c
+sha256 = "fe8510f9a60ad314e35348f97e382b7296b45ff768c66ff2009e850ba900da4e"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330044
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80356bf4
+size = 0x30
+sha256 = "502dc30728bfb5183b80fb0aab31014d596dc6ca4807a8292425f998448ce799"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330060
+expected_word = 0x40f809
+kind = "call"
+target_section = ".core2"
+target = 0x80356c24
+size = 0x2c
+sha256 = "2b19a2c528d6b84505ce2f07f09a3fb93fb0df9a4acbfb3d98a2450780b3781c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031e884
+size = 0x24
+sha256 = "acc39e3b0fe2fd791dc63663a4aaf32ddf89d5124f9e0ef35091b70fa32180af"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80356c38
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80356d40
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80356dc0
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80356e40
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80356e74
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80356ea4
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80357070
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80357134
+expected_word = 0xc0d5a7c
+kind = "call"
+target_section = ".core2"
+target = 0x803569f0
+size = 0x204
+sha256 = "f4a1020ec9bb1ec7ae353705f75cd6497a821cfd640288e1a3afb45111c99360"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80386528
+expected_word = 0xc0e18fc
+kind = "call"
+target_section = ".CC"
+target = 0x803863f0
+size = 0xe4
+sha256 = "0a2c840429019efdd2b156b3e5e6969a51b36177219e605e3694163edad4252b"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80386530
+expected_word = 0xc0e22d3
+kind = "call"
+target_section = ".CC"
+target = 0x80388b4c
+size = 0x2c
+sha256 = "f0d95de2394bb329dff72920bb6fe944b7694f81ae605c72e666eaab11ee41da"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x803865b0
+expected_word = 0xc0e2328
+kind = "call"
+target_section = ".CC"
+target = 0x80388ca0
+size = 0x14
+sha256 = "8f177eddc2a6ca0263b747eafe62d009b8cb88eccc14dc3f028b8cf035384030"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80386c30
+expected_word = 0xc0e1a48
+kind = "call"
+target_section = ".CC"
+target = 0x80386920
+size = 0x1b0
+sha256 = "1195aa11fbb07f22ac532585708ee5323f87b0b83b9a3a7af19fcdfdf8f4edd1"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80387194
+expected_word = 0xc0e1bf8
+kind = "call"
+target_section = ".CC"
+target = 0x80386fe0
+size = 0x100
+sha256 = "042057f6328db02d309e6b93d8eeb29c92e22a4fe87079efbf0afa87750dbeb9"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x803872b8
+expected_word = 0xc0e22de
+kind = "call"
+target_section = ".CC"
+target = 0x80388b78
+size = 0x44
+sha256 = "363e58b1ad9ee7627465a3cd0fd0c04648f647b89c5276ee463b415efd2ac377"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x803872c8
+expected_word = 0xc0e22ef
+kind = "call"
+target_section = ".CC"
+target = 0x80388bbc
+size = 0x44
+sha256 = "046bd5491b11f4b9ae46e34401bfce375a964fe6c149030b3c7ca423d174513f"
+
+[[discovery.observed_transfers]]
+section = ".CC"
+pc = 0x80389990
+expected_word = 0xc0e25fc
+kind = "call"
+target_section = ".CC"
+target = 0x803897f0
+size = 0xa0
+sha256 = "913359119022f4dad4619a7253fe40ccff2c03134a2d44bb4d1f49fbcc293cf9"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80303d04
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x803882e4
+size = 0x60
+sha256 = "bf898ae9dc44c9f218027d0d9dca1288270bae9b0cce263b5b6ab76470ddcc2d"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x8030f394
+expected_word = 0x320f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80387fb0
+size = 0x44
+sha256 = "73b3738cea2680b25933852b9b6517577340564d2ca1eb7d7b3bab5515ed428f"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330028
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x803883c8
+size = 0x6c
+sha256 = "13274f9fe0bf53b3db1b44f37a63a16ce439dadd68bfeb7cfdb20c676b92b11c"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330044
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388344
+size = 0x84
+sha256 = "02f4e45c1afd6b0bba61ddb50da554b90f7a39f3ec2cac47eecf327b9566f4af"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x80330060
+expected_word = 0x40f809
+kind = "call"
+target_section = ".TTC"
+target = 0x80388178
+size = 0x16c
+sha256 = "eebf97860d8e52e975b4c6e2f77eaa55754a3bf34e01e02956d20be6d6b98302"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031dd44
+size = 0x34
+sha256 = "b8333dee5a4cf9bc8aaa74297189238332f41f6a5e57b4548324394994bc1dfe"
+
+[[discovery.observed_transfers]]
+section = ".core2"
+pc = 0x803344c4
+expected_word = 0x320f809
+kind = "call"
+target_section = ".core2"
+target = 0x8031e938
+size = 0x24
+sha256 = "79c48ad45afbdde9bbc74e34e1376765ebb028b4d8d9d7fadae3055065c055e8"
+
+[[discovery.observed_transfers]]
+section = ".TTC"
+pc = 0x80387fc4
+expected_word = 0xc0e1fc6
+kind = "call"
+target_section = ".TTC"
+target = 0x80387f18
+size = 0x98
+sha256 = "d0e95ca84d87152214343f62a0cc271d89be7016b0f69ecb52ac5b67748fc39f"

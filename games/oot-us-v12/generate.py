@@ -1,6 +1,6 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
-from prepare import prepare as prepare_image
+from prepare import file_bytes, prepare as prepare_image
 from controls_analysis import verify_controls
 import hashlib
 
@@ -29,13 +29,15 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     if startup:
-        from prepare import file_bytes
         raw, _ = file_bytes(game['rom'].read_bytes(), 27)
         dd, _ = file_bytes(game['rom'].read_bytes(), 28)
         lines.append(f'#define OOT_DD_SIZE {len(dd)}')
         lines.append('static const uint8_t oot_dd_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(dd).digest()) + '};')
         lines.append(f'#define OOT_CODE_SIZE {len(raw)}')
         lines.append('static const uint8_t oot_code_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};')
+    boot_restart = next(span for span in profile['graphics']['rsp']['images']
+                        if span.get('image') == 'rsp-boot-restart')
+    lines.append(f'#define OOT_RSP_BOOT_RESTART_SHA256 "{boot_restart["sha256"]}"')
     (output / 'game_config.h').write_text('\n'.join(lines))
     spec = profile['controls']
     lines = ['/* Verified NTSC 1.2 camera/input operands from profile.toml. */']
@@ -66,3 +68,13 @@ def finalize_metadata(rom, metadata, profile):
             function['relocatable']=True
             owned=set(function['instruction_addresses'])
             function['relocation_pcs']=[pc for pc in sites if pc in owned]
+
+
+def graphics_images(rom, profile):
+    code, _ = file_bytes(rom, 27)
+    rsp = profile['graphics']['rsp']
+    boot = rsp['images'][0]
+    offset = boot['rom_offset']
+    original = rom[offset:offset + boot['size']]
+    jump = rsp['restart_jump_offset']
+    return {'.code': code, 'rsp-boot-restart': original[jump:jump + 4] + original[4:]}

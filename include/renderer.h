@@ -122,6 +122,9 @@ void recomp_renderer_separate_mouse_actions(RecompRenderer *, bool enabled);
 /* Opt into arrow keys as C-buttons and WASD as the analog stick. This mapping
  * remains available when mouse capture ends, including dialog/instrument modes. */
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *, bool enabled);
+/* Opt into WASD stick input without changing the arrow mapping. In pad-only
+ * mode, Return and Tab replace A and S for the N64 A and Start buttons. */
+void recomp_renderer_wasd_stick(RecompRenderer *, bool enabled);
 /* Native right-stick camera and D-pad C-buttons, independent of mouse capture.
  * The held camera state is neutral while unfocused or a UI captures input. */
 void recomp_renderer_gamepad_camera_mode(RecompRenderer *, bool enabled);

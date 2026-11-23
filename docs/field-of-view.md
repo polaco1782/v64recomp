@@ -174,6 +174,21 @@ Decide how multiplayer, menus, watch screens, death and scripted cameras should
 behave; verify any state globals used for that decision. RT64 F7 aspect expansion
 is separate from this reference-angle conversion and needs combined testing.
 
+### Widescreen on GLES2
+
+The GLES2 backend receives screen-space RDP primitives from compiled RSP code.
+It cannot recover geometry already clipped by the RSP or omitted by CPU
+visibility. Widening the final blit alone only stretches the image.
+
+For games with a verified native aspect adapter, use
+`recomp_renderer_set_aspect_hook()`. F7 (or `RECOMP_EXPANDED_ASPECT=1` at launch
+on GLES2) requests the drawable aspect, never narrower than 4:3. The adapter
+must update the world's projection and matching visibility state; return true
+only for native anamorphic output. GLES2 then displays that output at the
+accepted aspect, keeping stock 4:3 framing for unsupported states, CPU video
+and games without an adapter. GoldenEye and Banjo are current examples. This is not
+the general-purpose RT64 expansion, nor does it separately reposition the HUD.
+
 ## 6. Store evidence and integrate the setting
 
 Keep all game-specific work under `games/<game>/`:

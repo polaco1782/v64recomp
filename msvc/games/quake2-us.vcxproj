@@ -26,6 +26,8 @@
   <ItemGroup>
     <None Include="$(RecompRoot)games\quake2-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\quake2-us\fov.c" />
+    <ClInclude Include="$(RecompRoot)games\quake2-us\fov.h" />
     <None Include="$(RecompRoot)games\quake2-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\quake2-us\input.c" />
     <ClCompile Include="$(RecompRoot)games\quake2-us\main.c" />

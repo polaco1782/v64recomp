@@ -49,7 +49,7 @@ static const RecompFunctionEntry *find_entry(Runtime *rt, uint32_t address, uint
                 found = entry;
         }
     }
-    if (!found && unloaded)
+    if (!found && unloaded && recomp_loaded_code_section(rt, address) == UINT32_MAX)
         recomp_fail("live function section is unloaded", address);
     return found;
 }
@@ -76,7 +76,7 @@ static LiveModule *find_jump(Runtime *rt, uint32_t address, uint32_t site, uint3
                 return module;
         }
     }
-    if (unloaded)
+    if (unloaded && recomp_loaded_code_section(rt, address) == UINT32_MAX)
         recomp_fail("live jump section is unloaded", address);
     return NULL;
 }
@@ -120,6 +120,12 @@ static bool load_module(Runtime *rt, const char *path) {
     }
     *module = (LiveModule){.next = rt->live_modules, .handle = handle, .manifest = manifest};
     rt->live_modules = module;
+    if (!manifest->resume) {
+        for (size_t i = 0; i < manifest->function_count; i++) {
+            const RecompFunctionEntry *entry = &manifest->functions[i];
+            recomp_note_live_discovery(rt, entry->section, entry->address, false);
+        }
+    }
     fprintf(stderr, "live repair: loaded %s (%zu functions)\n", path, manifest->function_count);
     return true;
 }
@@ -140,6 +146,7 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
             : checked ? "checked call"
                       : "missing function",
             address, site, section, control);
+    uint32_t target_section = recomp_loaded_code_section(rt, address);
     char request[4096], temporary[4096];
     bool request_ready = false;
     if (snprintf(request, sizeof(request), "%s/request-%08x.json", dir, address) < (int)sizeof(request) &&
@@ -156,7 +163,10 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
                               : "missing_function");
             for (size_t i = 0; i < sizeof(rt->rom_sha1); i++)
                 fprintf(file, "%02x", rt->rom_sha1[i]);
-            fprintf(file, "\"}\n");
+            fputc('"', file);
+            if (target_section != UINT32_MAX)
+                fprintf(file, ",\"target_section\":%u", target_section);
+            fputs("}\n", file);
             if (fclose(file) == 0 && rename(temporary, request) == 0)
                 request_ready = true;
             else
@@ -172,6 +182,8 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
         snprintf(target_text, sizeof(target_text), "0x%08x", address);
         snprintf(site_text, sizeof(site_text), "0x%08x", site);
         snprintf(section_text, sizeof(section_text), "%u", section);
+        char target_section_text[16];
+        snprintf(target_section_text, sizeof(target_section_text), "%u", target_section);
         char *const args[] = {(char *)rt->live_patch_python,
                               (char *)rt->live_patch_script,
                               "--game",
@@ -190,6 +202,8 @@ static bool wait_for_repair(Runtime *rt, uint32_t address, uint32_t site, uint32
                               (char *)rt->live_patch_build_dir,
                               "--patch-dir",
                               (char *)dir,
+                              target_section == UINT32_MAX ? NULL : "--target-section",
+                              target_section_text,
                               NULL};
         int error = posix_spawn(&helper, rt->live_patch_python, NULL, NULL, args, environ);
         if (error) {
@@ -270,6 +284,11 @@ static bool wait_for_repair(Runtime *rt, uint32_t a, uint32_t s, uint32_t n, boo
     return false;
 }
 #endif
+RecompFunction recomp_live_loaded(Runtime *rt, uint32_t address) {
+    const RecompFunctionEntry *entry = find_entry(rt, address, 0, 0, false);
+    return entry ? entry->function : NULL;
+}
+
 RecompFunction recomp_live_lookup(Runtime *rt, uint32_t address) {
     return recomp_live_lookup_at(rt, address, 0, 0);
 }
@@ -284,8 +303,12 @@ RecompFunction recomp_live_lookup_at(Runtime *rt, uint32_t address, uint32_t sit
 }
 
 void recomp_live_checked_call(Runtime *rt, MipsContext *ctx, uint32_t target, uint32_t site, uint32_t section) {
+    uint32_t guest_target = target;
     target = recomp_canonical_function_address(rt, target);
     const RecompFunctionEntry *entry = find_entry(rt, target, site, section, true);
+    if (!entry && target == guest_target && !recomp_has_function(rt, target) &&
+        recomp_interpret_call(rt, ctx, target, site, section, false, (uint32_t)ctx->gpr[31]))
+        return;
     if (!entry && wait_for_repair(rt, target, site, section, true, false))
         entry = find_entry(rt, target, site, section, true);
     if (!entry)
@@ -298,19 +321,25 @@ void recomp_live_checked_call(Runtime *rt, MipsContext *ctx, uint32_t target, ui
 
 void recomp_live_checked_jump(Runtime *rt, MipsContext *ctx, uint32_t target, uint32_t site, uint32_t section,
                               uint32_t return_address, uint32_t entry_stack_pointer) {
+    uint32_t guest_target = target;
     target = recomp_canonical_function_address(rt, target);
     LiveModule *module = find_jump(rt, target, site, section);
+    if (!module && target == guest_target && !recomp_has_function(rt, target) &&
+        recomp_interpret_call(rt, ctx, target, site, section, true, return_address))
+        return;
     if (!module && wait_for_repair(rt, target, site, section, false, true))
         module = find_jump(rt, target, site, section);
     if (!module)
         recomp_fail("unlisted indirect jump target", target);
     if (module->manifest->resume) {
+        recomp_note_live_discovery(rt, section, target, true);
         module->manifest->resume(rt, ctx, target, return_address, entry_stack_pointer);
         return;
     }
     for (size_t i = 0; i < module->manifest->function_count; i++) {
         const RecompFunctionEntry *entry = &module->manifest->functions[i];
         if (entry->address == target && entry->section < rt->section_count && rt->section_loaded[entry->section]) {
+            recomp_note_live_discovery(rt, entry->section, target, true);
             recomp_record_call(rt, target);
             if (rt->prepare_call)
                 rt->prepare_call(rt, target);

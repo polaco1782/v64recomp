@@ -17,6 +17,110 @@ from metadata_candidates import (counted_record_calls, fixed_callback_stores, in
                                  visible_shared_slots)
 
 
+def switch_bound(read, jump, scale, start, expanded, visited):
+    guard = read(scale.pc - 4)
+    if guard.opcode == 'andi' and guard.pc in expanded and guard.rt == scale.rt:
+        mask = guard.word & 0xffff
+        if 0 < mask < 8192 and mask & (mask + 1) == 0 and guard.rt and scale.pc in expanded:
+            return guard.pc, mask + 1
+        return None
+    if scale.pc - 8 < start:
+        return None
+    branch = guard
+    if branch.opcode != 'beq':
+        branch = read(scale.pc - 8)
+    if branch.opcode != 'beq':
+        return None
+
+    # SN64 often schedules register saves and unrelated loads between the
+    # unsigned comparison and its branch. Both the tested index and the
+    # comparison result must reach the branch along one straight-line path.
+    first = branch.pc - 4
+    scheduled = []
+    while first >= start and branch.pc - first <= 64:
+        bound = read(first)
+        if bound.opcode == 'sltiu':
+            break
+        if first not in expanded or bound.opcode not in (
+                'sw', 'sd', 'swc1', 'sdc1', 'lw', 'lwc1', 'ldc1', 'addu', 'or', 'lui', 'addiu', 'mfc1', 'trunc.w.s'):
+            return None
+        scheduled.append(bound)
+        first -= 4
+    else:
+        return None
+    if first not in visited or any(i.gpr_write_mask & ((1 << bound.rs) | (1 << bound.rt)) for i in scheduled):
+        return None
+    if scale.pc != branch.pc + 4:
+        slot = read(branch.pc + 4)
+        if (scale.pc not in expanded or slot.gpr_write_mask & (1 << bound.rs)
+                or not (slot.opcode in ('or', 'addu', 'addiu', 'sll')
+                        or (slot.opcode in ('sw', 'sd', 'swc1', 'sdc1') and slot.rs == 29))):
+            return None
+    if (not 0 < bound.immediate <= 8192 or not bound.rs or not bound.rt or bound.rt == bound.rs
+            or {branch.rs, branch.rt} != {0, bound.rt} or target(branch) < jump.pc + 8
+            or scale.rt != bound.rs):
+        return None
+
+    # The comparison can itself be a delay slot. On the not-taken
+    # path of an ordinary conditional branch that slot still executes.
+    if first not in expanded:
+        before = read(first - 4)
+        if (first - 4 not in expanded or before.likely or before.opcode not in
+                ('beq', 'bne', 'bltz', 'bgez', 'blez', 'bgtz', 'bc1t', 'bc1f')
+                or constant_condition(before) is True):
+            return None
+    if branch.pc in expanded:
+        return first, bound.immediate
+    return None
+
+def infer_local_switch(rom, sections, section, read, jump, start, expanded, visited, entries, boundaries):
+    if jump.pc - 20 < start:
+        return None
+    scale, high, add, load = (read(pc) for pc in range(jump.pc - 16, jump.pc, 4))
+    if ([i.opcode for i in (scale, high, add, load)] != ['sll', 'lui', 'addu', 'lw']
+            or scale.shift != 2 or not scale.rd or not high.rt or high.rt == scale.rd
+            or {add.rs, add.rt} != {scale.rd, high.rt} or not add.rd
+            or load.rs != add.rd or not load.rt or jump.rs != load.rt
+            or any(pc not in expanded for pc in (high.pc, add.pc, load.pc))):
+        return None
+    bound = switch_bound(read, jump, scale, start, expanded, visited)
+    if bound is None:
+        return None
+    first, count = bound
+    if any((section['id'], pc) in boundaries for pc in range(first, jump.pc, 4)):
+        return None
+
+    base = (((high.word & 0xffff) << 16) + load.immediate) & 0xffffffff
+    size = 4 * count
+    tables = [s for s in sections if s['vram'] <= base < s['vram'] + s['size']]
+    if len(tables) == 1:
+        table = tables[0]
+    elif (section in tables and section.get('overlay_group') and
+          all(s.get('overlay_group') == section['overlay_group'] for s in tables)):
+        # These overlays replace one another in the same slot. The executing
+        # section identifies which of their ROM tables its own switch reads.
+        table = section
+    else:
+        return None
+    if (base % 4 or base + size > table['vram'] + table['size']
+            or (table.get('overlay_group') and table != section)):
+        return None
+    offset = table['rom_offset'] + base - table['vram']
+    raw = rom[offset:offset + size]
+    targets = sorted({int.from_bytes(raw[n:n + 4], 'big') for n in range(0, size, 4)})
+    # New case blocks must be forward and local. Backward table entries
+    # can reuse a block already reached independently in this function.
+    next_entry = min((pc for sid, pc in entries if sid == section['id'] and pc > start),
+                     default=section['vram'] + section['size'])
+    if len(raw) != size or any(pc % 4 or pc < start or pc >= next_entry or (pc < jump.pc + 8 and pc not in expanded)
+           or read(pc).opcode == 'invalid'
+           for pc in targets):
+        return None
+    return dict(pc=jump.pc, expected_word=jump.word, kind='jump', targets=targets,
+                table_vram=base, table_count=count, table_sha256=hashlib.sha256(raw).hexdigest(),
+                origin='bounded-switch', guard_pc=first)
+
+
 def discover(rom: bytes, profile: dict) -> dict:
     profile = dict(profile, hooks=resolve_native_hooks(rom, profile))
     game, config = profile['game'], profile.get('discovery', {})
@@ -282,6 +386,43 @@ def discover(rom: bytes, profile: dict) -> dict:
                     if 'entry_register' in transfer else not saved_ra):
                 raise RecompError(f'invalid checked return save at {pc:#010x}')
         transfers_by_section[key] = transfer
+    # Executed misses retain the source instruction and target bytes as evidence.
+    # Keep local jump destinations in the caller, including when a site already
+    # has other checked targets. Never expand a fingerprinted table by inference.
+    for edge in config.get('observed_transfers', []):
+        pc, address, size = edge['pc'], edge['target'], edge['size']
+        kind = edge['kind']
+        current_section = edge['section']
+        source, instruction = mapping(pc), read(pc)
+        dest = mapping(address, edge['target_section'])
+        if (not source or source['name'] != current_section or not dest or dest['name'] != edge['target_section']
+                or not instruction or instruction.word != edge['expected_word'] or address % 4
+                or size <= 0 or size % 4 or address + size > dest['vram'] + dest['size']
+                or kind not in ('call', 'tail', 'jump')):
+            raise RecompError(f'invalid observed transfer at {pc:#010x}')
+        offset = dest['rom_offset'] + address - dest['vram']
+        if hashlib.sha256(rom[offset:offset + size]).hexdigest() != edge['sha256']:
+            raise RecompError(f'observed target fingerprint mismatch at {address:#010x}')
+        if kind == 'call':
+            if instruction.opcode not in ('jalr', 'jal') or (instruction.opcode == 'jal' and target(instruction) != address):
+                raise RecompError(f'observed call opcode mismatch at {pc:#010x}')
+        elif instruction.opcode != 'jr' or instruction.rs == 31 or (kind == 'jump' and dest != source):
+            raise RecompError(f'observed jump opcode or section mismatch at {pc:#010x}')
+        if kind != 'jump':
+            add_entry(address, origin='observed-call' if kind == 'call' else 'observed-tail', preferred=dest['name'])
+        if instruction.opcode != 'jal':
+            key = source['id'], pc
+            old = transfers_by_section.get(key, {})
+            if old and (old['kind'] != kind or ('table_vram' in old and address not in old['targets'])):
+                raise RecompError(f'observation conflicts with checked transfer at {pc:#010x}')
+            if kind == 'call' and dynamic_calls:
+                # The target is already rooted in the observed loaded section.
+                # A resident JALR can reach several overlays sharing this address.
+                partial_call_targets.setdefault(key, set()).add(address)
+            else:
+                transfers_by_section[key] = dict(old, pc=pc, expected_word=instruction.word, kind=kind,
+                                                  targets=sorted({address, *old.get('targets', [])}))
+    current_section = None
     fallthroughs_by_section = {}
     for transfer in config.get('fallthroughs', []):
         current_section = transfer.get('section')
@@ -310,102 +451,7 @@ def discover(rom: bytes, profile: dict) -> dict:
         continuations_by_section[key] = site
     current_section = None
 
-    def switch_bound(jump, scale, start, expanded, visited):
-        guard = read(scale.pc - 4)
-        if guard.opcode == 'andi' and guard.pc in expanded and guard.rt == scale.rt:
-            mask = guard.word & 0xffff
-            if 0 < mask < 8192 and mask & (mask + 1) == 0 and guard.rt and scale.pc in expanded:
-                return guard.pc, mask + 1
-            return None
-        if scale.pc - 8 < start:
-            return None
-        branch = guard
-        if branch.opcode != 'beq':
-            branch = read(scale.pc - 8)
-        if branch.opcode != 'beq':
-            return None
-
-        # SN64 often schedules register saves and unrelated loads between the
-        # unsigned comparison and its branch. Both the tested index and the
-        # comparison result must reach the branch along one straight-line path.
-        first = branch.pc - 4
-        scheduled = []
-        while first >= start and branch.pc - first <= 64:
-            bound = read(first)
-            if bound.opcode == 'sltiu':
-                break
-            if first not in expanded or bound.opcode not in (
-                    'sw', 'sd', 'swc1', 'sdc1', 'lw', 'lwc1', 'ldc1', 'addu', 'or', 'lui', 'addiu', 'mfc1', 'trunc.w.s'):
-                return None
-            scheduled.append(bound)
-            first -= 4
-        else:
-            return None
-        if first not in visited or any(i.gpr_write_mask & ((1 << bound.rs) | (1 << bound.rt)) for i in scheduled):
-            return None
-        if scale.pc != branch.pc + 4:
-            slot = read(branch.pc + 4)
-            if (scale.pc not in expanded or slot.gpr_write_mask & (1 << bound.rs)
-                    or not (slot.opcode in ('or', 'addu', 'addiu', 'sll')
-                            or (slot.opcode in ('sw', 'sd', 'swc1', 'sdc1') and slot.rs == 29))):
-                return None
-        if (not 0 < bound.immediate <= 8192 or not bound.rs or not bound.rt or bound.rt == bound.rs
-                or {branch.rs, branch.rt} != {0, bound.rt} or target(branch) < jump.pc + 8
-                or scale.rt != bound.rs):
-            return None
-
-        # The comparison can itself be a delay slot. On the not-taken
-        # path of an ordinary conditional branch that slot still executes.
-        if first not in expanded:
-            before = read(first - 4)
-            if (first - 4 not in expanded or before.likely or before.opcode not in
-                    ('beq', 'bne', 'bltz', 'bgez', 'blez', 'bgtz', 'bc1t', 'bc1f')
-                    or constant_condition(before) is True):
-                return None
-        if branch.pc in expanded:
-            return first, bound.immediate
-        return None
-
-    def infer_local_switch(jump, start, section, expanded, visited):
-        if jump.pc - 20 < start:
-            return None
-        scale, high, add, load = (read(pc) for pc in range(jump.pc - 16, jump.pc, 4))
-        if ([i.opcode for i in (scale, high, add, load)] != ['sll', 'lui', 'addu', 'lw']
-                or scale.shift != 2 or not scale.rd or not high.rt or high.rt == scale.rd
-                or {add.rs, add.rt} != {scale.rd, high.rt} or not add.rd
-                or load.rs != add.rd or not load.rt or jump.rs != load.rt
-                or any(pc not in expanded for pc in (high.pc, add.pc, load.pc))):
-            return None
-        bound = switch_bound(jump, scale, start, expanded, visited)
-        if bound is None:
-            return None
-        first, count = bound
-        if any((section['id'], pc) in fallthroughs_by_section or
-               (section['id'], pc) in continuations_by_section for pc in range(first, jump.pc, 4)):
-            return None
-
-        base = (((high.word & 0xffff) << 16) + load.immediate) & 0xffffffff
-        size = 4 * count
-        tables = [s for s in sections if s['vram'] <= base < s['vram'] + s['size']]
-        if len(tables) != 1 or base % 4 or base + size > tables[0]['vram'] + tables[0]['size']:
-            return None
-        table = tables[0]
-        if table.get('overlay_group') and table != section:
-            return None
-        offset = table['rom_offset'] + base - table['vram']
-        raw = rom[offset:offset + size]
-        targets = sorted({int.from_bytes(raw[n:n + 4], 'big') for n in range(0, size, 4)})
-        # New case blocks must be forward and local. Backward table entries
-        # can reuse a block already reached independently in this function.
-        next_entry = min((pc for sid, pc in entries if sid == section['id'] and pc > start),
-                         default=section['vram'] + section['size'])
-        if any(pc % 4 or pc >= next_entry or (pc < jump.pc + 8 and pc not in expanded)
-               or read(pc).opcode == 'invalid'
-               for pc in targets):
-            return None
-        return dict(pc=jump.pc, expected_word=jump.word, kind='jump', targets=targets,
-                    table_vram=base, table_count=count, table_sha256=hashlib.sha256(raw).hexdigest(),
-                    origin='bounded-switch', guard_pc=first)
+    switch_boundaries = fallthroughs_by_section.keys() | continuations_by_section.keys()
 
     def walk(key):
         nonlocal current_section
@@ -516,7 +562,8 @@ def discover(rom: bytes, profile: dict) -> dict:
                     pending.append(pc+8)
                     continue
                 if override is None and i.opcode == 'jr' and inventory is None:
-                    override = infer_local_switch(i, start, section, expanded, visited)
+                    override = infer_local_switch(rom, sections, section, read, i, start, expanded, visited,
+                                                  entries, switch_boundaries)
                 if override is None:
                     error(pc, 'unresolved indirect transfer; add checked targets or a local replacement')
                     if i.opcode == 'jalr':

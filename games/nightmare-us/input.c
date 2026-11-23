@@ -23,8 +23,8 @@ static uint32_t player(Runtime *rt) {
 bool nightmare_input_enabled(void) {
     return enabled;
 }
-bool nightmare_input_playable(Runtime *rt) {
-    if (!enabled || !in_game)
+bool nightmare_world_playable(Runtime *rt) {
+    if (!in_game)
         return false;
     uint32_t p = player(rt), state = recomp_load32(rt, NC_INPUT_STATE);
     if (!p || !valid_span(rt, state, 0x24))
@@ -37,6 +37,9 @@ bool nightmare_input_playable(Runtime *rt) {
     if (!(flags & 1) || (flags & 0x01780000u))
         return false;
     return valid_span(rt, recomp_load32(rt, p + NC_INPUT_TRANSFORM), 0x50);
+}
+bool nightmare_input_playable(Runtime *rt) {
+    return enabled && nightmare_world_playable(rt);
 }
 void nightmare_input_init(void) {
     const char *setting = getenv("RECOMP_NIGHTMARE_MOUSE");

@@ -1,7 +1,7 @@
 # Turok 3: Shadow of Oblivion
 
 This port targets the North American retail Nintendo 64 cartridge, revision 0,
-with an Expansion Pak and desktop RT64. The normalized 32 MiB ROM has SHA-1
+with an Expansion Pak and desktop RT64 or GLES2. The normalized 32 MiB ROM has SHA-1
 `a2e0a28dc0d3a48c7c02cb9e4c4b38fe04b2d436`, internal title
 `Turok 3: Shadow of O`, cartridge ID `NTKE` and entry `0x80000400`.
 
@@ -57,6 +57,11 @@ Pickup handling searches bounded arrays by item ID; discovery records the caller
 record count, stride and slot for those functions in `symbols.json`.
 
 ## Desktop controls and field of view
+
+Append `--gles` to either build workflow to select the alternative renderer.
+A 2,400-presentation Linux Debug GLES2 replay completed and rendered the
+Controller Pak prompt, title and opening cutscene. That run did not establish
+first-person input, live FOV or later gameplay on GLES2.
 
 WASD keeps the cartridge's C-button movement on foot and while climbing nets or ladders.
 Move the mouse to look around, including relative to the wall while climbing.

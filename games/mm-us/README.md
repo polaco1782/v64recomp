@@ -1,6 +1,6 @@
 # The Legend of Zelda: Majora's Mask (US)
 
-Import the 32 MiB NTSC-U cartridge with game ID `NZSE` and SHA-1 `d6133ace5afaa0882cf214cf88daba39e266c078`. The desktop build uses RT64 and an 8 MiB Expansion Pak configuration.
+Import the 32 MiB NTSC-U cartridge with game ID `NZSE` and SHA-1 `d6133ace5afaa0882cf214cf88daba39e266c078`. The desktop build defaults to RT64 and uses an 8 MiB Expansion Pak configuration.
 
 ```sh
 tools/import_rom.py --profile games/mm-us/profile.toml --rom "/path/to/Majora's Mask.z64"
@@ -19,6 +19,27 @@ To exercise file creation with a fresh save, run the Debug replay from the repos
 The game loads its main executable and overlays from its DMA table at ROM offset `0x1a500`. Generation checks the decompressed main executable and 617 overlays against their SHA-256 fingerprints. At runtime the original loader performs DMA, Yaz0 decompression and MIPS relocations. The host checks each image before enabling its compiled functions. The entry inventory uses the NTSC-U ELF function starts from [Zelda64RecompSyms](https://github.com/Zelda64Recomp/Zelda64RecompSyms/tree/5815f864c3bc75a582ca9c73496ab455264fdde9), checked against the supplied cartridge. Its symbol file uses the name `mm.us.rev1` for this image.
 
 RT64 processes the game's F3DZEX and S2DEX graphics tasks. The audio backend checks the MM NEAD audio program, and JPEG tasks use the game's checked photo decoder. Desktop validation covered the title, file creation and reload, opening cutscene, movement in the first forest, and pause and resume.
+
+## GLES2 renderer
+
+RT64 remains the default. Build and run the compiled RSP/GLES2 variant separately:
+
+```sh
+python3 tools/build.py mm-us --debug --gles
+./build/mm-us-gles-debug/bin/mm-us
+```
+
+The ROM profile verifies the original RSP boot program, the F3DZEX2 task text
+and data, and the F3DZEX2 and S2DEX2 instruction images used for IMEM loads.
+The images come from the pinned ROM and its decompressed `.code`, not from
+a separate microcode download. The original boot and the cartridge's
+observed restart jump are fingerprinted separately. The native JPEG path
+accepts either verified boot image without relaxing its task validation.
+Desktop controls and native audio are unchanged.
+
+The first native graphics task executed in a Linux Debug smoke test.
+The restart image now passes static generation checks, but its rendered
+startup and gameplay are not yet verified.
 
 ## Desktop controls
 

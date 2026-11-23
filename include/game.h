@@ -39,6 +39,9 @@ RecompAudio *recomp_game_audio_create(Runtime *rt, const RecompAudioConfig *conf
 uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *options, size_t bytes, const uint8_t sha1[20]);
 uint64_t recomp_game_monotonic(void);
 void recomp_game_sleep(uint64_t deadline);
+/* Keep the regular cadence through minor overruns. When a full display slot
+ * was missed, rebase the host deadline; do not repay an old presentation debt. */
+uint64_t recomp_game_next_deadline(uint64_t previous, uint64_t interval);
 /* Run guest work and service VI/AI/task completion while pacing to a host
  * presentation deadline, waking at the earlier of hardware deadlines and 1 ms.
  * Configure the game's verified idle thread and enter its wall-clock phase

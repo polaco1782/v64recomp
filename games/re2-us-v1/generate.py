@@ -7,6 +7,24 @@ import zlib
 from common import RecompError
 
 
+def decode_overlay(rom: bytes, overlay: dict) -> bytes:
+    offset, size = overlay['rom_offset'], overlay['compressed_size']
+    decoder = zlib.decompressobj(-15)
+    data = decoder.decompress(rom[offset + 2:offset + size], overlay['size'] + 1)
+    if not decoder.eof:
+        raise RecompError('RE2 incomplete overlay stream')
+    return data
+
+
+def graphics_images(rom: bytes, profile: dict) -> dict[str, bytes]:
+    # Graphics spans are relative to the same checked main overlay as CPU code.
+    overlay = next(o for o in profile['discovery']['overlays'] if o['section'] == '.main')
+    data = decode_overlay(rom, overlay)
+    if len(data) != overlay['size'] or hashlib.sha256(data).hexdigest() != overlay['sha256']:
+        raise RecompError('RE2 decoded overlay fingerprint mismatch')
+    return {'.main': data}
+
+
 def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
     profile = deepcopy(profile)
     image = bytearray(rom)
@@ -30,10 +48,7 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
                     raise RecompError('RE2 overlay patch outside source image')
                 data[site] = value
         else:
-            decoder = zlib.decompressobj(-15)
-            data = decoder.decompress(rom[offset + 2:offset + size], overlay['size'] + 1)
-            if not decoder.eof:
-                raise RecompError('RE2 incomplete overlay stream')
+            data = decode_overlay(rom, overlay)
         if (len(data) != overlay['size']
                 or hashlib.sha256(data).hexdigest() != overlay['sha256']):
             raise RecompError('RE2 decoded overlay fingerprint mismatch')

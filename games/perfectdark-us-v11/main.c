@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "recomp_audio.h"
 #include "audio.h"
+#include "controls.h"
 #include <openssl/evp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -144,6 +145,7 @@ static void game_init(Game *game, const RecompGameOptions *options) {
         recomp_store(rt, boot_parameters[i][0], boot_parameters[i][1], 4);
     game->renderer = recomp_renderer_create_named(rt, options->data, "Perfect Dark");
     recomp_game_require(game->renderer != NULL, "Perfect Dark renderer initialization failed", 0);
+    perfectdark_controls_init(game->renderer);
     MipsContext boot = {.fcr31 = 0x01000800};
     boot.gpr[31] = mips_s32(0xf0000000);
     recomp_lookup(rt, BOOT_ENTRY)(rt, &boot);
@@ -161,7 +163,7 @@ static void game_step(Game *game, const RecompPad *pad) {
         if (game->graphics_tasks)
             game->wall_origin = recomp_game_monotonic();
     }
-    game->next_ns += 16666667;
+    game->next_ns = recomp_game_next_deadline(game->next_ns, 16666667);
     /* Keep the deterministic boot clock until the first graphics handoff. */
     if (game->wall_origin)
         recomp_game_pace(rt, game->next_ns);
@@ -187,7 +189,7 @@ int main(int argc, char **argv) {
     game_init(&game, &options);
     for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(game.renderer, &pad))
+        if (!perfectdark_controls_poll(&game.runtime, game.renderer, &pad))
             break;
         game_step(&game, &pad);
     }

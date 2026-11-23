@@ -18,6 +18,34 @@ python3 tools/build.py perfectdark-us-v11 --release
 ./build/perfectdark-us-v11-release/bin/perfectdark-us-v11
 ```
 
+## Desktop controls and field of view
+
+Set `RECOMP_PERFECTDARK_WASD=1` to use WASD as the N64 control stick and
+the arrow keys as C-buttons. Enter/Q maps to A, E/R to B, and Tab to Start.
+For the normal first-person camera, F4 captures the mouse and Escape
+releases it. While captured, mouse movement rotates the walking camera and
+left/right click map to Z/R. Select the original in-game control style 1.1:
+W/S move forward/back, and A/D send its native C-left/C-right strafe input.
+Other styles, vehicles, multiplayer and third-person cameras are not
+covered. The original keyboard layout remains the default; release capture
+or disable the opt-in to return to unmodified guest inputs.
+
+Use keypad + / - to widen the horizontal FoV from the stock angle at 4:3
+to 140 degrees. The original vertical angle is 60 degrees. The two checked
+calls in the normal zoom updater adjust both the player viewport and VI
+camera scale from the same native value, preserving zoom magnification
+and leaving the native zoom state alone. The setting is scoped to the
+normal first-person camera in single-player, and does not apply to the
+teleport override, intro, or cutscene projection. Return to the minimum
+to restore the original behavior. Debug input replays retain stock inputs
+and field of view.
+
+The adapter is in `controls.c`. Generation verifies the original decoded
+setters, the two FoV call sites, the walking look call site, their delay
+slots and the associated player state loads against US V1.1. [Perfect Dark's matching decompilation](https://github.com/n64decomp/perfect_dark)
+was used to identify the native roles; the prepared cartridge determines
+the actual addresses and checked instructions.
+
 For crash reports, captures and deterministic controller input:
 
 ```sh

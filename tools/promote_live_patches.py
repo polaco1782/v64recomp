@@ -7,6 +7,7 @@ function before any live patch file is removed.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from collections import defaultdict
 import json
 import os
@@ -18,6 +19,7 @@ import textwrap
 
 from common import RecompError, load_profile, load_rom
 from generate_game import GAMES, PROJECT, generate
+from observed_transfers import promote_observations
 
 
 CONTROL = re.compile(r'function-([0-9a-f]{8})\.path')
@@ -81,7 +83,13 @@ def read_published(patch_dir: Path, current: dict, coverage_path: Path) -> tuple
         metadata = json.loads(snapshot.read_text())
         same_rom = ((metadata['rom_sha1'], metadata['rom_size'])
                     == (current['rom_sha1'], current['rom_size']))
-        matches = [f for f in metadata['functions'] if f['vram'] == address]
+        report = json.loads(snapshot.with_name('coverage.json').read_text())
+        selected = [f for f in report['functions'] if f['selected']]
+        if (len(selected) != 1 or selected[0]['vram'] != address or selected[0]['status'] != 'ready'
+                or report['rom_sha1'] != metadata['rom_sha1']):
+            raise RecompError(f'cannot identify selected live function: {control.name}')
+        matches = [f for f in metadata['functions'] if f['vram'] == address
+                   and f['section'] == selected[0]['section'] and f['size'] == selected[0]['size']]
         if len(matches) != 1:
             raise RecompError(f'live function is missing or ambiguous: {control.name}')
         function = matches[0]
@@ -108,7 +116,8 @@ def read_published(patch_dir: Path, current: dict, coverage_path: Path) -> tuple
         published.append({'address': address, 'section': section,
                           'section_name': current_section['name'],
                           'sha256': function['sha256'], 'size': function['size'],
-                          'registered': existing is not None})
+                          'registered': existing is not None, 'control': control, 'module': module,
+                          'snapshot': snapshot.parent})
     return published, retained
 
 
@@ -256,10 +265,33 @@ def promote(game: str, build_dir: Path, patch_dir: Path) -> None:
     if retained:
         print(f'Promoted {len(additions)} function roots; preserved {patch_dir} for review')
         return
-    shutil.rmtree(patch_dir)
-    patch_dir.mkdir(parents=True)
+    for item in published:
+        control, module = item['control'], item['module']
+        if ((patch_dir / f'request-{item["address"]:08x}.json').exists() or not control.is_file()
+                or control.read_text().strip() != str(module)):
+            continue
+        control.unlink()
+        module.unlink(missing_ok=True)
+        shutil.rmtree(item['snapshot'])
     print(f'Promoted {len(additions)} function roots; {len(published) - len(additions)} '
-          f'resolved through existing entries or discovered calls. Cleared {patch_dir}')
+          f'resolved through existing entries or discovered calls.')
+
+
+@contextmanager
+def promotion_lock(game):
+    # Debug and Release builds can finish configure and start preparing the same
+    # profile concurrently. Keep the lock outside directories cleaned by repair.
+    path = PROJECT / 'local' / f'.{game}-promotion.lock'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('a+b') as stream:
+        if os.name == 'nt':
+            import msvcrt
+            stream.seek(0)
+            msvcrt.locking(stream.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX)
+        yield
 
 
 def main() -> int:
@@ -268,8 +300,16 @@ def main() -> int:
     parser.add_argument('--build-dir', type=Path, required=True)
     args = parser.parse_args()
     try:
-        promote(args.game, args.build_dir.resolve(),
-                PROJECT / 'local' / 'live-patches' / args.game)
+        build_dir = args.build_dir.resolve()
+        with promotion_lock(args.game):
+            promote(args.game, build_dir, PROJECT / 'local' / 'live-patches' / args.game)
+            directory = PROJECT / 'local' / 'cpu-observations' / args.game
+            if directory.is_dir():
+                profile_path = PROJECT / 'games' / args.game / 'profile.toml'
+                profile = load_profile(profile_path)
+                game = profile['game']
+                rom, _ = load_rom(game['rom'], game['rom_sha1'], game['rom_size'])
+                promote_observations(args.game, profile_path, profile, rom, build_dir, directory, write_atomic)
     except (RecompError, OSError, ValueError, KeyError) as error:
         print(f'promotion stopped: {error}', file=sys.stderr)
         return 1

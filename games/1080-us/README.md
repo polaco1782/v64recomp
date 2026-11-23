@@ -42,6 +42,24 @@ replay sends Start and A. NEAD 1080 audio tasks execute through the bundled RSP 
 Debug was muted; Release completed with playback enabled, but audible accuracy
 has not been assessed.
 
+## Desktop keyboard
+
+WASD and the arrow keys both drive the original analog stick. Return maps to
+N64 A and Tab maps to Start; the remaining keyboard bindings and physical
+controller mapping are unchanged. This uses the native game input without
+capturing the mouse. Original camera controls remain in place; mouse camera
+control and adjustable field of view are not provided while the riding camera
+and its visibility rules are unvalidated.
+
+## GLES2 status
+
+Build with `python3 tools/build.py 1080-us --release --gles`. An offscreen
+Release run completed 180 host frames. Debug captures showed the publisher
+logos, title and language selection using the checked F3DEX 1.23 task. The
+longer menu replay did not complete: one run reached its wall-time limit,
+and another stopped at the existing SP task-yield check. These are opening
+milestones, not riding or live keyboard acceptance.
+
 ## Why bring-up needs module analysis
 
 The resident kernel loads and links Kyoto `.uso` modules. Their code contains

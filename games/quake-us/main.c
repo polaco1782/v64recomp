@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
                 break;
         }
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);

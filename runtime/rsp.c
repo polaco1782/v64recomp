@@ -87,12 +87,41 @@ static bool bind_imem(RecompRspState *s, uint32_t dram, uint32_t target, unsigne
                 s->native[((target + i * 4) & 4095) / 4] = code->entries[offset + i];
             for (i = 0; i < bytes; i++)
                 s->imem[(target + i) & 4095] = ram_byte(s, dram + i);
-            bind_blocks(s);
             return true;
         }
     }
     recomp_rsp_fault(s, "RSP IMEM DMA has no verified native translation", dram, bytes);
     return false;
+}
+/* SP_DRAM_ADDR is 24 bits. Missing RDRAM supplies zeroes on a read, including
+ * transfers that straddle installed RAM or wrap from 0xffffff to address 0. */
+static bool dma_read_row(RecompRspState *s, uint32_t dram, uint32_t mem, unsigned bytes) {
+    bool imem = (mem & 4096) != 0;
+    while (bytes) {
+        bool populated = dram < s->ram_size;
+        unsigned count = 0x1000000 - dram;
+        if (populated && s->ram_size - dram < count)
+            count = (unsigned)(s->ram_size - dram);
+        if (count > bytes)
+            count = bytes;
+
+        if (imem && populated) {
+            if (!bind_imem(s, dram, mem, count))
+                return false;
+        } else if (imem) {
+            for (unsigned i = 0; i < count; i += 4)
+                s->native[((mem + i) & 4095) / 4] = RECOMP_RSP_ZERO_NOP;
+            for (unsigned i = 0; i < count; i++)
+                s->imem[(mem + i) & 4095] = 0;
+        } else {
+            for (unsigned i = 0; i < count; i++)
+                s->dmem[(mem + i) & 4095] = populated ? ram_byte(s, dram + i) : 0;
+        }
+        bytes -= count;
+        mem += count;
+        dram = (dram + count) & 0xffffff;
+    }
+    return true;
 }
 static bool journal(RecompRspState *s, uint32_t address, unsigned bytes) {
     if (s->write_count) {
@@ -120,27 +149,23 @@ static bool journal(RecompRspState *s, uint32_t address, unsigned bytes) {
     return true;
 }
 static void dma(RecompRspState *s, uint32_t value, bool write) {
-    unsigned bytes = (value & 0xff8) + 8, rows = ((value >> 12) & 255) + 1, skip = value >> 20;
+    unsigned bytes = (value & 0xff8) + 8, rows = ((value >> 12) & 255) + 1, skip = (value >> 20) & 0xff8;
     uint32_t mem = s->cp0[0] & 0x1ff8, dram = s->cp0[1] & 0xfffff8;
     bool imem = (mem & 4096) != 0;
     for (unsigned row = 0; row < rows && !s->error; row++) {
-        if (!ram_span(s, dram, bytes))
-            return;
         if (write) {
-            if (!journal(s, dram, bytes))
+            if (!ram_span(s, dram, bytes) || !journal(s, dram, bytes))
                 return;
             const uint8_t *source = imem ? s->imem : s->dmem;
             for (unsigned i = 0; i < bytes; i++)
                 ram_store(s, dram + i, source[(mem + i) & 4095]);
-        } else if (imem) {
-            if (!bind_imem(s, dram, mem, bytes))
-                return;
-        } else
-            for (unsigned i = 0; i < bytes; i++)
-                s->dmem[(mem + i) & 4095] = ram_byte(s, dram + i);
+        } else if (!dma_read_row(s, dram, mem, bytes))
+            return;
         mem = (mem & 4096) | ((mem + bytes) & 4095);
-        dram += bytes + (row + 1 < rows ? skip : 0);
+        dram = (dram + bytes + (row + 1 < rows ? skip : 0)) & 0xffffff;
     }
+    if (imem && !write)
+        bind_blocks(s);
     s->cp0[0] = mem;
     s->cp0[1] = dram;
     s->cp0[write ? 3 : 2] = 0xff8;
@@ -268,6 +293,7 @@ bool recomp_rsp_start(RecompRspState *s, const uint32_t task[16]) {
         recomp_rsp_fault(s, "RSP bootstrap does not match the compiled program", boot, task[3]);
         return false;
     }
+    bind_blocks(s);
     s->program->run(s);
     return !s->error && s->halted;
 }

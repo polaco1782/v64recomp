@@ -1,8 +1,8 @@
 # Browser build (experimental)
 
 **Super Mario 64 US** builds for the browser with Emscripten. Its graphics tasks
-run through the same ROM-verified, statically compiled RSP program and GLES2 RDP
-renderer as the desktop GLES2 build. The browser presents the result with WebGL.
+run through the same ROM-verified, statically compiled RSP program and GLES3 RDP
+renderer as the native `--gles` build. The browser requires WebGL 2.
 The browser loader currently accepts the pinned SM64 US ROM.
 
 ## Build and run
@@ -50,8 +50,9 @@ Serve those files together. Do not serve the repository root or private `local/`
   handling; WebAudio device initialization runs on the browser thread.
 - Browser worker timestamps share a monotonic host-clock floor to handle
   independently rounded performance time origins. Guest clock checks remain active.
-- The GLES2 backend uses direct GL entry points on Emscripten. The shared backend draws the compiled RSP’s RDP output using the GLES2 shaders and buffers. Browser rendering starts at
-  native 320×240 internal resolution, displayed on a 960×720 canvas.
+- Emscripten calls the WebGL 2 entry points directly. The browser uses the same
+  GLSL ES 3.00 shaders, 24-bit depth buffers and mipmap sampling as native GLES.
+  Browser rendering starts at native 320×240 internal resolution, displayed on a 960×720 canvas.
 - `RECOMP_SOFTFLOAT=ON` is the browser default. Berkeley SoftFloat implements
   guest arithmetic, rounding and exception flags. The existing VR4300 NaN,
   denormal, flush and trap policy remains in `runtime/fpu.c`; no relaxed guest
@@ -84,7 +85,13 @@ A plain file URL or server without isolation headers will not start the game.
 
 ## Validation and limits
 
-### Merged browser build
+### WebGL 2
+
+With Emscripten 6.0.13, SM64 Debug and Release both rendered in Chromium using
+SwiftShader. Both builds used GLSL ES 3.00 shaders and produced multicolor
+frames on the WebGL 2 canvas.
+
+### Earlier WebGL 1 build
 
 Emscripten 6.0.13 Debug and Release were exercised in Chromium with
 SwiftShader. Both rendered SM64 and produced nonzero WebAudio samples. The
@@ -115,4 +122,4 @@ gamepads, audible quality, Firefox, Safari or mobile browsers. The browser
 backend currently uses SDL2's deprecated ScriptProcessorNode; migrating playback
 to AudioWorklet and profiling WebGL proxy traffic are follow-up work.
 
-See [ARMv8/GLES2](armv8-gles2.md) for RSP microcode and renderer coverage.
+See [ARMv8/GLES](armv8-gles2.md) for RSP microcode and renderer coverage.

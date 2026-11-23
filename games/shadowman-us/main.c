@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
                         0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Shadow Man");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_wasd_stick(renderer, true);
     /* Preserve the game's VI-driven timing for its buffered startup frames. */
 #ifdef RECOMP_WITH_RT64
     recomp_renderer_set_frame_rate(renderer, 0);
@@ -182,7 +183,7 @@ int main(int argc, char **argv) {
                 break;
         }
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_sleep(next_present);
     }
     recomp_audio_destroy(audio);

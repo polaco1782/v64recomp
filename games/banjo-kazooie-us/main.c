@@ -1,5 +1,6 @@
 #include "game.h"
 #include "audio.h"
+#include "controls.h"
 #include "generated.h"
 #include "renderer.h"
 #include "game_config.h"
@@ -154,6 +155,7 @@ int main(int argc, char **argv) {
 #ifdef RECOMP_WITH_RT64
     recomp_renderer_set_frame_rate(renderer, 0);
 #endif
+    banjo_controls_init(&rt, renderer);
     rt.prepare_call = prepare_call;
     rt.canonical_function_address = activate_image;
     wall_origin = recomp_game_monotonic();
@@ -172,7 +174,7 @@ int main(int argc, char **argv) {
     uint64_t deadline = recomp_game_monotonic();
     for (unsigned frame = 0; !options.frames || frame < options.frames; frame++) {
         RecompPad pad = {.connected = true};
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!banjo_controls_poll(&rt, renderer, &pad))
             break;
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "Banjo controller update failed", 0);
         for (unsigned batch = 0; batch < 32; batch++) {
@@ -180,7 +182,7 @@ int main(int argc, char **argv) {
                 break;
         }
         recomp_game_require(recomp_game_present(renderer), "Banjo presentation failed", 0);
-        deadline += 16666667;
+        deadline = recomp_game_next_deadline(deadline, 16666667);
         recomp_game_pace(&rt, deadline);
     }
     recomp_audio_destroy(audio);

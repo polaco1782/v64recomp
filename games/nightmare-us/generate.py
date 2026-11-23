@@ -1,11 +1,12 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
 from common import write_json
-from input_evidence import verify_input_evidence
+from input_evidence import verify_adapter_evidence, verify_input_evidence
 
 
 def prepare(rom, profile, output):
     verify_input_evidence(rom, profile)
+    verify_adapter_evidence(rom, profile, "fov_adapter")
     return rom, profile
 
 
@@ -25,7 +26,12 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'#define NC_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['input_adapter']['bindings'])
     (output / 'nightmare_input_config.h').write_text('\n'.join(lines) + '\n')
+    lines = ['/* Generated from verified Nightmare Creatures projection operands. */']
+    lines.extend(f'#define NC_FOV_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['fov_adapter']['bindings'])
+    (output / 'nightmare_fov_config.h').write_text('\n'.join(lines) + '\n')
 
 
 def write_report(rom, profile, metadata, coverage, output):
     write_json(output / 'input-hooks.json', verify_input_evidence(rom, profile, metadata, coverage))
+    write_json(output / 'fov-hooks.json', verify_adapter_evidence(rom, profile, 'fov_adapter', metadata, coverage))

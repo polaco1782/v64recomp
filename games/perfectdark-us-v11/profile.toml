@@ -1,3 +1,12 @@
+# Both original zoom setters take the same native angle. Wrap only the
+# ordinary player_update_zoom call sites (see controls.c), not teleport,
+# split-screen, cinematic, title, or other VI callers.
+# Relative mouse input wraps the native walking orientation update.
+function_wrappers = [
+  {section = ".lib", vram = 0x7000bd30, size = 0x4c, sha256 = "7d274a27e909073fb74b032bd249da5faa7532e5c1922e8992b2da93d391f1ef", handler = "perfectdark_fov_hook"},
+  {section = ".game", vram = 0x7f128ad4, size = 0x10, sha256 = "c4517ea2e3cdeb48af743379712534aab06430ca174a2f35a5fcedf93e4b8f30", handler = "perfectdark_fov_hook"},
+  {section = ".game", vram = 0x7f0cbf50, size = 0x24c, sha256 = "6cdfa11f295807731154157f2e811d0cae2ebabb12a51f66a2c16de15e3571fc", handler = "perfectdark_look_hook"},
+]
 # Perfect Dark boot boundaries. Standard OS calls use the shared native catalog.
 hooks = [
   {symbol = "mtx_get_obfuscated_rom_base", vram = 0x70015fd0, kind = "replace_function", handler = "recomp_pd_boot_rom_read", expected_words = [0x27bdffe0, 0xafbf0014, 0x3c04800a, 0x2484c7a8, 0x24050000, 0xc0121bc, 0x3c060001, 0x3c04a45f, 0x3484ffff, 0x24840011, 0x8c880000, 0x31080003, 0x1500fffd, 0x0, 0x3c058000, 0x8ca50308, 0x3c04b764, 0x3484b4fd, 0x852025, 0x3c050764, 0x34a5bea1, 0x852026, 0x8c820000, 0xafa20018, 0x3c04800a, 0x2484c7a8, 0x24050000, 0xc012238, 0x3c060000, 0x8fa20018, 0x8fbf0014, 0x3e00008, 0x27bd0020]},

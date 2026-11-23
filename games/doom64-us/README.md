@@ -18,8 +18,8 @@ tools/build.py doom64-us --rt64 --release
 For GLES2 with the statically recompiled graphics RSP, use:
 
 ```sh
-tools/build.py doom64-us --gles2 --release
-./build/doom64-us-gles2-release/bin/doom64-us
+tools/build.py doom64-us --gles --release
+./build/doom64-us-gles-release/bin/doom64-us
 ```
 
 `--debug` selects the diagnostic build on either backend. The ROM importer

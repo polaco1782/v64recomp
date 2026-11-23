@@ -31,6 +31,15 @@ underruns or resets. Its replay driver flagged the uncaptured 90-second
 screenshot as incomplete because the app finished its frame budget at 80 seconds.
 The shared renderer also passed a 600-presentation GoldenEye startup smoke run.
 
+## Desktop controls
+
+WASD and the arrow keys send the same original N64 analog-stick directions.
+Return sends A and Tab sends Start. The original directional keys and physical
+controllers remain available. Mouse camera control and an adjustable gameplay
+field of view are not implemented. A 1,200-frame Debug replay using an
+offscreen OpenGL ES 2.0 context rendered the opening sequence and exited
+cleanly. The replay does not exercise live keyboard input.
+
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/shadowman-us/profile.toml --rom /path/to/rom`.
 

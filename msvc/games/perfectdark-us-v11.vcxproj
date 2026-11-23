@@ -26,6 +26,8 @@
   <ItemGroup>
     <None Include="$(RecompRoot)games\perfectdark-us-v11\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\perfectdark-us-v11\controls.h" />
     <None Include="$(RecompRoot)games\perfectdark-us-v11\generate.py" />
     <ClCompile Include="$(RecompRoot)games\perfectdark-us-v11\main.c" />
     <None Include="$(RecompRoot)games\perfectdark-us-v11\profile.toml" />

@@ -7,6 +7,12 @@
     <ClInclude Include="$(RecompRoot)games\nightmare-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\nightmare-us\fov.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\nightmare-us\fov.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\nightmare-us\generate.py">
       <Filter>Source Files</Filter>
     </None>

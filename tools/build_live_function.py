@@ -110,13 +110,17 @@ def cache_value(path: Path, key: str) -> str:
 
 
 def automatic_candidate(rom: bytes, profile: dict, address: int, build_dir: Path,
-                        patch_dir: Path, game: str) -> dict | None:
+                        patch_dir: Path, game: str, target_section: int | None = None) -> dict | None:
     """Seed one ROM-bound, closed candidate for a temporary live module."""
     report_path = build_dir / 'generated' / game / 'function-candidates.json'
     report = json.loads(report_path.read_text())
     if report.get('rom_sha1') != hashlib.sha1(rom).hexdigest():
         raise RecompError('candidate report does not match the prepared ROM')
-    candidates = [item for item in report.get('candidates', []) if item.get('vram') == address]
+    regions = profile['discovery']['regions']
+    if target_section is None and sum(r['vram'] <= address < r['vram'] + r['size'] for r in regions) > 1:
+        raise RecompError('shared overlay address requires a loaded target section')
+    candidates = [item for item in report.get('candidates', []) if item.get('vram') == address
+                  and (target_section is None or item.get('section') == target_section)]
     if len(candidates) != 1:
         return None
     candidate = candidates[0]
@@ -153,7 +157,6 @@ def automatic_candidate(rom: bytes, profile: dict, address: int, build_dir: Path
         reasons.append('no verified address source or published caller')
     if reasons:
         raise RecompError('candidate found but needs manual review: ' + '; '.join(reasons))
-    regions = profile['discovery']['regions']
     section = candidate.get('section')
     offset = candidate.get('rom_offset')
     if (type(section) is not int or not 0 <= section < len(regions)
@@ -192,7 +195,7 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
     if hasattr(generator, 'prepare'):
         rom, prepared = generator.prepare(rom, prepared, output)
     if auto_candidate:
-        root = automatic_candidate(rom, prepared, address, build_dir, patch_dir, game)
+        root = automatic_candidate(rom, prepared, address, build_dir, patch_dir, game, section)
         if root:
             prepared = {**prepared, 'discovery': {**prepared['discovery'],
                         'roots': [*prepared['discovery'].get('roots', []), root]}}

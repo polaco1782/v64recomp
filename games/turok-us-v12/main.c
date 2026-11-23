@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "controller update failed", 0);
         drain(&rt);
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);

@@ -30,8 +30,8 @@ static void write_float(Runtime *rt, uint32_t address, float value) {
 bool quake2_input_enabled(void) {
     return enabled;
 }
-bool quake2_input_playable(Runtime *rt) {
-    if (!enabled || recomp_load32(rt, Q2_INPUT_PHASE) != 1 || recomp_load32(rt, Q2_INPUT_MODE) == 2 ||
+bool quake2_world_playable(Runtime *rt) {
+    if (recomp_load32(rt, Q2_INPUT_PHASE) != 1 || recomp_load32(rt, Q2_INPUT_MODE) == 2 ||
         recomp_load32(rt, Q2_INPUT_PLAYER_COUNT) != 1 || recomp_load32(rt, Q2_INPUT_INTERMISSION))
         return false;
     uint32_t client = recomp_load32(rt, Q2_INPUT_CLIENTS);
@@ -42,6 +42,9 @@ bool quake2_input_playable(Runtime *rt) {
     uint32_t flags = recomp_load32(rt, entity + Q2_INPUT_ENTITY_FLAGS);
     return recomp_load32(rt, entity + Q2_INPUT_ENTITY_CLIENT) == client && (flags & 1) && !(flags & 0x40) &&
            !(recomp_load32(rt, entity + Q2_INPUT_ENTITY_MOVE_FLAGS) & 0x2000);
+}
+bool quake2_input_playable(Runtime *rt) {
+    return enabled && quake2_world_playable(rt);
 }
 void quake2_input_init(void (*poll)(Runtime *, void *)) {
     poll_live_input = poll;

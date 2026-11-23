@@ -29,8 +29,12 @@ static void retire_boot(Runtime *rt, uint32_t address) {
 }
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     if (task->words[0] == 4) {
-        recomp_game_require(recomp_jpeg_decode_ps(rt, task, &mm_jpeg_profile), "Majora's Mask JPEG task rejected",
-                            task->words[4]);
+        /* Compiled graphics tasks can install the ROM's verified restart entry. */
+        RecompJpegProfile restart = mm_jpeg_profile;
+        restart.sha256[0] = MM_RSP_BOOT_RESTART_SHA256;
+        recomp_game_require(recomp_jpeg_decode_ps(rt, task, &mm_jpeg_profile) ||
+                                recomp_jpeg_decode_ps(rt, task, &restart),
+                            "Majora's Mask JPEG task rejected", task->words[4]);
         return recomp_task_complete(rt, task->token, RECOMP_SP_DONE);
     }
     (void)opaque;
@@ -97,7 +101,7 @@ int main(int argc, char **argv) {
             if (recomp_scheduler_run(&rt, 32) != RECOMP_RUN_BUDGET)
                 break;
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);

@@ -1,6 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include "game.h"
+#ifdef RECOMP_WITH_RT64
 #include "graphics.h"
+#endif
 #include "audio.h"
 #include "generated.h"
 #include "game_config.h"
@@ -133,7 +135,9 @@ static void game_init(Game *g, const RecompGameOptions *options) {
     recomp_renderer_set_fov_hook(g->renderer, hexen_fov_adjust);
     g->running = true;
     hexen_input_init(poll_command_input);
+#ifdef RECOMP_WITH_RT64
     recomp_renderer_set_microcode_hook(g->renderer, hexen_bind_microcode);
+#endif
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,
@@ -188,7 +192,7 @@ int main(int argc, char **argv) {
         if (!game.running)
             break;
         recomp_game_require(recomp_game_present(game.renderer), "Hexen presentation failed", 0);
-        deadline += 16666667;
+        deadline = recomp_game_next_deadline(deadline, 16666667);
         game_pace(&game, deadline);
     }
     game_destroy(&game);

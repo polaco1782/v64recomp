@@ -21,13 +21,15 @@ from generate_game import GAMES, PROJECT
 
 
 def handoff(game: str, address: int, site: int, section: int, kind: str, build_dir: Path,
-            patch_dir: Path, reason: str, report: Path) -> bool:
+            patch_dir: Path, reason: str, report: Path, target_section: int | None) -> bool:
     codex = shutil.which('codex')
     if not codex:
         print('live repair: Codex CLI is unavailable; manual review needed', file=sys.stderr)
         return False
     command = (f'.venv/bin/python tools/build_live_function.py --game {game} '
                f'--address 0x{address:08x} --build-dir {build_dir} --patch-dir {patch_dir}')
+    if target_section is not None:
+        command += f' --section {target_section}'
     if kind != 'missing_function':
         command += f' --site 0x{site:08x} --site-section {section}'
     prompt = (f'Follow AGENTS.md in {PROJECT}. A game is paused at guest target '
@@ -62,6 +64,7 @@ def main() -> int:
     parser.add_argument('--address', type=lambda value: int(value, 0), required=True)
     parser.add_argument('--site', type=lambda value: int(value, 0), default=0)
     parser.add_argument('--section', type=int, default=0)
+    parser.add_argument('--target-section', type=int, help='unique loaded destination section reported by runtime')
     parser.add_argument('--kind', choices=('missing_function', 'call', 'jump'), default='missing_function')
     parser.add_argument('--build-dir', type=Path, required=True)
     parser.add_argument('--patch-dir', type=Path)
@@ -77,18 +80,18 @@ def main() -> int:
         with log_path.open('w') as log, redirect_stdout(log), redirect_stderr(log):
             module = build(args.game, args.address, build_dir, patch_dir,
                            site=(args.site or None) if args.kind != 'missing_function' else None,
-                           site_section=args.section if args.site else None,
+                           section=args.target_section, site_section=args.section if args.site else None,
                            auto_candidate=args.kind == 'missing_function')
     except (RecompError, OSError, ValueError, KeyError, subprocess.CalledProcessError) as error:
         reason = str(error)
         report = patch_dir / f'review-{args.address:08x}.json'
         report.write_text(json.dumps({'game': args.game, 'address': f'0x{args.address:08x}',
-                                      'site': f'0x{args.site:08x}', 'section': args.section, 'kind': args.kind,
+                                      'site': f'0x{args.site:08x}', 'section': args.section, 'target_section': args.target_section, 'kind': args.kind,
                                       'reason': reason, 'build_log': str(log_path)}, indent=2) + '\n')
         print(f'live repair: automatic build stopped: {reason}; review {report}', file=sys.stderr)
         if args.ai or os.environ.get('RECOMP_LIVE_AI') == '1':
             return 0 if handoff(args.game, args.address, args.site, args.section, args.kind,
-                                build_dir, patch_dir, reason, report) else 1
+                                build_dir, patch_dir, reason, report, args.target_section) else 1
         return 1
     print(f'live repair: published {module}', file=sys.stderr)
     return 0

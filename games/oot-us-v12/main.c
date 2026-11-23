@@ -86,8 +86,12 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt;
     (void)opaque;
     if (task->words[0] == 4) {
-        recomp_game_require(recomp_jpeg_decode_ps(rt, task, &oot_jpeg_profile), "OOT JPEG task rejected",
-                            task->words[4]);
+        /* Compiled graphics tasks can install the ROM's verified restart entry. */
+        RecompJpegProfile restart = oot_jpeg_profile;
+        restart.sha256[0] = OOT_RSP_BOOT_RESTART_SHA256;
+        recomp_game_require(recomp_jpeg_decode_ps(rt, task, &oot_jpeg_profile) ||
+                                recomp_jpeg_decode_ps(rt, task, &restart),
+                            "OOT JPEG task rejected", task->words[4]);
         return recomp_task_complete(rt, task->token, RECOMP_SP_DONE);
     }
     recomp_game_require(task->words[0] == 1 || task->words[0] == 2, "unsupported RSP task type", task->guest_address);
@@ -169,7 +173,7 @@ int main(int argc, char **argv) {
                 break;
         }
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);

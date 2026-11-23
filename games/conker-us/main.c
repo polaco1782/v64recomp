@@ -289,6 +289,15 @@ static void game_init(Game *game, const RecompGameOptions *options) {
     game->renderer = recomp_renderer_create_named(rt, options->data, "Conker's Bad Fur Day");
     recomp_game_require(game->renderer != NULL, "Conker renderer initialization failed", 0);
     recomp_renderer_set_microcode_hook(game->renderer, conker_bind_microcode);
+    const char *wasd = getenv("RECOMP_CONKER_WASD");
+    bool desktop = wasd && strcmp(wasd, "1") == 0;
+#ifdef RECOMP_DEBUG
+    desktop = desktop && !recomp_game_replaying();
+#endif
+    if (desktop) {
+        recomp_renderer_keyboard_c_buttons(game->renderer, true);
+        recomp_renderer_mouse_mode(game->renderer, true, true);
+    }
     MipsContext boot = {.fcr31 = 0x01000800, .fpu_fr1 = true};
     boot.gpr[31] = mips_s32(0xf0000000);
     game->booting = true;
@@ -309,7 +318,7 @@ static void game_step(Game *game, const RecompPad *pad) {
         if (game->reached_graphics)
             game->wall_origin = recomp_game_monotonic();
     }
-    game->next_ns += 16666667;
+    game->next_ns = recomp_game_next_deadline(game->next_ns, 16666667);
     /* Keep the deterministic boot clock until the first graphics handoff. */
     if (game->wall_origin)
         recomp_game_pace(rt, game->next_ns);

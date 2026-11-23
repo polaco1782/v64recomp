@@ -84,17 +84,107 @@ def split_sources(output: Path) -> list[Path]:
     return [output/'functions.c',*paths]
 
 
-def generate(game: str, output: Path, report_only: bool, renderer: str = "rt64") -> None:
-    with GenerationProgress(game) as progress:
-        _generate(game, output, report_only, progress, renderer)
+def write_cpu_regions(output, cartridge, prepared, profile, metadata, coverage, candidates):
+    # Only admit words that have the same backing as the generated program.
+    # Complete inventories additionally distinguish CPU code from data and RSP code.
+    exclusions = {s['name']: [] for s in metadata['sections']}
+    inventory = profile['discovery'].get('inventory')
+    if inventory:
+        for row in json.loads(Path(inventory).read_bytes())['ranges']:
+            if row['kind'] != 'code':
+                exclusions[row['section']].append((row['vram'], row['size']))
+    for f in coverage['functions']:
+        if f['status'] != 'ready':
+            exclusions[metadata['sections'][f['section']]['name']].append((f['vram'], f['size']))
+    for group in [*profile.get('function_wrappers', []), *profile.get('word_result_hooks', [])]:
+        exclusions[group['section']].append((group['vram'], group['size']))
+    for f in metadata['functions']:
+        if any(f.get(k) for k in ('relocatable', 'unwind_calls', 'tail_call_continuations',
+                                   'nonlocal_return_calls', 'fallthrough_transfers')):
+            exclusions[metadata['sections'][f['section']]['name']].append((f['vram'], f['size']))
+    switches = {s['id']: {} for s in metadata['sections']}
+    def add_switches(sid, transfers):
+        for transfer in transfers:
+            if transfer.get('origin') == 'bounded-switch':
+                pc = transfer['pc']
+                record = (transfer['expected_word'], tuple(transfer['targets']))
+                previous = switches[sid].setdefault(pc, record)
+                if previous != record:
+                    switches[sid][pc] = None  # Ambiguous ownership or table bounds.
+    for function in metadata['functions']:
+        if not function.get('discovery_errors'):
+            add_switches(function['section'], function.get('indirect_transfers', []))
+    from analysis.inspect_function_candidates import REVIEW_EVIDENCE
+
+    for candidate in candidates['candidates']:
+        body = candidate['body']
+        # Diagnostic probes of neighbouring functions and original SDK code
+        # must not supply runtime switch metadata on their own.
+        if body['status'] == 'closed' and any(ref['kind'] not in REVIEW_EVIDENCE
+                                              for ref in candidate['references']):
+            add_switches(candidate['section'], body.get('local_switches', []))
+    lines, regions = [], []
+    for section in metadata['sections']:
+        pc, size, offset = (section[key] for key in ('vram', 'size', 'rom_offset'))
+        backed = prepared is cartridge or prepared[offset:offset+size] == cartridge[offset:offset+size]
+        page_hashes = 'NULL'
+        if not backed:
+            page_hashes = f'cpu_pages_{section["id"]}'
+            lines.append(f'static const uint8_t {page_hashes}[][32] = {{')
+            for start in range(offset, offset + size, 256):
+                digest = hashlib.sha256(prepared[start:min(start + 256, offset + size)]).digest()
+                lines.append('    {' + ','.join(map(str, digest)) + '},')
+            lines.append('};')
+        spans = []
+        for start, length in sorted(exclusions[section['name']]):
+            if spans and start <= spans[-1][1]:
+                spans[-1] = (spans[-1][0], max(spans[-1][1], start + length))
+            else:
+                spans.append((start, start + length))
+        symbol = 'NULL'
+        if spans:
+            symbol = f'cpu_excluded_{section["id"]}'
+            lines.append(f'static const RecompCodeSpan {symbol}[] = {{')
+            lines.extend(f'    {{0x{lo:08x}u, 0x{hi-1:08x}u}},' for lo, hi in spans)
+            lines.append('};')
+        rows = []
+        switch_symbol = 'NULL'
+        for site, record in sorted(switches[section['id']].items()):
+            if record is None:
+                continue
+            word, targets = record
+            name = f'cpu_cases_{section["id"]}_{site:08x}'
+            lines.append(f'static const uint32_t {name}[] = {{' +
+                         ', '.join(f'0x{target:08x}u' for target in targets) + '};')
+            rows.append(f'    {{0x{site:08x}u, 0x{word:08x}u, {name}, {len(targets)}}},')
+        if rows:
+            switch_symbol = f'cpu_switches_{section["id"]}'
+            lines.extend([f'static const RecompCodeSwitch {switch_symbol}[] = {{', *rows, '};'])
+        regions.append(f'    {{0x{pc:08x}u, 0x{size:x}u, 0x{offset:x}u, {page_hashes}, {symbol}, {len(spans)}, {switch_symbol}, {len(rows)}}},')
+    lines.extend(['static const RecompCodeRegion cpu_regions[] = {', *regions, '};',
+                  f'#define CPU_LAYOUT "{coverage["section_layout_sha256"]}"'])
+    (output/'cpu_regions.h').write_text('\n'.join(lines)+'\n')
 
 
-def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress, renderer: str) -> None:
+def load_generator(game):
     base = PROJECT/'games'/game
-    profile = load_profile(base/'profile.toml')
     sys.path.insert(0,str(base))
     spec=importlib.util.spec_from_file_location('game_generate',base/'generate.py')
     generator=importlib.util.module_from_spec(spec);spec.loader.exec_module(generator)
+    return generator
+
+
+def generate(game: str, output: Path, report_only: bool, renderer: str = "rt64", *, observed=()) -> None:
+    with GenerationProgress(game) as progress:
+        _generate(game, output, report_only, progress, renderer, observed)
+
+
+def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress, renderer: str, observed) -> None:
+    base = PROJECT/'games'/game
+    profile = load_profile(base/'profile.toml')
+    if observed:
+        profile['discovery'].setdefault('observed_transfers', []).extend(observed)
+    generator = load_generator(game)
     if hasattr(generator,'ensure_rom'):
         progress.stage('Checking external demo ROM download')
         generator.ensure_rom(profile)
@@ -108,6 +198,8 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
                      *base.glob('*.toml'),*base.glob('*.json'),*base.glob('*.py')])
     digest = hashlib.sha256(rom)
     digest.update(renderer.encode())
+    if observed:
+        digest.update(json.dumps(observed, sort_keys=True).encode())
     for path in inputs:
         digest.update(str(path.relative_to(PROJECT)).encode());digest.update(path.read_bytes())
     key = digest.hexdigest()
@@ -158,12 +250,13 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
         report_files = generator.write_report(original_rom, original_profile, metadata, report, output) or []
     if not report_only:generator.write_config(original_profile,metadata,output,True)
     if report_only:return
+    write_cpu_regions(output, original_rom, rom, profile, metadata, report, candidates)
     progress.stage('Splitting CPU sources for parallel compilation')
     sources=split_sources(output)
     # CMake reconfigures when this source manifest changes.
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
     rsp_sources = []
-    if renderer == 'gles2' and 'rsp' in original_profile.get('graphics', {}):
+    if renderer == 'gles' and 'rsp' in original_profile.get('graphics', {}):
         from graphics_microcode import write_graphics_program
         progress.stage('Compiling RSP graphics microcode')
         images = generator.graphics_images(original_rom, original_profile) if hasattr(generator, 'graphics_images') else None
@@ -186,7 +279,7 @@ def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game',required=True,choices=GAMES)
     parser.add_argument('--output',required=True,type=Path)
-    parser.add_argument('--renderer',choices=('rt64','gles2'),default='rt64')
+    parser.add_argument('--renderer',choices=('rt64','gles'),default='rt64')
     parser.add_argument('--report-only',action='store_true')
     args=parser.parse_args()
     try:generate(args.game,args.output.resolve(),args.report_only,args.renderer)

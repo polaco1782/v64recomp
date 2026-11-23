@@ -637,7 +637,7 @@ void recomp_scheduler_destroy(Runtime *rt) {
     rt->checkpoint = NULL;
 }
 
-RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
+static RecompRunResult run(Runtime *rt, size_t max_resumes, uint64_t deadline, uint64_t (*now)(void)) {
     RecompScheduler *s = scheduler(rt);
     if (guest_thread || s->current || !max_resumes)
         recomp_fail("invalid or nested scheduler run", 0);
@@ -648,6 +648,8 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
 #endif
     for (size_t count = 0; count < max_resumes; count++) {
         poll(rt);
+        if (now && now() >= deadline)
+            break;
         NativeThread *t = best(s, RECOMP_READY, NULL, NULL);
         /* Poll first so timers and backend receipts can wake real work even
          * when the only runnable guest was the idle thread on entry. */
@@ -715,6 +717,14 @@ RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
             stopped = true;
     }
     return stopped ? RECOMP_RUN_STOPPED : RECOMP_RUN_COMPLETE;
+}
+
+RecompRunResult recomp_scheduler_run(Runtime *rt, size_t max_resumes) {
+    return run(rt, max_resumes, 0, NULL);
+}
+
+RecompRunResult recomp_scheduler_run_until(Runtime *rt, size_t max_resumes, uint64_t deadline, uint64_t (*now)(void)) {
+    return run(rt, max_resumes, deadline, now);
 }
 
 void recomp_thread_create(Runtime *rt, uint32_t object, int32_t id, uint32_t entry, uint32_t argument, uint32_t stack,

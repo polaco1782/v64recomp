@@ -33,8 +33,30 @@ def decode_overlay(rom: bytes, overlay: dict) -> bytes:
 def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
     profile = deepcopy(profile)
     image = bytearray(rom)
+    controls = profile['controls']
+    evidence = profile['controls_evidence']
     for overlay in profile['discovery']['overlays']:
         raw = decode_overlay(rom, overlay)
+        if overlay['name'] == '.core1':
+            start = controls['load_viewport_perspective'] - overlay['vram']
+            if hashlib.sha256(raw[start:start + 0x60]).hexdigest() != evidence['load_viewport_perspective_sha256']:
+                raise RecompError('Banjo stock viewport/perspective function fingerprint mismatch')
+            start = controls['viewport_aspect_load'] - 8 - overlay['vram']
+            if raw[start:start + 20].hex() != evidence['viewport_perspective_arguments']:
+                raise RecompError('Banjo native aspect argument fingerprint mismatch')
+            base_pc = 0x8024c9b8 - overlay['vram']
+            lui = int.from_bytes(raw[base_pc:base_pc + 4], 'big')
+            displacement = int.from_bytes(raw[start + 10:start + 12], 'big', signed=True)
+            if lui >> 16 != 0x3c07 or controls['viewport_aspect'] != ((lui & 0xffff) << 16) + displacement:
+                raise RecompError('Banjo native aspect address disagrees with projection')
+        if overlay['name'] == '.core2':
+            for site in ('world_viewport_first_return', 'world_viewport_second_return'):
+                start = controls[site] - 8 - overlay['vram']
+                if raw[start:start + 8].hex() != evidence['world_viewport_call']:
+                    raise RecompError('Banjo world viewport call fingerprint mismatch')
+            start = controls['zoombox_backdrop_return'] - 8 - overlay['vram']
+            if raw[start:start + 8].hex() != evidence['zoombox_backdrop_call']:
+                raise RecompError('Banjo zoombox backdrop call fingerprint mismatch')
         region = dict(name=overlay['name'], vram=overlay['vram'],
                       rom_offset=len(image), size=len(raw))
         if overlay['vram'] == 0x803863f0:
@@ -50,6 +72,9 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     constants.update({k.upper(): v for k, v in profile['bootstrap'].items() if type(v) is int})
     lines = ['/* Generated from the pinned Banjo-Kazooie US revision 0 profile. */']
     lines += [f'#define BOOT_{name} UINT32_C(0x{value:x})' for name, value in constants.items()]
+    lines.extend(f'#define BK_{key.upper()} UINT32_C(0x{value:x})' for key, value in profile['controls'].items())
+    core2 = next(s for s in metadata['sections'] if s['name'] == '.core2')
+    lines.append(f'#define BK_CORE2_SECTION {core2["id"]}')
     lines += ['static const uint8_t boot_sha1[20] = {' + ','.join(str(b) for b in bytes.fromhex(game['rom_sha1'])) + '};',
               'static const uint32_t boot_parameters[][2] = {']
     lines += [f'    {{{address}, 0x{value:x}}},' for address, value in profile['bootstrap']['parameters'].items()]

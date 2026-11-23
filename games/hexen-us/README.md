@@ -81,6 +81,26 @@ builds and ROM/translation verification. The user confirmed the live controls
 work after rebuilding. Full-range visibility and combined F7 behavior remain
 unverified.
 
+## GLES2
+
+Build this backend separately from RT64:
+
+```sh
+python3 tools/build.py hexen-us --debug --gles
+./build/hexen-us-gles-debug/bin/hexen-us --frames 1200
+```
+
+GLES2 compiles the checked F3DEX 1.21 and L3DEX 1.21 RSP programs directly
+from the pinned ROM, including their IMEM overlays. The stock RGBA16 buffers
+are 320×240; the game still sets its original VI mode. RT64 retains its
+separate custom line handler.
+
+The Debug GLES2 build completed a 1,200-frame startup smoke and a 2,600-frame
+replay offscreen in an OpenGL ES 2.0 context. Captures show startup logos and
+the copyright screen, not gameplay. The L3DEX profile is ROM-checked and
+compiled; live automap and desktop input are not verified. Visual parity at
+the edges of the logo images is also unverified.
+
 ## Existing gameplay validation
 
 The bounded automap replay selects a fighter, waits through loading, opens the

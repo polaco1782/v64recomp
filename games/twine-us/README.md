@@ -1,8 +1,9 @@
 # 007: The World Is Not Enough (USA, revision 0)
 
 Experimental partial port, registered as `twine-us`. Native startup and MusyX v1
-task execution are integrated. Rendered gameplay, audible accuracy, mission
-transitions and save/reload acceptance have not yet been established.
+task execution are integrated. A GLES2 Debug run rendered the opening logos,
+title and main menu. First-mission gameplay, keyboard/mouse controls, adjustable
+FOV, audible accuracy and save/reload acceptance are not yet established.
 
 ## Pinned cartridge
 
@@ -25,6 +26,15 @@ Linux uses `python3 tools/build.py twine-us --debug` or `python3 tools/build.py 
 Debug supports the shared `--input`, `--wav`, `--capture-every` and
 `--trace-calls` options. Replays use zero-based frame numbers. Optional
 captures live under `build/msvc/twine-us/debug/debug-output/twine-us/` on Windows.
+
+```sh
+python3 tools/build.py twine-us --debug --gles
+./build/twine-us-gles-debug/bin/twine-us --frames 2200 --mute --capture-every 150
+```
+
+GLES2 compiles the ROM-verified F3DEX 2.08 text and its overlays. The latter
+command is a bounded smoke run; press Start at the title screen to enter the
+menu. The default renderer remains RT64.
 EEPROM uses `local/saves/twine-us.eeprom`; the first Controller Pak uses that path
 with `.pak` appended. Save type/capacity and persistence still need acceptance.
 
@@ -47,7 +57,12 @@ Their table at `0x800c2c14` has 16-byte records containing BSS start/end and ROM
 start/end, indexed by `0x80117386`; loader `0x80044c4c` performs the DMA and BSS
 clear. These modules are not yet registered. Calls into unconverted code stop at
 explicit generated failure boundaries, listed in `pending-boundaries.json`.
-Successful bounded startup runs do not establish title/menu or gameplay support.
+A 2,200-presentation Linux GLES2 Debug replay verified the rendered title and
+main menu. Selecting Start Game reached a loaded but untranslated module:
+module index 1 (ROM `0xd7c50..0xdf3a0`, slot `0x80117740`) called
+`0x801193ec`, where dispatch reported an unregistered or unloaded function.
+The next step is checked conversion and lifecycle registration of that bank;
+the title/menu run does not establish rendered gameplay.
 
 ## References and local evidence
 

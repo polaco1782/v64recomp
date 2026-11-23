@@ -784,3 +784,25 @@ functions = [
   {vram = 0x800ba2fc, size = 0x130, sha256 = "080952828f2ed0a33e0357768eadbec4d356e742cf3b9cabe094a959d917955b"},
   {vram = 0x800f207c, size = 0x10, sha256 = "95c0a7a59642717d19c0a116640166c27446f233c30432722be974f982053b97"},
 ]
+
+[graphics]
+framebuffers = [{width = 320, height = 240}]
+
+# The graph thread submits F3DZEX2; S2DEX2 is loaded from display lists.
+# Text/data starts were matched against RT64's microcode database using
+# the decompressed cartridge .code image. Sizes follow the original OSTask.
+[[graphics.microcodes]]
+name = "F3DZEX2.NoN.fifo 2.08I"
+code = {image = ".code", offset = 0x13c6a0, size = 0x1000, sha256 = "c6f4d390a2070a33a1bdfe7eabc43335647dcac9c3aa8d852a1897c48fc654ee"}
+data = {image = ".code", offset = 0x13dcd0, size = 0x800, sha256 = "3635feb690529f6a05f1faf0ea6a217be6205fe83734b39b488e6f9e429c5e38"}
+
+[graphics.rsp]
+# After its initial load, the boot program replaces its first jump with the
+# restart entry already present in the original ROM at this byte offset.
+restart_jump_offset = 0xd0
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x179c0, size = 0x160, sha256 = "f3305858f15a8c77d1fb03ea6331164a2ed18de5254a4cdfc677950b4e91ba1f"},
+  {name = "RSP bootstrap with restart entry", image = "rsp-boot-restart", offset = 0x0, size = 0x160, sha256 = "333f96d79fb0577df66758c4cc64bfa55266c3366c54255871bc75f7d9e6cbfe"},
+  {name = "F3DZEX2.NoN.fifo 2.08I with overlays", image = ".code", offset = 0x13c6a0, size = 0x1630, sha256 = "9b062ea6972207315ce873b1f1286234ff132ef0b729746ffe95ab4b1b7bc8e5"},
+  {name = "S2DEX2.fifo 2.08 with overlays", image = ".code", offset = 0x105ff0, size = 0x18c0, sha256 = "11e9302fcef90abcab7eaa9494aa1a17086856facdb0c7e0e28839f9229e1dc8"},
+]

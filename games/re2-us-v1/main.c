@@ -202,9 +202,12 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "RE2 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Resident Evil 2");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_wasd_stick(renderer, true);
+#ifdef RECOMP_WITH_RT64
     /* Video writes framebuffer RAM without a graphics full-sync. PresentEarly
      * skips VI-only updates; use RT64's original-rate VI presentation path. */
     recomp_renderer_set_frame_rate(renderer, 0);
+#endif
     RecompAudioConfig audio_config = {.output_enabled = true,
                                       .playback = !options.mute,
                                       .microcode = RECOMP_AUDIO_MUSYX_V1,
@@ -224,7 +227,7 @@ int main(int argc, char **argv) {
             if (recomp_scheduler_run(&rt, 32) != RECOMP_RUN_BUDGET)
                 break;
         recomp_game_require(recomp_game_present(renderer), "RE2 presentation failed", 0);
-        deadline += 16666667;
+        deadline = recomp_game_next_deadline(deadline, 16666667);
         recomp_game_pace(&rt, deadline);
     }
     recomp_audio_destroy(audio);

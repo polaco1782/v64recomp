@@ -45,7 +45,7 @@ def glibc_requirement(path):
 
 def package(game, build):
     cache = (build / "CMakeCache.txt").read_text()
-    gles2 = 'RECOMP_RENDERER:STRING=gles2' in cache.splitlines()
+    gles = bool(re.search(r'^RECOMP_RENDERER:STRING=gles[23]?$', cache, re.M))
     embedded_rom = bool(re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:ON|TRUE|1|YES|Y)$", cache, re.M | re.I))
     embedded_textures = bool(re.search(r"^RECOMP_EMBED_TEXTURE_PACK:FILEPATH=.+$", cache, re.M))
     defaults = (build / "generated" / game / "game_defaults.h").read_text()
@@ -98,11 +98,11 @@ def package(game, build):
         for name, value in GAMEPAD_DEFAULTS.get(game, {}).items()
     )
     rom_argument = "" if embedded_rom else f' --rom "$here/local/{rom}"'
-    texture_environment = '' if gles2 else (
+    texture_environment = '' if gles else (
         f'export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"\n'
     )
-    data_argument = '' if gles2 else f' --data "$here/local/rt64/{game}"'
-    driver = 'GLES2' if gles2 else 'Vulkan'
+    data_argument = '' if gles else f' --data "$here/local/rt64/{game}"'
+    driver = 'GLES 3.0' if gles else 'Vulkan'
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
 here=$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")" && pwd)

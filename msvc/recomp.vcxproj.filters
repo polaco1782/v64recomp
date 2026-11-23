@@ -43,16 +43,49 @@
     <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\gles2.c">
-      <Filter>Source Files\backends</Filter>
+    <ClCompile Include="$(RecompRoot)backends\gles2\combiner.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\context.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\controls.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\editor.cpp">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\editor.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\framebuffer.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\internal.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\rdp.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\renderer.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\texture_pack.cpp">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\texture_pack.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\textures.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\wireframe.c">
+      <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\input.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\jpeg.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\rdp_gles2.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\rdp_triangle.c">
@@ -253,6 +286,9 @@
     <ClCompile Include="$(RecompRoot)runtime\host.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)runtime\interpreter.c">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\io.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
@@ -412,6 +448,9 @@
     <None Include="$(RecompRoot)tools\native_hooks.py">
       <Filter>Source Files\tools</Filter>
     </None>
+    <None Include="$(RecompRoot)tools\observed_transfers.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
     <None Include="$(RecompRoot)tools\package_rom.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -428,6 +467,9 @@
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\rsp_recompile.py">
+      <Filter>Source Files\tools</Filter>
+    </None>
+    <None Include="$(RecompRoot)tools\sdk_signatures.py">
       <Filter>Source Files\tools</Filter>
     </None>
     <None Include="$(RecompRoot)tools\serve_web.py">
@@ -498,6 +540,9 @@
     <Filter Include="Header Files\backends">
       <UniqueIdentifier>{D2D23502-9D21-539D-BBA4-21F5DB89B7F6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\backends\gles2">
+      <UniqueIdentifier>{3DF93433-CF1A-514C-A56F-6617710D1EFE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Header Files\cmake">
       <UniqueIdentifier>{F591A1D5-BCE9-5FF5-A942-7F8276F6DCEA}</UniqueIdentifier>
     </Filter>
@@ -518,6 +563,9 @@
     </Filter>
     <Filter Include="Source Files\backends">
       <UniqueIdentifier>{C4C0C11F-5874-5F24-A33E-62A94662D39A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backends\gles2">
+      <UniqueIdentifier>{68C36224-8E74-55D9-8C94-C2839F1C62AD}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\runtime">
       <UniqueIdentifier>{A3D86264-2A17-570D-952E-83E60C166BA8}</UniqueIdentifier>

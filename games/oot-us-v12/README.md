@@ -25,6 +25,27 @@ SHA-256 profile. Link's house background was checked through the original openin
 other JPEG rooms and full-game progression still need validation. Debug reports
 count completed tasks as `jpeg_tasks`.
 
+## GLES2 renderer
+
+RT64 remains the default. Build and run the compiled RSP/GLES2 variant separately:
+
+```sh
+python3 tools/build.py oot-us-v12 --debug --gles
+./build/oot-us-v12-gles-debug/bin/oot-us-v12
+```
+
+The ROM profile verifies the original RSP boot program, the F3DZEX2 task text
+and data, and the F3DZEX2 and S2DEX2 instruction images used for IMEM loads.
+The images come from the pinned ROM and its decompressed `.code`, not from
+a separate microcode download. The original boot and the cartridge's
+observed restart jump are fingerprinted separately. The native JPEG path
+accepts either verified boot image without relaxing its task validation.
+Desktop controls and native audio are unchanged.
+
+The first native graphics task executed in a Linux Debug smoke test.
+The restart image now passes static generation checks, but its rendered
+startup and gameplay are not yet verified.
+
 ## Keyboard and mouse
 
 Default [WASD/mouse controls](controller.md) provide native camera-relative

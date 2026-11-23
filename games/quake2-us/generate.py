@@ -1,11 +1,12 @@
 """Game-specific inputs for CMake source generation."""
 from pathlib import Path
 from common import RecompError, write_json
-from input_evidence import verify_input_evidence as verify_input
+from input_evidence import verify_adapter_evidence, verify_input_evidence as verify_input
 
 
 def prepare(rom, profile, output):
     verify_input(rom, profile)
+    verify_adapter_evidence(rom, profile, "fov_adapter")
     boot = profile['bootstrap']
     start = boot['idle_transition']
     expected = [0x3c048009, 0x24844c60, 0x0c01484c, 0x00002821,
@@ -38,7 +39,12 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'#define Q2_INPUT_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
                  for b in profile['input_adapter']['bindings'])
     (output / 'quake2_input_config.h').write_text('\n'.join(lines) + '\n')
+    lines = ['/* Generated from verified Quake II projection operands. */']
+    lines.extend(f'#define Q2_FOV_{b["name"].upper()} UINT32_C(0x{b["value"]:x})'
+                 for b in profile['fov_adapter']['bindings'])
+    (output / 'quake2_fov_config.h').write_text('\n'.join(lines) + '\n')
 
 
 def write_report(rom, profile, metadata, coverage, output):
     write_json(output / 'input-hooks.json', verify_input(rom, profile, metadata, coverage))
+    write_json(output / 'fov-hooks.json', verify_adapter_evidence(rom, profile, 'fov_adapter', metadata, coverage))

@@ -3,6 +3,7 @@
 
 /* Host compatibility used by the runtime, generated code and game adapters. */
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -10,6 +11,7 @@
 extern "C" {
 #endif
 uint64_t recomp_monotonic_ns(void);
+bool recomp_create_directories(const char *path);
 #ifdef __cplusplus
 }
 #endif

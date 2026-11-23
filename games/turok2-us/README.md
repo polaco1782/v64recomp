@@ -1,8 +1,9 @@
 # Turok 2: Seeds of Evil US 1.0
 
 The US revision-0 desktop port reaches first-person play in the Port of Adia.
-Debug and Release use RT64, the Acclaim graphics adapter and ABI1 audio.
-Desktop validation covered the title, new-game menus, both opening cinematics,
+RT64 uses the Acclaim graphics adapter; GLES2 compiles the verified Acclaim
+RSP image instead. Both renderers use the same desktop controls and ABI1
+audio service. RT64 validation covered the title, new-game menus, both opening cinematics,
 on-foot movement, mouse look, pausing and returning to play. Later levels and Controller
 Pak save/reload still need gameplay validation.
 
@@ -22,7 +23,14 @@ The normalized ROM is `local/turok2.us.z64`, size `0x2000000`, SHA-1
 The game uses 8 MiB RDRAM and a Controller Pak at
 `local/saves/turok2-us.mpk`. Save configuration is integrated; persistence has
 not been accepted in gameplay. The corresponding Debug workflow is
-`python3 tools/build.py turok2-us --debug`.
+`python3 tools/build.py turok2-us --debug`. Append `--gles` to either workflow
+to select the alternative renderer.
+
+A Linux Debug GLES2 replay rendered the Controller Pak prompt, title, menus and
+the paused Port of Adia view (capture at presentation 2,400). The headless run
+hit its wall-clock limit before completing the requested 3,250 presentations.
+The separate line-microcode automap, alternate VI modes and live desktop
+controls on GLES2 remain unverified.
 
 ## Desktop controls and field of view
 

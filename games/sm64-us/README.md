@@ -48,6 +48,22 @@ packed physics parameters. The standalone physics regression harness and
 scripted validation frontend have been removed; Debug now uses the common
 frame loop, replay and capture options.
 
+## Desktop controls
+
+WASD and the arrow keys move. Tab sends Start; Enter sends the N64 A button
+when the mouse is not captured. A gamepad remains available. During a controllable camera, captured mouse motion
+drives the same stepped C-button camera as the original: it is not unrestricted
+mouse-look. Space or left click jumps, and Ctrl or right click crouches while the
+mouse is captured. Escape releases the cursor; F4 captures it again.
+Set `RECOMP_SM64_MOUSE=0` to use the keyboard's original C-button aliases
+(I/K/J/L) and disable mouse capture. Debug replays do not consume live mouse input.
+
+Keypad + / − adjusts horizontal field of view from the original up to 140°
+at the 4:3 reference aspect. At minimum the original path is unchanged. The
+US ROM's checked world camera callback updates the same graph-node FoV used by
+projection and object culling, without overwriting the original game's zoom
+state or applying to cutscenes. The browser retains its existing controls.
+
 ## Browser preview
 
 See [WebAssembly build and validation](../../docs/webassembly.md) for the experimental Emscripten/GLES2 target.

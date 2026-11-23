@@ -26,6 +26,8 @@
   <ItemGroup>
     <None Include="$(RecompRoot)games\banjo-kazooie-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\audio.h" />
+    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\controls.c" />
+    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\controls.h" />
     <None Include="$(RecompRoot)games\banjo-kazooie-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\main.c" />
     <None Include="$(RecompRoot)games\banjo-kazooie-us\profile.toml" />

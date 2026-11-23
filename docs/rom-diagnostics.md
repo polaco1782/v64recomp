@@ -96,6 +96,41 @@ body checks expose unsupported transfers and overlaps. Use
 source evidence for an entry that was registered after an older crash. A likely
 candidate still needs source/ABI and ownership review before becoming a root.
 
+In partial inventories, an `after-return` reference identifies a possible
+function immediately following the last reachable `jr ra` and its delay slot
+in the same section. This finds small functions without a stack frame, even
+in a sequence with no known callers. The scanner can skip NOP padding up to
+the next 16-byte boundary. It records the predecessor entry and return PC
+only if the next body passes its bounded control-flow checks. When a compiler
+schedules instructions before the stack adjustment, `stack_prologue_vram`
+records the later adjustment. The scanner accepts the earlier candidate when
+its prefix falls straight through and the only overlap is a probe seeded
+solely by that adjustment.
+
+A `sdk-body` reference records the byte length, SHA-256 and possible SDK names
+of a full relocation-masked signature match. The scanner looks after returns
+in unvisited ranges and at named direct calls in the original ROM bodies of
+native replacements. It also follows an address constructed by a matching
+SDK caller when its HI16 and LO16 relocations name the same routine and a
+full signature matches at the destination. For a multiply called routine in
+one unvisited range, two earlier direct calls and a preceding unconditional
+jump can corroborate the SDK body. The report retains the call PCs. Short generic
+stubs need independent evidence from a named relocation. These candidates carry `review`
+confidence. Check the body's issues for unsupported instructions and use the
+section and address to identify it when SDK variants share machine code.
+
+The scanner also checks call arguments in likely callers whose control flow
+closed during probing. A `probed-call-argument` records the caller, call PC,
+argument register or stack slot, and direct callee. The callee must be
+registered or independently reached by a direct call and a closed probe. A `sdk-direct-call`
+records a named JAL relocation in a native replacement's original SDK body.
+A `repeated-direct-call` records two or more reachable JALs to the same
+destination in a fully explored frame-bearing caller with no terminal, a
+pattern found in service threads. Each rule requires a unique destination
+mapping, a preceding return and delay slot, and a closed destination body.
+Checked and inferred local switch labels are excluded from these rules.
+The resulting entries carry review confidence.
+
 Use `tools/analyze.py review-candidates --game <game> --build-dir build/<game>-debug
 --preflight` to refresh a complete static review packet before launching again.
 It groups register/stack argument producers by shared callee and object-field

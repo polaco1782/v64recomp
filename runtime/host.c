@@ -1,5 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include "host.h"
+#include <errno.h>
+#include <sys/stat.h>
+#include <string.h>
 #include "recomp.h"
 #ifdef __EMSCRIPTEN__
 #include <stdatomic.h>
@@ -7,7 +10,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <errno.h>
 #include <stdlib.h>
 
 int clock_gettime(int clock, struct timespec *value) {
@@ -122,4 +124,30 @@ uint64_t recomp_monotonic_ns(void) {
         ns = previous;
 #endif
     return ns;
+}
+
+bool recomp_create_directories(const char *path) {
+    char buffer[4096];
+    if (!path || !*path || strlen(path) >= sizeof(buffer))
+        return false;
+    strcpy(buffer, path);
+    for (char *p = buffer + 1;; p++) {
+        if (*p != '/' && *p != '\\' && *p)
+            continue;
+        char saved = *p;
+        *p = 0;
+#ifdef _WIN32
+        /* Skip a drive root, e.g. C:, which already exists. */
+        if (!(p == buffer + 2 && buffer[1] == ':'))
+            if (_mkdir(buffer) && errno != EEXIST)
+                return false;
+#else
+        if (mkdir(buffer, 0755) && errno != EEXIST)
+            return false;
+#endif
+        *p = saved;
+        if (!saved)
+            break;
+    }
+    return true;
 }

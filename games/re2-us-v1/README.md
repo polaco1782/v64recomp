@@ -34,6 +34,37 @@ Cartridge saves use 32 KiB SRAM at `local/saves/re2-us-v1.sra` (override with
 `--save`). The previous `.mpk` path was a Controller Pak image and is kept
 separate. The default controller has no Pak attached.
 
+## Desktop keyboard
+
+WASD and the arrow keys both drive the original analog stick. Return maps to
+N64 A and Tab maps to Start; the remaining keyboard bindings and physical
+controller mapping are unchanged. The original scene cameras and aiming are
+unchanged. Free mouse look and adjustable field of view are not provided because
+the fixed camera compositions are tied to their pre-rendered backgrounds.
+
+## Experimental GLES2 bring-up
+
+RT64 remains the default. The GLES2 profile binds the captured F3DEX.Rej FIFO
+and S2DEX FIFO task code and data to exact spans of the decoded `.main` image.
+Its bootstrap and overlay instructions are checked again during generation.
+The boot depth command uses a 512-pixel stride (including the immediate at
+`0x80025608`), and the guest scissor gives 327 rows. The subsequent 436x383
+settings come from the captured VI mode and restored scissor; they do not
+establish the game's full dynamic-resolution inventory.
+
+An experimental GLES2 Debug build ran through visible opening graphics, then
+later captures were black despite continued RSP completions and active scanout.
+The run was stopped at user request before the requested frame limit. The
+movie, title, gameplay, and later resolution transitions are not accepted, so
+the normal GLES2 build gate remains off. To reproduce the diagnostic path only:
+
+```sh
+cmake -S . -B build/re2-us-v1-gles-debug -G Ninja \
+  -DRECOMP_GAME=re2-us-v1 -DRECOMP_RENDERER=gles \
+  -DRECOMP_GAME_GLES2_SUPPORTED=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/re2-us-v1-gles-debug -j2
+```
+
 ## Loading model
 
 IPL maps cartridge `0x1000..0x14420` to `0x80000480..0x800138a0`.

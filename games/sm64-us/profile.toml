@@ -2,6 +2,12 @@
 # Ordinary CPU text, native OS bodies, RSP programs and data are classified
 # by code-inventory.json. The build does not read a reference ELF/map or C tree.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
+# geo_camera_fov: exact US body, render context 1, perspective node fov at 0x1c.
+# It finishes the native camera FOV/shake before projection and object traversal.
+function_wrappers = [
+  {section = ".main", vram = 0x8029aa3c, size = 0x158, sha256 = "7f2f57cd39b84641ea569339139e68e22551304a3b0f00dbed4e4d318a03d947", handler = "sm64_camera_fov"},
+]
+
 checkpoints = [
   {pc = 0x80246dd8, expected_word = 0x1000ffff, kind = "yield", reason = "Return control to the host on every iteration of SM64's idle loop"},
 ]

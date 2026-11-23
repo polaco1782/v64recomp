@@ -96,6 +96,18 @@ roots = [
   {name = "live_0021ed08", vram = 0x0021ed08, section = ".engine"},
   # ROM-verified function roots.
   {name = "live_00429880", vram = 0x00429880, section = ".virtual"},
+  # ROM-verified function roots.
+  {name = "live_002b7bd8", vram = 0x002b7bd8, section = ".engine"},
+  {name = "live_002b7f3c", vram = 0x002b7f3c, section = ".engine"},
+  {name = "live_002b8440", vram = 0x002b8440, section = ".engine"},
+  {name = "live_002b9d10", vram = 0x002b9d10, section = ".engine"},
+  {name = "live_002b9f30", vram = 0x002b9f30, section = ".engine"},
+  {name = "live_002b9fe0", vram = 0x002b9fe0, section = ".engine"},
+  {name = "live_00417e24", vram = 0x00417e24, section = ".virtual"},
+  {name = "live_0042a760", vram = 0x0042a760, section = ".virtual"},
+  {name = "live_0042b544", vram = 0x0042b544, section = ".virtual"},
+  # ROM-verified function roots.
+  {name = "live_00435be8", vram = 0x00435be8, section = ".virtual"},
 ]
 
 # Event router at 0x002538e0 indexes (handler, flags) with a2 * 8.
@@ -463,4 +475,99 @@ bindings = [
   {name = "projection_return", kind = "return", pcs = [0x0028f094, 0x0028f098], words = [0x0c0b974b, 0xe7a00018], value = 0x28f09c},
   {name = "fixed_return", kind = "return", pcs = [0x0028f0fc, 0x0028f100], words = [0x0c097f89, 0x02852821], value = 0x28f104},
   {name = "corners_return", kind = "return", pcs = [0x0028e974, 0x0028e978], words = [0x0c098a3a, 0x46000506], value = 0x28e97c},
+]
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x21ff90
+expected_word = 0x60f809
+kind = "call"
+target_section = ".virtual"
+target = 0x435be8
+size = 0xd4
+sha256 = "bd1ecc11fa48cd2ba7121589d0850f2cac76549e82a41f44c16a1feed065ea63"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x21ff90
+expected_word = 0x60f809
+kind = "call"
+target_section = ".virtual"
+target = 0x4392f0
+size = 0xfc
+sha256 = "f361caadf2b7564540fd6c9272b7ef71ffd80d171cfcb6a45955873a8d0c21db"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x2bab68
+expected_word = 0x40f809
+kind = "call"
+target_section = ".engine"
+target = 0x2b7450
+size = 0x2c0
+sha256 = "1d46ad5e663ab0bc9b029db20563c18395c8bf809a62d1e7da866cacb82c1b48"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x21ff90
+expected_word = 0x60f809
+kind = "call"
+target_section = ".virtual"
+target = 0x430c70
+size = 0xfc
+sha256 = "f2139ad285e1d553627c0e4afde45dc09c49ece21642d6b64cdcbea442a3381b"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x2bab68
+expected_word = 0x40f809
+kind = "call"
+target_section = ".engine"
+target = 0x2b6600
+size = 0x13c
+sha256 = "93678477cc14fbf64b60893caa8f0411718ff4a9bc1217550ee70c1d3795e21f"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x2befcc
+expected_word = 0x40f809
+kind = "call"
+target_section = ".engine"
+target = 0x2dca0c
+size = 0x58
+sha256 = "4ab1bbc7d304b4246d67b73b02e3ee42d5a730423b8414e0d85da7794ce58f60"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x2daaec
+expected_word = 0x40f809
+kind = "call"
+target_section = ".engine"
+target = 0x2db658
+size = 0x158
+sha256 = "6949f8359ef7c060cf98f882a284a12b2c7a77e23acb06a38e3d0fdc1636bebb"
+
+[[discovery.observed_transfers]]
+section = ".engine"
+pc = 0x2b6638
+expected_word = 0xc0adb82
+kind = "call"
+target_section = ".engine"
+target = 0x2b6e08
+size = 0xf0
+sha256 = "d0a4d28757a93496abb7b47eafcf71c4bc0f0d8ecb3602e92287d7690e7f504b"
+
+[graphics]
+framebuffers = [{width = 284, height = 222}]
+
+[[graphics.microcodes]]
+name = "Acclaim F3DEX2 non-FIFO"
+code = {rom_offset = 0x1114b0, size = 0x1000, sha256 = "962fad8d596512b7a4b95f2c2ad8736f2b09b0dad70ae2cd793100df8ffb42af"}
+data = {rom_offset = 0x1147f0, size = 0x800, sha256 = "c4ba783211d6f282eea4575dde556da810b0a617833ac6b1e7932dbc4610b409"}
+
+[graphics.rsp]
+# Include the complete text because its IMEM overlays extend beyond OSTask ucode_size.
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x1113e0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Acclaim F3DEX2 non-FIFO with overlays", rom_offset = 0x1114b0, size = 0x1390, sha256 = "6734f26b67b25c6a521dc2ee56d343d33c8005ea4001c2db83fbabf539e62e57"},
 ]

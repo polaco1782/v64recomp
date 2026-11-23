@@ -53,6 +53,41 @@ the replacement in play.
 Editing requires a writable standalone ZIP supplied through `--texture-pack`.
 The ZIP directory needs room for a temporary copy while an edit is being saved.
 
+<a id="gles2-texture-packs-and-editor"></a>
+
+## GLES3 texture packs and editor
+
+Desktop GLES3 reads versioned RT64 v5 PNGs in ZIPs, including overrides saved
+by the RT64 editor under `v64recomp/overrides/rt64-v5/`. For a Rice ZIP that
+RT64 has already indexed, GLES3 can reuse a matching `.rt64.json` cache for
+single-image and paired RGB/alpha mappings. It does not infer new Rice IDs,
+load RTZ/DDS, or offer the executable-embedding build option. Tiles that cannot
+be matched or decoded keep their original appearance. New replacements decode
+on a cache miss; unlike RT64, GLES3 does not stream them from a background worker.
+
+```sh
+./build/banjo-kazooie-us-gles-release/bin/banjo-kazooie-us
+# Or supply a compatible pack at launch:
+./build/banjo-kazooie-us-gles-release/bin/banjo-kazooie-us --texture-pack /path/to/pack.zip
+```
+
+Press **F8** to pause and open a gallery of recently seen, editable textures.
+It is available by default on desktop in Debug and Release, without a ZIP.
+Set `RECOMP_GLES2_TEXTURE_EDITOR=0` to skip observing thumbnails. Passing
+`--texture-editor` or `--texture-pack ZIP` explicitly overrides this setting.
+Select a thumbnail, drop a PNG onto the window, then press **Esc** or **F8**
+to resume. The replacement needs the same aspect ratio as the original, and
+must fit the GPU limit (at most 2048 px per side and 16 MiB on disk).
+GLES3 applies it to every use of that texture. It saves a local override in
+`<data>/texture-overrides/<hash>.v5.png` without touching the source ZIP;
+delete that override and reload to revert. **F5** refreshes the matches and
+switches between original and replacement textures. This editor selects
+textures from thumbnails, not by clicking game geometry.
+
+Builds without the pinned texture dependencies, builds configured with
+`-DRECOMP_GLES2_TEXTURE_PACKS=OFF`, and WebAssembly retain the plain renderer
+without the editor. The GLES backend operates independently of the RT64 renderer.
+
 ## Embed a ZIP in the executable
 
 Set the optional CMake path when configuring either Debug or Release:

@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
             if (recomp_scheduler_run(&rt, 32) != RECOMP_RUN_BUDGET)
                 break;
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        deadline += 16666667;
+        deadline = recomp_game_next_deadline(deadline, 16666667);
         recomp_game_pace(&rt, deadline);
     }
     recomp_audio_destroy(audio);

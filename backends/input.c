@@ -70,6 +70,20 @@ static RecompCameraStick stick(RecompInput *input, SDL_GameControllerAxis horizo
     }
     return result;
 }
+void recomp_input_keyboard_stick(RecompPad *pad, const uint8_t *keys, bool arrows_are_c_buttons, bool wasd) {
+    bool up =
+        (!arrows_are_c_buttons && keys[SDL_SCANCODE_UP]) || ((wasd || arrows_are_c_buttons) && keys[SDL_SCANCODE_W]);
+    bool down =
+        (!arrows_are_c_buttons && keys[SDL_SCANCODE_DOWN]) || ((wasd || arrows_are_c_buttons) && keys[SDL_SCANCODE_S]);
+    bool left =
+        (!arrows_are_c_buttons && keys[SDL_SCANCODE_LEFT]) || ((wasd || arrows_are_c_buttons) && keys[SDL_SCANCODE_A]);
+    bool right =
+        (!arrows_are_c_buttons && keys[SDL_SCANCODE_RIGHT]) || ((wasd || arrows_are_c_buttons) && keys[SDL_SCANCODE_D]);
+    const int x = right - left, y = up - down;
+    const int travel = wasd && x && y ? 56 : 80;
+    pad->stick_x = (int8_t)(x * travel);
+    pad->stick_y = (int8_t)(y * travel);
+}
 void recomp_input_poll(RecompInput *input, RecompPad *pad, RecompCameraStick *camera) {
     if (camera)
         *camera = (RecompCameraStick){0};

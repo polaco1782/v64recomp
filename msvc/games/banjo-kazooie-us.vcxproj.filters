@@ -7,6 +7,12 @@
     <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\banjo-kazooie-us\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\banjo-kazooie-us\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\banjo-kazooie-us\generate.py">
       <Filter>Source Files</Filter>
     </None>

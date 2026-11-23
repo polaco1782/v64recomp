@@ -28,6 +28,13 @@ The default Pak is `local/saves/duke-zero-hour-us.mpk`; `--save` selects another
 image. The runtime presents one controller and a memory Pak, with no Rumble Pak
 or cartridge EEPROM. Game-level save/reload acceptance is pending.
 
+## Desktop controls
+
+WASD and the arrow keys send the same original N64 analog-stick directions.
+Return sends A and Tab sends Start. The original directional keys and physical
+controllers remain available. Mouse camera control and an adjustable gameplay
+field of view are not implemented.
+
 ## Load map and checked metadata
 
 The header entry at `0x80000400` clears BSS at
@@ -63,7 +70,18 @@ The audio task produced by `0x800a9080` uses the verified ABI1 microcode;
 
 Bring-up has verified original boot/BSS, threads, support-code DMA, ABI1 audio
 tasks, controller polling, framebuffer swaps and visible copyright/logo screens.
-Title/menu and gameplay acceptance are still being established.
+A 1,200-frame Debug GLES2 smoke run using an offscreen OpenGL ES 2.0 context
+completed and reproduced the copyright screen. That run did not reach
+playable gameplay or exercise live keyboard input.
+
+The [US decompilation at `beca4713`](https://github.com/Gillou68310/DukeNukemZeroHour/tree/beca47137e63a2da6999ef9a7974dba16cd6f82b)
+identifies the gameplay projection and visibility boundaries. Disassembly
+of the pinned local ROM confirms that the world setup at `0x8000e56c` calls
+the float and fixed-point projection paths at `0x8000e6c4` and
+`0x8000e770`. Sector traversal separately starts at the call at
+`0x80004608`; its original bounds depend on pitch and roll. A gameplay FoV
+change must keep both matrices and sector visibility consistent and preserve
+native zoom. Title/menu and gameplay acceptance are still being established.
 
 The unused original debug-buffer reset at `0x80003940` contains a literal call
 to the unlinked address `0x80000000`. It remains a checked unsupported boundary;

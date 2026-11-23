@@ -20,6 +20,10 @@ typedef struct RecompCameraStick {
 RecompInput *recomp_input_create(void);
 void recomp_input_destroy(RecompInput *);
 void recomp_input_poll(RecompInput *, RecompPad *, RecompCameraStick *camera);
+/* Compute the digital stick from SDL's current scancode array. This does not
+ * change buttons or merge gamepads. Arrows are reserved for C-buttons only
+ * when arrows_are_c_buttons is set. */
+void recomp_input_keyboard_stick(RecompPad *, const uint8_t *keys, bool arrows_are_c_buttons, bool wasd);
 #ifdef __cplusplus
 }
 #endif

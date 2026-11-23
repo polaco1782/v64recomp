@@ -7,6 +7,12 @@
     <ClInclude Include="$(RecompRoot)games\quake2-us\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)games\quake2-us\fov.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\quake2-us\fov.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\quake2-us\generate.py">
       <Filter>Source Files</Filter>
     </None>

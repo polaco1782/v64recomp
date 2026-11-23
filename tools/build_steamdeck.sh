@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: tools/build_steamdeck.sh [GAME] [JOBS] [rt64|gles2]
+Usage: tools/build_steamdeck.sh [GAME] [JOBS] [rt64|gles]
 
 Defaults: oot-us-v12, 4 jobs, RT64. Supports Podman, Docker and Bubblewrap.
 Outputs: build/steamdeck/GAME/package and GAME-steamdeck.tar.gz
@@ -18,7 +18,7 @@ if (( $# > 3 )); then usage >&2; exit 2; fi
 game=${1:-oot-us-v12}
 jobs=${2:-4}
 renderer=${3:-rt64}
-if [[ $renderer != rt64 && $renderer != gles2 ]]; then usage >&2; exit 2; fi
+if [[ $renderer != rt64 && $renderer != gles ]]; then usage >&2; exit 2; fi
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 if [[ ! $game =~ ^[a-z0-9]+(-[a-z0-9]+)*$ || ! -f $root/games/$game/profile.toml ]]; then
     printf 'Unknown game: %s\n' "$game" >&2; exit 2

@@ -103,6 +103,7 @@ int main(int argc, char **argv) {
                         "1080 IO/task initialization failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "1080 Snowboarding");
     recomp_game_require(renderer != NULL, "1080 renderer initialization failed", 0);
+    recomp_renderer_wasd_stick(renderer, true);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .microcode = RECOMP_AUDIO_NEAD_1080,
@@ -125,7 +126,7 @@ int main(int argc, char **argv) {
                 break;
         }
         recomp_game_require(recomp_game_present(renderer), "1080 presentation failed", 0);
-        deadline += 16666667;
+        deadline = recomp_game_next_deadline(deadline, 16666667);
         recomp_game_pace(&rt, deadline);
     }
     recomp_audio_destroy(audio);

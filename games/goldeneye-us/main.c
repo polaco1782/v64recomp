@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
                                &pad);
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "GoldenEye controller update failed", 0);
         recomp_game_require(recomp_game_present(renderer), "GoldenEye presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         /* VI/AI deadlines and RSP completions must wake guest work between
          * display ticks, including after asynchronous graphics submission. */
         if (wall_origin)

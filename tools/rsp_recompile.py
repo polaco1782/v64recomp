@@ -206,7 +206,7 @@ def emit_program(output: Path, images: list[tuple[str, bytes]]) -> None:
              'recomp_rsp_fault(s, "RSP execution address or instruction limit", at, 0); return; }',
              'uint16_t entry = s->native[at / 4];',
              's->pc = s->next_pc; s->next_pc = (s->next_pc + 4) & 4095;',
-             'switch (entry) {'])
+             'switch (entry) {', 'case RECOMP_RSP_ZERO_NOP: break;'])
     for word, entries in sorted(word_entries.items()):
         lines.extend(f'case {entry}:' for entry in entries)
         lines.append(f'{{ {instruction(word)} break; }}')

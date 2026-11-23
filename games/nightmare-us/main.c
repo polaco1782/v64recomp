@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "audio.h"
 #include "nightmare_input.h"
+#include "fov.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -90,6 +91,7 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "Nightmare Creatures");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     nightmare_input_init();
+    nightmare_fov_init(renderer);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -110,7 +112,7 @@ int main(int argc, char **argv) {
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "controller update failed", 0);
         drain(&rt);
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);

@@ -77,6 +77,10 @@ void recomp_scheduler_destroy(Runtime *);
  * The thread stays runnable in guest RAM; only its host busy loop is skipped. */
 void recomp_scheduler_set_idle_thread(Runtime *, uint32_t object);
 RecompRunResult recomp_scheduler_run(Runtime *, size_t max_resumes);
+/* Service pending hardware and stop before the next guest dispatch once the
+ * host deadline is reached. now() and deadline use the same time base. A guest
+ * still has to reach its next normal yield; this is not asynchronous preemption. */
+RecompRunResult recomp_scheduler_run_until(Runtime *, size_t max_resumes, uint64_t deadline, uint64_t (*now)(void));
 void recomp_thread_create(Runtime *, uint32_t object, int32_t id, uint32_t entry, uint32_t argument, uint32_t stack,
                           int32_t priority);
 void recomp_thread_start(Runtime *, uint32_t object);

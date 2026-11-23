@@ -353,3 +353,18 @@ bindings = [
   {name = "fixed_return", kind = "return", pcs = [0x0027da4c, 0x0027da50], words = [0x0c083325, 0x02852821], value = 0x27da54},
   {name = "corners_return", kind = "return", pcs = [0x0027dd00, 0x0027dd04], words = [0x0c083e42, 0x24070005], value = 0x27dd08},
 ]
+
+[graphics]
+framebuffers = [{width = 284, height = 222}, {width = 380, height = 200}, {width = 480, height = 360}]
+
+[[graphics.microcodes]]
+name = "Acclaim F3DEX2 non-FIFO"
+code = {rom_offset = 0xbd000, size = 0x1000, sha256 = "962fad8d596512b7a4b95f2c2ad8736f2b09b0dad70ae2cd793100df8ffb42af"}
+data = {rom_offset = 0xc0340, size = 0x800, sha256 = "c4ba783211d6f282eea4575dde556da810b0a617833ac6b1e7932dbc4610b409"}
+
+[graphics.rsp]
+# Include the complete text because its IMEM overlays extend beyond OSTask ucode_size.
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xbcf30, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Acclaim F3DEX2 non-FIFO with overlays", rom_offset = 0xbd000, size = 0x1390, sha256 = "6734f26b67b25c6a521dc2ee56d343d33c8005ea4001c2db83fbabf539e62e57"},
+]

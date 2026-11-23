@@ -8,5 +8,6 @@
 void quake2_input_init(void (*poll)(Runtime *, void *));
 bool quake2_input_enabled(void);
 bool quake2_input_playable(Runtime *rt);
+bool quake2_world_playable(Runtime *rt);
 void quake2_input_submit(RecompMouseFrame frame);
 #endif

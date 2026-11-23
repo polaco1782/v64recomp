@@ -15,8 +15,8 @@ getconf GNU_LIBC_VERSION
 This is a userspace compatibility target; Deck hardware gameplay and performance
 still need testing. It does not change SteamOS or replace its system libraries.
 
-Use `tools/build_steamdeck.sh goldeneye-us 4 gles2` to package the GLES2
-renderer and compiled graphics RSP in `build/steamdeck/goldeneye-us-gles2/`.
+Use `tools/build_steamdeck.sh goldeneye-us 4 gles` to package the GLES3
+renderer and compiled graphics RSP in `build/steamdeck/goldeneye-us-gles/`.
 The default RT64 package uses the original game directory.
 
 ## Build on your PC

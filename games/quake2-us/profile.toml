@@ -1,7 +1,9 @@
-# Scoped player-command wrappers; original functions remain translated.
+# Scoped game wrappers; original functions remain translated.
 function_wrappers = [
   {section = ".main", vram = 0x80024dd0, size = 0x384, sha256 = "9af6e0767354303fd8eac06996f2be06a62b0fbdc845d25497f4c6e14e80ed0d", handler = "quake2_input_dispatch_hook"},
   {section = ".main", vram = 0x80024a10, size = 0x3c0, sha256 = "270cff78dbd7ee1e5584ae21a673dd36e6c39e60c0d7d9b9bbd67249752c2546", handler = "quake2_input_command_hook"},
+  {section = ".main", vram = 0x80022e4c, size = 0xc8, sha256 = "52187259996f10379d75c19251fdc79b4ca755b14e8c895f22e736dc0593b196", handler = "quake2_fov_world"},
+  {section = ".main", vram = 0x8000eae4, size = 0x378, sha256 = "73e7db1a8a6b6a65b1ec6082fc1f121ab96bebeb0e78e1fba205860b31f021f7", handler = "quake2_fov_frustum"},
 ]
 
 # Quake II US revision 0, original big-endian cartridge.
@@ -189,4 +191,28 @@ images = [
   {name = "RSP bootstrap", rom_offset = 0x61a20, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
   {name = "F3DLP.Rej 1.23 with overlays", rom_offset = 0x62f20, size = 0x13c8, sha256 = "f377415e101acf08d9bf69d961902721c94b9f3f227c6c89b9ca2b19e3de1d26"},
   {name = "F3DEX.NoN 1.23 with overlays", rom_offset = 0x61af0, size = 0x1430, sha256 = "bcc2c734687e9fc95b9d793965f9679a214152bb783fe69c02237dc51a661c32"},
+]
+
+# The single-player world draw uses a fixed perspective matrix and four CPU
+# frustum planes. Preserve the original two-dimensional path and other callers.
+[fov_adapter]
+functions = [
+  {name = "single_player_draw_and_flush", vram = 0x80022e4c, size = 0xc8, sha256 = "52187259996f10379d75c19251fdc79b4ca755b14e8c895f22e736dc0593b196"},
+  {name = "render_dispatch", vram = 0x80022940, size = 0x50c, sha256 = "a23905a9a7c9e75e0c91ae5946e3c2832a24c3874f0005e6303e96fe0bd7f4df"},
+  {name = "world_draw", vram = 0x8000f360, size = 0x150, sha256 = "ec2a42e44ac8bb479746c4cc51d65cc1cc66d0234342ace1b15ab54ab35785b1"},
+  {name = "perspective_init", vram = 0x8000db68, size = 0x11c, sha256 = "345cea970ddbd21a97c7f28043f16878ba3a977a100741c3eac7695c32050f9f"},
+  {name = "display_list_setup", vram = 0x8000dc84, size = 0x2f4, sha256 = "fdc3857cd8797e746897f15a81891bc799e6cf15d4a860163ef4816d426c3079"},
+  {name = "frustum_setup", vram = 0x8000eae4, size = 0x378, sha256 = "73e7db1a8a6b6a65b1ec6082fc1f121ab96bebeb0e78e1fba205860b31f021f7"},
+  {name = "submit_final_list", vram = 0x80001058, size = 0x104, sha256 = "db47f042d8385d772f6d5f923c674f0d3e87a66192287a23c89bd2366b54fc5c"},
+  {name = "build_float_frustum", vram = 0x8001fed0, size = 0xec, sha256 = "71c75849fd42c7165d3d30bcffe2cf65fafd8634d106906c53c053d18d00339d"},
+  {name = "pack_fixed_matrix", vram = 0x800201dc, size = 0x98, sha256 = "a24f7382e3afeec95553a338105f19fb82ff7d8e37f084d7facc43bf9846d0f6"},
+  {name = "frustum_box_test", vram = 0x80010800, size = 0xd8, sha256 = "f7b2f7b020b796a9ab114a9f2ae064085599bb9b983d6913c683714e03181fd7"},
+]
+data = []
+bindings = [
+  {name = "world_return", kind = "return", pcs = [0x80022cd4, 0x80022cd8], words = [0x0c008b93, 0x00000000], value = 0x80022cdc},
+  {name = "frustum_return", kind = "return", pcs = [0x8000f36c, 0x8000f370], words = [0x0c003ab9, 0x00808021], value = 0x8000f374},
+  {name = "projection", kind = "address", pcs = [0x8000dc68, 0x8000dc6c], words = [0x3c058008, 0x24a5a478], value = 0x8007a478},
+  {name = "right_basis", kind = "address", pcs = [0x8000eaec, 0x8000eaf0], words = [0x3c018008, 0xc42a5a24], value = 0x80085a24},
+  {name = "up_basis", kind = "address", pcs = [0x8000eb38, 0x8000eb3c], words = [0x3c018008, 0xc42ca4d0], value = 0x8007a4d0},
 ]

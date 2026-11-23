@@ -1,16 +1,25 @@
-# C11 GLES2 and compiled RSP graphics
+# OpenGL ES 3.0 and compiled RSP graphics
 
-With `-DRECOMP_RENDERER=gles2`, graphics display lists run through
+With `-DRECOMP_RENDERER=gles`, graphics display lists run through
 the statically recompiled RSP program checked for the selected game. All
-runtime/generated graphics code is C11; Python performs generation. Audio and
-JPEG retain their existing task implementations.
+core runtime and generated graphics code are C11; Python performs generation.
+The optional desktop texture-pack reader and editor use C++17. Audio and JPEG
+retain their existing task implementations.
+
+Native builds require OpenGL ES 3.0 or later. The SM64 browser build uses
+WebGL 2 and the same GLSL ES 3.00 shaders.
+
+The backend lives in `backends/gles2/`: the renderer adapter services graphics
+tasks; the RDP decoder batches draw commands; context, framebuffers, controls,
+TMEM and combiner shaders live in separate modules. The editor, pack reader
+and wireframe are separate from game code and do not link the RT64 renderer.
 
 ## Task execution
 
 ```text
 Original CPU display lists -> OSTask -> snapshot RDRAM and descriptor
   -> wake RSP worker -> compiled microcode -> RDP words and DMA writes
-  -> owner thread GLES2 draw/readback -> commit writes -> SP/DP completion
+  -> owner thread GLES draw/readback -> commit writes -> SP/DP completion
 ```
 
 One task is in flight, matching the single SP. The worker owns private RAM,
@@ -21,10 +30,12 @@ Only actual DMA writes and completed native color readback enter live RAM.
 SP and DP events remain separate; a task without `FULLSYNC` has no DP event.
 
 Python emits constant-operand C11 basic blocks and per-image IMEM maps.
-IMEM DMA binds these compiled entries only when the complete transferred range
-matches verified original program words, including overlays. Runtime execution
-never decodes unknown instructions or compiles mutable RAM. Unknown IMEM,
-unsupported instructions, invalid DMA and instruction/output budgets fail explicitly.
+IMEM DMA binds bytes from installed RDRAM to compiled entries after matching
+the transferred span against verified program words, including overlays.
+SP DMA reads from unpopulated RDRAM return zeroes in DMEM and IMEM. In IMEM
+each zero-filled word replaces its previous translation with a NOP. Unknown
+code from installed RDRAM, unsupported instructions, out-of-range DMA writes
+and instruction/output budgets still fail explicitly.
 
 Blocks group straight-line instructions and include a terminating branch's
 delay slot. PC bookkeeping stays local and instruction budgets are charged once
@@ -39,30 +50,40 @@ This models completed graphics tasks rather than RSP cycle timing or resumable
 hardware yield. Full-RDRAM snapshots add memory traffic; threading is not a speed
 claim, and ARM performance has not been measured.
 
-The GLES2 pipeline consumes RDP edge/coefficient triangles, fill/texture
+The GLES pipeline consumes RDP edge/coefficient triangles, fill/texture
 rectangles, TMEM palettes and RGBA/IA/I/CI textures. It retains combiner shaders,
 depth/blending, framebuffer surfaces and RGBA16/RGBA32 native readback.
 Depth storage follows the physical N64 Z image across color-buffer swaps and
-RSP task boundaries. GLES3/OES_depth24 contexts use 24-bit depth; other GLES2
-contexts retain the legal 16-bit fallback. S/T/W are
+RSP task boundaries. Native GLES3 and WebGL 2 both use 24-bit depth. S/T/W are
 interpolated in screen space and divided in the fragment shader, with bounded
 coordinates for zero/negative W. Rectangles have zero shade coefficients.
 Read-only decals use a per-triangle depth bias derived from the RDP's normalized
 integer Z gradients, replacing the fixed GL polygon offset. This keeps coplanar
 overlays such as SM64's castle doorway trim visible across camera angles and
-render scales. It approximates the RDP's depth/dz comparison; GLES2 does not
+render scales. It approximates the RDP's depth/dz comparison; the depth buffer does not
 provide the stored per-pixel RDP dz value. Depth-writing geometry retains its
 original Z values. See the primary
 [decal comparison](https://github.com/Themaister/parallel-rdp/blob/master/parallel-rdp/shaders/depth_test.h)
 and [gradient normalization](https://github.com/Themaister/parallel-rdp/blob/master/parallel-rdp/rdp_renderer.cpp)
 references.
-RDP depth comparison and update are independent: GLES2 update-only passes keep
+RDP depth comparison and update are independent: GLES update-only passes keep
 the depth test enabled with `GL_ALWAYS`. Disabling the GL test would also
 discard their depth writes, allowing later objects to show through walls.
+One- and two-cycle rectangles honor primitive Z and the independent compare
+and write flags. Primitive Z uses the lower 15 bits of the command's Z field,
+so Hexen's `0xffff` far-clear rectangle maps below 1.0. An unforced blender
+selecting framebuffer memory in its final cycle preserves the existing color
+while the sky mask updates depth.
+Alpha-based coverage discards fragments below one of eight estimated samples.
+This is independent of threshold comparison, which takes the first combiner
+cycle's alpha in two-cycle mode. Partially transparent sprites such as Hexen's
+first-person wand can therefore survive the coverage test.
 CPU-drawn loading images use the VI format and profile-bounded dimensions.
 LOADTILE latches sampling bounds as well as transferring pixels; raw video can
 therefore draw through its upload tile without a separate SETTILESIZE. See the
 [libdragon tile API](https://libdragon.dev/ref/rdpq_8h.html).
+An unclamped masked axis decodes the full supported wrap period, even when
+SETTILESIZE is missing or still describes the previous tile.
 Coverage, blending, LOD and VI framing remain approximations.
 
 ## Checked programs and acceptance
@@ -86,10 +107,12 @@ Only the exact ROM revisions pinned by the game profiles are covered.
 | 1080 JU revision 0 / F3DEX 1.23 | Native bootstrap/full program pinned; a separate CPU scene mismatch limits later progression. |
 | Shadow Man US / F3DEX2 2.08 | Native bootstrap/full program pinned; regression results below. |
 
-The remaining ports need their own checked programs and rendered validation,
-including sprite/background and line variants. Bad Apple submits raw RDP commands directly, and Media Player keeps its native
-SDL interface; neither uses a display-list HLE frontend. A compiled microcode program does not prove
-that every emitted RDP effect or CPU game path works.
+Additional builds and current limitations are tracked in the
+[per-ROM coverage matrix](desktop-coverage.md), including compile-only
+variants and ports still gated off. Bad Apple submits raw RDP commands directly,
+and Media Player keeps its native SDL interface; neither uses a display-list
+HLE frontend. A compiled microcode program does not prove that every emitted
+RDP effect or CPU game path works.
 
 ## Generation and build
 
@@ -101,43 +124,49 @@ same bounds/fingerprint fields. Compressed images use a verified named `image`
 and `offset` supplied by the game's preparation helper.
 
 For compressed images the game generator exposes `graphics_images(rom, profile)`.
-The shared generator authenticates each image and writes `game_rsp.c` only for
-GLES2. The generated program registers its microcode and framebuffer inventory
+The shared generator authenticates each image and writes `game_rsp.c` for the
+GLES backend. The generated program registers its microcode and framebuffer inventory
 at renderer creation. Task submission verifies the code and data in guest RAM,
 and IMEM DMA verifies each loaded code span.
 
-RT64 is the default. Use a separate build directory for GLES2 so both executables
+RT64 is the default. Use a separate build directory for GLES3 so both executables
 are available side by side.
 
 ```sh
-python3 tools/build.py goldeneye-us --release --gles2
-./build/goldeneye-us-gles2-release/bin/goldeneye-us
+python3 tools/build.py goldeneye-us --release --gles
+./build/goldeneye-us-gles-release/bin/goldeneye-us
 ```
 
 ## Image quality
 
 Desktop defaults are scale 4, FXAA, bilinear magnification and trilinear mipmap
-filtering for power-of-two textures. ARM64 defaults are scale 1 and FXAA off.
+filtering. ARM64 defaults are scale 1 and FXAA off.
 A 320x240 image renders internally at 1280x960 on desktop; GoldenEye's 440x330
 menus render at 1760x1320. The window starts at 1280x960 and can be resized.
 
 - `RECOMP_GLES2_SCALE=1..4` selects internal scale.
 - `RECOMP_GLES2_AA=0` disables FXAA; `1` enables it.
 - `RECOMP_GLES2_MIPMAPS=0` disables mipmaps; `1` enables them.
-- `RECOMP_GLES2_GAMMA=0.5..2.5` selects the presentation color exponent; default
-  1.2, with 1 giving neutral colors.
+- By default, presentation and captures follow the game's VI gamma-enable bit,
+  using an exponent of `1/2.2` when enabled and `1` when disabled, as in RT64.
+  Set `RECOMP_GLES2_GAMMA=0.5..2.5` to force a fixed exponent in either mode.
 
 Copy-mode HUD glyphs retain point sampling. Complete repeating tiles use GPU
-wrapping for filtering across seams. Mip selection uses unwrapped derivatives
-through GLES2 extensions or optional GLSL ES 3.00 on a GLES3 context. Strict
-GLES2 contexts retain the GLSL ES 1.00 sampling path. NPOT textures use bilinear
-filtering for GLES2 legality. No GLES3 API calls are required.
+wrapping for filtering across seams. The shared renderer uses GLSL ES 3.00
+texture gradients computed before wrapping and supports mipmaps for non-power-of-two textures, including replacement images.
 
 RAM framebuffer sizes remain native. Higher-resolution surfaces are downsampled
 before CPU readback, without FXAA or display color correction. The former HLE
 geometry interpolation and its SM64 vertex hooks were removed with the frontend.
-Texture replacement/dumping and renderer-specific inspection/cheat UI are also
-absent; no unsupported texture-pack options are advertised.
+Desktop Debug and Release builds with texture support enable the F8 thumbnail
+editor without a pack. See [GLES texture packs](textures.md#gles3-texture-packs-and-editor)
+for formats and limits. F6 toggles mesh wireframe in Debug and Release. The RT64
+inspector, texture dumping and the cheat UI are not provided by this backend.
+
+F7 expands the view without stretch only when a native camera/visibility hook
+accepts the new aspect (GoldenEye and Banjo in supported scenes). With no
+hook, use original framing. Once a compiled RSP has clipped geometry, the
+GLES backend cannot recover the missing sides by reshaping the framebuffer.
 
 ## Validation and limits
 
@@ -152,8 +181,8 @@ Perfect Dark's maintained 3,600-presentation replay completed 3,261 graphics and
 scenes, not full campaigns or listening-quality acceptance.
 
 After removing the graphics HLE frontend, SM64, 1080 and Shadow Man complete
-1,200-presentation native-RSP startup checks; SM64 also passes a strict GLES2 2.0
-context check. All twelve game integrations and both native video/player targets
+1,200-presentation native-RSP startup checks; the earlier GLES2 backend also passed a strict 2.0
+context check for SM64. All twelve game integrations and both native video/player targets
 build in Debug and Release. The SM64 US Debug workflow passes.
 Media Player decodes a temporary synthetic MP3; Bad Apple completes 180 raw-RDP
 frames in both modes, with inspected grayscale animation after correcting KSEG
@@ -243,11 +272,11 @@ rounding/exceptions and FPCR isolation. Initial ARM support is 64-bit Linux.
 No Pi hardware gameplay or performance acceptance has been established.
 
 ```sh
-cmake -S . -B build/pi3 -DCMAKE_BUILD_TYPE=Release \
-  -DRECOMP_RENDERER=gles2 -DRECOMP_GAME=sm64-us -DCMAKE_C_FLAGS=-mcpu=cortex-a53
-cmake --build build/pi3 -j2
+cmake -S . -B build/pi4 -DCMAKE_BUILD_TYPE=Release \
+  -DRECOMP_RENDERER=gles -DRECOMP_GAME=sm64-us -DCMAKE_C_FLAGS=-mcpu=cortex-a72
+cmake --build build/pi4 -j2
 ```
 
 `cmake/toolchains/linux-aarch64.cmake` supports cross builds with a target sysroot
-containing SDL2, GLES2, OpenSSL and POSIX threads. Cross compilation cannot certify
+containing SDL2, GLES3, OpenSSL and POSIX threads. Cross compilation cannot certify
 hardware behavior.

@@ -6,7 +6,7 @@ v64recomp rebuilds N64 games as native Windows and Linux applications. Bring you
 own ROM, build the game, and settle in with a wider view, familiar controls and
 a few comforts that weren't around in the cartridge days.
 
-Super Mario 64 US also has an experimental [browser build](docs/webassembly.md) using WebAssembly and WebGL.
+Super Mario 64 US also has an experimental [browser build](docs/webassembly.md) using WebAssembly and WebGL 2.
 
 | Make it yours | What you can do |
 | --- | --- |
@@ -42,10 +42,13 @@ interpolated rendering targeting 60 FPS. The game's logic and audio keep their
 original timing. Widescreen and the adjustable camera FOV are separate settings,
 so you can choose your screen shape and viewing angle independently.
 
+On GLES3, **F7** uses the game's native projection when a verified aspect
+hook is available. Other titles keep their original framing rather than
+stretching the picture.
+
 ### Your favorite textures, in one place
 
-Already have a compatible Rice/GLideN64 texture pack? Pass the ZIP straight to
-the game. There's no need to unpack it or convert it first:
+With RT64, pass a compatible Rice/GLideN64 texture ZIP straight to the game. There's no need to unpack it or convert it first:
 
 ```sh
 ./build/sm64-us-release/bin/sm64-us --texture-pack /path/to/pack.zip
@@ -66,14 +69,17 @@ You can still choose another pack with `--texture-pack`.
 Press **F5** to switch between the original and replacement textures and reload
 pack changes. Textures without a matching replacement keep their original look.
 To export original textures as PNGs with JSON metadata, pass `--texture-dump DIR`
-to any game in Debug or Release. The directory is created automatically as needed.
+to an RT64 game in Debug or Release. The directory is created automatically as needed.
 See the [texture guide](docs/textures.md) for supported filenames, loose folders,
 texture dumps and matching caches.
+Desktop GLES3 supports a smaller set of packs. With texture support built in,
+**F8** opens the thumbnail editor in Debug and Release without loading a ZIP.
+See the [GLES texture instructions](docs/textures.md#gles3-texture-packs-and-editor).
 
 ### Controls that feel familiar
 
-If you're most comfortable with a keyboard and mouse, these games include
-adapters enabled by default on desktop. Each one follows the game's own movement
+If you're most comfortable with a keyboard and mouse, these games offer
+desktop adapters (some opt in). Each one follows the game's own movement
 and camera rules; the linked guides cover buttons, sensitivity and controller
 fallback.
 
@@ -82,7 +88,7 @@ fallback.
 | GoldenEye 007 | [WASD, mouse-look, aiming and menu cursor](games/goldeneye-us/README.md#mouse-and-keyboard) | [Original → 140°](games/goldeneye-us/README.md#field-of-view) |
 | Doom 64 | [WASD, mouse turning and combat](games/doom64-us/README.md#playing) | [90° → 140°](games/doom64-us/README.md#playing) |
 | Quake 64 | [WASD, mouse-look and weapon cycling](games/quake-us/controller.md) | [90° → 140°](games/quake-us/README.md) |
-| Quake II | [WASD, mouse-look and weapon cycling](games/quake2-us/controller.md) | — |
+| Quake II | [WASD, mouse-look and weapon cycling](games/quake2-us/controller.md) | [90° → 140°](games/quake2-us/README.md#adjustable-field-of-view) |
 | Duke Nukem 64 | [WASD, mouse-look and combat controls](games/duke-us/controller.md) | [Original → 140°](games/duke-us/README.md#field-of-view) |
 | Hexen | [WASD, mouse-look, combat and inventory](games/hexen-us/controller.md) | [Original → 140°](games/hexen-us/README.md#field-of-view) |
 | Ocarina of Time US V1.2 | [WASD and third-person camera orbit](games/oot-us-v12/controller.md) | [Original → 140°](games/oot-us-v12/README.md#field-of-view) |
@@ -90,7 +96,13 @@ fallback.
 | Rayman 2 | [WASD and native mouse camera controls](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) | [Original → 140°](games/rayman2-us/README.md#keyboard-mouse-and-field-of-view) |
 | Turok US v1.2 | [WASD, mouse-look, weapons and automap](games/turok-us-v12/controller.md) | [Original → 140°](games/turok-us-v12/controller.md) |
 | Turok 2 and Turok 3 | WASD and first-person mouse-look in [Turok 2](games/turok2-us/README.md) and [Turok 3](games/turok3-us/README.md) | Original → 140° |
-| Nightmare Creatures | [WASD, mouse steering, dodges and combat](games/nightmare-us/controller.md) | — |
+| Nightmare Creatures | [WASD, mouse steering, dodges and combat](games/nightmare-us/controller.md) | [Original → 140°](games/nightmare-us/README.md#adjustable-field-of-view) |
+| Banjo-Kazooie | [WASD, mouse orbit and first-person look](games/banjo-kazooie-us/README.md#desktop-controls) | [Original → 140°](games/banjo-kazooie-us/README.md#desktop-controls) |
+| Super Mario 64 | [WASD and stepped mouse camera](games/sm64-us/README.md#desktop-controls) | [Original → 140°](games/sm64-us/README.md#desktop-controls) |
+| Perfect Dark | [Opt-in WASD and first-person mouse-look](games/perfectdark-us-v11/README.md#desktop-controls-and-field-of-view) | [Original → 140°](games/perfectdark-us-v11/README.md#desktop-controls-and-field-of-view) |
+
+See the [per-ROM coverage and validation matrix](docs/desktop-coverage.md)
+for pad-only mappings, GLES2 checks and outstanding camera work.
 
 **FOV** means field of view: how much of the world you can see at once. In the
 games listed with FOV controls, use **keypad + / −** to change the horizontal
@@ -163,7 +175,7 @@ The import tool checks it for you, so there's no need to rename files or convert
 byte order by hand. ROMs and texture packs aren't included.
 
 RT64 is the default renderer. For games with verified graphics microcode,
-`--gles2` selects the GLES2 renderer and statically compiled graphics RSP. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
+`--gles` selects the native OpenGL ES 3.0 renderer and statically compiled graphics RSP. Use `--wasm` for the SM64 browser build, which runs the same shaders on WebGL 2. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
 
 ### 1. Get the source and dependencies
 
@@ -219,11 +231,11 @@ From the repository root, these commands build Super Mario 64 US:
 | Target | Release | Debug |
 | --- | --- | --- |
 | Desktop RT64 (default) | `python3 tools/build.py sm64-us --release --rt64` | `python3 tools/build.py sm64-us --debug --rt64` |
-| Desktop GLES2 | `python3 tools/build.py sm64-us --release --gles2` | `python3 tools/build.py sm64-us --debug --gles2` |
+| Desktop GLES3 | `python3 tools/build.py sm64-us --release --gles` | `python3 tools/build.py sm64-us --debug --gles` |
 | Browser WebAssembly | `python3 tools/build.py sm64-us --release --wasm` | `python3 tools/build.py sm64-us --debug --wasm` |
 
 `python3 tools/build.py sm64-us` defaults to RT64 Release. Replace `sm64-us`
-with a [game ID](#games-and-progress) for desktop builds. GLES2 requires a
+with a [game ID](#games-and-progress) for desktop builds. GLES3 requires a
 [supported game](docs/armv8-gles2.md#checked-programs-and-acceptance); the
 [browser target](docs/webassembly.md) currently supports SM64 US. The build
 reuses Emscripten from an existing Wasm configuration or finds an installed SDK.
@@ -232,7 +244,7 @@ Run the executable from its build tree, or serve the browser build locally:
 
 ```sh
 ./build/sm64-us-release/bin/sm64-us
-./build/sm64-us-gles2-debug/bin/sm64-us
+./build/sm64-us-gles-debug/bin/sm64-us
 python3 tools/serve_web.py --directory build/sm64-us-wasm-release/bin
 ```
 
@@ -319,8 +331,9 @@ Keep these shortcuts handy while you play:
 
 | Key | What it does |
 | --- | --- |
-| **F7** | Switch between original aspect ratio and widescreen expansion. |
-| **F8** | Pause and edit textures in the ZIP supplied with `--texture-pack`. |
+| **F7** | Toggle widescreen expansion (GLES3: only with a game-specific aspect hook, in supported scenes). |
+| **F8** | Edit textures (RT64: launch with a ZIP; desktop GLES3 with texture support: no ZIP required). |
+| **F6** | Toggle wireframe (GLES3: Debug or Release; RT64: Debug with a wireframe-capable device). |
 | **F5** | Reload texture packs and switch original/replacement textures. |
 | **Keypad + / −** | Adjust FOV in the [supported games](#controls-that-feel-familiar). |
 | **F12** | Open the shared GameShark cheat menu. |
@@ -365,8 +378,8 @@ CPU and graphics RSP code directly.
 For a custom configuration, pass CMake cache flags directly and build that directory:
 
 ```sh
-cmake --preset quake2-us -B build/quake2-us-gles2-debug -DCMAKE_BUILD_TYPE=Debug -DRECOMP_RENDERER=gles2
-cmake --build build/quake2-us-gles2-debug -j 8
+cmake --preset quake2-us -B build/quake2-us-gles-debug -DCMAKE_BUILD_TYPE=Debug -DRECOMP_RENDERER=gles
+cmake --build build/quake2-us-gles-debug -j 8
 ```
 
 A plain `cmake --workflow --preset quake2-us` uses
@@ -470,7 +483,8 @@ when adding a title.
 
 Release retains correctness checks and shared crash reporting without routine
 reports or captures. Debug adds symbols, unoptimized game code, tracing,
-optional captures, RT64's F1 inspector and F6 wireframe.
+and optional captures. GLES3 retains F6 wireframe in Release. RT64 wireframe
+and the F1 inspector are [debug tools](docs/debugging.md).
 Both modes reuse RT64's optimized `RelWithDebInfo` build by default. Game code,
 the shared runtime and native adapters retain their selected configuration flags.
 

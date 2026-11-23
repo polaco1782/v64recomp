@@ -16,6 +16,27 @@ mapping, verified ROM evidence and remaining gameplay checks. This adapter has
 static verification and Debug/Release build coverage; the user confirmed it
 works well in gameplay.
 
+## Adjustable field of view
+
+Keypad **+ / −** adjusts the horizontal field of view from the original 90°
+to 140° in active single-player gameplay, on RT64 or GLES2. The setting is
+independent of mouse capture and starts at stock each launch. Returning to
+the minimum uses the original projection and culling path unchanged. Menus,
+demos and other viewports use the cartridge's original path.
+
+The N64 port builds its fixed-point projection at `0x8000db68`: horizontal
+edges ±4 and vertical edges ±3 at a near plane of 4. The display-list setup at
+`0x8000dc84` loads that matrix. The game-local adapter scopes diagonal scaling to
+the single-player draw and graphics-list flush at `0x80022e4c`. Inside that draw,
+the CPU's plane builder at `0x8000eae4` temporarily receives correspondingly
+scaled right/up basis vectors. The cartridge still calculates plane distances,
+sign bits and BSP/box visibility; the original vectors and matrix are restored.
+The full ROM bodies and scoped calls are verified during generation.
+
+The wider view has static ROM coverage; first-person wide-angle presentation,
+geometry at the edges and any interrupted-frame transitions remain to be
+checked in a live desktop run.
+
 ## ROM and launch
 
 Supply `Quake II (U) [!].z64` locally. The exact normalized identity is:

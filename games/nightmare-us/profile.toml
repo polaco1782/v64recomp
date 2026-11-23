@@ -1,8 +1,9 @@
-# Input wrappers retain the translated cartridge functions.
+# Game wrappers retain the translated cartridge functions.
 function_wrappers = [
   {section = ".main", vram = 0x80034850, size = 0x648, sha256 = "7e1091a367d67ff19b404d066e3ff28ab85d523634111c59219a25e2cf71b765", handler = "nightmare_input_game_hook"},
   {section = ".main", vram = 0x800052e8, size = 0xf1c, sha256 = "acdcfd7d5041e0468fbbfd42d40ad1d509c0d938faa7f9e539daff8fe1964bac", handler = "nightmare_input_actions_hook"},
   {section = ".main", vram = 0x800472ac, size = 0x308, sha256 = "d67ea9004d48d39b9301963b8e2d5a231bb8b5629a25e7919a55539bc20d57fb", handler = "nightmare_input_read_hook"},
+  {section = ".main", vram = 0x8007fc50, size = 0x1c8, sha256 = "d00b2af99c67aa29e160233f4ef29d921f71c7c24797cce931781b2b13e1b095", handler = "nightmare_fov_perspective"},
 ]
 
 # Retire the synthetic IPL thread after transferring to the first OS thread.
@@ -156,4 +157,17 @@ data = {rom_offset = 0xa3360, size = 0x420, sha256 = "0cd69649bbe6ca275f4c5f1bbe
 images = [
   {name = "RSP bootstrap", rom_offset = 0x7dae0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
   {name = "F3DEX fifo 2.06 with overlays", rom_offset = 0x7dbb0, size = 0x1390, sha256 = "b0b3cf30952ebc1b68be5038b4cf0dcda5f60f6bb42f172b88f9afebb4c5bd06"},
+]
+
+# The fixed projection is submitted by the display-list setup and used by the
+# CPU's matrix bank consumers. Change the producer before either can read it.
+[fov_adapter]
+functions = [
+  {name = "display_list_setup", vram = 0x80074b20, size = 0x30c, sha256 = "d39039322577eb2966504e59b56d8e56da3353b63e9e971cb00078a16e16da96"},
+  {name = "fixed_perspective", vram = 0x8007fc50, size = 0x1c8, sha256 = "d00b2af99c67aa29e160233f4ef29d921f71c7c24797cce931781b2b13e1b095"},
+  {name = "cpu_matrix_consumer", vram = 0x80076c58, size = 0x10c4, sha256 = "4191204062abbb30b72fd3db1a06382367d3bb8e47935184ef94bd13d28040e0"},
+]
+data = []
+bindings = [
+  {name = "perspective_return", kind = "return", pcs = [0x80074d24, 0x80074d28], words = [0x0c01ff14, 0xe7a20018], value = 0x80074d2c},
 ]

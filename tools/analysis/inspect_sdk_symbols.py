@@ -13,49 +13,12 @@ import json
 from pathlib import Path
 import re
 import sys
-import zlib
 
 from common import RecompError, load_metadata, load_profile, validate_recomp_prefix
 from analysis.export_analysis_rom import load_analysis_rom
 from generate_game import GAMES, PROJECT
+from sdk_signatures import matching_sdk_bodies, signature_index
 from symbol_database import DATABASE, load_database
-
-MASKS = {'hi16': 0xffff0000, 'lo16': 0xffff0000, 'targ26': 0xfc000000}
-
-
-def relocation_masks(signature: dict) -> tuple:
-    masks = {}
-    for kind, _, offsets in signature['references']:
-        for offset in offsets:
-            masks[offset] = masks.get(offset, 0xffffffff) & MASKS[kind]
-    return tuple(sorted(masks.items()))
-
-
-def masked_bytes(raw: bytes, masks: tuple) -> bytes:
-    result = bytearray(raw)
-    for offset, mask in masks:
-        if offset + 4 <= len(result):
-            word = int.from_bytes(result[offset:offset + 4], 'big') & mask
-            result[offset:offset + 4] = word.to_bytes(4, 'big')
-    return bytes(result)
-
-
-def signature_index(database: dict, selected: set[str]) -> tuple[dict, dict]:
-    prefixes, natives = {}, defaultdict(list)
-    for symbol, entry in database['symbols'].items():
-        if selected and symbol not in selected:
-            continue
-        for signature in entry.get('sdk_signatures', []):
-            masks = relocation_masks(signature)
-            prefix_masks = tuple((offset, mask) for offset, mask in masks if offset < 8)
-            key = (min(signature['body_size'], 8), prefix_masks)
-            prefixes.setdefault(key, defaultdict(list))[signature['crc32_prefix']].append(
-                (symbol, signature, masks))
-        for signature in entry.get('native_signatures', []):
-            prefix = b''.join(word.to_bytes(4, 'big') for word in signature['expected_words'])
-            natives[prefix].append((symbol, signature))
-    return prefixes, natives
-
 
 def hardware_accesses(raw: bytes, address: int) -> list[dict]:
     """Bounded evidence from adjacent LUI[/ORI or ADDIU]/memory instructions.
@@ -173,25 +136,8 @@ def inspect(rom: bytes, metadata: dict, database: dict, profile: dict | None, de
         for address in addresses:
             offset = start + address - region['vram']
             scanned += 1
-            body_cache = {}
-            for (length, masks), by_crc in prefixes.items():
-                if offset + length > end:
-                    continue
-                crc = zlib.crc32(masked_bytes(rom[offset:offset + length], masks))
-                for symbol, signature, full_masks in by_crc.get(crc, []):
-                    size = signature['body_size']
-                    if offset + size > end:
-                        continue
-                    key = (size, full_masks)
-                    if key not in body_cache:
-                        body_cache[key] = zlib.crc32(masked_bytes(rom[offset:offset + size], full_masks))
-                    if body_cache[key] != signature['crc32_body']:
-                        continue
-                    # TARG26 references must actually be direct MIPS jumps/calls.
-                    if any(int.from_bytes(rom[offset + o:offset + o + 4], 'big') >> 26 not in (2, 3)
-                           for kind, _, offsets in signature['references'] if kind == 'targ26' for o in offsets):
-                        continue
-                    record(region, address, offset, symbol, size)['sdk_matches'].append(signature)
+            for symbol, signature in matching_sdk_bodies(rom, offset, end, prefixes):
+                record(region, address, offset, symbol, signature['body_size'])['sdk_matches'].append(signature)
         # Full native prefixes are inexpensive to find independently of the CRC index.
         for prefix, variants in natives.items():
             offset = rom.find(prefix, start, end)

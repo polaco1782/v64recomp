@@ -10,6 +10,12 @@
     <None Include="$(RecompRoot)games\sm64-us\code-inventory.json">
       <Filter>Configuration</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\sm64-us\controls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\sm64-us\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\sm64-us\game_config.py">
       <Filter>Source Files</Filter>
     </None>

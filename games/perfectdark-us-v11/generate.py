@@ -85,6 +85,34 @@ def configure_translation(rom, metadata, profile, output):
 
 
 def finalize_metadata(rom, metadata, profile):
+    # Bind the ordinary zoom call sites and native player state reads to the
+    # matching revision. The teleport/other VI call sites are deliberately not
+    # in the allowlist in controls.c. Delay slots supply the native angle.
+    zoom = next(f for f in metadata['functions'] if 0x7f0bab58 in f['instruction_addresses'])
+    sites = {
+        0x7f0bab58: 0x0fc4a2b5,  # playermgr_set_fov_y
+        0x7f0bab5c: 0xc5cc1848,  # load native FOV from current player
+        0x7f0bab60: 0x3c03800a,  # G_Vars = 0x80099fc0
+        0x7f0bab64: 0x24639fc0,
+        0x7f0bab68: 0x8c6f0284,  # current player at G_Vars + 0x284
+        0x7f0bab6c: 0x0c002f4c,  # vi_set_fov_y
+        0x7f0bab70: 0xc5ec1848,
+        0x7f0bab7c: 0x8c620284,
+        0x7f0bab80: 0x90581bfc,  # teleport state is byte + 0x1bfc
+    }
+    for pc, word in sites.items():
+        offset = zoom['rom_offset'] + pc - zoom['vram']
+        if int.from_bytes(rom[offset:offset + 4], 'big') != word:
+            raise RecompError(f'Perfect Dark zoom ABI fingerprint mismatch at {pc:#x}')
+
+    # For relative input, require the walking tick's exact call and delay
+    # word; the same callee has other (non-walking) owners.
+    walk_pc = 0x7f0c7874
+    walk = next(f for f in metadata['functions'] if walk_pc in f['instruction_addresses'])
+    offset = walk['rom_offset'] + walk_pc - walk['vram']
+    if rom[offset:offset + 8] != bytes.fromhex('0fc32fd400000000'):
+        raise RecompError('Perfect Dark walking look call fingerprint mismatch')
+
     # This shared epilogue is entered by fallthrough, after internal JALs have
     # overwritten RA. Its architectural caller comes from the model frame.
     function=next(f for f in metadata['functions'] if f['vram']==0x700195cc)

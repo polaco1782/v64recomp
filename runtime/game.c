@@ -1,6 +1,9 @@
 #define _GNU_SOURCE
 #include "game.h"
 #include "game_defaults.h"
+#ifndef __EMSCRIPTEN__
+#include "cpu_regions.h"
+#endif
 #ifdef RECOMP_DEBUG
 #include "generated.h"
 #endif
@@ -122,30 +125,17 @@ RecompAudio *recomp_game_audio_create(Runtime *rt, const RecompAudioConfig *conf
 }
 
 static void directory(const char *path) {
-    char buffer[4096];
-    recomp_game_require(strlen(path) < sizeof(buffer), "game directory path too long", 0);
-    strcpy(buffer, path);
-    for (char *p = buffer + 1;; p++) {
-        if (*p != '/' && *p != '\\' && *p)
-            continue;
-        char saved = *p;
-        *p = 0;
-#ifdef _WIN32
-        /* Skip a drive root, e.g. C:, which already exists. */
-        if (!(p == buffer + 2 && buffer[1] == ':'))
-            recomp_game_require(!_mkdir(buffer) || errno == EEXIST, "cannot create game directory", 0);
-#else
-        recomp_game_require(!mkdir(buffer, 0755) || errno == EEXIST, "cannot create game directory", 0);
-#endif
-        *p = saved;
-        if (!saved)
-            break;
-    }
+    recomp_game_require(recomp_create_directories(path), "cannot create game directory", 0);
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
 #ifdef RECOMP_WITH_RT64
-    const char *texture_pack = NULL;
     const char *texture_dump = NULL;
+#endif
+#if defined(RECOMP_WITH_RT64) || defined(RECOMP_GLES2_TEXTURE_PACKS)
+    const char *texture_pack = NULL;
+#endif
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    bool texture_editor = false;
 #endif
     const char *profile_directory = NULL;
     unsigned profile_hz = 99, profile_delay = 0, profile_seconds = 0;
@@ -162,6 +152,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                    "  --texture-pack ZIP    Load a texture pack and enable its F8 editor\n"
                    "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
                    "                        Skip textures below 64 pixels or with a single RGBA color\n"
+#elif defined(RECOMP_GLES2_TEXTURE_PACKS)
+                   "[--texture-pack ZIP] [--texture-editor]\n"
+                   "  --texture-pack ZIP    Load a compatible texture ZIP\n"
+                   "  --texture-editor      Force-enable the F8 editor (on by default)\n"
 #else
                    "\n"
 #endif
@@ -185,6 +179,12 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
 #ifdef RECOMP_DEBUG
         if (!strcmp(arg, "--trace-calls")) {
             o->trace_calls = true;
+            continue;
+        }
+#endif
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        if (!strcmp(arg, "--texture-editor")) {
+            texture_editor = true;
             continue;
         }
 #endif
@@ -225,7 +225,7 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->capture_every = (uint32_t)n;
         }
 #endif
-#ifdef RECOMP_WITH_RT64
+#if defined(RECOMP_WITH_RT64) || defined(RECOMP_GLES2_TEXTURE_PACKS)
         else if (!strcmp(arg, "--texture-pack")) {
             struct stat source;
             if (stat(value, &source) || !S_ISREG(source.st_mode)) {
@@ -233,7 +233,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                 return -1;
             }
             texture_pack = value;
-        } else if (!strcmp(arg, "--texture-dump"))
+        }
+#endif
+#ifdef RECOMP_WITH_RT64
+        else if (!strcmp(arg, "--texture-dump"))
             texture_dump = value;
 #endif
         else if (!strcmp(arg, "--profile"))
@@ -286,9 +289,17 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
     crash_dir = o->crash_dir;
 #ifdef RECOMP_WITH_RT64
     recomp_renderer_configure_texture_dump(texture_dump);
+#endif
+#if defined(RECOMP_WITH_RT64) || defined(RECOMP_GLES2_TEXTURE_PACKS)
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    recomp_renderer_enable_texture_editor(texture_editor || texture_pack != NULL);
+#else
     recomp_renderer_enable_texture_editor(texture_pack != NULL);
+#endif
+#ifdef RECOMP_WITH_RT64
     if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
         setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
+#endif
     if (texture_pack)
         setenv("RECOMP_TEXTURE_PACK", texture_pack, 1);
 #ifdef RECOMP_EMBED_TEXTURE_PACK
@@ -337,9 +348,14 @@ void recomp_game_sleep(uint64_t deadline) {
     while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL) == EINTR) {
     }
 }
+uint64_t recomp_game_next_deadline(uint64_t previous, uint64_t interval) {
+    const uint64_t next = previous + interval;
+    const uint64_t now = recomp_game_monotonic();
+    return now >= next && now - next >= interval ? now : next;
+}
 void recomp_game_pace(Runtime *rt, uint64_t deadline) {
     while (recomp_game_monotonic() < deadline) {
-        RecompRunResult run = recomp_scheduler_run(rt, 32);
+        RecompRunResult run = recomp_scheduler_run_until(rt, 32, deadline, recomp_game_monotonic);
         uint64_t now = recomp_game_monotonic();
         if (now >= deadline)
             break;
@@ -523,6 +539,15 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
     if (!crash_dir)
         crash_dir = RECOMP_DEFAULT_CRASH;
     directory(crash_dir);
+#ifndef __EMSCRIPTEN__
+    const char *fallback = getenv("RECOMP_CPU_FALLBACK");
+    if (sizeof(cpu_regions) / sizeof(*cpu_regions) == rt->section_count) {
+        rt->code_regions = cpu_regions;
+        rt->code_layout = CPU_LAYOUT;
+        if (!fallback || strcmp(fallback, "0"))
+            rt->observation_dir = RECOMP_DEFAULT_OBSERVATIONS;
+    }
+#endif
     rt->live_patch_dir = RECOMP_DEFAULT_LIVE_PATCH_DIR;
     rt->live_patch_python = RECOMP_DEFAULT_LIVE_PYTHON;
     rt->live_patch_script = RECOMP_DEFAULT_LIVE_SCRIPT;
@@ -540,6 +565,8 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
         uint8_t *rom = malloc(bytes);
         recomp_game_require(rom != NULL, "cannot allocate embedded ROM", 0);
         memcpy(rom, recomp_embedded_rom, bytes);
+        if (memcmp(sha1, recomp_embedded_sha1, 20))
+            rt->code_regions = NULL;
         /* Verify the embedded payload against its own digest. The original
          * identity above still binds it to this game's generated native code. */
         recomp_game_require(recomp_rom_attach(rt, rom, bytes, recomp_embedded_sha1), "embedded ROM content mismatch",

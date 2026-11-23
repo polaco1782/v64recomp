@@ -38,6 +38,26 @@ at `0x80042a78`; reaching that scene again has not yet been verified.
 Use the shared debugger/overlay for live thread state and GDB for stalls.
 The former per-game final report and RAM-dump harness have been removed.
 
+## Optional desktop input
+
+Set `RECOMP_CONKER_WASD=1` to map WASD to the N64 analog stick and the
+arrow keys to C-buttons. Enter/Q maps to A, E/R to B, and Tab to Start.
+F4 captures the mouse for the left/right click Z/R aliases; Escape
+releases it and F10 exits. The original keyboard mapping is unchanged
+unless this option is enabled. Controller input and Debug input replays
+keep their original behavior. This is a pad mapping, not relative camera
+control. Mouse look and adjustable FoV need a verified gameplay and
+camera path, which this port has not reached yet.
+
+GLES2 is not enabled for this profile: the checked F3DEXBG.NoN adapter
+uses RT64-specific microcode and framebuffer-copy logic. The observed US
+graphics tasks declare a 0x800-byte data span, but the immutable microcode
+data is only its first 0x780 bytes; the final 0x80 contains mutable task
+data. The existing GLES2 identity check requires its authenticated data
+span to equal the task size. A native RSP path must verify the immutable
+part without overwriting the task data, then validate the intro's packed
+framebuffer reads. A build flag alone cannot do that.
+
 Generate a fresh raw CPU report independently of the explicit runtime boundaries:
 
 ```sh

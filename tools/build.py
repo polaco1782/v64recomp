@@ -72,13 +72,13 @@ def main():
     mode.add_argument('--debug', dest='mode', action='store_const', const='Debug', help='build with diagnostics')
     mode.add_argument('--release', dest='mode', action='store_const', const='Release', help='build the optimized configuration')
     target = parser.add_mutually_exclusive_group()
-    for name, help_text in [('rt64', 'desktop RT64'), ('gles2', 'desktop GLES2'), ('wasm', 'browser WebAssembly with GLES2')]:
+    for name, help_text in [('rt64', 'desktop RT64'), ('gles', 'desktop OpenGL ES 3.0'), ('wasm', 'browser WebAssembly with WebGL 2')]:
         target.add_argument('--' + name, dest='target', action='store_const', const=name, help=help_text)
     parser.set_defaults(mode='Release', target='rt64')
     args = parser.parse_args()
     variant = args.mode.lower() if args.target == 'rt64' else f'{args.target}-{args.mode.lower()}'
     env = dict(os.environ, V64_BUILD_SUFFIX='-' + variant, CMAKE_BUILD_TYPE=args.mode,
-               V64_WORKFLOW_RENDERER='rt64' if args.target == 'rt64' else 'gles2')
+               V64_WORKFLOW_RENDERER='gles' if args.target == 'wasm' else args.target)
     if args.target == 'wasm':
         if args.game != 'sm64-us':
             parser.error('the browser ROM loader currently supports sm64-us only')

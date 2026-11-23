@@ -5,6 +5,7 @@
 #include "audio.h"
 #include "game_config.h"
 #include "quake2_input.h"
+#include "fov.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,6 +99,7 @@ int main(int argc, char **argv) {
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     running = true;
     quake2_input_init(poll_command_input);
+    quake2_fov_init(renderer);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
@@ -118,7 +120,7 @@ int main(int argc, char **argv) {
         if (!running)
             break;
         recomp_game_require(recomp_game_present(renderer), "presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         recomp_game_pace(&rt, next_present);
     }
     recomp_audio_destroy(audio);

@@ -21,8 +21,8 @@ python3 tools/build.py turok-us-v12 --release
 For desktop GLES2, build and launch with:
 
 ```sh
-tools/build.py turok-us-v12 --gles2 --release
-./build/turok-us-v12-gles2-release/bin/turok-us-v12
+tools/build.py turok-us-v12 --gles --release
+./build/turok-us-v12-gles-release/bin/turok-us-v12
 ```
 
 GLES2 runs the recompiled F3DLX.NoN, F3DEX.NoN and L3DEX 1.00 graphics

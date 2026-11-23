@@ -4,6 +4,7 @@
 #include "game_config.h"
 #include "renderer.h"
 #include "audio.h"
+#include "controls.h"
 #include <stdlib.h>
 
 static RecompRenderer *renderer;
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io), "SM64 save/input init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Super Mario 64");
     recomp_game_require(renderer != NULL, "SM64 renderer init failed", 0);
+    sm64_controls_init(renderer);
     RecompAudioConfig ac = {
         .playback = !options.mute, .output_enabled = true, .task_profile = &sm64_audio_task_profile};
     audio = recomp_game_audio_create(&rt, &ac);
@@ -75,12 +77,12 @@ int main(int argc, char **argv) {
     uint64_t next_present = recomp_game_monotonic();
     for (uint32_t frame = 0; !options.frames || frame < options.frames; frame++) {
         RecompPad pad;
-        if (!recomp_renderer_input(renderer, &pad))
+        if (!sm64_controls_poll(&rt, renderer, &pad))
             break;
         recomp_game_require(recomp_game_input(&rt, 0, &pad), "SM64 controller update failed", 0);
         drain(&rt);
         recomp_game_require(recomp_game_present(renderer), "SM64 presentation failed", 0);
-        next_present += 16666667;
+        next_present = recomp_game_next_deadline(next_present, 16666667);
         /* Service VI/AI/timers and task receipts between display ticks so a
          * completed frame is not held until the following 60 Hz host tick. */
         recomp_game_pace(&rt, next_present);

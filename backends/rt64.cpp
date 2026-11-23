@@ -92,7 +92,7 @@ struct RecompRenderer {
     bool mouse_enabled = false, mouse_gameplay = false, mouse_released = false, mouse_captured = false;
     bool separate_mouse_actions = false;
     bool texture_editor_escape = false;
-    bool keyboard_c_buttons = false;
+    bool keyboard_c_buttons = false, wasd_stick = false;
     bool gamepad_camera = false;
     RecompCameraStick camera_stick{};
     RecompMouseFrame mouse_frame{};
@@ -781,6 +781,10 @@ void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
     s->check_owner();
     s->keyboard_c_buttons = enabled;
 }
+void recomp_renderer_wasd_stick(RecompRenderer *s, bool enabled) {
+    s->check_owner();
+    s->wasd_stick = enabled;
+}
 void recomp_renderer_separate_mouse_actions(RecompRenderer *s, bool enabled) {
     s->check_owner();
     s->separate_mouse_actions = enabled;
@@ -999,12 +1003,7 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         if (keys[SDL_SCANCODE_RIGHT])
             pad->buttons |= 0x0001;
     }
-    pad->stick_x = (keys[s->keyboard_c_buttons ? SDL_SCANCODE_D : SDL_SCANCODE_RIGHT] -
-                    keys[s->keyboard_c_buttons ? SDL_SCANCODE_A : SDL_SCANCODE_LEFT]) *
-                   80;
-    pad->stick_y = (keys[s->keyboard_c_buttons ? SDL_SCANCODE_W : SDL_SCANCODE_UP] -
-                    keys[s->keyboard_c_buttons ? SDL_SCANCODE_S : SDL_SCANCODE_DOWN]) *
-                   80;
+    recomp_input_keyboard_stick(pad, keys, s->keyboard_c_buttons, s->wasd_stick);
     if (s->mouse_enabled) {
         // Menus retain directional navigation; WASD in gameplay travels through
         // the game's adapter rather than becoming a second analog stick.
@@ -1066,10 +1065,19 @@ bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
         if (keys[SDL_SCANCODE_E])
             pad->buttons |= 0x4000;
     }
-    for (const auto& binding : bindings)
+    if (s->wasd_stick) {
+        if (keys[SDL_SCANCODE_RETURN])
+            pad->buttons |= 0x8000;
+        if (keys[SDL_SCANCODE_TAB])
+            pad->buttons |= 0x1000;
+    }
+    for (const auto& binding : bindings) {
+        if (s->wasd_stick && (binding.key == SDL_SCANCODE_A || binding.key == SDL_SCANCODE_S))
+            continue;
         if (keys[binding.key])
             pad->buttons |= binding.button;
-    if (pad->stick_x && pad->stick_y) {
+    }
+    if (!s->wasd_stick && pad->stick_x && pad->stick_y) {
         pad->stick_x = pad->stick_x * 7 / 10;
         pad->stick_y = pad->stick_y * 7 / 10;
     }

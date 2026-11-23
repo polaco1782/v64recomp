@@ -106,6 +106,14 @@ including the notices in its submodules and `src/contrib/`. External libraries
 and build tools retain their respective licenses. This project license does
 not grant rights to ROMs, game assets, or third-party texture packs.
 
+## Native GLES2 texture packs
+
+The optional GLES2 PNG/ZIP loader and editor reuse the pinned RT64 v5 TMEM
+hash header under the MIT notice above without linking the RT64 renderer.
+xxHash (BSD 2-Clause), stb (MIT or public domain), nlohmann/json (MIT) and
+miniz (MIT) are used from the same pinned tree. Their notices are copied into the
+GLES2 build's `bin/licenses/` when texture packs are enabled.
+
 ## Berkeley SoftFloat (optional portable guest FPU)
 
 Browser builds and desktop builds with `RECOMP_SOFTFLOAT=ON` fetch Berkeley

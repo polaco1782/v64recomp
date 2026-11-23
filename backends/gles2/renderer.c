@@ -18,10 +18,22 @@ struct RecompRenderer {
     uint64_t first_display;
     RecompRspWorker *worker;
     RecompTask pending;
+    bool raw_vi;
 };
 static void rsp_service(Runtime *, void *, bool);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+static bool texture_editor_enabled;
+
+void recomp_renderer_enable_texture_editor(bool enabled) {
+    texture_editor_enabled = enabled;
+}
+#endif
 uint64_t recomp_renderer_paused_ns(void) {
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    return recomp_rdp_gles2_editor_paused_ns();
+#else
     return 0;
+#endif
 }
 static bool authenticate(Runtime *rt, uint32_t address, uint32_t bytes, const char *expected) {
     if (!bytes || bytes > 8192 || strlen(expected) != 64)
@@ -43,7 +55,9 @@ static bool authenticate(Runtime *rt, uint32_t address, uint32_t bytes, const ch
     return !strcmp(hex, expected);
 }
 RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path, const char *title) {
+#ifndef RECOMP_GLES2_TEXTURE_PACKS
     (void)data_path;
+#endif
     RecompRenderer *s = calloc(1, sizeof(*s));
     if (!s)
         return NULL;
@@ -53,6 +67,12 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         free(s);
         return NULL;
     }
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    recomp_rdp_gles2_set_texture_path(s->gpu, data_path);
+    const char *texture_editor = getenv("RECOMP_GLES2_TEXTURE_EDITOR");
+    if (texture_editor_enabled || !texture_editor || strcmp(texture_editor, "0"))
+        recomp_rdp_gles2_enable_texture_editor(s->gpu);
+#endif
 #ifdef RECOMP_HAS_RSP_PROGRAM
     recomp_gles2_configure_game(s);
 #endif
@@ -109,11 +129,6 @@ static void rsp_service_on_host(Runtime *rt, void *opaque) {
         const RecompRspWrite *write = &result->writes[i];
         memcpy(rt->rdram + write->address, result->ram + write->address, write->bytes);
     }
-    uint32_t address;
-    size_t bytes;
-    recomp_rdp_gles2_readback_range(s->gpu, &address, &bytes);
-    if (bytes)
-        memcpy(rt->rdram + address, result->ram + address, bytes);
     uint64_t elapsed = recomp_game_monotonic() - begin;
     s->stats.submit_ns += elapsed;
     recomp_timing_add(rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
@@ -160,6 +175,7 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
             recomp_fail("native RSP worker initialization failed", task->guest_address);
     }
     s->pending = *task;
+    s->raw_vi = false;
     if (!recomp_rsp_worker_submit(s->worker, microcode->rsp, task->words, s->rt->rdram))
         recomp_fail("native RSP worker rejected a task", task->guest_address);
     s->stats.graphics_tasks++;
@@ -168,10 +184,12 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
 
 bool recomp_renderer_present(RecompRenderer *s) {
     uint64_t start = recomp_game_monotonic();
-    RecompViState vi = recomp_vi_state(s->rt);
-    RecompViRegisters registers;
-    if (vi.framebuffer && recomp_vi_registers(s->rt, &registers) && (registers.status & 3) >= 2)
-        recomp_rdp_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, vi.framebuffer, 1));
+    if (!s->raw_vi) {
+        RecompViState vi = recomp_vi_state(s->rt);
+        RecompViRegisters registers;
+        if (vi.framebuffer && recomp_vi_registers(s->rt, &registers) && (registers.status & 3) >= 2)
+            recomp_rdp_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, vi.framebuffer, 1), registers.status);
+    }
     recomp_rdp_gles2_present(s->gpu);
     uint64_t now = recomp_game_monotonic();
     if (!s->first_display)
@@ -224,7 +242,8 @@ bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
         words[i] = recomp_load32(s->rt, 0x80000000u | (start + (uint32_t)i * 4));
     recomp_rdp_gles2_draw_rdp(s->gpu, s->rt->rdram, s->rt->rdram_size, words, count);
     free(words);
-    recomp_rdp_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, framebuffer, 1));
+    recomp_rdp_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, framebuffer, 1), vi->status);
+    s->raw_vi = true;
     s->stats.graphics_tasks++;
     s->stats.rdp_triangles = recomp_rdp_gles2_triangles(s->gpu);
     return recomp_rdp_gles2_full_sync(s->gpu);
@@ -243,6 +262,10 @@ void recomp_renderer_separate_mouse_actions(RecompRenderer *s, bool enabled) {
 }
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
     s->input_config.keyboard_c_buttons = enabled;
+    recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
+}
+void recomp_renderer_wasd_stick(RecompRenderer *s, bool enabled) {
+    s->input_config.wasd_stick = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 void recomp_renderer_gamepad_camera_mode(RecompRenderer *s, bool enabled) {
