@@ -16,6 +16,11 @@ python3 tools/build.py sm64-us --debug
 Shared renderer statistics distinguish displayed frames from host presentations;
 Debug uses the common tracing, replay and capture options.
 
+SM64 uses its statically recompiled RSP audio microcode with either renderer.
+Set `RECOMP_AUDIO_RSP=hle` to select the previous backend, or
+`RECOMP_AUDIO_RSP=compare` in Debug to compare PCM and ADPCM decoder history
+on each captured task. [Audio comparison and results](../../docs/audio.md#sm64-us-compiled-audio)
+
 The live loop uses the shared wall-clock pacer to service VI/AI, timers and task
 completion between display ticks. The profile's verified priority-zero idle
 thread lets the scheduler wait for those events without running its busy loop.

@@ -1,26 +1,11 @@
 """Emit verified GLES2 graphics identities and static C11 RSP programs from a game's ROM-bound graphics profile."""
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
 from common import RecompError
-
-
-def checked_span(name: str, span: dict, rom: bytes, images: dict[str, bytes] | None, limit: int) -> bytes:
-    if 'image' in span:
-        if not images or span['image'] not in images or 'rom_offset' in span:
-            raise RecompError('unresolved GLES2 graphics image')
-        source, offset = images[span['image']], span['offset']
-    else:
-        source, offset = rom, span['rom_offset']
-    size = span['size']
-    if (type(offset) is not int or type(size) is not int or offset < 0 or
-            not 1 <= size <= limit or offset + size > len(source) or
-            hashlib.sha256(source[offset:offset + size]).hexdigest() != span['sha256']):
-        raise RecompError(f'GLES2 {name} ROM fingerprint mismatch')
-    return source[offset:offset + size]
+from rsp_recompile import checked_span, write_rsp_program
 
 
 def write_graphics_program(profile: dict, rom: bytes, output: Path, images: dict[str, bytes] | None) -> Path:
@@ -37,9 +22,6 @@ def write_graphics_program(profile: dict, rom: bytes, output: Path, images: dict
     rsp = profile['graphics'].get('rsp')
     if not rsp:
         raise RecompError('graphics profile requires a compiled RSP program')
-    from rsp_recompile import emit_program
-    sources = [(entry['name'], checked_span(entry['name'], entry, rom, images, 65536))
-               for entry in rsp['images']]
     lines.append('static const RecompGraphicsMicrocode game_graphics_microcodes[] = {')
     for entry in entries:
         for name in ('code', 'data'):
@@ -72,8 +54,7 @@ def write_graphics_program(profile: dict, rom: bytes, output: Path, images: dict
         lines.append('    recomp_renderer_set_framebuffer_sizes(renderer, game_graphics_framebuffers, '
                      'sizeof(game_graphics_framebuffers) / sizeof(game_graphics_framebuffers[0]));')
     lines.append('}\n')
-    emit_program(output, sources)
-    path = output / 'game_rsp.c'
+    path = write_rsp_program(output, 'game_rsp', rsp['images'], rom, images)
     with path.open('a') as stream:
         stream.write('\n'.join(lines))
     return path

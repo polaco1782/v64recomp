@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "recomp_audio.h"
+#include "rsp.h"
 #include "runtime_debug.h"
 #include "timing.h"
 #include "hle_internal.h"
@@ -34,6 +35,16 @@ struct RecompAudio {
     unsigned book_coefficients;
     RecompAudioMicrocode microcode;
     const RecompAudioTaskProfile *task_profile;
+    RecompRspState *rsp;
+#ifdef RECOMP_DEBUG
+    uint8_t *compare_ram;
+    struct AudioSpan {
+        uint32_t address, bytes;
+        bool pcm;
+    } *spans;
+    size_t span_count, span_capacity;
+    uint32_t interleave_start, interleave_end;
+#endif
     unsigned prebuffer_ms;
     unsigned device_period;
     jmp_buf skip_task;
@@ -304,13 +315,70 @@ static void validate_naudio(RecompAudio *a, uint32_t w1, uint32_t w2, uint32_t p
             break;
     }
 }
-void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
-    RecompAudio *a = opaque;
-    struct alist_audio_t *s = &a->hle.alist_audio;
+#ifdef RECOMP_DEBUG
+/* The HLE validator sees the decoded segment bases and DMEM buffer selections
+ * before each command. Compare final RDRAM for each distinct output span. */
+static void track_audio_output(RecompAudio *a, uint32_t addr, unsigned bytes, bool pcm) {
+    if (!bytes)
+        return;
+    for (size_t i = 0; i < a->span_count; i++)
+        if (a->spans[i].address == addr && a->spans[i].bytes == bytes && a->spans[i].pcm == pcm)
+            return;
+    if (a->span_count == a->span_capacity) {
+        size_t capacity = a->span_capacity ? a->span_capacity * 2 : 32;
+        struct AudioSpan *spans = realloc(a->spans, capacity * sizeof(*spans));
+        if (!spans)
+            recomp_fail("audio comparison allocation failed", addr);
+        a->span_capacity = capacity;
+        a->spans = spans;
+    }
+    a->spans[a->span_count++] = (struct AudioSpan){addr, bytes, pcm};
+}
+static void report_audio_comparison(RecompAudio *a) {
+    unsigned pcm = 0, changed = 0, peak_delta = 0, nonzero = 0, history = 0, history_changed = 0;
+    for (size_t i = 0; i < a->span_count; i++) {
+        struct AudioSpan span = a->spans[i];
+        for (unsigned j = 0; j < span.bytes;) {
+            uint32_t addr = span.address + j;
+            if (span.pcm) {
+                int16_t reference, compiled;
+                /* Native-word RAM can reverse the two halfwords in each word.
+                 * Compare the same lane in both aligned PCM buffers. */
+                memcpy(&reference, a->rt->rdram + addr, 2);
+                memcpy(&compiled, a->compare_ram + addr, 2);
+                unsigned delta = (unsigned)abs((int)reference - compiled);
+                pcm++;
+                nonzero += reference != 0;
+                changed += delta != 0;
+                if (delta > peak_delta)
+                    peak_delta = delta;
+                j += 2;
+            } else {
+#if RECOMP_LITTLE_ENDIAN_HOST
+                addr ^= 3;
+#endif
+                history++;
+                history_changed += a->rt->rdram[addr] != a->compare_ram[addr];
+                j++;
+            }
+        }
+    }
+    fprintf(stderr,
+            "Audio RSP comparison task=%" PRIu64 " pcm_samples=%u nonzero_hle=%u pcm_differences=%u "
+            "max_delta=%u adpcm_history_bytes=%u history_differences=%u\n",
+            a->stats.tasks, pcm, nonzero, changed, peak_delta, history, history_changed);
+}
+#endif
+static void record_command(RecompAudio *a, uint32_t w1, uint32_t w2, uint32_t pc) {
     a->debug.history[a->debug.command_index % RECOMP_AUDIO_HISTORY] = (RecompAudioCommand){pc, w1, w2};
     a->debug.command_index++;
     if (a->debug.history_count < RECOMP_AUDIO_HISTORY)
         a->debug.history_count++;
+}
+void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
+    RecompAudio *a = opaque;
+    struct alist_audio_t *s = &a->hle.alist_audio;
+    record_command(a, w1, w2, pc);
     if (a->microcode == RECOMP_AUDIO_NEAD_OOT || a->microcode == RECOMP_AUDIO_NEAD_MM ||
         a->microcode == RECOMP_AUDIO_NEAD_1080) {
         validate_nead(a, w1, w2, pc);
@@ -359,6 +427,11 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
         case 6:
             dmem_range((op == 4 ? s->in : s->out) & ~3u, align(count, 8));
             ram_range(a, address(a, w2) & ~7u, align(count, 8), 8);
+#ifdef RECOMP_DEBUG
+            if (a->compare_ram && op == 6 && (s->out & ~3u) >= a->interleave_start &&
+                (s->out & ~3u) + align(count, 8) <= a->interleave_end)
+                track_audio_output(a, address(a, w2) & ~7u, align(count, 8), true);
+#endif
             break;
         case 12:
             sample_range(0x5c0 + (w2 >> 16), align(count, 32));
@@ -368,6 +441,12 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
             sample_range(0x5c0 + (w2 >> 16), align(count, 16));
             sample_range(0x5c0 + (w2 & 65535), align(count, 16));
             sample_range(s->out, align(count, 16) * 2);
+#ifdef RECOMP_DEBUG
+            if (a->compare_ram) {
+                a->interleave_start = s->out;
+                a->interleave_end = s->out + align(count, 16) * 2;
+            }
+#endif
             break;
         case 15:
             ram_range(a, address(a, w2), 32, 2);
@@ -380,6 +459,10 @@ void HleValidateCommand(void *opaque, uint32_t w1, uint32_t w2, uint32_t pc) {
             dmem_range(s->in, (align(count, 32) / 32) * 9);
             sample_range(s->out, align(count, 32) + 32);
             ram_range(a, address(a, w2), 32, 2);
+#ifdef RECOMP_DEBUG
+            if (a->compare_ram)
+                track_audio_output(a, address(a, w2), 32, false);
+#endif
             if (flags & 2)
                 ram_range(a, s->loop, 32, 2);
             break;
@@ -665,6 +748,30 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
     rt->debug_audio_userdata = a;
     rt->debug_audio_snapshot = debug_audio_snapshot;
 #endif
+    if (a->task_profile && a->task_profile->rsp) {
+        const char *mode = getenv("RECOMP_AUDIO_RSP");
+        if (mode && !strcmp(mode, "hle"))
+            return a;
+        uint8_t *ram = rt->rdram;
+        if (mode && *mode && strcmp(mode, "compiled")) {
+#ifdef RECOMP_DEBUG
+            if (strcmp(mode, "compare"))
+                recomp_fail("RECOMP_AUDIO_RSP must be compiled, hle or compare", 0);
+            if (a->microcode != RECOMP_AUDIO_ABI1)
+                recomp_fail("audio comparison requires ABI1", 0);
+            a->compare_ram = malloc(rt->rdram_size);
+            if (!a->compare_ram)
+                recomp_fail("audio comparison RAM allocation failed", 0);
+            ram = a->compare_ram;
+#else
+            recomp_fail("RECOMP_AUDIO_RSP must be compiled or hle in Release", 0);
+#endif
+        }
+        a->rsp = malloc(sizeof(*a->rsp));
+        if (!a->rsp)
+            recomp_fail("audio RSP allocation failed", 0);
+        recomp_rsp_init(a->rsp, ram, rt->rdram_size, a->task_profile->rsp);
+    }
     return a;
 }
 void recomp_audio_destroy(RecompAudio *a) {
@@ -691,6 +798,14 @@ void recomp_audio_destroy(RecompAudio *a) {
         if (fclose(a->trace))
             recomp_fail("audio trace finalization failed", 0);
     }
+    if (a->rsp) {
+        recomp_rsp_destroy(a->rsp);
+        free(a->rsp);
+    }
+#ifdef RECOMP_DEBUG
+    free(a->compare_ram);
+    free(a->spans);
+#endif
     free(a);
 }
 void recomp_audio_set_output_enabled(RecompAudio *a, bool enabled) {
@@ -709,13 +824,16 @@ void recomp_audio_set_output_enabled(RecompAudio *a, bool enabled) {
     }
     a->enabled = enabled;
 }
-static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
+static uint32_t prepare_command_list(RecompAudio *a, uint32_t list, uint32_t bytes) {
     a->debug = (RecompAudioSnapshot){.list = list, .bytes = bytes};
     if (!bytes || bytes % 8 || bytes > 131072)
         recomp_fail("invalid audio command-list size", list);
     if (list % 4)
         recomp_fail("audio command list alignment", list);
-    uint32_t physical = recomp_ram_address(a->rt, list, bytes);
+    return recomp_ram_address(a->rt, list, bytes);
+}
+static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
+    uint32_t physical = prepare_command_list(a, list, bytes);
     memcpy(a->dmem + TASK_DATA_PTR, &physical, 4);
     memcpy(a->dmem + TASK_DATA_SIZE, &bytes, 4);
     a->task_done = false;
@@ -738,8 +856,13 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
             alist_process_audio_ge(&a->hle);
         else
             alist_process_audio(&a->hle);
-    } else
-        a->task_done = true; /* The rest of this list cannot be decoded safely. */
+    } else {
+#ifdef RECOMP_DEBUG
+        if (a->compare_ram)
+            recomp_fail("HLE skipped the audio task selected for comparison", list);
+#endif
+        a->task_done = true;
+    }
     a->hle_active = false;
     uint64_t elapsed = timer_ns() - start;
     a->stats.synth_ns += elapsed;
@@ -747,6 +870,41 @@ static void execute_abi1(RecompAudio *a, uint32_t list, uint32_t bytes) {
     if (!a->task_done)
         recomp_fail("audio DSP task did not finish", list);
     a->stats.tasks++;
+}
+static void execute_compiled(RecompAudio *a, const RecompTask *task) {
+    uint32_t list = task->words[12], bytes = task->words[13];
+    uint32_t physical = prepare_command_list(a, list, bytes);
+#ifdef RECOMP_DEBUG
+    if (a->compare_ram)
+        memcpy(a->compare_ram, a->rt->rdram, a->rt->rdram_size);
+#endif
+    uint64_t start = timer_ns();
+    if (!recomp_rsp_start(a->rsp, task->words))
+        recomp_fail(a->rsp->error, a->rsp->error_address);
+    if (!(a->rsp->cp0[4] & SP_STATUS_TASKDONE) || a->rsp->rdp_count)
+        recomp_fail("invalid compiled audio task completion", task->guest_address);
+#ifdef RECOMP_DEBUG
+    if (a->compare_ram) {
+        a->span_count = 0;
+        a->interleave_start = a->interleave_end = 0;
+        execute_abi1(a, list, bytes);
+        report_audio_comparison(a);
+        return;
+    }
+#endif
+    uint64_t elapsed = timer_ns() - start;
+    a->stats.synth_ns += elapsed;
+    recomp_timing_add(a->rt, RECOMP_TIMING_AUDIO, elapsed, 1);
+    a->stats.tasks++;
+    a->stats.commands += bytes / 8;
+    for (unsigned i = 0; i < bytes; i += 8) {
+        uint32_t pc = physical + i;
+        uint32_t w1 = recomp_load32(a->rt, 0x80000000u | pc);
+        unsigned opcode = w1 >> 24;
+        if (opcode < 32)
+            a->stats.opcodes[opcode]++;
+        record_command(a, w1, recomp_load32(a->rt, 0x80000000u | (pc + 4)), pc);
+    }
 }
 static void execute_musyx(RecompAudio *a, uint32_t list, uint32_t count) {
     if (!count || count > 64)
@@ -806,7 +964,9 @@ bool recomp_audio_submit(RecompAudio *a, const RecompTask *task) {
     }
     /* The task hook parks the guest in recomp_on_host. Write live RAM before
      * queuing SP completion; the task service delivers its event on polling. */
-    if (a->microcode == RECOMP_AUDIO_MUSYX_V1)
+    if (a->rsp)
+        execute_compiled(a, task);
+    else if (a->microcode == RECOMP_AUDIO_MUSYX_V1)
         execute_musyx(a, task->words[12], task->words[13]);
     else
         execute_abi1(a, task->words[12], task->words[13]);

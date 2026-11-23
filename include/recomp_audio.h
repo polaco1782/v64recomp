@@ -20,6 +20,7 @@ typedef struct RecompAudioTaskProfile {
     uint32_t descriptor[6];        /* Expected boot/code/data addresses and task sizes. */
     uint32_t fingerprint_bytes[3]; /* Initialized bytes, excluding DMEM BSS. */
     const char *sha256[3];
+    const struct RecompRspProgram *rsp; /* Optional ROM-compiled synthesis program. */
 } RecompAudioTaskProfile;
 typedef struct RecompAudioConfig {
     const char *wav_path; /* Optional little-endian stereo PCM capture. */

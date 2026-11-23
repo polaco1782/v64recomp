@@ -78,7 +78,7 @@ if(RECOMP_EMBED_ROM)
 endif()
 file(GLOB RECOMP_GENERATED_HEADERS "${RECOMP_GENERATED}/*.h")
 list(FILTER RECOMP_GENERATED_HEADERS EXCLUDE REGEX "/game_defaults\\.h$")
-add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_GENERATED_HEADERS}
+add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AUDIO_RSP_SOURCE} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/sources.cmake" "${RECOMP_GENERATED}/generation.key"
     "${RECOMP_GENERATED}/symbols.json" "${RECOMP_GENERATED}/coverage.json"
     "${RECOMP_GENERATED}/function-candidates.json"
@@ -101,7 +101,7 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/game_defaults.h.in" "${RECOMP_GENERATE
 if(RECOMP_RSP_SOURCE)
     target_compile_definitions(recomp_renderer PRIVATE RECOMP_HAS_RSP_PROGRAM)
 endif()
-add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE}
+add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AUDIO_RSP_SOURCE}
     "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES})
 if(RECOMP_GLES2_HAS_TEXTURE_PACKS)
     set_property(SOURCE "${CMAKE_SOURCE_DIR}/runtime/game.c" APPEND PROPERTY

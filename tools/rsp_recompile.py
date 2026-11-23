@@ -7,6 +7,7 @@ decodes a guest opcode or compiles unknown RAM.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -165,7 +166,30 @@ def instruction_blocks(words: list[int]) -> list[tuple[int, ...]]:
     return blocks
 
 
-def emit_program(output: Path, images: list[tuple[str, bytes]]) -> None:
+def checked_span(name: str, span: dict, rom: bytes, images: dict[str, bytes] | None, limit: int) -> bytes:
+    if 'image' in span:
+        if not images or span['image'] not in images or 'rom_offset' in span:
+            raise RecompError('unresolved RSP source image')
+        source, offset = images[span['image']], span['offset']
+    else:
+        source, offset = rom, span['rom_offset']
+    size = span['size']
+    if (type(offset) is not int or type(size) is not int or offset < 0 or
+            not 1 <= size <= limit or offset + size > len(source) or
+            hashlib.sha256(source[offset:offset + size]).hexdigest() != span['sha256']):
+        raise RecompError(f'RSP {name} ROM fingerprint mismatch')
+    return source[offset:offset + size]
+
+
+def write_rsp_program(output: Path, stem: str, entries: list[dict], rom: bytes,
+                      images: dict[str, bytes] | None = None) -> Path:
+    sources = [(e['name'], checked_span(e['name'], e, rom, images, 65536)) for e in entries]
+    dma_sizes = [e.get('dma_size', 0) for e in entries]
+    return emit_program(output, sources, stem=stem, dma_sizes=dma_sizes)
+
+
+def emit_program(output: Path, images: list[tuple[str, bytes]], *, stem: str = 'game_rsp',
+                 dma_sizes: list[int] | None = None) -> Path:
     if not 1 <= len(images) <= 128:
         raise RecompError('invalid RSP native image count')
     words_by_image = []
@@ -244,8 +268,13 @@ def emit_program(output: Path, images: list[tuple[str, bytes]]) -> None:
         lines.append('};')
     lines.append('static const RecompRspCode rsp_images[] = {')
     for index, ((name, _), image) in enumerate(zip(images, words_by_image)):
-        lines.append(f'{{{json.dumps(name)}, rsp_words_{index}, rsp_entries_{index}, {len(image)}}},')
-    lines.extend(['};', 'const RecompRspProgram game_rsp_program = {',
+        dma_size = dma_sizes[index] if dma_sizes is not None else 0
+        if type(dma_size) is not int or (dma_size and (dma_size % 8 or not len(image) * 4 <= dma_size <= 4096)):
+            raise RecompError(f'invalid RSP image DMA size for {name}')
+        lines.append(f'{{{json.dumps(name)}, rsp_words_{index}, rsp_entries_{index}, {len(image)}, {dma_size}}},')
+    lines.extend(['};', f'const RecompRspProgram {stem}_program = {{',
                   '.images = rsp_images, .image_count = sizeof(rsp_images)/sizeof(rsp_images[0]), .run = rsp_run,',
                   '.block_lengths = rsp_block_lengths, .entry_count = sizeof(rsp_block_lengths)', '};', ''])
-    (output / 'game_rsp.c').write_text('\n'.join(lines))
+    path = output / f'{stem}.c'
+    path.write_text('\n'.join(lines))
+    return path

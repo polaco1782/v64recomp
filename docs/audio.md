@@ -1,7 +1,9 @@
 # Native audio
 
 Each game runs its translated sound code and reads tables, sequences and
-sample assets from its ROM. `backends/audio.c` executes ABI1, Zelda NEAD and NAudio command operations
+sample assets from its ROM. SM64 US defaults to its ROM-compiled audio RSP
+program. For games using high-level synthesis, `backends/audio.c` executes
+ABI1, Zelda NEAD and NAudio command operations
 using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
 ADPCM, codebooks, envelopes, four-tap resampling, mixing, reverb-buffer operations,
@@ -10,7 +12,41 @@ queued after synthesis. DSP tasks run synchronously on the main owner thread
 while the guest is parked by `recomp_on_host`. They read and write live guest
 RAM, including PCM and decoder history, without snapshots or deferred merges.
 The task service delivers SP events during polling. SDL playback remains
-asynchronous. No CPU or RSP instruction interpreter is linked.
+asynchronous.
+
+## SM64 US compiled audio
+
+Both renderers run the original audio bootstrap and ASP program as generated C11.
+The profile pins the bootstrap and the full 0xe20 bytes of ASP instructions.
+The task advertises 0x800 bytes and the bootstrap DMAs 0xf80. The loader verifies
+the complete executable prefix on every transfer, copies the trailing bytes to
+IMEM and faults if execution enters that tail. Synthesis writes live guest RAM
+before publishing one SP completion. AI scheduling, SDL playback and WAV capture
+use the same interfaces as the high-level backend.
+
+Set `RECOMP_AUDIO_RSP=hle` to use the previous synthesis backend. In Debug,
+`RECOMP_AUDIO_RSP=compare` captures each task's starting RDRAM in memory, runs
+compiled ASP on the copy and HLE on live RAM, then compares the final signed
+16-bit samples saved from ABI1 INTERLEAVE and the 32-byte ADPCM histories.
+The game continues from the HLE result. Each log row gives the sample count,
+number of differing samples, maximum absolute sample delta and count of differing
+history bytes. This mode measures individual tasks starting from HLE-produced
+state. Ordinary compiled playback carries the ASP program's own state forward.
+
+```sh
+RECOMP_AUDIO_RSP=compare ./build/sm64-us-gles-debug/bin/sm64-us --mute --frames 240
+```
+
+In one SM64 US startup capture, task 11 differed from HLE on 884 of 1,120 PCM
+samples (maximum delta 64) and matched all 32 decoder-history bytes. Task 100
+differed on 1,053 of 1,056 samples (maximum delta 9,988) and matched all 64
+history bytes. Replaying the same descriptors and initial RAM for tasks 11, 12
+and 100 through an independent instruction-level RSP interpreter produced the
+same final 4 MiB RAM image as compiled ASP for each task. The offline reference
+used all-zero plugin configuration with audio forwarding disabled.
+[Reference interpreter revision](https://github.com/mupen64plus/mupen64plus-rsp-cxd4/tree/2a4a30094fdb9f593157cfec978c6560212752fd)
+
+## DMA, synthesis and playback
 
 The native PI manager services accepted cartridge DMA submissions on the owner
 thread before returning to guest code. Deferring those transfers until a later

@@ -342,3 +342,11 @@ images = [
   {name = "RSP bootstrap", rom_offset = 0xe6260, size = 0xd0, sha256 = "589d793eda195c576c9d767e7a5e4b77352826f59669d20bdcc358a8ebc979a3"},
   {name = "Fast3D 2.0D with overlays", rom_offset = 0xe6330, size = 0x1408, sha256 = "36b959e4da70aec0beda2222581041af8ec1407478fa8b83ae3128fec87d5bc0"},
 ]
+
+# The SDK bootstrap loads 0xf80 bytes at IMEM 0x80. Only the first
+# 0xe20 are ASP text; the remaining bytes overlap mutable game state.
+[audio.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0xe6260, size = 0xd0, sha256 = "589d793eda195c576c9d767e7a5e4b77352826f59669d20bdcc358a8ebc979a3"},
+  {name = "SM64 US ASP", rom_offset = 0xe7740, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

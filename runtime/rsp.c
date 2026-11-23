@@ -73,6 +73,8 @@ static bool bind_imem(RecompRspState *s, uint32_t dram, uint32_t target, unsigne
     for (size_t image = 0; image < s->program->image_count; image++) {
         const RecompRspCode *code = &s->program->images[image];
         unsigned words = bytes / 4;
+        if (code->dma_size == bytes && bytes > code->count * 4)
+            words = (unsigned)code->count;
         if (words > code->count)
             continue;
         for (size_t offset = 0; offset <= code->count - words; offset++) {
@@ -85,6 +87,8 @@ static bool bind_imem(RecompRspState *s, uint32_t dram, uint32_t target, unsigne
                 continue;
             for (i = 0; i < words; i++)
                 s->native[((target + i * 4) & 4095) / 4] = code->entries[offset + i];
+            for (i = words; i < bytes / 4; i++)
+                s->native[((target + i * 4) & 4095) / 4] = UINT16_MAX;
             for (i = 0; i < bytes; i++)
                 s->imem[(target + i) & 4095] = ram_byte(s, dram + i);
             return true;

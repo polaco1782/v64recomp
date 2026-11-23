@@ -263,6 +263,12 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
         rsp_source = write_graphics_program(original_profile, original_rom, output, images)
         manifest += f'set(RECOMP_RSP_SOURCE "{rsp_source.as_posix()}")\n'
         rsp_sources.append(rsp_source)
+    if 'rsp' in original_profile.get('audio', {}):
+        from rsp_recompile import write_rsp_program
+        progress.stage('Compiling RSP audio microcode')
+        program = write_rsp_program(output, 'game_audio_rsp', original_profile['audio']['rsp']['images'], original_rom)
+        manifest += f'set(RECOMP_AUDIO_RSP_SOURCE "{program.as_posix()}")\n'
+        rsp_sources.append(program)
     (output/'sources.cmake').write_text(manifest)
     progress.stage('Finalizing generated files and cache')
     outputs=[p.name for p in [*report_files,*sources,*rsp_sources,*output.glob('*.h'),output/'sources.cmake',

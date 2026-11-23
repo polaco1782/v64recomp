@@ -18,6 +18,7 @@ typedef struct RecompRspCode {
     const uint32_t *words;
     const uint16_t *entries;
     size_t count;
+    size_t dma_size; /* Optional exact transfer size including a non-executable tail. */
 } RecompRspCode;
 typedef struct RecompRspProgram {
     const RecompRspCode *images;
