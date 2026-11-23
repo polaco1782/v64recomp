@@ -171,3 +171,9 @@ data = []
 bindings = [
   {name = "perspective_return", kind = "return", pcs = [0x80074d24, 0x80074d28], words = [0x0c01ff14, 0xe7a20018], value = 0x80074d2c},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0x7dae0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", rom_offset = 0x7ef40, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

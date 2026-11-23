@@ -84,7 +84,6 @@ int main(int argc, char **argv) {
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,
-                            .microcode = RECOMP_AUDIO_ABI1,
                             .task_profile = &zero_hour_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "audio initialization failed", 0);

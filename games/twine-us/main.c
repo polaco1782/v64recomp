@@ -74,11 +74,8 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "TWINE IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "007: The World Is Not Enough");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .prebuffer_ms = 160,
-                            .microcode = RECOMP_AUDIO_MUSYX_V1,
-                            .task_profile = &twine_audio_profile};
+    RecompAudioConfig ac = {
+        .output_enabled = true, .playback = !options.mute, .prebuffer_ms = 160, .task_profile = &twine_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "audio initialization failed", 0);
     recomp_thread_create(&rt, BOOT_BOOT_OBJECT, -1, BOOT_ENTRY, 0, BOOT_BOOT_STACK, 0);

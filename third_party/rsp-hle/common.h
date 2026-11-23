@@ -22,13 +22,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-/* macro for unused variable warning suppression */
-#ifdef __GNUC__
-#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
-#else
-#  define UNUSED(x) UNUSED_ ## x
-#endif
-
 /* macro for inline keyword */
 #ifdef _MSC_VER
 #define inline __inline

@@ -293,7 +293,8 @@ bool recomp_rsp_start(RecompRspState *s, const uint32_t task[16]) {
     uint32_t boot = task[2] & 0x1fffffff;
     if (!s->program || !s->program->image_count || !s->program->run || !s->program->block_lengths ||
         !s->program->entry_count || s->program->entry_count >= UINT16_MAX ||
-        task[3] != s->program->images[0].count * 4 || !ram_span(s, boot, task[3]) || !bind_imem(s, boot, 0, task[3])) {
+        (task[3] != s->program->images[0].count * 4 && task[3] != s->program->images[0].dma_size) || !task[3] ||
+        !ram_span(s, boot, task[3]) || !bind_imem(s, boot, 0, task[3])) {
         recomp_rsp_fault(s, "RSP bootstrap does not match the compiled program", boot, task[3]);
         return false;
     }

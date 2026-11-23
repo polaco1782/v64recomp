@@ -22,72 +22,16 @@
 #ifndef HLE_INTERNAL_H
 #define HLE_INTERNAL_H
 
-#include <stdint.h>
-
-#include "ucodes.h"
-
-/* rsp hle internal state - internal usage only */
 struct hle_t
 {
     unsigned char* dram;
     unsigned char* dmem;
-    unsigned char* imem;
-
-    unsigned int* mi_intr;
-
-    unsigned int* sp_mem_addr;
-    unsigned int* sp_dram_addr;
-    unsigned int* sp_rd_length;
-    unsigned int* sp_wr_length;
-    unsigned int* sp_status;
-    unsigned int* sp_dma_full;
-    unsigned int* sp_dma_busy;
-    unsigned int* sp_pc;
-    unsigned int* sp_semaphore;
-
-    unsigned int* dpc_start;
-    unsigned int* dpc_end;
-    unsigned int* dpc_current;
-    unsigned int* dpc_status;
-    unsigned int* dpc_clock;
-    unsigned int* dpc_bufbusy;
-    unsigned int* dpc_pipebusy;
-    unsigned int* dpc_tmem;
-
-    /* for user convenience, this will be passed to "external" functions */
     void* user_defined;
-
-    int hle_gfx;
-    int hle_aud;
-
-    /* alist.c */
-    uint8_t alist_buffer[0x1000];
-
-    /* alist_audio.c */
-    struct alist_audio_t alist_audio;
-
-    /* alist_naudio.c */
-    struct alist_naudio_t alist_naudio;
-
-    /* alist_nead.c */
-    struct alist_nead_t alist_nead;
-
-    /* mp3.c */
-    uint8_t  mp3_buffer[0x1000];
-
-    struct cached_ucodes_t cached_ucodes;
 };
 
-/* some mips interface interrupt flags */
-#define MI_INTR_SP                  0x1
-
-/* some rsp status flags */
-#define SP_STATUS_HALT             0x1
-#define SP_STATUS_BROKE            0x2
-#define SP_STATUS_INTR_ON_BREAK    0x40
-#define SP_STATUS_TASKDONE         0x200
+#define SP_STATUS_TASKDONE 0x200
 
 void rsp_break(struct hle_t* hle, unsigned int setbits);
+void jpeg_decode_PS(struct hle_t* hle);
 
 #endif
-

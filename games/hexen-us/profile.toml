@@ -252,3 +252,9 @@ images = [
   {name = "F3DEX 1.21 with overlays", rom_offset = 0x1ac60, size = 0x1430, sha256 = "03f8b29315156a07641248e19f20f2e1e51e85a0e60c487e4e7dc733a68fcf00"},
   {name = "L3DEX 1.21 with overlay", rom_offset = 0x1c090, size = 0xff0, sha256 = "efdd2a5522c78f077abbde5b18986309c50abd64ac67b68a6aea196887ec236d"},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0x1ab90, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", rom_offset = 0x1d080, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

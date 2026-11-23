@@ -21,11 +21,6 @@
 
 #ifndef HLE_EXTERNAL_H
 #define HLE_EXTERNAL_H
-#include <stddef.h>
-#include <stdint.h>
-void HleValidateCommand(void *, uint32_t, uint32_t, uint32_t);
-void HleMusyxValidateRam(void *, uint32_t, size_t, unsigned);
-
 #if defined(__GNUC__)
 #define ATTR_FMT(fmtpos, attrpos) __attribute__ ((format (printf, fmtpos, attrpos)))
 #else
@@ -35,16 +30,6 @@ void HleMusyxValidateRam(void *, uint32_t, size_t, unsigned);
 /* users of the hle core are expected to define these functions */
 
 void HleVerboseMessage(void* user_defined, const char *message, ...) ATTR_FMT(2, 3);
-void HleInfoMessage(void* user_defined, const char *message, ...) ATTR_FMT(2, 3);
-void HleErrorMessage(void* user_defined, const char *message, ...) ATTR_FMT(2, 3);
 void HleWarnMessage(void* user_defined, const char *message, ...) ATTR_FMT(2, 3);
 
-void HleCheckInterrupts(void* user_defined);
-void HleProcessDlistList(void* user_defined);
-void HleProcessAlistList(void* user_defined);
-void HleProcessRdpList(void* user_defined);
-void HleShowCFB(void* user_defined);
-int HleForwardTask(void* user_defined);
-
 #endif
-

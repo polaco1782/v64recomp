@@ -4,6 +4,7 @@
 /* First task at 0x800cf920: boot, initialized text and data exactly match the
  * shared ABI1 microcode. Descriptor sizes include padding/adjacent ROM data. */
 static const RecompAudioTaskProfile rayman2_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x80017d90, 0xd0, 0x80017e60, 0x1000, 0x8001bba0, 0x800},
     .fingerprint_bytes = {0xd0, 0x800, 0x2c0},
     .sha256 =

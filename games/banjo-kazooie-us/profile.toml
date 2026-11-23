@@ -5137,3 +5137,9 @@ target_section = ".TTC"
 target = 0x80387f18
 size = 0x98
 sha256 = "d0e95ca84d87152214343f62a0cc271d89be7016b0f69ecb52ac5b67748fc39f"
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0xb70, size = 0x100, sha256 = "41a5f4f68d34a88f8f849be2ccc0cb7ea616ced19de16c2c1460b66995d99e0f"},
+  {name = "Audio RSP program", image = ".core1", offset = 0x34b70, size = 0xc60, dma_size = 0xf80, sha256 = "a31055215f1dfd7e071ae9c0cae3bbaa5bf6e4f94dc58eedb3739304218735c7"},
+]

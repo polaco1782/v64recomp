@@ -126,7 +126,6 @@ static void initialize_services(Runtime *rt) {
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !game->options.mute,
                             .prebuffer_ms = 160,
-                            .microcode = RECOMP_AUDIO_NAUDIO_MP3,
                             .task_profile = &perfectdark_audio_task_profile};
     game->audio = recomp_game_audio_create(rt, &ac);
     recomp_game_require(game->audio != NULL, "Perfect Dark audio initialization failed", 0);

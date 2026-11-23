@@ -4,6 +4,7 @@
 /* The audio task builder at 0x8002ed08 fills boot, ABI1 text and DMEM pointers.
  * Its 0x800-byte DMEM request includes 0x2c0 bytes of initialized constants. */
 static const RecompAudioTaskProfile doom64_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x80049fe0, 0xd0, 0x8004c3e0, 0, 0x80062e50, 0x800},
     .fingerprint_bytes = {0xd0, 0x800, 0x2c0},
     .sha256 =

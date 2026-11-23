@@ -395,3 +395,9 @@ images = [
   {name = "F3DEX.NoN 1.00", image = "program", offset = 0xb25e0, size = 0x13b8, sha256 = "9a532f151e6339564c9a6d2240b05a8ccdaa591d77a5858823ce27c5c7a7d356"},
   {name = "L3DEX 1.00", image = "program", offset = 0xb39a0, size = 0xf80, sha256 = "c322304480bb63cef906fb5152aaac61b77e3d278587b7dcceba226aeb0026f1"},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", image = "program", offset = 0xb1120, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", image = "program", offset = 0xb4910, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

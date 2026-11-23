@@ -134,10 +134,8 @@ int main(int argc, char **argv) {
     acclaim_graphics_init(renderer);
 #endif
     acclaim_controls_init(renderer);
-    RecompAudioConfig config = {.output_enabled = true,
-                                .playback = !options.mute,
-                                .microcode = RECOMP_AUDIO_ABI1,
-                                .task_profile = &turok3_audio_profile};
+    RecompAudioConfig config = {
+        .output_enabled = true, .playback = !options.mute, .task_profile = &turok3_audio_profile};
     audio = recomp_game_audio_create(&rt, &config);
     recomp_game_require(audio != NULL, "Turok 3 audio initialization failed", 0);
     recomp_thread_create(&rt, BOOT_BOOT_OBJECT, -1, BOOT_ENTRY, 0, BOOT_BOOT_STACK, 0);

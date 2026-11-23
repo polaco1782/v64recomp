@@ -524,3 +524,9 @@ counter_hz = 0x2cb4178
 0x80000310 = 0x17d9
 0x80000314 = 0x1
 0x80000318 = 0x400000
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0x290d0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "NAudio program and MP3 overlay", rom_offset = 0x291a0, size = 0x1930, sha256 = "9912e436372f3ac33b8d2ff63f9d4388803ea4809fdc0bdaa81ef9746676f0de"},
+]

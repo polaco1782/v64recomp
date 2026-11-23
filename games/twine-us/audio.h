@@ -4,6 +4,8 @@
  * The 0x230-byte constant data span matches RE2's verified MusyX v1 table;
  * the remainder includes writable state and is excluded from recognition. */
 static const RecompAudioTaskProfile twine_audio_profile = {
+    .rsp = &game_audio_rsp_program,
+    .musyx_subframes = true,
     .descriptor = {0x800ac110, 0xd0, 0x800ad570, 0x1000, 0x800d1b30, 0x800},
     .fingerprint_bytes = {0xd0, 0x1000, 0x230},
     .sha256 =

@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile quake2_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x80060e20, 0xd0, 0x800636f0, 0x1000, 0x8006e2e0, 0x800},
     .fingerprint_bytes = {0xd0, 0x1000, 0x800},
     .sha256 =

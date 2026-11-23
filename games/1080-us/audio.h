@@ -2,8 +2,9 @@
 #include "recomp_audio.h"
 
 /* Exact first-task image after the original USO loader. NEAD signature at
- * ucode_data + 0x10 is 0x1f38122c; the shared HLE has a dedicated 1080 entry. */
+ * ucode_data + 0x10 is 0x1f38122c. */
 static const RecompAudioTaskProfile snowboarding_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x800dc2c0, 0x1000, 0x800dc2c0, 0x1000, 0x80084b20, 0x2df},
     .fingerprint_bytes = {0x1000, 0x1000, 0x2df},
     .sha256 =

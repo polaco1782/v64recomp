@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile duke_audio_task_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x800d13c0, 0xd0, 0x800d2890, 0x0, 0x8010a9c0, 0x800},
     /* Task data size includes DMEM BSS; 0x2c0 bytes are initialized. */
     .fingerprint_bytes = {0xd0, 0x800, 0x2c0},

@@ -347,3 +347,9 @@ images = [
   {name = "RSP bootstrap", image = ".data", offset = 0x0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
   {name = "Perfect Dark Fast3D with overlays", image = ".data", offset = 0xd0, size = 0x1418, sha256 = "c70d32a0af7d0cf5d140c646a9e557d0e27da08f55ab5cf84acc44abe3903ead"},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", image = ".data", offset = 0x0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "NAudio program and MP3 overlay", image = ".data", offset = 0x14f0, size = 0x1940, sha256 = "c1865c32b15f5aac171d9d38b554169edd5fb003821224dfdad05aa4649b01dc"},
+]

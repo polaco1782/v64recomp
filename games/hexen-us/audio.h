@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile hexen_audio_task_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x80064f90, 0xd0, 0x80067480, 0x0, 0x8006b130, 0x800},
     .fingerprint_bytes = {0xd0, 0x800, 0x2c0},
     .sha256 =

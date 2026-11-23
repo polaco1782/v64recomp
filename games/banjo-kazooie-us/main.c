@@ -165,10 +165,7 @@ int main(int argc, char **argv) {
     /* Boot replaces the platform services with core1's SDK instance. Attach
      * the AI output sink afterward, before dispatching the initial thread;
      * destroying the boot platform would otherwise discard the sink. */
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .microcode = RECOMP_AUDIO_NAUDIO,
-                            .task_profile = &banjo_audio_profile};
+    RecompAudioConfig ac = {.output_enabled = true, .playback = !options.mute, .task_profile = &banjo_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "Banjo audio initialization failed", 0);
     uint64_t deadline = recomp_game_monotonic();

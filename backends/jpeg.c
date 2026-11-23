@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Keep JPEG callbacks separate from the audio adapter's HLE state. */
 typedef struct RecompJpegContext {
     jmp_buf skip_task;
     uint32_t address;

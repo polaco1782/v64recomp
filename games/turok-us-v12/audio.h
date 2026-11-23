@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile turok_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x800b2420, 0xd0, 0x800b5c10, 0x0, 0x800f8eb0, 0x800},
     /* Task data size includes DMEM BSS; 0x2c0 bytes are initialized. */
     .fingerprint_bytes = {0xd0, 0x800, 0x2c0},

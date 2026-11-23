@@ -208,10 +208,8 @@ int main(int argc, char **argv) {
      * skips VI-only updates; use RT64's original-rate VI presentation path. */
     recomp_renderer_set_frame_rate(renderer, 0);
 #endif
-    RecompAudioConfig audio_config = {.output_enabled = true,
-                                      .playback = !options.mute,
-                                      .microcode = RECOMP_AUDIO_MUSYX_V1,
-                                      .task_profile = &re2_audio_profile};
+    RecompAudioConfig audio_config = {
+        .output_enabled = true, .playback = !options.mute, .task_profile = &re2_audio_profile};
     audio = recomp_game_audio_create(&rt, &audio_config);
     recomp_game_require(audio != NULL, "RE2 audio output initialization failed", 0);
     recomp_thread_create(&rt, BOOT_BOOT_OBJECT, -1, BOOT_ENTRY, 0, BOOT_BOOT_STACK, 0);

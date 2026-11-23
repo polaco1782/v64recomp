@@ -155,10 +155,8 @@ int main(int argc, char **argv) {
 #ifdef RECOMP_WITH_RT64
     recomp_renderer_set_frame_rate(renderer, 0);
 #endif
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .microcode = RECOMP_AUDIO_ABI1,
-                            .task_profile = &shadowman_audio_task_profile};
+    RecompAudioConfig ac = {
+        .output_enabled = true, .playback = !options.mute, .task_profile = &shadowman_audio_task_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "audio initialization failed", 0);
     wall_origin = recomp_game_monotonic();

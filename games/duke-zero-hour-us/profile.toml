@@ -148,3 +148,9 @@ images = [
   {name = "RSP bootstrap", rom_offset = 0xbbd50, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
   {name = "F3DEX.NoN fifo 2.08 with overlays", rom_offset = 0xbbe20, size = 0x1390, sha256 = "b660b67bb3806c9f463ee4ef3df92cf38753f5b65b74daab46434e5f31f30395"},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0xbbd50, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", rom_offset = 0xbd1b0, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

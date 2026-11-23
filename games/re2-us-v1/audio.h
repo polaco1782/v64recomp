@@ -4,6 +4,8 @@
  * Data after the 0x230 constant bytes includes CPU-owned state at
  * 0x80136d80 (set by 0x800b41fc), so it is not a constant fingerprint. */
 static const RecompAudioTaskProfile re2_audio_profile = {
+    .rsp = &game_audio_rsp_program,
+    .musyx_subframes = true,
     .descriptor = {0x80018a80, 0xd0, 0x800b2700, 0x1000, 0x80136b50, 0x800},
     .fingerprint_bytes = {0xd0, 0x1000, 0x230},
     .sha256 =

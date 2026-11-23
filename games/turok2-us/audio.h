@@ -5,6 +5,7 @@
 /* Full task source spans match the original cartridge at 0xbcf30,
  * 0xbf520 and 0xc0b50 in the first captured audio task. Standard ABI1. */
 static const RecompAudioTaskProfile turok2_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x800bc330, 0xd0, 0x800be920, 0x1000, 0x800bff50, 0x800},
     .fingerprint_bytes = {0xd0, 0x1000, 0x800},
     .sha256 =

@@ -1,8 +1,6 @@
 #pragma once
 #include "recomp_audio.h"
 
-extern const struct RecompRspProgram game_audio_rsp_program;
-
 static const RecompAudioTaskProfile goldeneye_audio_task_profile = {
     .rsp = &game_audio_rsp_program,
     .descriptor = {0x80020d90, 0xd0, 0x80022280, 0, 0x8005d020, 0x800},

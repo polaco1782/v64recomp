@@ -83,7 +83,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     (output / 'mm_controls_config.h').write_text('\n'.join(bindings) + '\n')
 
 
-def graphics_images(rom, profile):
+def rsp_images(rom, profile):
     discovery = profile['discovery']
     code = file_image(rom, discovery['dma_table'], discovery['code'])
     rsp = profile['graphics']['rsp']

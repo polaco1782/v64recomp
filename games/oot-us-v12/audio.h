@@ -1,6 +1,8 @@
 #pragma once
 #include "recomp_audio.h"
+
 static const RecompAudioTaskProfile oot_audio_task_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x800e3600, 0x1000, 0x800e3600, 0x1000, 0x80114990, 0x2df},
     .fingerprint_bytes = {0xfb0, 0xfb0, 0x2df},
     .sha256 =

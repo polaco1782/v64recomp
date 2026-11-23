@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile mm_audio_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x801aaab0, 0x1000, 0x801aaab0, 0x1000, 0x801e1e80, 0x2df},
     .fingerprint_bytes = {0x1000, 0x1000, 0x2df},
     .sha256 =

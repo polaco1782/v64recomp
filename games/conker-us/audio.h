@@ -5,6 +5,7 @@
  * verified cartridge at the corresponding physical offsets. Text size zero is
  * the SDK's default 4 KiB IMEM load. Data includes only initialized DMEM. */
 static const RecompAudioTaskProfile conker_audio_task_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x100290d0, 0xd0, 0x100291a0, 0, 0x8002c960, 0x800},
     .fingerprint_bytes = {0xd0, 0x1000, 0x800},
     .sha256 =

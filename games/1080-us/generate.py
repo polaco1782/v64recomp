@@ -252,3 +252,8 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
     (output / 'game_config.h').write_text('\n'.join(lines))
+
+
+def rsp_images(rom, profile):
+    text, _, _, _ = prepare_text(rom, profile["discovery"]["uso"])
+    return {"bootup": bytes(text)}

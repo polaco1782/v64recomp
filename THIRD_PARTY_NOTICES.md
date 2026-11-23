@@ -72,7 +72,7 @@ license are linked above.
 
 ## Mupen64Plus RSP HLE
 
-The audio and JPEG task code under `third_party/rsp-hle/` comes from
+The JPEG task code under `third_party/rsp-hle/` comes from
 Mupen64Plus-rsp-hle. Source files specify GPL version 2 or later and retain
 individual copyright notices. The upstream license and author list are
 preserved in [licenses/Mupen64Plus-rsp-hle.txt](licenses/Mupen64Plus-rsp-hle.txt).

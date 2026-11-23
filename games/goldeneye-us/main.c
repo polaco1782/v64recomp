@@ -167,7 +167,6 @@ static void initialize_services(Runtime *rt) {
     RecompIOConfig io = {.connected_mask = 1, .eeprom_size = 512, .eeprom_path = options.save};
     recomp_game_require(recomp_io_init(rt, &io), "GoldenEye IO init failed", 0);
     RecompAudioConfig ac = {.output_enabled = true,
-                            .microcode = RECOMP_AUDIO_ABI1_LINEAR,
                             .prebuffer_ms = 160,
                             .playback = !options.mute,
                             .task_profile = &goldeneye_audio_task_profile};

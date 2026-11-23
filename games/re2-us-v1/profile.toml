@@ -630,3 +630,9 @@ images = [
   {name = "F3DEX.Rej fifo 2.06 with overlays", image = ".main", offset = 0x6d40, size = 0x1190, sha256 = "3041162c55128109feb8415a935662a756a3d84eaeab52fc84496535ac25a4b6"},
   {name = "S2DEX fifo 2.06 with overlays", image = ".main", offset = 0x2cc0, size = 0x18c0, sha256 = "b6daf6d558a303726b556731122df6c7db127ca7b4a658d95c84059a8fdb8753"},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", image = ".main", offset = 0x0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", image = ".main", offset = 0x99c80, size = 0xf40, dma_size = 0xf80, sha256 = "61db91a646bef2d59a80955ffeaf1895928a90ee1355e26dc8d63a7f942a539b"},
+]

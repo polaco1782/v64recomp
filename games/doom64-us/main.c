@@ -113,11 +113,8 @@ int main(int argc, char **argv) {
 #ifdef RECOMP_WITH_RT64
     recomp_renderer_set_microcode_hook(renderer, bind_microcode);
 #endif
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .prebuffer_ms = 160,
-                            .microcode = RECOMP_AUDIO_ABI1,
-                            .task_profile = &doom64_audio_profile};
+    RecompAudioConfig ac = {
+        .output_enabled = true, .playback = !options.mute, .prebuffer_ms = 160, .task_profile = &doom64_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "audio initialization failed", 0);
     recomp_thread_create(&rt, BOOT_BOOT_OBJECT, -1, BOOT_ENTRY, 0, BOOT_BOOT_STACK, 0);

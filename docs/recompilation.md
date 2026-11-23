@@ -7,7 +7,7 @@ its logic and reads its assets from the ROM. Shared native services implement
 the N64 OS and hardware interactions required by each game.
 
 See the [complete process flow](process-flow.md) for detailed graphs of the build,
-runtime services, graphics/audio HLE, packaging and investigation loop.
+runtime services, graphics and RSP audio, packaging and investigation loop.
 
 ```mermaid
 flowchart TD
@@ -293,15 +293,13 @@ See [native threading](threading.md) for scheduling and HLE ownership.
 The RT64 backend passes graphics tasks to RT64 for Vulkan rendering.
 The GLES2 backend runs verified graphics microcode on a dedicated RSP worker
 and sends its RDP output to GLES2. [Graphics RSP and game coverage](armv8-gles2.md). The translated game's audio
-code builds command lists. SM64 US and GoldenEye US run their statically recompiled audio RSP programs
-with either renderer. Other ports synthesize PCM with the native audio backend. The native AI service supplies
+code prepares synthesis tasks. Every port that submits these tasks runs its statically recompiled
+audio RSP program with either renderer. The native AI service supplies
 buffer timing and completion events, and SDL plays the samples. Audio synthesis,
 graphics display-list parsing and presentation preparation run on the main
 owner thread with the guest parked. They use live RAM and queue SP/DP completion
 after output writes. RT64's internal rendering queues and SDL playback remain
-asynchronous. SDL window and input operations stay on the main thread. These task
-backends implement supported graphics/audio behavior rather than translating
-RSP microcode through the CPU translator. See [audio](audio.md).
+asynchronous. SDL window and input operations stay on the main thread. A separate RSP translator generates the audio and GLES graphics programs. See [audio](audio.md).
 
 ### 5. Record gaps and investigate runtime failures
 

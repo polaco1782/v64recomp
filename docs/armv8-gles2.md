@@ -3,8 +3,7 @@
 With `-DRECOMP_RENDERER=gles`, graphics display lists run through
 the statically recompiled RSP program checked for the selected game. All
 core runtime and generated graphics code are C11; Python performs generation.
-The optional desktop texture-pack reader and editor use C++17. Audio and JPEG
-retain their existing task implementations.
+The optional desktop texture-pack reader and editor use C++17. Audio uses its own recompiled RSP program with either renderer.
 
 Native builds require OpenGL ES 3.0 or later. The SM64 browser build uses
 WebGL 2 and the same GLSL ES 3.00 shaders.

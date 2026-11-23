@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile perfectdark_audio_task_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x80059fe0, 0xd0, 0x8005b4d0, 0x1000, 0x8008a2d0, 0x800},
     .fingerprint_bytes = {0xd0, 0x1000, 0x800},
     .sha256 =

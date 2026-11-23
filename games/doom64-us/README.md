@@ -68,7 +68,7 @@ save/reload and sustained audio quality still need playtesting.
 The recompiler starts at guest address `0x80000400`. The original program
 clears BSS and creates its idle, main and ticker threads. The renderer accepts
 F3DEX.NoN 1.00 for the world and L3DEX 1.00 for the line automap. The sound
-system produces commands for the shared ABI1 synthesizer. The IWAD header is
+system produces commands for the recompiled ABI1 microcode. The IWAD header is
 at cartridge offset `0x63d10` and its directory contains 1,527 entries.
 
 The US ROM supplies the callback addresses for menus, thinkers and the 797

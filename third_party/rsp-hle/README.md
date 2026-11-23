@@ -1,51 +1,17 @@
-# Native audio DSP and JPEG subset
+# Native JPEG subset
 
 Upstream: https://github.com/mupen64plus/mupen64plus-rsp-hle
 Revision: `8a7a472a7172eb2c8725b305eae26818ed7b51a2`
 License: GPL-2.0-or-later, see source notices and `LICENSES`.
 
-`alist.c`, `alist_audio.c`, `alist_nead.c`, `alist_naudio.c`, `mp3.c`, `musyx.c`, `audio.c`
-and `memory.c` are compiled. NAudio MP3 supplies Perfect Dark's audio command
-processing and synthesis transform using the same pinned upstream revision. These
-implement audio-command operations in native C, including ADPCM, envelope
-mixing, four-tap resampling and interleaving. No plugin shell, CPU interpreter,
-RSP instruction interpreter or graphics microcode modules are imported.
-Standard NAudio supplies Quake II through `alist_process_naudio`; its opcode 14
-is the SETVOL rate tail, distinct from NAudio MP3/CBFD filters.
-The upstream headers retain declarations for modules outside this subset.
-
-`musyx.c` supplies MusyX v1 for Resident Evil 2. Only v1 is dispatched; the
-upstream v2 entry remains unused. Its task size counts 0xa10-byte subframe
-descriptors. Local guards validate every guest span, decoded/compressed sample
-capacity, initialized resample taps, ADPCM predictors, effect rings and voice
-termination. Address validation accepts physical/KSEG aliases only when they
-match upstream's 24-bit DRAM window. ADPCM offsets use integers until validated;
-base-volume/FIR arithmetic uses wide accumulators and envelope updates wrap
-explicitly. Sample end/restart sentinels remain integer positions until used;
-every actual resampling tap is checked.
-
 `jpeg.c` supplies the PS/OOT JPEG task decoder: dequantization, inverse DCT and
 RGBA5551 tile output. The CPU's JPEG parsing and Huffman decoding stay translated.
-Only the PS variant is dispatched by the native adapter; PS0 and OB are not enabled.
+Only the PS variant is included.
 `backends/jpeg.c` verifies the complete initialized boot/code/data images against
 the game's SHA-256 profile on every task, validates all RAM spans and alignment,
-and rejects yielded tasks. JPEG callbacks are renamed at compile time to keep
-their completion state separate from audio. `memory.c` is shared by both adapters.
+and rejects yielded tasks. The adapter uses the word-swapped RDRAM helpers in `memory.c`.
 
 Local JPEG changes remove a negative signed shift, explicitly narrow IDCT results
 through a 32-bit integer, and check subblock overlap without subtracting pointers
 to separate stack arrays. These retain the upstream pixel arithmetic while
 avoiding undefined C operations. Source notices and the pinned revision apply.
-
-Local changes: an owner-thread validation callback before every command;
-explicit fixed-width envelope initialization arithmetic; wide ADPCM/filter
-accumulators; an ADPCM predictor bound check. The adapter bounds RAM/DMEM
-operands and aborts the current task on upstream warnings, recording a shared
-warning snapshot before publishing task completion. Unsupported microcodes and
-resampling flags are rejected. Zelda NEAD command lists use a separate validated
-dispatch path; other NEAD variants are not enabled. The NEAD filter keeps its
-coefficient cache outside guest RAM, preserves the CPU-owned source table and
-resets history on INIT. The pinned Zelda microcode's FILTER handler at IMEM
-`0x1cb0..0x1e28` loads that table into DMEM and writes only the 32-byte state
-back to RAM. Build with `-fno-strict-aliasing` for upstream's
-word-swapped sample/state views.

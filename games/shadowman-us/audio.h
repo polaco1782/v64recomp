@@ -2,6 +2,7 @@
 #include "recomp_audio.h"
 
 static const RecompAudioTaskProfile shadowman_audio_task_profile = {
+    .rsp = &game_audio_rsp_program,
     .descriptor = {0x80046560, 0xd0, 0x80046630, 0x1000, 0x80049970, 0x800},
     .fingerprint_bytes = {0xd0, 0x800, 0x2c0},
     .sha256 =

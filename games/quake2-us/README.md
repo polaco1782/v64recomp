@@ -161,5 +161,5 @@ engine; its code and addresses are not used here. SDK identification used the
 repository's pinned [n64sym signatures](https://github.com/shygoo/n64sym/tree/ccf4600f3389f1a84bde23339225cf372fdf7712),
 followed by local body/ABI review. Audio identification was checked against
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle/blob/8a7a472a7172eb2c8725b305eae26818ed7b51a2/src/hle.c)
-and the bundled standard NAudio command dispatcher at that revision.
+and its standard NAudio command dispatcher.
 No external source tree or downloaded game assets are build dependencies.

@@ -76,8 +76,7 @@ Common SDK calls are recognized by complete function-body hashes in the shared
 boot mapping, inflater handoff, obfuscated cartridge read and idle checkpoint,
 alongside checked original switch and AI handler tables. The model
 assembly's shared epilogue and nonlocal helper returns have explicit, checked
-translation metadata. Native audio uses the pinned NAudio/MP3 RSP-HLE decoder
-and verifies the task's microcode images.
+translation metadata. The audio backend runs the verified NAudio/MP3 RSP program and its overlays.
 
 One longer debug run stopped with `ADPCM predictor outside codebook`. A repeat
 of the same menu action completed normally; the intermittent audio failure

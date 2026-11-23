@@ -1,8 +1,6 @@
 #pragma once
 #include "recomp_audio.h"
 
-extern const struct RecompRspProgram game_audio_rsp_program;
-
 static const RecompAudioTaskProfile sm64_audio_task_profile = {
     .rsp = &game_audio_rsp_program,
     .descriptor = {0x8032b260, 0xd0, 0x8032c740, 0x800, 0x8033a2c0, 0x2c0},

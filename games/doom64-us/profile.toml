@@ -207,3 +207,9 @@ bindings = [
   {name = "gfx_cursor", kind = "address", pcs = [0x800063b4, 0x800063bc], words = [0x3c03800a, 0x24634a00], value = 0x800a4a00},
   {name = "gfx_base", kind = "address", pcs = [0x800063b0, 0x800063b8], words = [0x3c01800a, 0xac2e4a04], value = 0x800a4a04},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0x4abe0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", rom_offset = 0x4cfe0, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

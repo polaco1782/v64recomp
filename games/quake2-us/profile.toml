@@ -216,3 +216,9 @@ bindings = [
   {name = "right_basis", kind = "address", pcs = [0x8000eaec, 0x8000eaf0], words = [0x3c018008, 0xc42a5a24], value = 0x80085a24},
   {name = "up_basis", kind = "address", pcs = [0x8000eb38, 0x8000eb3c], words = [0x3c018008, 0xc42ca4d0], value = 0x8007a4d0},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP bootstrap", rom_offset = 0x61a20, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "Audio RSP program", rom_offset = 0x642f0, size = 0xc60, dma_size = 0xf80, sha256 = "7e5932658e7f965a47b9dac8ec05b405e9ac18c26d39daddb852418f66613ba4"},
+]

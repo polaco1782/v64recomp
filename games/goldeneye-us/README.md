@@ -40,9 +40,7 @@ Press F12 for the shared [GameShark menu](../../docs/cheats.md) in Debug or Rele
 
 ## Audio
 
-Both renderers use the recompiled GoldenEye RSP audio program by default.
-Release includes only compiled synthesis. Debug also supports the original
-HLE backend and same-task PCM and ADPCM history comparisons.
+Both renderers run the recompiled GoldenEye RSP audio program in Debug and Release.
 [GoldenEye audio validation](../../docs/audio.md#goldeneye-us-compiled-audio)
 
 ### Audio DMA cache recovery
@@ -65,7 +63,7 @@ the retained older generation; `amMain` at `0x70001f7c` waits for the preceding
 task's completion. These paths were checked against the generated code and
 the [GoldenEye audio-manager reference](https://github.com/n64decomp/007/blob/master/src/audi.c).
 This recovery does not expand the pool: exhaustion entirely within the protected
-generations still follows the original fallback. The Debug HLE path can warn about an invalid predictor.
+generations still follows the original fallback.
 
 The Release executable rebuilt successfully on 2026-10-30. In-game validation
 is left to the user at their request; further testing was waived.

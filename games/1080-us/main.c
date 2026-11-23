@@ -104,10 +104,8 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "1080 Snowboarding");
     recomp_game_require(renderer != NULL, "1080 renderer initialization failed", 0);
     recomp_renderer_wasd_stick(renderer, true);
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .microcode = RECOMP_AUDIO_NEAD_1080,
-                            .task_profile = &snowboarding_audio_profile};
+    RecompAudioConfig ac = {
+        .output_enabled = true, .playback = !options.mute, .task_profile = &snowboarding_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "1080 audio initialization failed", 0);
     rt.prepare_call = prepare_call;

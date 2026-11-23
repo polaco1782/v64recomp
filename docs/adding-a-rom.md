@@ -453,7 +453,8 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    guest globals. Choose synthetic boot-thread storage outside guest-owned data,
    stacks and framebuffers, and retire it before the game reuses that RAM.
 4. Create the renderer and audio backend. Identify actual task types and microcode
-   from submitted tasks. Supply checked audio profiles and any required graphics
+   from submitted tasks. For RSP audio, pin the bootstrap, executable text and overlays in `[audio.rsp].images`
+   and bind the generated program in `audio.h`. Supply any required graphics
    extensions; an unknown RSP task is not fixed by declaring it standard graphics
    or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
    Keep game-specific graphics commands, microcode fingerprints and lighting in

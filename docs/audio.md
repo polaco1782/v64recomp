@@ -1,41 +1,44 @@
 # Native audio
 
-Each game runs its translated sound code and reads tables, sequences and
-sample assets from its ROM. SM64 US and GoldenEye US default to their ROM-compiled
-audio RSP programs. For games using high-level synthesis, `backends/audio_hle.c` executes
-ABI1, Zelda NEAD and NAudio command operations
-using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
-[Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
-ADPCM, codebooks, envelopes, four-tap resampling, mixing, reverb-buffer operations,
-filtering and stereo interleave write PCM into guest RAM. One SP completion is
-queued after synthesis. DSP tasks run synchronously on the main owner thread
-while the guest is parked by `recomp_on_host`. They read and write live guest
-RAM, including PCM and decoder history, without snapshots or deferred merges.
-The task service delivers SP events during polling. SDL playback remains
-asynchronous.
+Each game that submits RSP audio tasks runs its cartridge's bootstrap and synthesis
+microcode as generated C11 in Debug and Release, with either renderer. The game
+profile's `[audio.rsp].images` identifies the executable bytes by SHA-256,
+including IMEM overlays. A game can supply a decompressed or relocated source
+through its generator's `rsp_images` hook. Direct PCM producers use the AI
+output path independently of the RSP.
+
+The audio adapter checks the task descriptor and boot, text and data fingerprints,
+translates guest addresses for SP DMA, and runs the compiled program on live
+RDRAM while the guest is parked. IMEM loads bind only matching instructions.
+Some bootstraps DMA trailing data along with their code. The profile's
+`dma_size` describes that transfer, and executing an untranslated tail faults.
+ADPCM histories, filter and resampler state and stereo PCM are written by the
+microcode before the SP completion event is queued.
+
+Most audio tasks supply a list of eight-byte commands. Resident Evil 2 and
+The World Is Not Enough use MusyX v1. Their task size counts 0xa10-byte
+subframe descriptors. Inspect a captured MusyX task with
+`tools/analyze.py rsp-task REPORT --list-scale 0xa10 --structured`.
+
+## Cartridge task replay
+
+For each of the 22 games with RSP audio, tasks 0, 32 and 128 were captured at
+submission with their descriptor and starting RDRAM. In nine games those three
+tasks left RAM unchanged, so a later task that wrote different bytes was also
+captured. All 75 tasks produced byte-identical final RDRAM in the compiled
+program and in rsp-cxd4 with audio forwarding disabled. This includes PCM,
+decoder history and every other byte the microcode wrote. The former audio HLE
+matched 46 of the same inputs and differed on 29.
+
+Separate directed tests exercised the MP3 overlay in Conker and Perfect Dark,
+including its return to the main audio program. Both matched the reference on
+all output bytes.
+[Reference interpreter revision](https://github.com/mupen64plus/mupen64plus-rsp-cxd4/tree/2a4a30094fdb9f593157cfec978c6560212752fd)
 
 ## SM64 US compiled audio
 
-Both renderers run the original audio bootstrap and ASP program as generated C11.
-The profile pins the bootstrap and the full 0xe20 bytes of ASP instructions.
-The task advertises 0x800 bytes and the bootstrap DMAs 0xf80. The loader verifies
-the complete executable prefix on every transfer, copies the trailing bytes to
-IMEM and faults if execution enters that tail. Synthesis writes live guest RAM
-before publishing one SP completion. AI scheduling, SDL playback and WAV capture
-use the same interfaces as the high-level backend.
-
-Set `RECOMP_AUDIO_RSP=hle` to use the previous synthesis backend. In Debug,
-`RECOMP_AUDIO_RSP=compare` captures each task's starting RDRAM in memory, runs
-compiled ASP on the copy and HLE on live RAM, then compares the final signed
-16-bit samples saved from ABI1 INTERLEAVE and the 32-byte ADPCM histories.
-The game continues from the HLE result. Each log row gives the sample count,
-number of differing samples, maximum absolute sample delta and count of differing
-history bytes. This mode measures individual tasks starting from HLE-produced
-state. Ordinary compiled playback carries the ASP program's own state forward.
-
-```sh
-RECOMP_AUDIO_RSP=compare ./build/sm64-us-gles-debug/bin/sm64-us --mute --frames 240
-```
+The bootstrap DMAs 0xf80 bytes, including 0xe20 bytes of executable ASP text.
+The task itself advertises 0x800 bytes.
 
 In one SM64 US startup capture, task 11 differed from HLE on 884 of 1,120 PCM
 samples (maximum delta 64) and matched all 32 decoder-history bytes. Task 100
@@ -54,15 +57,6 @@ loads 0xf80 bytes at IMEM 0x80, including 0xdc0 bytes of executable text.
 The trailing game data has no compiled instruction entries. The task also loads
 0x800 bytes of DMEM data, of which the 0x2c0-byte initialized prefix is fingerprinted.
 
-GoldenEye Release builds use compiled synthesis exclusively. Debug defaults to
-compiled synthesis and supports `RECOMP_AUDIO_RSP=hle` and `RECOMP_AUDIO_RSP=compare`.
-The comparison uses GoldenEye's linear-envelope HLE routine and counts stereo
-samples saved from INTERLEAVE before subsequent commands reuse DMEM for effects.
-
-```sh
-RECOMP_AUDIO_RSP=compare ./build/goldeneye-us-gles-debug/bin/goldeneye-us --mute --frames 500
-```
-
 One 500-frame startup run compared 248 tasks. All 43,008 ADPCM history bytes
 matched HLE. Of 360,640 signed PCM samples, 200,724 differed. In task 150,
 all 1,440 samples differed, with a maximum absolute delta of 11,280, and all
@@ -78,33 +72,6 @@ thread before returning to guest code. Deferring those transfers until a later
 scheduler poll can let an audio task read stale sample data; Quake's streamed
 ADPCM samples exposed this ordering bug. DMA completion messages are posted after
 the copy, before the submitting guest resumes.
-
-Zelda FILTER setup copies coefficients into an RSP-local cache. Filter execution
-updates that cache and the 32-byte guest filter state, preserving the CPU-owned
-source table. This permits the game to prepare the following task's coefficients
-after synthesis returns. Source coefficients remain CPU-owned across filter execution.
-
-Games provide pinned task addresses and boot/text/data microcode hashes through
-`games/<game>/audio.h`. The shared adapter validates these fingerprints and each
-command's RAM/DMEM ranges, alignment and supported flags. Unknown microcodes,
-commands and unsupported resampling flags report a warning and skip the current
-audio task. Invalid RAM/DMEM ranges and task receipts remain fatal. Revision, license and
-local changes are in [third_party/rsp-hle/README.md](../third_party/rsp-hle/README.md).
-
-MusyX v1 (`RECOMP_AUDIO_MUSYX_V1`) uses 0xa10-byte subframe descriptors rather
-than ABI commands; the task size is a descriptor count. Each descriptor supplies
-PCM/ADPCM voices, output and history pointers, and optional delay/filter effects.
-The shared adapter verifies its microcode profile and validates RAM spans and
-DSP buffer bounds before synthesis. RE2's data fingerprint covers its complete
-0x230-byte constant prefix; the next bytes contain mutable CPU-owned state.
-Inspect a captured task with `tools/analyze.py rsp-task REPORT --list-scale 0xa10
---structured`.
-
-Quake II uses standard NAudio (`RECOMP_AUDIO_NAUDIO`). Its opcode 14 supplies
-the low word of the right-channel volume ramp; it does not execute the filter
-used by the MP3/Conker variants. The shared backend calls the pinned
-`alist_process_naudio` dispatcher and rejects its unsupported opcodes 7 and 8.
-The game profile advertises 8 MiB so the cartridge enables Expansion Pak features.
 
 `runtime/platform.c` owns the two-entry AI FIFO and exact clock/divisor timing.
 Length reports the active buffer; a full FIFO rejects admission with -1. Queued

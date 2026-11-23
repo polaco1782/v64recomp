@@ -38,7 +38,7 @@ Rendering needs an X11 desktop. The ROM stays in ignored `local/1080.ju.z64`.
 The 32 KiB SRAM file is `local/saves/1080-us.sra`: boot initialization exercised
 reads/writes and subsequent runs loaded the file. In-game save/reload is pending.
 Controller 1 is connected to shared renderer input; the first-menu acceptance
-replay sends Start and A. NEAD 1080 audio tasks execute through the bundled RSP HLE backend.
+replay sends Start and A. Audio tasks run the recompiled NEAD program from the relocated bootup USO image.
 Debug was muted; Release completed with playback enabled, but audible accuracy
 has not been assessed.
 

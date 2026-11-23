@@ -70,7 +70,7 @@ def finalize_metadata(rom, metadata, profile):
             function['relocation_pcs']=[pc for pc in sites if pc in owned]
 
 
-def graphics_images(rom, profile):
+def rsp_images(rom, profile):
     code, _ = file_bytes(rom, 27)
     rsp = profile['graphics']['rsp']
     boot = rsp['images'][0]

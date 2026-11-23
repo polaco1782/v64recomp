@@ -140,8 +140,7 @@ fixed-point color/fraction/alpha fixtures and all 65,536 byte-blend pairs pass
 ASan/UBSan. A bounded desktop replay progresses through the opening movie and
 Start reaches the title menu; complete movie playback remains to be exercised.
 
-MusyX v1 tasks use the pinned native DSP implementation with checked descriptor,
-sample, history and effect spans. The boot/text fingerprints cover the complete
+MusyX v1 tasks run the recompiled cartridge program on live RDRAM. The boot/text fingerprints cover the complete
 task images. Its data fingerprint covers the full 0x230-byte constant prefix;
 the following bytes include mutable CPU state written at `0x800b41fc`.
 Synthetic silence/stereo/PCM/ADPCM and malformed-span fixtures, plus the captured
@@ -162,9 +161,7 @@ the main record, decoded bytes and startup call sites were verified locally
 against the pinned ROM. The reference tree is not a build dependency.
 
 [Mupen64Plus RSP HLE MusyX](https://github.com/mupen64plus/mupen64plus-rsp-hle/blob/8a7a472a7172eb2c8725b305eae26818ed7b51a2/src/musyx.c)
-at the repository's existing pinned revision supplies native MusyX v1 DSP.
-The captured microcode has the v1 identification words used by upstream's
-dispatcher; exact ROM-bound hashes and task fields are checked independently.
+documents the v1 identification words used to identify the captured microcode.
 The [SDK S2DEX documentation](https://jrra.zone/n64/doc/ucode/s2dex/06.htm)
 states that F3DEX/S2DEX `data_size` does not describe the essential DL size.
 

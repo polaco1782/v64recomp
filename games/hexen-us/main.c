@@ -141,7 +141,6 @@ static void game_init(Game *g, const RecompGameOptions *options) {
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,
-                            .microcode = RECOMP_AUDIO_ABI1,
                             .task_profile = &hexen_audio_task_profile};
     g->audio = recomp_game_audio_create(rt, &ac);
     recomp_game_require(g->audio != NULL, "Hexen audio initialization failed", 0);

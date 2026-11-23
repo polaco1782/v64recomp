@@ -32,8 +32,6 @@
     <ClInclude Include="$(RecompRoot)backends\acclaim_lighting.h" />
     <ClCompile Include="$(RecompRoot)backends\acclaim_pager.c" />
     <ClCompile Include="$(RecompRoot)backends\audio.c" />
-    <ClCompile Include="$(RecompRoot)backends\audio_hle.c" />
-    <ClInclude Include="$(RecompRoot)backends\audio_internal.h" />
     <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp" />
     <ClInclude Include="$(RecompRoot)backends\cheat_database.h" />
     <ClCompile Include="$(RecompRoot)backends\cheat_menu.cpp" />

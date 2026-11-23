@@ -256,10 +256,8 @@ static void initialize_services(Runtime *rt) {
     recomp_game_require(recomp_clock_init(rt, &clock) && recomp_scheduler_init(rt, &scheduler) &&
                             recomp_platform_init(rt, &platform),
                         "Conker services initialization failed", 0);
-    RecompAudioConfig audio = {.output_enabled = true,
-                               .playback = !game->options.mute,
-                               .microcode = RECOMP_AUDIO_NAUDIO_CBFD,
-                               .task_profile = &conker_audio_task_profile};
+    RecompAudioConfig audio = {
+        .output_enabled = true, .playback = !game->options.mute, .task_profile = &conker_audio_task_profile};
     game->audio = recomp_game_audio_create(rt, &audio);
     recomp_game_require(game->audio != NULL, "Conker audio initialization failed", 0);
     /* Save setup at 0x1501c5d4 requires the probe's 16 Kbit device result (2). */

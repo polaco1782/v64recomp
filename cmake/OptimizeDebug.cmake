@@ -17,7 +17,7 @@ if(MSVC)
         set(CMAKE_${language}_FLAGS_DEBUG "${debug_flags}" PARENT_SCOPE)
     endforeach()
 endif()
-foreach(target ${RECOMP_GAME} recomp_runtime recomp_rsp_memory recomp_jpeg recomp_audio recomp_renderer
+foreach(target ${RECOMP_GAME} recomp_runtime recomp_jpeg recomp_audio recomp_renderer
         recomp_rdp recomp_rdp_gles2 recomp_rsp)
     if(TARGET "${target}")
         if(MSVC)

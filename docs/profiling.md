@@ -256,7 +256,7 @@ Route hot symbols to the corresponding code:
 | `mips_fp_*` | Floating-point helpers in `runtime/fpu.c` |
 | `sync_guest`, `save_context`, `recomp_scheduler_run` | Guest scheduling/context serialization in `runtime/scheduler.c` |
 | `RT64::…`, Vulkan driver symbols | Renderer/driver CPU work |
-| Audio synthesis functions | Audio backend/HLE work |
+| Audio synthesis functions | Compiled RSP synthesis and audio backend work |
 
 Map a generated function's guest address to discovery evidence using the
 existing address inspection tool:

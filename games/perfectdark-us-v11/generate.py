@@ -133,5 +133,5 @@ def finalize_metadata(rom, metadata, profile):
     model['nonlocal_return_calls']=list(sites)
 
 
-def graphics_images(rom, profile):
+def rsp_images(rom, profile):
     return {name: raw for name, _, raw in images(rom)}

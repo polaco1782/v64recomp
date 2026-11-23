@@ -16,8 +16,8 @@ def decode_overlay(rom: bytes, overlay: dict) -> bytes:
     return data
 
 
-def graphics_images(rom: bytes, profile: dict) -> dict[str, bytes]:
-    # Graphics spans are relative to the same checked main overlay as CPU code.
+def rsp_images(rom: bytes, profile: dict) -> dict[str, bytes]:
+    # Audio and graphics spans are relative to the same checked main overlay as CPU code.
     overlay = next(o for o in profile['discovery']['overlays'] if o['section'] == '.main')
     data = decode_overlay(rom, overlay)
     if len(data) != overlay['size'] or hashlib.sha256(data).hexdigest() != overlay['sha256']:

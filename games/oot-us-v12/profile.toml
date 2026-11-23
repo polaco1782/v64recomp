@@ -1004,3 +1004,8 @@ images = [
   {name = "F3DZEX2.NoN.fifo 2.06H with overlays", image = ".code", offset = 0xd2ed0, size = 0x1390, sha256 = "e41c2e39b88bb47125b550994e7d6a4f14c67113286415fb75434e8420c8590a"},
   {name = "S2DEX2d.fifo 2.05 Safe with overlays", image = ".code", offset = 0xd4260, size = 0x18c0, sha256 = "5bcc3e048dd5cc7d655bfab9f401aa4f5e2002f4b8578b10cd18ec81fbbe54f9"},
 ]
+
+[audio.rsp]
+images = [
+  {name = "Audio RSP program", image = ".code", offset = 0xd1f20, size = 0xfb0, dma_size = 0x1000, sha256 = "7948514457d822e1cbebfe67513fc8ecf9b2b3b812750093fe082c3145eab191"},
+]

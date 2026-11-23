@@ -82,11 +82,8 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "The Legend of Zelda: Majora's Mask");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     mm_controls_init(renderer);
-    RecompAudioConfig ac = {.output_enabled = true,
-                            .playback = !options.mute,
-                            .prebuffer_ms = 160,
-                            .microcode = RECOMP_AUDIO_NEAD_MM,
-                            .task_profile = &mm_audio_profile};
+    RecompAudioConfig ac = {
+        .output_enabled = true, .playback = !options.mute, .prebuffer_ms = 160, .task_profile = &mm_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);
     recomp_game_require(audio != NULL, "audio initialization failed", 0);
     recomp_thread_create(&rt, 0x807ff000, -1, MM_ENTRY, 0, 0x807fd000, 0);

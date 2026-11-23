@@ -33,10 +33,8 @@ services cover these groups:
 | Common memory/string routines | `memcpy`, `memset`, `bcopy`, `bzero`, `bcmp`, `strlen`, `strchr` | Operate on guest addresses while preserving byte order, return values and each routine's overlap behavior. |
 
 Ordinary game logic, including movement, physics, AI and command-list
-construction, remains compiled from the ROM. Graphics tasks go to RT64, while
-supported ABI1 and Zelda NEAD audio tasks go to the native DSP backend and SDL
-playback. These backends execute supported task operations separately from the
-recompiled CPU code. Game-specific adapters handle custom startup, paging,
+construction, remains compiled from the ROM. RT64 interprets graphics display lists and GLES runs the recompiled graphics microcode.
+Audio tasks run the recompiled synthesis microcode. AI forwards the resulting PCM to SDL. Game-specific adapters handle custom startup, paging,
 graphics extensions and overlay relocation. Device and task coverage remains
 specific to each port; see [game support](status.md).
 
