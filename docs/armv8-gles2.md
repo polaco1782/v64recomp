@@ -123,7 +123,8 @@ bootstrap first, then complete program text including IMEM overlays, with the
 same bounds/fingerprint fields. Compressed images use a verified named `image`
 and `offset` supplied by the game's preparation helper.
 
-For compressed images the game generator exposes `graphics_images(rom, profile)`.
+For compressed images the game generator exposes `rsp_images(rom, profile)` for audio and graphics,
+or `graphics_images(rom, profile)` for graphics alone.
 The shared generator authenticates each image and writes `game_rsp.c` for the
 GLES backend. The generated program registers its microcode and framebuffer inventory
 at renderer creation. Task submission verifies the code and data in guest RAM,

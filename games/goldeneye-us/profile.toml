@@ -622,3 +622,11 @@ images = [
   {name = "GoldenEye RSP bootstrap", image = "startup", offset = 0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
   {name = "GoldenEye Fast3D 2.0G with overlays", image = "startup", offset = 0xd0, size = 0x1420, sha256 = "0702f0908aeda4009eb67a5735960fa001dabbfc9787c0d76e296bafa3224797"},
 ]
+
+# The bootstrap ignores the zero OSTask text size and loads 0xf80 bytes.
+# The final ASP return and delay slot end at offset 0xdc0; game data follows.
+[audio.rsp]
+images = [
+  {name = "GoldenEye RSP bootstrap", image = "startup", offset = 0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "GoldenEye US ASP", image = "startup", offset = 0x14f0, size = 0xdc0, dma_size = 0xf80, sha256 = "ae28967ac5ef8a746f761a24897988006ddde24212a333355dfba97d363ba7e0"},
+]

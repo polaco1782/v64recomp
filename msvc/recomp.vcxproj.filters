@@ -25,6 +25,12 @@
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\audio_hle.c">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\audio_internal.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp">
       <Filter>Source Files\backends</Filter>
     </ClCompile>

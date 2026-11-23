@@ -293,7 +293,7 @@ See [native threading](threading.md) for scheduling and HLE ownership.
 The RT64 backend passes graphics tasks to RT64 for Vulkan rendering.
 The GLES2 backend runs verified graphics microcode on a dedicated RSP worker
 and sends its RDP output to GLES2. [Graphics RSP and game coverage](armv8-gles2.md). The translated game's audio
-code builds command lists. SM64 US runs its statically recompiled audio RSP program
+code builds command lists. SM64 US and GoldenEye US run their statically recompiled audio RSP programs
 with either renderer. Other ports synthesize PCM with the native audio backend. The native AI service supplies
 buffer timing and completion events, and SDL plays the samples. Audio synthesis,
 graphics display-list parsing and presentation preparation run on the main

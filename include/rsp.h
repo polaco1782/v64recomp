@@ -11,6 +11,7 @@ extern "C" {
  * elements. RDRAM keeps the runtime's native-word layout. Generated C contains
  * the instruction implementations; IMEM DMA only binds verified translations. */
 typedef struct RecompRspState RecompRspState;
+#define RECOMP_RSP_STATUS_TASKDONE 0x200u
 /* Outside the generated entry range; a zero-filled IMEM word executes as a NOP. */
 #define RECOMP_RSP_ZERO_NOP (UINT16_MAX - 1)
 typedef struct RecompRspCode {

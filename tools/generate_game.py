@@ -256,17 +256,24 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     # CMake reconfigures when this source manifest changes.
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
     rsp_sources = []
-    if renderer == 'gles' and 'rsp' in original_profile.get('graphics', {}):
+    graphics_rsp = renderer == 'gles' and 'rsp' in original_profile.get('graphics', {})
+    audio_rsp = original_profile.get('audio', {}).get('rsp')
+    images = None
+    if graphics_rsp or audio_rsp:
+        if hasattr(generator, 'rsp_images'):
+            images = generator.rsp_images(original_rom, original_profile)
+        elif graphics_rsp and hasattr(generator, 'graphics_images'):
+            images = generator.graphics_images(original_rom, original_profile)
+    if graphics_rsp:
         from graphics_microcode import write_graphics_program
         progress.stage('Compiling RSP graphics microcode')
-        images = generator.graphics_images(original_rom, original_profile) if hasattr(generator, 'graphics_images') else None
         rsp_source = write_graphics_program(original_profile, original_rom, output, images)
         manifest += f'set(RECOMP_RSP_SOURCE "{rsp_source.as_posix()}")\n'
         rsp_sources.append(rsp_source)
-    if 'rsp' in original_profile.get('audio', {}):
+    if audio_rsp:
         from rsp_recompile import write_rsp_program
         progress.stage('Compiling RSP audio microcode')
-        program = write_rsp_program(output, 'game_audio_rsp', original_profile['audio']['rsp']['images'], original_rom)
+        program = write_rsp_program(output, 'game_audio_rsp', audio_rsp['images'], original_rom, images)
         manifest += f'set(RECOMP_AUDIO_RSP_SOURCE "{program.as_posix()}")\n'
         rsp_sources.append(program)
     (output/'sources.cmake').write_text(manifest)

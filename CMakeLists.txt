@@ -152,14 +152,8 @@ if(RECOMP_BUILD_AUDIO)
     if(NOT TARGET SDL2::SDL2)
         find_package(SDL2 REQUIRED)
     endif()
-    add_library(recomp_audio STATIC backends/audio.c third_party/rsp-hle/alist.c
-        third_party/rsp-hle/alist_audio.c third_party/rsp-hle/alist_nead.c
-        third_party/rsp-hle/alist_naudio.c third_party/rsp-hle/mp3.c
-        third_party/rsp-hle/audio.c third_party/rsp-hle/musyx.c)
-    target_include_directories(recomp_audio PRIVATE third_party/rsp-hle)
-    file(GLOB RECOMP_RSP_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/third_party/rsp-hle/*.h")
-    target_sources(recomp_audio PRIVATE include/recomp_audio.h ${RECOMP_RSP_HEADERS})
-    target_link_libraries(recomp_audio PUBLIC recomp_runtime recomp_rsp recomp_rsp_memory SDL2::SDL2)
+    add_library(recomp_audio STATIC backends/audio.c backends/audio_internal.h include/recomp_audio.h)
+    target_link_libraries(recomp_audio PUBLIC recomp_runtime recomp_rsp SDL2::SDL2)
     if(MSVC)
         target_compile_options(recomp_audio PRIVATE /W4 /fp:strict)
     else()
@@ -231,4 +225,18 @@ if(NOT RECOMP_GAME STREQUAL "none")
         message(FATAL_ERROR "A playable game requires the selected renderer and RECOMP_BUILD_AUDIO")
     endif()
     add_subdirectory("games/${RECOMP_GAME}")
+endif()
+
+# The game declares whether its Release build needs an HLE fallback. Library-only
+# builds and all Debug builds retain the command decoders.
+if(RECOMP_BUILD_AUDIO AND NOT (RECOMP_AUDIO_COMPILED_ONLY_RELEASE AND CMAKE_BUILD_TYPE STREQUAL "Release"))
+    target_compile_definitions(recomp_audio PRIVATE RECOMP_WITH_AUDIO_HLE)
+    target_include_directories(recomp_audio PRIVATE third_party/rsp-hle)
+    file(GLOB RECOMP_RSP_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/third_party/rsp-hle/*.h")
+    target_sources(recomp_audio PRIVATE backends/audio_hle.c ${RECOMP_RSP_HEADERS} third_party/rsp-hle/alist.c
+        third_party/rsp-hle/alist_audio.c third_party/rsp-hle/alist_nead.c
+        third_party/rsp-hle/alist_naudio.c third_party/rsp-hle/mp3.c
+        third_party/rsp-hle/audio.c third_party/rsp-hle/musyx.c)
+    target_link_libraries(recomp_audio PRIVATE recomp_rsp_memory)
+    recomp_source_groups(recomp_audio)
 endif()

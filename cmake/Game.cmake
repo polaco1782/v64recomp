@@ -55,6 +55,12 @@ endif()
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     ${RECOMP_GENERATOR_INPUTS} "${RECOMP_GENERATED}/sources.cmake" "${RECOMP_ROM}")
 include("${RECOMP_GENERATED}/sources.cmake")
+if(RECOMP_AUDIO_COMPILED_ONLY_RELEASE)
+    if(NOT RECOMP_AUDIO_RSP_SOURCE)
+        message(FATAL_ERROR "Compiled-only audio requires a generated audio RSP program")
+    endif()
+    set(RECOMP_AUDIO_COMPILED_ONLY_RELEASE ON PARENT_SCOPE)
+endif()
 if(RECOMP_EMBED_ROM)
     # Keep packaging separate from translation: native sources always use the
     # pinned original ROM, never the sanitized cartridge image.

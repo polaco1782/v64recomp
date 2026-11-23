@@ -1,8 +1,8 @@
 # Native audio
 
 Each game runs its translated sound code and reads tables, sequences and
-sample assets from its ROM. SM64 US defaults to its ROM-compiled audio RSP
-program. For games using high-level synthesis, `backends/audio.c` executes
+sample assets from its ROM. SM64 US and GoldenEye US default to their ROM-compiled
+audio RSP programs. For games using high-level synthesis, `backends/audio_hle.c` executes
 ABI1, Zelda NEAD and NAudio command operations
 using the pinned native DSP subset in `third_party/rsp-hle/`, sourced from
 [Mupen64Plus RSP HLE](https://github.com/mupen64plus/mupen64plus-rsp-hle).
@@ -45,6 +45,31 @@ and 100 through an independent instruction-level RSP interpreter produced the
 same final 4 MiB RAM image as compiled ASP for each task. The offline reference
 used all-zero plugin configuration with audio forwarding disabled.
 [Reference interpreter revision](https://github.com/mupen64plus/mupen64plus-rsp-cxd4/tree/2a4a30094fdb9f593157cfec978c6560212752fd)
+
+## GoldenEye US compiled audio
+
+The original bootstrap and the linear-envelope ASP reside in the verified
+RareZip startup image. The audio task declares zero text bytes. Its bootstrap
+loads 0xf80 bytes at IMEM 0x80, including 0xdc0 bytes of executable text.
+The trailing game data has no compiled instruction entries. The task also loads
+0x800 bytes of DMEM data, of which the 0x2c0-byte initialized prefix is fingerprinted.
+
+GoldenEye Release builds use compiled synthesis exclusively. Debug defaults to
+compiled synthesis and supports `RECOMP_AUDIO_RSP=hle` and `RECOMP_AUDIO_RSP=compare`.
+The comparison uses GoldenEye's linear-envelope HLE routine and counts stereo
+samples saved from INTERLEAVE before subsequent commands reuse DMEM for effects.
+
+```sh
+RECOMP_AUDIO_RSP=compare ./build/goldeneye-us-gles-debug/bin/goldeneye-us --mute --frames 500
+```
+
+One 500-frame startup run compared 248 tasks. All 43,008 ADPCM history bytes
+matched HLE. Of 360,640 signed PCM samples, 200,724 differed. In task 150,
+all 1,440 samples differed, with a maximum absolute delta of 11,280, and all
+384 history bytes matched. Replaying the same descriptors and starting RAM for
+tasks 90, 120 and 150 through rsp-cxd4 produced byte-identical final 4 MiB RAM
+images to the compiled path. Task 90 was silent. Tasks 120 and 150 exercised
+active voices. [Reference interpreter revision](https://github.com/mupen64plus/mupen64plus-rsp-cxd4/tree/2a4a30094fdb9f593157cfec978c6560212752fd)
 
 ## DMA, synthesis and playback
 

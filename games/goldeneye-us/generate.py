@@ -397,5 +397,5 @@ def configure_translation(rom, metadata, profile, output):
     write_json(output/'pending-boundaries.json',{'complete_conversion':False,'boundaries':profile.get('boundaries',[])})
 
 
-def graphics_images(rom, profile):
+def rsp_images(rom, profile):
     return {'startup': startup_data(rom, profile['bootstrap'])}

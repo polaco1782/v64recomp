@@ -314,6 +314,6 @@ stacks and generated functions. See [CPU profiling](profiling.md).
 | Time, devices and task receipts | [`runtime/time.c`](../runtime/time.c), [`runtime/platform.c`](../runtime/platform.c), [`runtime/tasks.c`](../runtime/tasks.c), [`runtime/video.c`](../runtime/video.c) |
 | Input and saves | [`runtime/io.c`](../runtime/io.c) |
 | Graphics and textures | [`backends/rt64.cpp`](../backends/rt64.cpp), [`backends/textures.cpp`](../backends/textures.cpp), [textures](textures.md) |
-| Audio synthesis and output | [`backends/audio.c`](../backends/audio.c), [`third_party/rsp-hle/README.md`](../third_party/rsp-hle/README.md), [audio](audio.md) |
+| Audio synthesis and output | [`backends/audio.c`](../backends/audio.c), [`backends/audio_hle.c`](../backends/audio_hle.c), [`third_party/rsp-hle/README.md`](../third_party/rsp-hle/README.md), [audio](audio.md) |
 | Shared renderer build | [`cmake/SharedRT64.cmake`](../cmake/SharedRT64.cmake) |
 | Crash investigation | [`tools/analyze.py crash`](../tools/analysis/inspect_crash.py), [debugging](debugging.md) |

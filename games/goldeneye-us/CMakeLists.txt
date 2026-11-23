@@ -5,6 +5,7 @@ if(RECOMP_RENDERER STREQUAL "rt64")
     list(APPEND RECOMP_GAME_SOURCES graphics.cpp)
 endif()
 set(RECOMP_GAME_GLES2_SUPPORTED ON)
+set(RECOMP_AUDIO_COMPILED_ONLY_RELEASE ON)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 
 # The optional speed policy specializes FP helpers through IPO. The default

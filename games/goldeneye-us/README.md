@@ -38,7 +38,14 @@ and [support status](../../docs/status.md).
 
 Press F12 for the shared [GameShark menu](../../docs/cheats.md) in Debug or Release.
 
-## Audio DMA cache recovery
+## Audio
+
+Both renderers use the recompiled GoldenEye RSP audio program by default.
+Release includes only compiled synthesis. Debug also supports the original
+HLE backend and same-task PCM and ADPCM history comparisons.
+[GoldenEye audio validation](../../docs/audio.md#goldeneye-us-compiled-audio)
+
+### Audio DMA cache recovery
 
 The warning snapshots `warning-24048-60663945707700.json` and
 `warning-24048-60664262225600.json` show all 64 sample DMA buffers in use and
@@ -58,7 +65,7 @@ the retained older generation; `amMain` at `0x70001f7c` waits for the preceding
 task's completion. These paths were checked against the generated code and
 the [GoldenEye audio-manager reference](https://github.com/n64decomp/007/blob/master/src/audi.c).
 This recovery does not expand the pool: exhaustion entirely within the protected
-generations still follows the original fallback and retains the HLE warning.
+generations still follows the original fallback. The Debug HLE path can warn about an invalid predictor.
 
 The Release executable rebuilt successfully on 2026-10-30. In-game validation
 is left to the user at their request; further testing was waived.
