@@ -288,7 +288,7 @@ priorities. One guest CPU thread runs at a time, preserving interrupt critical
 sections. Generated checkpoints provide safe scheduling and event boundaries.
 Native services preserve guest memory structures, calling conventions and
 completion events expected by the translated game.
-See [native threading](threading.md) for scheduling and HLE ownership.
+See [native threading](threading.md) for scheduling and RSP task ownership.
 
 GLES runs verified graphics microcode on the guest owner and hands its RDP
 output to a render thread. The owner signals SP completion after the handoff

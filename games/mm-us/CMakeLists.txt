@@ -1,6 +1,5 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/mm.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/mm-us.flash")
-set(RECOMP_GAME_GLES2_SUPPORTED ON)
 set(RECOMP_GAME_SOURCES overlays.c flash.c controls.c)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_jpeg)

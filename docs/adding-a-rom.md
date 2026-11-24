@@ -13,11 +13,10 @@ it consistently. Addresses in the Duke examples apply only to that pinned ROM.
 ## 1. Prepare the tools
 
 Install the build dependencies listed in the README: Python 3.11+, a C/C++
-compiler, CMake, Ninja, OpenSSL 3, SDL2, X11/Xwayland and Vulkan. Initialize the
-pinned renderer and Python environment:
+compiler, CMake, Ninja, OpenSSL 3, SDL2, libcurl, OpenGL ES 3 headers and a
+GLES3 driver. Set up the Python environment:
 
 ```sh
-git submodule update --init --recursive
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
@@ -464,7 +463,7 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    Use `recomp_game_input`, `recomp_game_present` and
    `recomp_game_audio_create` from `game.h` so shared Debug replay, captures and
    audio recording work after game-specific input mapping. Keep SDL
-   input/window operations and synchronous HLE on their owner thread. Drain pending rendering work and destroy backends before runtime teardown.
+   input/window operations and RSP task execution on their owner thread. Drain pending rendering work and destroy backends before runtime teardown.
    Once the guest clock follows wall time and its priority-zero idle thread has
    been verified/configured, prefer `recomp_game_pace(rt, deadline)` between
    presentations so VI/AI/timers and queued RSP completions remain serviced.
@@ -652,7 +651,7 @@ mkdir -p local/diagnostics/newgame-us
 
 `--frames` counts presentations in most apps; it is not a timeout or instruction
 budget, so a guest hang may prevent the bound from being reached. Use a desktop
-session for rendered tests. An SDL/X11/Vulkan initialization failure occurs before
+session for rendered tests. An SDL/X11/GLES initialization failure occurs before
 game acceptance and does not establish a guest crash. Add `--trace-calls` for a
 focused reproduction; `RECOMP_DEBUG_FULL=1` expands sampled diagnostics and can
 produce substantial output. See [debugging options](debugging.md) for availability.

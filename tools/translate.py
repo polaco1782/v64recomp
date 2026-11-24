@@ -267,7 +267,7 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
                          f['name'], f['section'], f['vram'], boundaries[key])
             source.append(f'void {symbol}(Runtime *runtime, MipsContext *ctx) {{\n'
                           f'    (void)runtime; (void)ctx;\n'
-                          f'    RECOMP_TRACE(runtime, ctx, UINT32_C(0x{f["vram"]:08x}));'
+                          f'    RECOMP_TRACE(ctx, UINT32_C(0x{f["vram"]:08x}));'
                           f'    if (recomp_live_boundary(runtime, ctx, UINT32_C(0x{f["vram"]:08x}))) return;\n'
                           f'    recomp_fail({json.dumps(boundaries[key])}, UINT32_C(0x{f["vram"]:08x}));\n}}')
         elif key in hooks:

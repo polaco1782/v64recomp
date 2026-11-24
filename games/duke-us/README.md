@@ -1,6 +1,6 @@
 # Duke Nukem 64 US
 
-Original menus and first level with RT64 graphics, ABI1 audio and live input. Full-game progression remains unverified.
+Earlier RT64 builds reached the original menus and first level with ABI1 audio and live input. Full-game progression remains unverified.
 
 Single-player WASD/mouse controls are enabled by default. See the
 [controller guide](controller.md) for bindings, settings, ROM evidence and
@@ -29,8 +29,7 @@ to the minimum restores the original projection and visibility window. No FOV
 environment variable is read. Changes print the current value to the console.
 
 This works in Debug and Release independently of mouse capture. Multiplayer,
-orthographic HUD/menu calls retain native behavior. RT64 F7 aspect expansion
-is separate and can widen the displayed view further.
+orthographic HUD/menu calls retain native behavior.
 
 The verified `guPerspectiveF` wrapper updates both CPU float and GPU fixed
 projection paths. World billboards receive the same focal-length ratio as the

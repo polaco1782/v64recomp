@@ -38,8 +38,6 @@ void recomp_rdp_gles2_submit(RecompRDPGles2 *, const uint32_t *words, size_t cou
 bool recomp_rdp_gles2_ready(RecompRDPGles2 *, bool wait);
 void recomp_rdp_gles2_collect(RecompRDPGles2 *, uint64_t *elapsed_ns, uint64_t *cpu_ns);
 void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *, uint8_t *rdram, size_t ram_size, const uint32_t *words, size_t count);
-/* Extent of the final synchronized color image. */
-void recomp_rdp_gles2_readback_range(RecompRDPGles2 *, uint32_t *address, size_t *bytes);
 void recomp_rdp_gles2_present(RecompRDPGles2 *);
 bool recomp_rdp_gles2_capture(RecompRDPGles2 *, const char *path);
 bool recomp_rdp_gles2_input(RecompRDPGles2 *, RecompPad *);
@@ -47,7 +45,6 @@ void recomp_rdp_gles2_set_input_config(RecompRDPGles2 *, const RecompGles2InputC
 RecompMouseFrame recomp_rdp_gles2_mouse_frame(RecompRDPGles2 *);
 RecompCameraStick recomp_rdp_gles2_camera_stick(RecompRDPGles2 *);
 bool recomp_rdp_gles2_full_sync(RecompRDPGles2 *);
-uint64_t recomp_rdp_gles2_triangles(RecompRDPGles2 *);
 void recomp_rdp_gles2_set_framebuffer(RecompRDPGles2 *, uint32_t physical, uint32_t vi_status);
 void recomp_rdp_gles2_set_ram_scanout(RecompRDPGles2 *);
 void recomp_rdp_gles2_set_framebuffer_sizes(RecompRDPGles2 *, const RecompFramebufferSize *, size_t count);

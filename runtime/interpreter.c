@@ -580,7 +580,7 @@ static void verify_instruction(Runtime *rt, MipsContext *ctx, uint32_t sid, uint
     if (!read_word(rt, sid, pc, &w) || w != expected)
         recomp_fail("interpreted code changed during execution", pc);
     (void)ctx;
-    RECOMP_TRACE(rt, ctx, pc);
+    RECOMP_TRACE(ctx, pc);
 }
 
 static void execute(Runtime *rt, MipsContext *ctx, const Plan *p, uint32_t start, uint32_t sid, uint32_t ra) {

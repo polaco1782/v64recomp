@@ -139,7 +139,6 @@ def promote_observations(game, profile_path, profile, rom, build_dir, directory,
         return
     # Generate in isolation. A failed or interrupted trial cannot damage the
     # current build, profile or the observed evidence.
-    renderer = 'gles'
     before = {(f['section'], f['vram'], f['status']) for f in coverage['functions'] if f['selected']}
     accepted = []
 
@@ -148,7 +147,7 @@ def promote_observations(game, profile_path, profile, rom, build_dir, directory,
         with TemporaryDirectory(dir=build_dir, prefix='.cpu-observations-') as trial:
             trial = Path(trial)
             try:
-                generate(game, trial, False, renderer, observed=edges)
+                generate(game, trial, False, observed=edges)
                 symbols = json.loads((trial/'symbols.json').read_bytes())
                 result = json.loads((trial/'coverage.json').read_bytes())
                 after = {(f['section'], f['vram'], f['status']) for f in result['functions'] if f['selected']}

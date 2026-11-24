@@ -36,7 +36,7 @@ Raw discovery, without the explicit failing runtime boundaries:
 - A subsequent replay hit RT64's unsupported GPU reinterpretation assertion at
   about 33 seconds. Core `build/conker-us-debug/renderer.core` and GDB output
   `renderer-core.log` show a 64x64 CI8 framebuffer at physical `0x000de080`
-  read as 32x64 RGBA16, no TLUT. Conker's graphics adapter now selects RT64's
+  read as 32x64 RGBA16, no TLUT. That RT64 build selected the
   RAM-backed framebuffer-copy path, retaining packed-byte conversion and all
   renderer checks. Both modes build. Subsequent Debug replays passed this failure and the scene
   initializer, reaching the scene-update callback below.
@@ -292,11 +292,11 @@ first thread object `0x800318b0`; main `0x80031ae0`. Tick clock 46875000;
 VI period 781250. Timer sentinel `0x80042990`, list `0x8002bd70`, current time
 `0x800429b0`, base counter `0x800429b8`, VI count `0x800429bc`.
 
-`graphics.cpp` fingerprints the actual F3DEXBG.NoN program and initialized
+The retired `graphics.cpp` adapter fingerprinted the actual F3DEXBG.NoN program and initialized
 DMEM before binding its custom RT64 GBI. Text is ROM `0x36e90..0x38330`;
 DMEM `0x3f410..0x3fb90`. Earlier matching prefixes are a different variant.
-Ordinary F3DEX2/RDP operations use RT64; custom vertices, lighting, normals,
-coordinate modifiers and four-triangle commands use the game adapter.
+RT64 handled ordinary F3DEX2/RDP operations. The adapter handled custom
+vertices, lighting, normals, coordinate modifiers and four-triangle commands.
 
 `audio.h` fingerprints NAudio CBFD boot/text/data. Task type 2 uses the
 existing CBFD audio decoder. Its unused NULL yield buffer can retain size 0x400;

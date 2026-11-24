@@ -114,7 +114,6 @@ void recomp_gles2_flush(RecompRDPGles2 *s) {
         s->gl.DrawArrays(GL_TRIANGLES, 0, (GLsizei)s->batch_count);
 
     s->color_dirty = true;
-    s->triangles += s->batch_count / 3;
     s->batch_count = 0;
 }
 
@@ -469,7 +468,4 @@ void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size,
 }
 bool recomp_rdp_gles2_full_sync(RecompRDPGles2 *s) {
     return s->full_sync;
-}
-uint64_t recomp_rdp_gles2_triangles(RecompRDPGles2 *s) {
-    return s->triangles;
 }

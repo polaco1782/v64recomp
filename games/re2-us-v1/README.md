@@ -1,7 +1,7 @@
 # Resident Evil 2 US, revision 1
 
-Experimental native bring-up. The opening logos, warning, movie and title menu
-render on the desktop, and Start skips the movie. Gameplay, audible audio and
+Experimental native bring-up. The opening movie and title menu render on desktop GLES3.
+Some earlier startup frames show corrupted pixels. Start skips the movie. Gameplay, audible audio and
 saves are not yet accepted. This is the supplied `Resident Evil 2 (U) [!].z64`, whose
 header identifies **revision 1**, not revision 0 or a release named V1.1.
 
@@ -15,12 +15,12 @@ From the repository root:
 .venv/bin/python tools/import_rom.py --profile games/re2-us-v1/profile.toml \
   --rom '/path/to/Resident Evil 2 (U) [!].z64'
 python3 tools/build.py re2-us-v1 --debug
-./build/re2-us-v1-debug/bin/re2-us-v1 --frames 60
+./build/re2-us-v1-gles-debug/bin/re2-us-v1 --frames 60
 python3 tools/build.py re2-us-v1 --release
-./build/re2-us-v1-release/bin/re2-us-v1 --frames 60
+./build/re2-us-v1-gles-release/bin/re2-us-v1 --frames 60
 ```
 
-Use a desktop Vulkan session and a wall-time limit during investigation;
+Use a desktop GLES3 session and a wall-time limit during investigation;
 `--frames` counts host presentations, not game progress. Debug supports shared
 crash reports, `--trace-calls`, `--input`, `--capture-every` and `--wav`.
 Routine diagnostic output stays in Debug. Replay frames count host presentations.
@@ -42,9 +42,9 @@ controller mapping are unchanged. The original scene cameras and aiming are
 unchanged. Free mouse look and adjustable field of view are not provided because
 the fixed camera compositions are tied to their pre-rendered backgrounds.
 
-## Experimental GLES2 bring-up
+## GLES3 graphics
 
-The GLES2 profile binds the captured F3DEX.Rej FIFO
+The graphics profile binds the captured F3DEX.Rej FIFO
 and S2DEX FIFO task code and data to exact spans of the decoded `.main` image.
 Its bootstrap and overlay instructions are checked again during generation.
 The boot depth command uses a 512-pixel stride (including the immediate at
@@ -54,9 +54,10 @@ establish the game's full dynamic-resolution inventory.
 
 The video tasks write the movie and other software-generated images directly
 into guest RAM. GLES presents the active VI framebuffer from RAM so that
-writes between graphics tasks are visible. Native GLES Debug captures show
-the opening movie and the title menu. Both native configurations completed
-1,200 presentations.
+writes between graphics tasks are visible. A 2,600-presentation Debug run with default GLES3 settings
+captured distinct movie scenes and the title menu. Some earlier startup
+frames were scrambled in guest framebuffer RAM. Release completed 1,200
+presentations.
 
 ```sh
 python3 tools/build.py re2-us-v1 --debug --gles
@@ -118,12 +119,9 @@ the overwritten slot, and enables the patched variant only after its complete
 hash matches. The original translated patch loop still runs. Other enemy
 overlays and module records remain incomplete.
 
-F3DEX.Rej and other graphics lists reach RT64; their zero `data_size` is
-permitted because F3DEX follows list terminators. Native video tasks authenticate
-the complete boot and executable microcode plus their vector constants and
-validate every input/output span before writing. RE2 selects original-rate VI
-presentation: early presentation depends on graphics full-sync events and would
-miss CPU/RSP-produced framebuffer updates during the logos and movies.
+The graphics tasks run the checked F3DEX.Rej and S2DEX RSP programs. Native
+video tasks authenticate the boot and executable microcode and vector constants,
+then validate the input and output spans before writing the decoded frame.
 
 `video_dsp.c` supplies integer resize, YCbCr conversion and frame blending. Resize preserves
 fractional strip offsets, vector rounding, dithering and the RSP's output-DMEM

@@ -52,7 +52,7 @@ completes. ROM offsets are retained for asset and audio sample DMA.
 A synthetic IPL thread uses `0x807ff000` temporarily and is destroyed on
 mainproc's first SDK call, before game allocation can reuse its storage.
 Both configurations share the parent-folder runtime adapter and use the core
-failure reporter. RT64 is reused from the shared renderer build.
+failure reporter.
 
 `profile.toml` is the single complete configuration. Checked jump tables bind
 instruction words, table bytes and lengths established from the bounds checks.

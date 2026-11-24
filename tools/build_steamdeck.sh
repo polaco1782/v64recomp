@@ -4,9 +4,9 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: tools/build_steamdeck.sh [GAME] [JOBS] [gles]
+Usage: tools/build_steamdeck.sh [GAME] [JOBS]
 
-Defaults: oot-us-v12, 4 jobs, GLES. Supports Podman, Docker and Bubblewrap.
+Defaults: oot-us-v12, 4 jobs. Supports Podman, Docker and Bubblewrap.
 Outputs: build/steamdeck/GAME-gles/package and GAME-steamdeck.tar.gz
 Set CONTAINER_ENGINE=podman, docker or bwrap to select the engine.
 Automatic selection tries Podman, Docker, then Bubblewrap.
@@ -14,11 +14,9 @@ The package excludes ROMs and existing saves; see docs/steamdeck.md.
 EOF
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
-if (( $# > 3 )); then usage >&2; exit 2; fi
+if (( $# > 2 )); then usage >&2; exit 2; fi
 game=${1:-oot-us-v12}
 jobs=${2:-4}
-renderer=${3:-gles}
-if [[ $renderer != gles ]]; then usage >&2; exit 2; fi
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 if [[ ! $game =~ ^[a-z0-9]+(-[a-z0-9]+)*$ || ! -f $root/games/$game/profile.toml ]]; then
     printf 'Unknown game: %s\n' "$game" >&2; exit 2

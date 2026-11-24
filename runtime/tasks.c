@@ -365,7 +365,7 @@ void recomp_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
 static void yield_on_host(Runtime *rt, void *opaque) {
     MipsContext *ctx = opaque;
     RecompTasks *t = tasks(rt);
-    /* Supported HLE tasks finish at a whole-list boundary. Deliver their queued
+    /* Supported tasks finish at a whole-list boundary. Deliver their queued
      * completions before deciding whether a backend yield is still needed. */
     poll_tasks(rt);
     if (tasks(rt)->active) {

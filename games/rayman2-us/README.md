@@ -87,7 +87,7 @@ python3 tools/build.py rayman2-us --debug
 ```
 
 Use `python3 tools/build.py rayman2-us --release` for Release. Both modes use
-the parent-folder adapter, shared runtime, RT64 build and crash reporter. The
+the parent-folder adapter, shared runtime, GLES3 renderer and crash reporter. The
 default Controller Pak image is `local/saves/rayman2-us.mpk`; `--save FILE`
 selects another image. ROMs, saves and renderer data remain under ignored `local/`.
 

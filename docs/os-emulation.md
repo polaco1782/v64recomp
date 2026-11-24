@@ -79,9 +79,10 @@ retrace, device completion or message send can wake the receiver; it resumes
 its existing call stack when scheduled. Returning immediately from every OS
 call would break this synchronization and change the game's behavior.
 
-Graphics HLE parsing and audio DSP run synchronously on the owner while the
-guest is parked. They use live RAM and finish their output writes before queuing
-SP/DP completion events. GLES rendering and SDL playback remain asynchronous.
+The owner executes compiled graphics and audio RSP programs against live RAM
+while the guest is parked. A graphics task hands its RDP command buffer to the
+GLES render thread before SP completion. The owner publishes framebuffer writes
+before DP completion for a full sync. SDL playback runs asynchronously.
 AI buffer timing and completion are modeled by the runtime. SDL sound-device
 progress does not determine guest AI completion.
 

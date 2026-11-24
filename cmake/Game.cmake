@@ -1,7 +1,4 @@
 # Only the selected game is generated and compiled. Python is a build dependency.
-if(TARGET recomp_rdp_gles2 AND NOT RECOMP_GAME_GLES2_SUPPORTED)
-    message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES graphics path.")
-endif()
 set(RECOMP_GAME_DIR "${CMAKE_SOURCE_DIR}/games/${RECOMP_GAME}")
 if(NOT DEFINED RECOMP_OPTIMIZE_DEBUG_DEFAULT)
     set(RECOMP_OPTIMIZE_DEBUG_DEFAULT OFF)
@@ -127,7 +124,6 @@ if(RECOMP_EMBED_ROM)
     endif()
 endif()
 target_include_directories(${RECOMP_GAME} PRIVATE "${RECOMP_GENERATED}" "${RECOMP_GAME_DIR}")
-target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_WITH_AUDIO)
 if(MSVC)
     # Translated MIPS intentionally narrows register values and retains labels
     # and unreachable delay-slot tails. Keep warnings enabled for handwritten code.

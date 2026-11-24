@@ -150,8 +150,6 @@ int main(int argc, char **argv) {
                         "Banjo IO/task initialization failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Banjo-Kazooie");
     recomp_game_require(renderer != NULL, "Banjo renderer initialization failed", 0);
-    /* Preserve the game's steady 30 Hz output. Automatic 60 Hz matching
-     * presents the logo's interpolated frames in uneven pairs. */
     banjo_controls_init(&rt, renderer);
     rt.prepare_call = prepare_call;
     rt.canonical_function_address = activate_image;

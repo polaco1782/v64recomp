@@ -310,7 +310,7 @@ typedef struct RecompTaskStats {
 bool recomp_tasks_init(Runtime *, const RecompTaskBackend *);
 void recomp_tasks_destroy(Runtime *);
 /* Optional owner services finish deferred backend work before events are emitted.
- * wait=true drains it during shutdown/load/yield. Built-in HLE is synchronous. */
+ * wait=true drains it during shutdown/load/yield. Compiled RSP execution is synchronous. */
 bool recomp_task_service_add(Runtime *, void (*service)(Runtime *, void *, bool), void *);
 void recomp_task_service_remove(Runtime *, void *);
 void recomp_task_services_flush(Runtime *);

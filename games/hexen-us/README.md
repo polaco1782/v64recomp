@@ -47,8 +47,7 @@ is read. The setting works independently of mouse capture in Debug and Release.
 The current value is printed to the console when it changes.
 
 The override targets the world projection; the intro's separate perspective
-and orthographic HUD/automap retain their original calls. RT64's F7 aspect
-expansion is separate and can widen the displayed view further.
+and orthographic HUD/automap retain their original calls.
 
 The full bodies at `0x800559f0` (`guPerspective`) and `0x803bba90` (CPU
 angle-to-screen setup) remain wrapped with their originals retained. The
@@ -92,8 +91,7 @@ python3 tools/build.py hexen-us --debug --gles
 
 GLES2 compiles the checked F3DEX 1.21 and L3DEX 1.21 RSP programs directly
 from the pinned ROM, including their IMEM overlays. The stock RGBA16 buffers
-are 320×240; the game still sets its original VI mode. RT64 retains its
-separate custom line handler.
+are 320×240; the game still sets its original VI mode.
 
 The Debug GLES2 build completed a 1,200-frame startup smoke and a 2,600-frame
 replay offscreen in an OpenGL ES 2.0 context. Captures show startup logos and

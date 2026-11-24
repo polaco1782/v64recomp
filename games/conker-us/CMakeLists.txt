@@ -1,6 +1,5 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/conker.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/conker-us.eeprom")
-set(RECOMP_GAME_GLES2_SUPPORTED ON)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 if(EMSCRIPTEN)
     target_compile_options(${RECOMP_GAME} PRIVATE --use-port=zlib)

@@ -9,21 +9,6 @@ extern "C" {
 #endif
 
 #ifdef RECOMP_DEBUG
-typedef struct RecompDebugAudioStats {
-    uint64_t tasks, synth_ns, underruns;
-    double queue_ms;
-    bool available, playback, device_open;
-} RecompDebugAudioStats;
-
-typedef struct RecompDebugStats {
-    uint64_t ops, interrupt_events, vis, rsp_tasks;
-    size_t pending_tasks;
-    unsigned threads, runnable, waiting;
-    RecompDebugAudioStats audio;
-} RecompDebugStats;
-/* Snapshot only while owning the serialized guest execution token. */
-RecompDebugStats recomp_debug_stats(Runtime *);
-
 /* All logging arguments and counters disappear from release builds. Counters
  * belong to each call site and host thread; guest pthreads execute serially. */
 void recomp_debug_log(const char *category, const char *format, ...)

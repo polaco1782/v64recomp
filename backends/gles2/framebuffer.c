@@ -280,14 +280,6 @@ void recomp_gles2_readback_color(RecompRDPGles2 *s) {
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
 }
 
-void recomp_rdp_gles2_readback_range(RecompRDPGles2 *s, uint32_t *address, size_t *bytes) {
-    recomp_gles2_require_owner(s);
-    *address = s->full_sync ? s->color_address : 0;
-    *bytes = (s->full_sync && s->color_image_set)
-                 ? (size_t)(s->surface->width / s->render_scale) * (s->surface->height / s->render_scale) *
-                       (1u << (s->color_siz - 1))
-                 : 0;
-}
 void recomp_rdp_gles2_set_framebuffer(RecompRDPGles2 *s, uint32_t address, uint32_t vi_status) {
     recomp_gles2_require_owner(s);
     s->present_address = address;

@@ -128,13 +128,16 @@ flowchart TD
     OS --> SP["Submit supported graphics or audio task<br/>One active SP task<br/>Park guest for owner processing"]
     RAM --> SP
     SP --> Kind{"Task type"}
-    Kind -->|Graphics| Video["Owner: compiled graphics RSP<br/>Readbacks use live RAM"]
-    Kind -->|Audio| Audio["Owner: validate microcode and DSP commands<br/>Synthesize PCM in live RAM"]
-    Video --> GPU["RDP render queue<br/>GLES GPU → window"]
-    Video --> Merge["HLE returns with output in live RAM<br/>Queue task completion receipts"]
+    Kind -->|Graphics| Video["Run compiled graphics RSP<br/>Emit RDP commands"]
+    Kind -->|Audio| Audio["Run compiled audio RSP<br/>Write PCM to live RAM"]
+    Video --> GPU["Render thread<br/>Draw RDP commands using GLES3"]
+    Video --> Merge["Queue SP completion"]
     Audio --> Merge
+    GPU -->|Collect writes after full sync| DP["Queue DP completion"]
+    DP --> Events
     Merge --> Events["Post applicable device completion events<br/>SP/DP, PI, SI and AI messages"]
-    Merge --> RAM
+    Audio --> RAM
+    DP --> RAM
     RAM --> AI["Game queues PCM through native AI service<br/>Two-entry FIFO and guest-clock timing"]
     AI --> PCM["Main-thread PCM sink<br/>SDL buffering → speakers<br/>Optional WAV capture"]
     AI -->|"Guest buffer consumed"| Events
@@ -169,8 +172,9 @@ flowchart LR
         SDL["SDL window and controller events<br/>PCM queue admission and frame pacing"]
         Host["Run scheduler and host callbacks<br/>Poll timers, devices and task receipts"]
         Dispatch["Pick highest-priority ready guest<br/>Resume its fiber"]
-        Submit["Validate task and reserve SP<br/>Execute HLE synchronously using live RAM"]
+        Submit["Validate task and reserve SP<br/>Run compiled RSP on live RAM"]
         Commit["Poll queued SP/DP receipts<br/>Publish completion messages"]
+        Present["Present completed frame to window"]
         SDL --> Host
         Host --> Dispatch
         Host --> Submit
@@ -189,15 +193,14 @@ flowchart LR
     end
     end
     subgraph Renderer["GLES render thread and GPU"]
-        Render["Workload/render queues<br/>Rendering and supporting workers"]
-        Present["Present completed frame to window"]
-        Render --> Present
+        Render["Draw submitted RDP command buffer"]
     end
     Dispatch -->|"Select one"| Game
     Dispatch -->|"Select one"| Sound
     Return --> Host
     Callback -->|"Owner executes; guest then resumes"| Host
     Submit -->|"Captured graphics inputs"| Render
+    Render -->|"Collect finished work"| Present
     Park -. "Message, start or wake makes eligible" .-> Dispatch
 ```
 
@@ -227,7 +230,7 @@ sequenceDiagram
     Note over A: Native stack and MipsContext remain intact
     H->>B: Resume next ready guest fiber
     B->>H: Submit task through recomp_on_host; park B
-    H->>H: Process HLE using live RAM; queue completion
+    H->>H: Run compiled RSP on live RAM and queue SP completion
     H-->>B: Owner callback returns; resume B
     B->>H: Block or reach checkpoint yield
     H->>H: Poll queued task receipts
@@ -237,7 +240,7 @@ sequenceDiagram
     A->>A: Original receive completes; continue same call stack
 ```
 
-This example uses a queued HLE completion to satisfy the receive. Timer, VI, PI,
+This example uses a queued SP completion to satisfy the receive. Timer, VI, PI,
 SI and AI events or another guest's queue send can also wake a receiver. A full
 queue can similarly park a blocking sender until space becomes available.
 
@@ -245,19 +248,17 @@ queue can similarly park a blocking sender until space becomes available.
 
 | Execution context | Work and concurrency |
 | --- | --- |
-| Main stack on owner OS thread | Runs SDL, scheduling, graphics HLE and audio DSP while guest fibers are suspended. |
+| Main stack on owner OS thread | Runs SDL, scheduling, presentation and compiled RSP programs while guest fibers are suspended. |
 | One guest fiber on owner OS thread | Executes translated game code; the main stack and other guest fibers are suspended. |
-| GLES render thread and GPU | Render and present captured workload data independently; can overlap guest CPU execution without accessing live guest RAM. |
+| GLES render thread and GPU | Draw submitted RDP commands. Drawing can overlap guest CPU execution using captured inputs. |
 | SDL audio device thread | Consumes queued host PCM independently; does not drive guest AI completion timing. |
 
-The SP service allows one active task. HLE writes live RAM before queuing
-completion receipts; polling delivers SP before DP. Split lists without full
-sync retire after SP. A whole-list HLE call cannot be suspended midway through
-processing; a late yield polls its queued completion first.
+The SP service allows one active task. Polling delivers SP completion before
+DP completion. Lists without full sync retire after SP. A late yield polls the
+queued completion first.
 
 Shutdown finishes pending rendering, destroys backends before the runtime and releases
-guest fiber stacks. HLE failures occur directly on the owner
-and use the shared crash reporter. See [native threading](threading.md) and
+guest fiber stacks. RSP execution failures use the shared crash reporter. See [native threading](threading.md) and
 [audio](audio.md) for memory ownership and buffering.
 
 ## Investigation and validation loop

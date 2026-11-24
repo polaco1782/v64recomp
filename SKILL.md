@@ -460,8 +460,8 @@ Pay particular attention to these runtime boundaries:
 
 ## 6. Establish playable acceptance, then check shared regressions
 
-Use the real X11/Xwayland desktop and Vulkan renderer. Headless boot or successful
-Vulkan initialization cannot establish rendered gameplay. If desktop access is
+Use the real X11/Xwayland desktop and GLES3 renderer. Headless boot or successful
+GLES3 initialization cannot establish rendered gameplay. If desktop access is
 unavailable, continue independent work and report that acceptance gap explicitly.
 
 Verify title/menu navigation, starting play, visible scene updates, movement and

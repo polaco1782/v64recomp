@@ -2,7 +2,7 @@
 
 This target recompiles Peter "krom" Lemon's 320x240, 8-bit grayscale LZSS/RLE
 video demo. The MIPS video decoder and movie loop execute as generated native C;
-the adapter handles direct PI/AI/VI/DPC hardware accesses. RT64 executes the
+the adapter handles direct PI/AI/VI/DPC hardware accesses. The GLES3 backend draws the
 original raw RDP command list, and the shared SDL audio backend plays the ROM's
 stereo PCM stream. There is no RSP microcode or libultra thread manager in this ROM.
 

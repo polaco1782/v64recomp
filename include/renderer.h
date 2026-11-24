@@ -25,14 +25,6 @@ void recomp_renderer_set_framebuffer_sizes(RecompRenderer *, const RecompFramebu
 /* Present live VI memory for games that mix RDP output and software video. */
 void recomp_renderer_set_ram_scanout(RecompRenderer *);
 void recomp_gles2_configure_game(RecompRenderer *renderer);
-typedef struct RecompRendererStats {
-    uint64_t graphics_tasks, sp_callbacks, dp_callbacks, presentations;
-    uint64_t submit_ns, present_ns;
-    uint64_t rdp_triangles;
-    uint64_t graphics_tasks_without_dp;
-    /* Presented frames and time from first to last. */
-    uint64_t display_frames, display_elapsed_ns;
-} RecompRendererStats;
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
 void recomp_renderer_enable_texture_editor(bool enabled);
 void recomp_renderer_destroy(RecompRenderer *);
@@ -70,7 +62,6 @@ void recomp_renderer_gamepad_camera_mode(RecompRenderer *, bool enabled);
 RecompCameraStick recomp_renderer_camera_stick(RecompRenderer *);
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *);
 bool recomp_renderer_capture(RecompRenderer *, const char *ppm_path);
-RecompRendererStats recomp_renderer_stats(RecompRenderer *);
 #ifdef __cplusplus
 }
 #endif

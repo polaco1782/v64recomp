@@ -200,6 +200,7 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "RE2 IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Resident Evil 2");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_ram_scanout(renderer);
     recomp_renderer_wasd_stick(renderer, true);
     RecompAudioConfig audio_config = {
         .output_enabled = true, .playback = !options.mute, .task_profile = &re2_audio_profile};

@@ -1,7 +1,7 @@
 # Native threading
 
 See the [thread ownership graph and blocking-receive sequence](process-flow.md#thread-ownership-and-concurrency)
-for the scheduler, guest fibers, synchronous HLE and GLES presentation flow.
+for the scheduler, guest fibers, compiled RSP execution and GLES3 presentation flow.
 
 Each libultra thread has a stackful fiber, a native C stack and its own
 `MipsContext`. The scheduler resumes one fiber at a time on the main owner OS
@@ -104,12 +104,12 @@ Audio writes PCM and decoder state directly into live RAM before queuing SP
 completion. The scheduler delivers queued events in SP-before-DP order and
 can start the next audio task while GLES is drawing.
 
-Guest and HLE failures occur on the owner and use its shared crash reporter.
+Guest and RSP execution failures occur on the owner and use its shared crash reporter.
 Diagnostic unwinding stops at the guest fiber's entry stack boundary.
 Backends must be destroyed before the runtime. The host allocates the configured guest RDRAM size.
 
-The synchronous path removes snapshot copying, merge scanning and adapter-worker
-handoffs, but also removes CPU/HLE overlap. Compare equivalent settled scenes
+The guest CPU waits while the owner executes RSP microcode. GLES drawing can
+overlap subsequent guest CPU work. Compare equivalent settled scenes
 before claiming a gameplay improvement; see [CPU profiling](profiling.md).
 
 Build the shared services with `cmake -S . -B build/host -G Ninja

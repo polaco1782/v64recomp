@@ -74,7 +74,7 @@ angle to the console. This works independently of mouse capture.
 
 Native zoom ratios are preserved. The override applies to normal-family 3D
 gameplay cameras; fixed/prerendered backgrounds, dialog, pause and scripted
-cameras keep their original framing. RT64 F7 aspect expansion is separate.
+cameras keep their original framing.
 
 The adapter adjusts the view FOV after the original camera update, before the
 shared CPU/GPU view-projection matrices are built. It leaves the native camera

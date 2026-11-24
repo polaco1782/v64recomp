@@ -174,12 +174,12 @@ def load_generator(game):
     return generator
 
 
-def generate(game: str, output: Path, report_only: bool, renderer: str = "gles", *, observed=()) -> None:
+def generate(game: str, output: Path, report_only: bool, *, observed=()) -> None:
     with GenerationProgress(game) as progress:
-        _generate(game, output, report_only, progress, renderer, observed)
+        _generate(game, output, report_only, progress, observed)
 
 
-def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress, renderer: str, observed) -> None:
+def _generate(game: str, output: Path, report_only: bool, progress: GenerationProgress, observed) -> None:
     base = PROJECT/'games'/game
     profile = load_profile(base/'profile.toml')
     if observed:
@@ -197,7 +197,6 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
                      tools_dir / 'analysis' / 'inspect_function_candidates.py',
                      *base.glob('*.toml'),*base.glob('*.json'),*base.glob('*.py')])
     digest = hashlib.sha256(rom)
-    digest.update(renderer.encode())
     if observed:
         digest.update(json.dumps(observed, sort_keys=True).encode())
     for path in inputs:
@@ -256,7 +255,7 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     # CMake reconfigures when this source manifest changes.
     manifest='set(RECOMP_CPU_SOURCES\n'+''.join(f'    "{p.as_posix()}"\n' for p in sources)+')\n'
     rsp_sources = []
-    graphics_rsp = renderer == 'gles' and 'rsp' in original_profile.get('graphics', {})
+    graphics_rsp = 'rsp' in original_profile.get('graphics', {})
     audio_rsp = original_profile.get('audio', {}).get('rsp')
     images = None
     jpeg = original_profile.get('jpeg')
@@ -308,10 +307,9 @@ def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game',required=True,choices=GAMES)
     parser.add_argument('--output',required=True,type=Path)
-    parser.add_argument('--renderer',choices=('gles',),default='gles')
     parser.add_argument('--report-only',action='store_true')
     args=parser.parse_args()
-    try:generate(args.game,args.output.resolve(),args.report_only,args.renderer)
+    try:generate(args.game,args.output.resolve(),args.report_only)
     except (RecompError,OSError,ValueError,KeyError) as error:
         print(f'generation failed: {error}',file=sys.stderr);return 1
     return 0

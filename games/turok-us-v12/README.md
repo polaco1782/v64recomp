@@ -2,8 +2,8 @@
 
 Experimental native recompilation of the US header-revision-2 cartridge. CPU
 coverage is partial; undiscovered executable targets fail explicitly. Debug and
-Release build. Original startup, title/menu selection and first-person gameplay
-run through RT64 with controller input and ABI1 audio synthesis. Movement,
+Release build. Earlier RT64 builds reached startup, title/menu selection and
+first-person gameplay with controller input and ABI1 audio synthesis. Movement,
 firing, weapon selection, death/respawn and pause/resume have been exercised.
 Full-game progression, save/reload and audible quality remain unverified.
 
@@ -15,17 +15,10 @@ From the repository root, import your own ROM once:
 .venv/bin/python tools/import_rom.py --profile games/turok-us-v12/profile.toml \
   --rom '/path/to/Turok - Dinosaur Hunter (U) (V1.2).z64'
 python3 tools/build.py turok-us-v12 --release
-./build/turok-us-v12-release/bin/turok-us-v12
-```
-
-For desktop GLES2, build and launch with:
-
-```sh
-tools/build.py turok-us-v12 --gles --release
 ./build/turok-us-v12-gles-release/bin/turok-us-v12
 ```
 
-GLES2 runs the recompiled F3DLX.NoN, F3DEX.NoN and L3DEX 1.00 graphics
+GLES3 runs the recompiled F3DLX.NoN, F3DEX.NoN and L3DEX 1.00 graphics
 programs from the verified RNC-decoded ROM image. A 2,850-presentation Debug
 replay reached first-person gameplay, displayed the automap and opened the
 pause menu.
@@ -116,8 +109,8 @@ as translated guest code.
   matched its method-1 decoder byte for byte. It is not a build dependency.
 
 - [PaxDino RT64 projection analysis](https://github.com/wootbeer/PaxDino/blob/1ccc166419539ac069b2cac32ae912798b39466e/lib-patches/rt64/0001-expand-exact-view-projection.patch)
-  identified the unstable decomposition calculation. Our independently implemented
-  correction chooses the largest axis as its division pivot. The local regression
+  identified the unstable decomposition calculation. The former renderer’s
+  correction chose the largest axis as its division pivot. The local regression
   failed against the original pinned RT64 code and passed at O0/O2 after correction.
 - [GLideN64 L3DEX decoder](https://github.com/gonetz/GLideN64/blob/master/src/uCodes/L3DEX.cpp)
   documents the line index/width encoding. The existing Hexen adapter supplied the

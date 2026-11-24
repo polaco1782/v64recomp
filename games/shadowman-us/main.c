@@ -151,7 +151,6 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "Shadow Man");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_wasd_stick(renderer, true);
-    /* Preserve the game's VI-driven timing for its buffered startup frames. */
     RecompAudioConfig ac = {
         .output_enabled = true, .playback = !options.mute, .task_profile = &shadowman_audio_task_profile};
     audio = recomp_game_audio_create(&rt, &ac);

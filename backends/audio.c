@@ -2,7 +2,6 @@
 #include "recomp_audio.h"
 #include "rsp.h"
 #include <SDL2/SDL.h>
-#include "runtime_debug.h"
 #include "timing.h"
 #ifdef __EMSCRIPTEN__
 #include <emscripten/threading.h>
@@ -212,22 +211,6 @@ static bool ai_start(Runtime *rt, void *opaque, uint32_t guest, unsigned bytes, 
     free(wav);
     return okay;
 }
-#ifdef RECOMP_DEBUG
-static void debug_audio_snapshot(void *opaque, RecompDebugAudioStats *out) {
-    RecompAudio *a = opaque;
-    owner(a);
-    /* Synthesis and this snapshot run on the owner with guest execution parked. */
-    *out = (RecompDebugAudioStats){.tasks = a->stats.tasks,
-                                   .synth_ns = a->stats.synth_ns,
-                                   .underruns = a->stats.queue_underruns,
-                                   .available = true,
-                                   .playback = a->playback && a->enabled,
-                                   .device_open = a->device && a->stats.frequency,
-                                   .queue_ms = a->device && a->stats.frequency ? SDL_GetQueuedAudioSize(a->device) *
-                                                                                     1000.0 / (a->stats.frequency * 4.0)
-                                                                               : 0.0};
-}
-#endif
 static void ai_pause(void *opaque, bool paused) {
     RecompAudio *a = opaque;
     owner(a);
@@ -278,10 +261,6 @@ RecompAudio *recomp_audio_create(Runtime *rt, const RecompAudioConfig *config) {
         free(a);
         return NULL;
     }
-#ifdef RECOMP_DEBUG
-    rt->debug_audio_userdata = a;
-    rt->debug_audio_snapshot = debug_audio_snapshot;
-#endif
     if (a->task_profile) {
         a->rsp = malloc(sizeof(*a->rsp));
         if (!a->rsp)
@@ -294,12 +273,6 @@ void recomp_audio_destroy(RecompAudio *a) {
     if (!a)
         return;
     owner(a);
-#ifdef RECOMP_DEBUG
-    if (a->rt->debug_audio_userdata == a) {
-        a->rt->debug_audio_snapshot = NULL;
-        a->rt->debug_audio_userdata = NULL;
-    }
-#endif
     (void)recomp_ai_set_output(a->rt, NULL);
     if (a->device)
         SDL_CloseAudioDevice(a->device);

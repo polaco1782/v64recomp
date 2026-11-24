@@ -213,7 +213,6 @@ struct RecompRDPGles2 {
     float viewport[4], primitive_depth;
     unsigned scissor[4];
     bool full_sync, started;
-    uint64_t triangles;
 };
 GLuint recomp_gles2_shader(RecompRDPGles2 *, GLenum type, const char *source);
 GLuint recomp_gles2_shader_parts(RecompRDPGles2 *, GLenum, const char *const *, GLsizei);

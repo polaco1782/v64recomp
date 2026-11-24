@@ -8,11 +8,7 @@ exercised, but later levels and a complete playthrough remain unverified. This
 is still an incomplete port.
 
 Both configurations use native frame timing and VI-driven presentation. The
-game's custom VI mode starts at framebuffer row zero, whereas RT64 estimates
-the framebuffer base by subtracting a scanline. The shared renderer normalizes
-its VI snapshot using the OS swap address for this case. This avoids displaying
-an offset RAM fallback instead of the rendered GPU image; guest VI state is
-preserved. Loading can still take a while, and loading/HUD images retain visible
+game's custom VI mode starts at framebuffer row zero. Loading can still take a while, and loading/HUD images retain visible
 grain that has not been established as matching original hardware.
 
 The checked profile covers menu callbacks, sound-ID remapping, animation events

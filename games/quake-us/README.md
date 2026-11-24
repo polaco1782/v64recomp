@@ -23,8 +23,7 @@ Keypad `+` / `-` adjusts horizontal FOV live from the original **90 degrees** to
 **140 degrees**, one degree per keydown with hold-to-repeat. Each launch starts
 at the original FOV; lowering to the minimum restores it exactly. No FOV
 environment variable is read. CPU clip planes expand with the GPU projection;
-native depth and camera transformations remain intact. RT64 F7 expansion is
-independent of this 4:3 FOV setting.
+native depth and camera transformations remain intact.
 
 The [controller and camera guide](controller.md) records exact ROM addresses,
 ABI/field evidence, input timing and visibility behavior. ROM discovery and

@@ -614,7 +614,7 @@ def emit_function(function: dict, instructions: list[Instruction], registry: dic
         direct_targets = direct_call_targets(registry, hooks)
 
     def location(pc: int, indent: str = '    ') -> str:
-        return f"{indent}RECOMP_TRACE(runtime, ctx, UINT32_C(0x{pc:08x}));"
+        return f"{indent}RECOMP_TRACE(ctx, UINT32_C(0x{pc:08x}));"
 
     def emit_body(instruction: Instruction, indent: str = '    ',
                   ram_offset: str | None = None) -> list[str]:

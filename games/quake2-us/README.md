@@ -1,6 +1,6 @@
 # Quake II US revision 0
 
-The port uses the original cartridge code, RT64 graphics, standard NAudio and
+The port uses the original cartridge code, GLES3 graphics, standard NAudio and
 **8 MiB of RDRAM with the Expansion Pak enabled**. The cartridge's startup screen
 confirms “Expansion Pak detected. Features enabled.” Full-game progression is
 not yet validated. Debug and Release build, the bounded Debug replay reaches
@@ -19,7 +19,7 @@ works well in gameplay.
 ## Adjustable field of view
 
 Keypad **+ / −** adjusts the horizontal field of view from the original 90°
-to 140° in active single-player gameplay, on RT64 or GLES2. The setting is
+to 140° in active single-player gameplay. The setting is
 independent of mouse capture and starts at stock each launch. Returning to
 the minimum uses the original projection and culling path unchanged. Menus,
 demos and other viewports use the cartridge's original path.
@@ -72,18 +72,15 @@ RAM snapshots are under `local/crashes/quake2-us/`.
 
 Quake II defaults to **optimized Debug** (`RECOMP_OPTIMIZE_DEBUG=ON`). The
 translated CPU, runtime, audio and renderer adapter use compiler optimization
-while retaining `RECOMP_DEBUG`, instruction counters, checked guest memory,
-the overlay, captures, assertions, debug symbols and the matching Debug CRT.
-RT64 uses its shared release-optimized build with symbols. MSVC iterator tracking
-is disabled by default for all games, including Debug; the user confirmed a
-substantial improvement in Quake II's larger scenes after this change.
+while retaining checked guest memory, captures, assertions, debug symbols and
+the matching Debug CRT.
 
 Optimized source stepping can skip lines or hide locals. For unoptimized
 stepping, configure the same build directory with
 `-DRECOMP_OPTIMIZE_DEBUG=OFF`, then rebuild. MSVC's `/RTC` compiler checks are
 disabled in optimized Debug because they conflict with `/O2`; project-level
 guest validation and crash diagnostics remain enabled. Changing this option
-rebuilds the game and its local runtime/backends, not the shared RT64 cache.
+rebuilds the game and its local runtime and backends.
 `--trace-calls` enables the shared core trace and prints every guest call
 and can substantially slow the game.
 
@@ -133,8 +130,7 @@ Callback groups include:
   index, reads `{first,last,frames,endfunc}`, and invokes `{ai,distance,think}`
   records at stride 12. The reviewed arrays contain 143 move descriptors.
 
-The graphics task uses the cartridge microcode at `0x80062320`; it runs through
-the existing RT64 adapter. The audio task uses boot/code/data at
+The graphics task runs the recompiled cartridge microcode at `0x80062320`. The audio task uses boot/code/data at
 `0x80060e20` / `0x800636f0` / `0x8006e2e0`, with exact task descriptors and hashes
 in `audio.h`. Standard NAudio opcode 14 is a volume-rate update, which differs
 from the filter in the existing MP3 and Conker modes.

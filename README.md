@@ -6,7 +6,10 @@ v64recomp rebuilds N64 games as native Windows and Linux applications. Bring you
 own ROM, build the game, and settle in with a wider view, familiar controls and
 a few comforts that weren't around in the cartridge days.
 
-All 24 targets have a [browser build](docs/webassembly.md) that loads the matching ROM on page open.
+Graphics tasks run the game's own recompiled Reality Signal Processor (RSP)
+microcode. The **OpenGL ES 3.0 (GLES3)** backend draws the resulting commands
+on desktop. All 24 targets also have a [browser build](docs/webassembly.md)
+that uses WebGL 2 and loads the matching ROM on page open.
 
 | Make it yours | What you can do |
 | --- | --- |
@@ -22,7 +25,7 @@ All 24 targets have a [browser build](docs/webassembly.md) that loads the matchi
 
 ![Ocarina of Time's title screen rendered in an ultrawide window by v64recomp and RT64](docs/screenshots/zelda-wide.png)
 
-*Ocarina of Time, captured from the native build with RT64 widescreen expansion.*
+*Ocarina of Time, captured from an earlier RT64 build.*
 
 This is an active porting project. Some games already reach playable levels;
 others are still at their first menus. The [game notes](docs/status.md) explain
@@ -76,7 +79,7 @@ fallback.
 | Perfect Dark | [Opt-in WASD and first-person mouse-look](games/perfectdark-us-v11/README.md#desktop-controls-and-field-of-view) | [Original → 140°](games/perfectdark-us-v11/README.md#desktop-controls-and-field-of-view) |
 
 See the [per-ROM coverage and validation matrix](docs/desktop-coverage.md)
-for pad-only mappings, GLES2 checks and outstanding camera work.
+for pad-only mappings, renderer checks and outstanding camera work.
 
 **FOV** means field of view: how much of the world you can see at once. In the
 games listed with FOV controls, use **keypad + / −** to change the horizontal
@@ -500,7 +503,7 @@ VS Code build/launch entries, the Visual Studio `bad-apple` project, or:
 ```sh
 # Linux
 python3 tools/build.py bad-apple --release
-./build/bad-apple-release/bin/bad-apple
+./build/bad-apple-gles-release/bin/bad-apple
 ```
 
 See the [demo notes](games/bad-apple/README.md) for its source, download behavior,
@@ -525,10 +528,35 @@ inventories, translates MIPS instructions into C11, and compiles the generated
 code into a native executable. Game logic runs as compiled host code while the
 ROM supplies its original assets and data.
 
-The shared runtime implements the OS and device behavior the game expects:
-thread scheduling, message queues, timers, input, saves and task completion.
-Verified OS/library routines call native handlers. The graphics RSP produces commands for the GLES renderer;
-the native audio backend processes supported sound tasks and sends PCM to SDL.
+The shared runtime handles thread scheduling, message queues, timers, input,
+saves and task completion. Verified OS and library routines call native handlers.
+Supported audio tasks run their own compiled RSP programs, and SDL plays the PCM output.
+
+### From a display list to a frame
+
+In graphics high-level emulation (HLE), a host implementation recognizes a
+microcode's display-list commands and supplies their behavior. v64recomp
+recompiles the RSP program that gives those commands their meaning. This lets
+the game's own instructions handle details such as custom vertex formats,
+lighting and clipping.
+
+1. **At build time**, the game profile identifies the graphics microcode in
+   the verified ROM, including known code overlays. The generator translates
+   its RSP instructions into C11 and the host compiler builds them into the game.
+2. **When the game submits a graphics task**, the runtime matches the task's
+   code and data fingerprints to the profile. The compiled RSP program reads
+   the display list and game data from N64 memory and emits commands for the
+   Reality Display Processor (RDP). An unknown microcode stops the task.
+3. **The GLES3 backend draws those RDP commands.** It decodes triangles and
+   rectangles, reads textures and palettes from N64 texture memory, and uses
+   shaders for the RDP color combiner. A render thread draws into framebuffers
+   while the game can continue on the CPU. The video interface selects the
+   image for presentation. Desktop GLES3 and browser WebGL 2 share the shaders.
+
+Some programs feed the RDP directly. For example, the Bad Apple demo submits
+raw RDP commands to this same backend. Resident Evil 2 also writes its software
+video frames into guest RAM, which the renderer can present directly.
+See the [RSP execution and GLES3 renderer notes](docs/armv8-gles2.md).
 
 The technical documentation covers each part:
 
@@ -539,7 +567,7 @@ The technical documentation covers each part:
 - [MIPS code expansion and native efficiency](docs/code-expansion.md): measured size ratios, a MIPS → C → x86-64 example and compiler optimizations.
 - [OS emulation and native calls](docs/os-emulation.md): why OS support is needed, which calls are replaced and how guest behavior is preserved.
 - [Native hook recognition](docs/native-hooks.md): ROM fingerprints, game-specific overrides and guarded direct calls.
-- [Thread scheduling and HLE](docs/threading.md): priorities, blocking, synchronous task processing and asynchronous rendering/playback.
+- [Thread scheduling and task execution](docs/threading.md): priorities, blocking, synchronous task processing and asynchronous rendering/playback.
 - [Audio processing](docs/audio.md): native DSP tasks, AI timing and SDL playback.
 - [Floating-point semantics](docs/fpu.md): guest rounding, exceptions and host arithmetic.
 
