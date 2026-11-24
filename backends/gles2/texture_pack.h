@@ -1,5 +1,6 @@
 #ifndef RECOMP_GLES2_TEXTURE_PACK_H
 #define RECOMP_GLES2_TEXTURE_PACK_H
+#include "tile.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -9,6 +10,10 @@ extern "C" {
 #endif
 
 typedef struct Gles2TexturePack Gles2TexturePack;
+typedef struct Gles2RiceWord {
+    uint64_t load;
+    uint16_t nibbles;
+} Gles2RiceWord;
 typedef struct Gles2PackImage {
     uint8_t *pixels;
     unsigned width, height;
@@ -18,13 +23,24 @@ enum { GLES2_TEXTURE_MAX_PNG_BYTES = 16 * 1024 * 1024 };
 Gles2TexturePack *gles2_texture_pack_open(const char *zip, const char *overrides, const char *rom_title);
 void gles2_texture_pack_close(Gles2TexturePack *pack);
 bool gles2_texture_pack_enabled(const Gles2TexturePack *pack);
+bool gles2_texture_pack_has_rice(const Gles2TexturePack *pack);
+void gles2_texture_pack_record_load(Gles2TexturePack *pack, uint64_t serial, const Tile *tile, uint32_t w0, uint32_t w1,
+                                    unsigned image_width, unsigned image_size, const TextureTransfer *dma,
+                                    const uint8_t *ram, size_t ram_size, uint32_t address);
 bool gles2_texture_rt64_id(const uint8_t *tmem, unsigned format, unsigned size, unsigned line, unsigned address,
                            unsigned palette, unsigned tlut, unsigned width, unsigned height, uint64_t *id);
-bool gles2_texture_pack_image(Gles2TexturePack *pack, uint64_t id, unsigned width, unsigned height, unsigned limit,
-                              Gles2PackImage *image);
+typedef struct Gles2PackTile {
+    uint64_t hash, id;
+    unsigned width, height;
+    bool has_id;
+} Gles2PackTile;
+typedef enum Gles2PackStatus { GLES2_PACK_MISS, GLES2_PACK_INCOMPLETE, GLES2_PACK_PENDING } Gles2PackStatus;
+Gles2PackStatus gles2_texture_pack_request(Gles2TexturePack *pack, Gles2PackTile key, const Tile *tile, unsigned tlut,
+                                           const Gles2RiceWord words[512], unsigned limit);
+bool gles2_texture_pack_take(Gles2TexturePack *pack, Gles2PackTile *key, Gles2PackImage *image);
 void gles2_texture_pack_free_image(Gles2PackImage *image);
 bool gles2_texture_decode_png(const uint8_t *bytes, size_t count, unsigned width, unsigned height, unsigned limit,
-                             Gles2PackImage *image);
+                              Gles2PackImage *image);
 
 #ifdef __cplusplus
 }

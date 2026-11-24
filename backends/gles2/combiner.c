@@ -2,15 +2,20 @@
 #include <stdio.h>
 
 GLuint recomp_gles2_shader(RecompRDPGles2 *s, GLenum type, const char *text) {
+    return recomp_gles2_shader_parts(s, type, &text, 1);
+}
+GLuint recomp_gles2_shader_parts(RecompRDPGles2 *s, GLenum type, const char *const *parts, GLsizei count) {
     GLuint id = s->gl.CreateShader(type);
-    s->gl.ShaderSource(id, 1, &text, NULL);
+    s->gl.ShaderSource(id, count, parts, NULL);
     s->gl.CompileShader(id);
     GLint ok;
     s->gl.GetShaderiv(id, GL_COMPILE_STATUS, &ok);
     if (!ok) {
         char log[4096];
         s->gl.GetShaderInfoLog(id, sizeof(log), NULL, log);
-        fprintf(stderr, "%s\n%s\n", log, text);
+        fprintf(stderr, "%s\n", log);
+        for (int i = 0; i < count; i++)
+            fprintf(stderr, "%s\n", parts[i]);
         recomp_fail("GLES2 shader compilation failed", 0);
     }
     return id;
@@ -64,7 +69,7 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
     char fs[8192];
     int pos =
         snprintf(fs, sizeof(fs),
-                 "#version 300 es\nprecision highp float;out vec4 outputColor;"
+                 "#version 300 es\nprecision highp float;layout(location=0) out vec4 outputColor;%s"
                  "in vec4 shade;in vec2 texcoord;in float fogfactor;in float invw;uniform vec4 "
                  "prim,env,fogc;uniform "
                  "float lod,alphatest,coverageAlpha,fogen,rdpPerspective;"
@@ -81,7 +86,8 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
                  "vec2 dx=dFdx(sourceUV),dy=dFdy(sourceUV);"
                  "vec4 t0=textureGrad(tex0,coord(sourceUV,dim0,origin0,wrap0),dx*dim0.zw/dim0.xy,dy*dim0.zw/dim0.xy);"
                  "vec4 t1=textureGrad(tex1,coord(sourceUV,dim1,origin1,wrap1),dx*dim1.zw/dim1.xy,dy*dim1.zw/dim1.xy);"
-                 "float noise=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5);vec4 combined=vec4(0.0);");
+                 "float noise=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5);vec4 combined=vec4(0.0);",
+                 s->screen_effects ? "layout(location=1) out vec4 sceneDepth;uniform bool recordDepth,blended;" : "");
     if (cycle == 2) {
         pos += snprintf(fs + pos, sizeof(fs) - (size_t)pos, "combined=t0;");
         p->texture[0] = true;
@@ -114,8 +120,13 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
     }
     snprintf(fs + pos, sizeof(fs) - (size_t)pos,
              "if(%s<alphatest||combined.a<coverageAlpha)discard;"
-             "combined.rgb=mix(combined.rgb,fogc.rgb,clamp(fogfactor*fogen,0.0,1.0));outputColor=combined;}",
-             cycle == 1 ? "compareAlpha" : "combined.a");
+             "combined.rgb=mix(combined.rgb,fogc.rgb,clamp(fogfactor*fogen,0.0,1.0));outputColor=combined;%s}",
+             cycle == 1 ? "compareAlpha" : "combined.a",
+             s->screen_effects ? "float z=recordDepth ? 1.0+round(gl_FragCoord.z*16777214.0) : 0.0;"
+                                 "vec3 bytes=vec3(floor(z/65536.0),mod(floor(z/256.0),256.0),mod(z,256.0));"
+                                 "float replace=(!blended || combined.a>=(recordDepth ? 0.95 : 0.05)) ? 1.0 : 0.0;"
+                                 "sceneDepth=vec4(bytes/255.0,replace);"
+                               : "");
     GLuint v = recomp_gles2_shader(s, GL_VERTEX_SHADER, vs), f = recomp_gles2_shader(s, GL_FRAGMENT_SHADER, fs);
     p->id = s->gl.CreateProgram();
     s->gl.AttachShader(p->id, v);
@@ -133,6 +144,10 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
         s->gl.GetProgramInfoLog(p->id, sizeof(log), NULL, log);
         fprintf(stderr, "%s\n", log);
         recomp_fail("GLES2 combiner link failed", 0);
+    }
+    if (s->screen_effects) {
+        p->record_depth = s->gl.GetUniformLocation(p->id, "recordDepth");
+        p->blended = s->gl.GetUniformLocation(p->id, "blended");
     }
     p->prim = s->gl.GetUniformLocation(p->id, "prim");
     p->env = s->gl.GetUniformLocation(p->id, "env");

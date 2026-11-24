@@ -1,6 +1,6 @@
 #ifndef RECOMP_RDP_GLES2_H
 #define RECOMP_RDP_GLES2_H
-#include "renderer.h"
+#include "torch_lights.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,6 +21,7 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *, const char *title);
 #ifdef RECOMP_GLES2_CHEATS
 void recomp_rdp_gles2_enable_cheats(RecompRDPGles2 *, const char *data_path);
 #endif
+void recomp_rdp_gles2_set_torch_source(RecompRDPGles2 *, RecompTorchSource);
 void recomp_rdp_gles2_destroy(RecompRDPGles2 *);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 void recomp_rdp_gles2_set_texture_path(RecompRDPGles2 *, const char *data_path);

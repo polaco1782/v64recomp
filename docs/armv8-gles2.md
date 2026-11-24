@@ -165,6 +165,50 @@ menus render at 1760x1320. The window starts at 1280x960 and can be resized.
   using an exponent of `1/2.2` when enabled and `1` when disabled, as in RT64.
   Set `RECOMP_GLES2_GAMMA=0.5..2.5` to force a fixed exponent in either mode.
 
+### Experimental lighting and reflections
+
+| Launch option | Toggle | Effect |
+| --- | --- | --- |
+| `--ssao` | F3 | Screen-space ambient occlusion darkens creases and contacts between nearby surfaces. |
+| `--ssr` | F9 | Screen-space reflections trace visible geometry on upward-facing surfaces. |
+| `--torch-lights` | F2 | Quake and Ocarina of Time flames add localized light to nearby visible surfaces. |
+| `--torch-shadows` | F1 | Start torch lighting with scene and player shadows. F1 toggles both kinds of shadow. |
+
+Launch Quake with `./build/quake-us-gles-release/bin/quake-us --ssao --ssr --torch-shadows`
+to compare the effects during gameplay. On WebGL use
+`?ssao=1&ssr=1&torch-shadows=1`. Each option starts its effect enabled.
+Launching with any effect enables the depth attachment and the F3/F9 controls.
+Launching with either torch option enables F1 and F2 in a supported game. To see reflections
+in Conker's opening sequence, launch `./build/conker-us-gles-release/bin/conker-us --ssr`
+and watch the wooden floor beneath the N64 logo.
+
+Quake uses the positions of static `flame` and `flame2` models in single-player,
+with a warm color and a radius chosen for the model size. Castle of the Damned
+has both types. Ocarina of Time reads the position, color and radius from each
+active `Obj_Syokudai` torch or `En_Light` flame. The light follows the game's
+flicker and goes out when the game extinguishes it. The renderer projects up to
+eight nearby sources with the game's camera and viewport.
+
+With shadows enabled, the shader takes up to 24 depth samples between a lit
+surface and each contributing flame. A blocker reduces that flame's contribution.
+The game's original lighting stays visible in shadow. Scene geometry uses
+visible depth, so a wall or prop can lose its shadow when it leaves the screen.
+
+The player also blocks light using a small set of rounded body segments.
+Link's segments follow the animated head, torso, arms and legs. Quake fits a
+standing head, torso and legs to the local player's collision hull and heading.
+This lets a torch behind the first-person camera cast a shadow onto the floor
+ahead. Use F1 with either torch launch option to see the difference.
+
+The renderer records visible triangle depth alongside the color buffer. SSAO
+samples six screen directions. Its normal estimate checks which neighboring
+depths follow the same plane, and its bias accounts for RDP depth precision
+at triangle boundaries. SSR traces up to 32 steps. Both estimate
+surface normals and assume a 60-degree vertical field of view. Silhouettes
+and screen edges can produce gaps. Presentation and screenshot captures use
+the same effects. Guest framebuffer readback retains the original color.
+With all effect options omitted, the renderer skips the extra attachment and pass.
+
 Copy-mode HUD glyphs retain point sampling. Complete repeating tiles use GPU
 wrapping for filtering across seams. The shared renderer uses GLSL ES 3.00
 texture gradients computed before wrapping and supports mipmaps for non-power-of-two textures, including replacement images.

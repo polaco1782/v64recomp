@@ -35,6 +35,9 @@ uint64_t recomp_renderer_paused_ns(void) {
     return 0;
 #endif
 }
+void recomp_renderer_set_torch_source(RecompRenderer *s, RecompTorchSource source) {
+    recomp_rdp_gles2_set_torch_source(s->gpu, source);
+}
 static bool authenticate(Runtime *rt, uint32_t address, uint32_t bytes, const char *expected) {
     if (!bytes || bytes > 8192 || strlen(expected) != 64)
         return false;

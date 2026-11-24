@@ -69,7 +69,14 @@ async function initialize() {
     if (game._recomp_web_open_media) document.getElementById('mediaControl').hidden = false;
     canvas.focus();
     state.textContent = 'Running';
-    game.callMain([]);
+    const query = new URLSearchParams(location.search);
+    const effects = ['ssao', 'ssr', 'torch-lights', 'torch-shadows'].filter(effect => query.get(effect) === '1');
+    if (effects.includes('torch-lights') || effects.includes('torch-shadows')) {
+        canvas.addEventListener('keydown', event => {
+            if (event.code === 'F1') event.preventDefault();
+        });
+    }
+    game.callMain(effects.map(effect => '--' + effect));
 }
 document.getElementById('cheats').addEventListener('click', () => {
     canvas.focus();

@@ -197,3 +197,59 @@ void quake_planes_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     for (unsigned i = 0; i < 6; i++)
         recomp_store32(rt, (i < 3 ? Q_CTL_RIGHT : Q_CTL_UP_VECTOR) + (i % 3) * 4, saved[i]);
 }
+
+#ifdef RECOMP_WITH_GLES2
+/* Quake omits the first-person player model from the world draw. Fit a
+ * standing body to the local server entity's origin and collision hull. */
+static void quake_player_shadow(Runtime *rt, uint32_t entity, const RecompTorchCamera *camera,
+                                RecompTorchLights *lights) {
+    float x = read_float(rt, entity + 0x54), y = read_float(rt, entity + 0x58), z = read_float(rt, entity + 0x5c);
+    float bottom = read_float(rt, entity + 0xa4), top = read_float(rt, entity + 0xb0);
+    float width = read_float(rt, entity + 0xa8) - read_float(rt, entity + 0x9c), height = top - bottom;
+    if (!(width > 0 && width < 100 && height > 0 && height < 150))
+        return;
+    /* The first-person weapon uses its own 0..255 viewport Z range. Its
+     * fragments cannot be reconstructed using the world camera's depth. */
+    uint32_t weapon_viewport = 0x8006c2e0;
+    lights->player_min_depth =
+        ((int16_t)recomp_load16(rt, weapon_viewport + 4) + (int16_t)recomp_load16(rt, weapon_viewport + 12)) / 1024.0f;
+    float yaw = read_float(rt, entity + Q_CTL_MODEL_YAW) * radians;
+    float foot = z + bottom, hip = foot + height * 0.46f;
+    float waist[3] = {x, y, hip}, shoulder[3] = {x, y, foot + height * 0.75f};
+    float head[3] = {x, y, z + top - height * 0.105f};
+    recomp_torch_player_capsule(lights, camera, waist, shoulder, width * 0.31f);
+    recomp_torch_player_capsule(lights, camera, head, head, height * 0.105f);
+    for (int side = -1; side <= 1; side += 2) {
+        float offset = side * width * 0.16f;
+        float thigh[3] = {x - sinf(yaw) * offset, y + cosf(yaw) * offset, hip};
+        float ankle[3] = {thigh[0], thigh[1], foot + width * 0.14f};
+        recomp_torch_player_capsule(lights, camera, thigh, ankle, width * 0.15f);
+    }
+}
+void quake_torch_lights(Runtime *rt, RecompTorchLights *lights) {
+    /* 8004119c copies model, flags, frame and origin into up to 40 static entities.
+     * The flame spawn functions at 800109a4..80010aec set flag 0x10. */
+    uint32_t count = recomp_load32(rt, 0x8008a028);
+    RecompTorchCamera camera;
+    uint32_t player = live_entity(rt);
+    if (!count || count > 40 || !player ||
+        !recomp_torch_camera(rt, Q_CTL_PROJECTION_MATRIX, 0x800781a0, 0x8006c2d0, &camera, lights))
+        return;
+    for (uint32_t i = 0; i < count; ++i) {
+        uint32_t ent = 0x8008a030 + i * 0x38;
+        uint32_t model = recomp_load32(rt, ent + 0x18);
+        if (!(recomp_load32(rt, ent + 0x24) & 0x10) || !valid(rt, model, 8) ||
+            recomp_load32(rt, model) != 0x666c616d) // "flam"
+            continue;
+        uint32_t suffix = recomp_load32(rt, model + 4);
+        bool wall_torch = (suffix >> 16) == 0x6500;   // "flame"
+        if (!wall_torch && (suffix >> 8) != 0x653200) // "flame2"
+            continue;
+        bool large = !wall_torch && recomp_load32(rt, ent + 0x20) == 1;
+        recomp_torch_add(lights, &camera, read_float(rt, ent), read_float(rt, ent + 4),
+                         read_float(rt, ent + 8) + (wall_torch ? 16 : 10), large ? 160 : 112, 255, 143, 60);
+    }
+    if (lights->count)
+        quake_player_shadow(rt, player, &camera, lights);
+}
+#endif

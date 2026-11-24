@@ -52,7 +52,7 @@ SOFTWARE.
 
 ## Rice / GLideN64 texture hashing
 
-RT64's live ZIP matcher and offline texture hasher share
+The native GLES texture pack loader, RT64's live ZIP matcher and the offline texture hasher share
 `src/common/rt64_rice_hasher.cpp`. Its Rice checksum algorithms are derived from
 GLideN64 and RiceVideo and licensed under the GPL. Its original attribution is retained in
 the source; the full accompanying notice and GPL text are preserved in
@@ -109,8 +109,8 @@ not grant rights to ROMs, game assets, or third-party texture packs.
 
 The optional GLES2 PNG/ZIP loader and editor reuse the pinned RT64 v5 TMEM
 hash header under the MIT notice above without linking the RT64 renderer.
-xxHash (BSD 2-Clause), stb (MIT or public domain), nlohmann/json (MIT) and
-miniz (MIT) are used from the same pinned tree. Their notices are copied into the
+xxHash (BSD 2-Clause), stb (MIT or public domain), nlohmann/json (MIT),
+hlsl++ (MIT) and miniz (MIT) are used from the same pinned tree. Their notices are copied into the
 GLES2 build's `bin/licenses/` when texture packs are enabled.
 
 ## Berkeley SoftFloat (optional portable guest FPU)

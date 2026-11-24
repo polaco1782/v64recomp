@@ -249,3 +249,65 @@ void oot_normal_camera_hook(Runtime *rt, MipsContext *ctx, RecompFunction origin
                    (uint16_t)(int32_t)(atan2(dx, dz) * (32768 / 3.14159265358979323846)));
     recomp_store16(rt, camera + OOT_CTL_INPUT_DIR + 4, 0);
 }
+
+#ifdef RECOMP_WITH_GLES2
+static void oot_player_shadow(Runtime *rt, const RecompTorchCamera *camera, RecompTorchLights *lights) {
+    uint32_t main = recomp_load32(rt, play + OOT_CTL_CAMERA_PTRS);
+    if (!valid(rt, main, 0x94) || recomp_load32(rt, main + OOT_CTL_CAMERA_PLAY) != play)
+        return;
+    uint32_t player = recomp_load32(rt, main + 0x90);
+    if (!valid(rt, player, 0x8f8 + 18 * 12) || recomp_load16(rt, player) != 0 || recomp_load8(rt, player + 2) != 2 ||
+        !recomp_load32(rt, player + 0x134))
+        return;
+    /* The US 1.2 limb post-draw callback writes 18 world-space body part
+     * positions at Player+0x8f8. Reject uninitialized or stale distant poses. */
+    float pose[18][3];
+    for (unsigned axis = 0; axis < 3; ++axis) {
+        float origin = load_float(rt, player + 0x24 + axis * 4);
+        for (unsigned limb = 0; limb < 18; ++limb) {
+            float value = load_float(rt, player + 0x8f8 + limb * 12 + axis * 4);
+            if (!(fabsf(value - origin) < 130))
+                return;
+            pose[limb][axis] = value;
+        }
+    }
+    float leg = hypotf(hypotf(pose[1][0] - pose[2][0], pose[1][1] - pose[2][1]), pose[1][2] - pose[2][2]);
+    if (!(leg > 3 && leg < 30))
+        return;
+    /* Radius as a fraction of the animated thigh length scales with Link. */
+    static const struct {
+        uint8_t a, b;
+        float radius;
+    } parts[] = {{0, 7, 0.58f}, {7, 8, 0.58f},   {10, 13, 0.33f}, {1, 2, 0.31f},   {2, 3, 0.27f},  {4, 5, 0.31f},
+                 {5, 6, 0.27f}, {10, 11, 0.25f}, {11, 12, 0.21f}, {13, 14, 0.25f}, {14, 15, 0.21f}};
+    for (unsigned i = 0; i < sizeof(parts) / sizeof(parts[0]); ++i)
+        recomp_torch_player_capsule(lights, camera, pose[parts[i].a], pose[parts[i].b], leg * parts[i].radius);
+}
+void oot_torch_lights(Runtime *rt, RecompTorchLights *lights) {
+    uint32_t view = play + 0xb8;
+    RecompTorchCamera camera;
+    if (!valid(rt, play, 0x7b8) || recomp_load32(rt, play + OOT_CTL_MAIN_FIELD) != OOT_CTL_PLAY_MAIN ||
+        !recomp_load32(rt, play + OOT_CTL_RUNNING) || recomp_load32(rt, view) != 0x56494557 ||
+        !recomp_torch_camera(rt, view + 0x60, view + 0xa0, view + 0x50, &camera, lights))
+        return;
+    uint32_t node = recomp_load32(rt, play + 0x7a8);
+    for (unsigned i = 0; i < 32 && valid(rt, node, 12); ++i) {
+        uint32_t info = recomp_load32(rt, node);
+        /* US v1.2 En_Light and Obj_Syokudai embed LightInfo immediately
+         * after their LightNode pointer. Check ownership before using it. */
+        if (valid(rt, info, 14) && valid(rt, info - 4, 4) && recomp_load32(rt, info - 4) == node &&
+            ((valid(rt, info - 0x144, 2) && recomp_load16(rt, info - 0x144) == 8) ||
+             (valid(rt, info - 0x1dc, 2) && recomp_load16(rt, info - 0x1dc) == 0x5e))) {
+            unsigned type = recomp_load8(rt, info);
+            int radius = (int16_t)recomp_load16(rt, info + 12);
+            if ((type == 0 || type == 2) && radius > 0)
+                recomp_torch_add(lights, &camera, (int16_t)recomp_load16(rt, info + 2),
+                                 (int16_t)recomp_load16(rt, info + 4), (int16_t)recomp_load16(rt, info + 6), radius,
+                                 recomp_load8(rt, info + 8), recomp_load8(rt, info + 9), recomp_load8(rt, info + 10));
+        }
+        node = recomp_load32(rt, node + 8);
+    }
+    if (lights->count)
+        oot_player_shadow(rt, &camera, lights);
+}
+#endif

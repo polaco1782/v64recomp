@@ -72,6 +72,15 @@ void recomp_gles2_flush(RecompRDPGles2 *s) {
     s->gl.DepthFunc(compare_depth ? GL_LEQUAL : GL_ALWAYS);
     s->gl.DepthMask(write_depth ? GL_TRUE : GL_FALSE);
     bool force_blend = s->other_low & 0x4000;
+    if (s->screen_effects) {
+        bool geometry = s->depth_test && !s->drawing_rectangle && s->color_siz >= 2;
+        if (geometry && s->torch_mode && s->surface->light_serial != s->light_serial) {
+            s->surface->lights = s->task_lights;
+            s->surface->light_serial = s->light_serial;
+        }
+        s->gl.Uniform1i(p->record_depth, geometry);
+        s->gl.Uniform1i(p->blended, force_blend);
+    }
     unsigned blender_p = (s->other_low >> (p->cycle == 1 ? 28 : 30)) & 3;
     /* Without forced blending, the final blender cycle outputs P. When P
      * selects framebuffer memory, keep the old color but still update Z. */
@@ -331,6 +340,10 @@ static bool consume_rdp(RecompRDPGles2 *s, uint32_t w0, uint32_t w1) {
                               (GLsizei)((x1 - x0) * s->render_scale), (GLsizei)((y1 - y0) * s->render_scale));
                 s->gl.ClearColor((float)p[0] / 255, (float)p[1] / 255, (float)p[2] / 255, (float)p[3] / 255);
                 s->gl.Clear(GL_COLOR_BUFFER_BIT);
+                if (s->surface->scene_depth) {
+                    const GLfloat empty[4] = {0, 0, 0, 1};
+                    s->gl.ClearBufferfv(GL_COLOR, 1, empty);
+                }
                 s->color_dirty = true;
 
             } else {
@@ -402,6 +415,9 @@ static bool rdp_triangle_mesh(RecompRDPGles2 *s, const uint32_t *words, size_t c
 }
 
 static void draw_begin(RecompRDPGles2 *s) {
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    recomp_gles2_stream_replacements(s);
+#endif
     s->full_sync = false;
     s->started = true;
     recomp_gles2_bind_surface(s);

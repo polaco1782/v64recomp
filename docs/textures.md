@@ -57,13 +57,20 @@ The ZIP directory needs room for a temporary copy while an edit is being saved.
 
 ## GLES3 texture packs and editor
 
-Desktop GLES3 reads versioned RT64 v5 PNGs in ZIPs, including overrides saved
-by the RT64 editor under `v64recomp/overrides/rt64-v5/`. For a Rice ZIP that
-RT64 has already indexed, GLES3 can reuse a matching `.rt64.json` cache for
-single-image and paired RGB/alpha mappings. It does not infer new Rice IDs,
-load RTZ/DDS, or offer the executable-embedding build option. Tiles that cannot
-be matched or decoded keep their original appearance. New replacements decode
-on a cache miss; unlike RT64, GLES3 does not stream them from a background worker.
+Desktop GLES3 loads Rice/GLideN64 PNG ZIPs directly. On the first draw of a
+texture, it checks the original texture and palette loads against the Rice
+filenames in the ZIP. It remembers matches in memory and also accepts existing
+RT64 `.rt64.json` mappings. Exact IDs, CI palette or texture `$` wildcards,
+and split `_rgb` / `_a` images are supported. Palette matching checks both
+the GLideN64 texture-filter palette and the palette bytes transferred by the RDP.
+Versioned RT64 v5 entries and local editor overrides take precedence.
+GLES decodes matched PNGs on a background worker. It draws the original until
+the replacement is ready, then uploads it on the render thread. A limit on uploads
+per display list spreads mipmap generation over several draws as a scene loads.
+Uploaded replacements use a separate cache that grows on demand up to 256 MiB,
+including mipmaps. F5 clears the cache and discards outstanding requests.
+Tiles with incomplete source loads or incompatible images keep their original
+appearance. RTZ/DDS and executable embedding require RT64.
 
 ```sh
 ./build/banjo-kazooie-us-gles-release/bin/banjo-kazooie-us

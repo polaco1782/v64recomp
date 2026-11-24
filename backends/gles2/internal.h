@@ -6,6 +6,7 @@
 #endif
 #include "input.h"
 #include "rdp_gles2.h"
+#include "tile.h"
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 #include "editor.h"
 #include "texture_pack.h"
@@ -16,6 +17,12 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten/html5.h>
 #endif
+
+/* SDL supplies ES2 headers on all targets. These entry points are core in ES3. */
+#ifndef GL_COLOR
+#define GL_COLOR 0x1800
+#endif
+typedef void(GL_APIENTRYP ClearBufferfvProc)(GLenum, GLint, const GLfloat *);
 
 #define GL_FUNCTIONS(X)                                                                                                \
     X(CreateShader, PFNGLCREATESHADERPROC)                                                                             \
@@ -78,6 +85,8 @@
     X(RenderbufferStorage, PFNGLRENDERBUFFERSTORAGEPROC)                                                               \
     X(FramebufferRenderbuffer, PFNGLFRAMEBUFFERRENDERBUFFERPROC)                                                       \
     X(DeleteRenderbuffers, PFNGLDELETERENDERBUFFERSPROC)                                                               \
+    X(DrawBuffers, PFNGLDRAWBUFFERSEXTPROC)                                                                            \
+    X(ClearBufferfv, ClearBufferfvProc)                                                                                \
     X(Finish, PFNGLFINISHPROC)
 
 enum { RECOMP_GLES2_BATCH_VERTICES = 1536 };
@@ -85,29 +94,29 @@ enum { RECOMP_GLES2_BATCH_VERTICES = 1536 };
 typedef struct Vertex {
     float position[4], color[4], uv[2], fog, reciprocal;
 } Vertex;
-typedef struct Tile {
-    unsigned fmt, siz, line, tmem, palette, cs, ct, ms, mt, ss, st, sl, tl, sh, th;
-} Tile;
 typedef struct Program {
     uint32_t mux0, mux1, cycle;
     GLuint id;
     GLint prim, env, fog, lod, alpha, coverage_alpha, fogen, perspective;
-    GLint tile[2][3];
+    GLint tile[2][3], record_depth, blended;
     bool texture[2];
 } Program;
+enum { GLES2_REPLACEMENT_BUCKETS = 256, GLES2_REPLACEMENT_WAYS = 4 };
 typedef struct Texture {
     uint64_t hash, used;
     GLuint id;
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
-    uint64_t rt64_id;
+    uint64_t rt64_id, rice_texels, rice_palette, retry_draw;
     size_t replacement_bytes;
-    bool has_rt64_id;
+    bool has_rt64_id, retry_rice;
 #endif
 } Texture;
 typedef struct Surface {
     uint32_t address;
     unsigned width, height;
-    GLuint framebuffer, texture, depth;
+    GLuint framebuffer, texture, depth, scene_depth;
+    RecompTorchLights lights;
+    uint64_t light_serial;
     bool valid;
 } Surface;
 typedef struct DepthSurface {
@@ -143,7 +152,14 @@ struct RecompRDPGles2 {
     } gl;
     GLuint buffer, white, blit;
     GLint blit_gamma, blit_pixel, blit_aa;
-    bool antialias, mipmaps;
+    bool torch_mode, show_torches, show_torch_shadows;
+    GLint blit_capsule_count, blit_capsule_start, blit_capsule_end, blit_player_min_depth;
+    GLint blit_camera, blit_count, blit_centers, blit_colors, blit_torch_shadows;
+    RecompTorchLights task_lights;
+    uint64_t light_serial;
+    RecompTorchSource torch_source;
+    GLint blit_reflections, blit_occlusion;
+    bool antialias, mipmaps, screen_effects, show_reflections, show_occlusion;
     Program programs[256];
     unsigned program_count;
     Texture textures[128];
@@ -152,10 +168,17 @@ struct RecompRDPGles2 {
     unsigned tex_width[2], tex_height[2];
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     Gles2TexturePack *texture_pack;
+    Texture replacements[GLES2_REPLACEMENT_BUCKETS][GLES2_REPLACEMENT_WAYS];
+    /* Low nine bits identify the load's starting TMEM word. */
+    uint64_t rice_load;
+    Gles2RiceWord rice_words[512];
+    bool rice_active;
     Gles2TextureEditor *editor;
     char *texture_overrides;
     size_t replacement_bytes;
     unsigned max_texture_size;
+    uint64_t pack_draw;
+    bool pack_pending;
     uint64_t texture_id[2];
     bool texture_id_valid[2], original_textures;
 #endif
@@ -194,6 +217,7 @@ struct RecompRDPGles2 {
     uint64_t triangles;
 };
 GLuint recomp_gles2_shader(RecompRDPGles2 *, GLenum type, const char *source);
+GLuint recomp_gles2_shader_parts(RecompRDPGles2 *, GLenum, const char *const *, GLsizei);
 Program *recomp_gles2_combiner(RecompRDPGles2 *);
 void recomp_gles2_draw_wireframe(RecompRDPGles2 *, const Program *);
 void recomp_gles2_destroy_wireframe(RecompRDPGles2 *);
@@ -211,13 +235,10 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *, Tile *, unsigned unit);
 void recomp_gles2_load_tile(RecompRDPGles2 *, Tile *, uint32_t w0, uint32_t w1, bool block, bool palette);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 void recomp_gles2_reload_textures(RecompRDPGles2 *);
+void recomp_gles2_clear_replacements(RecompRDPGles2 *);
+void recomp_gles2_stream_replacements(RecompRDPGles2 *);
 #endif
 
-/* Bit offsets preserve the first nibble of odd 4-bit rows. */
-typedef struct TextureTransfer {
-    uint64_t first_bit;
-    unsigned stride_bits, row_bits, rows, width;
-} TextureTransfer;
 TextureTransfer recomp_gles2_texture_transfer(unsigned image_width, unsigned image_siz, unsigned tile_siz, uint32_t w0,
                                               uint32_t w1);
 size_t recomp_gles2_command_words(uint32_t w0, size_t available);

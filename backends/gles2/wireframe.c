@@ -6,8 +6,9 @@
  * edges, using the same position, viewport, scissor and depth state. */
 static void wireframe_initialize(RecompRDPGles2 *s) {
     const char *vs = "#version 300 es\nin vec4 position;void main(){gl_Position=position;}";
-    const char *fs = "#version 300 es\nprecision mediump float;uniform vec4 wireColor;out vec4 outputColor;void "
-                     "main(){outputColor=wireColor;}";
+    const char *fs = "#version 300 es\nprecision mediump float;uniform vec4 wireColor;layout(location=0) out vec4 "
+                     "outputColor;layout(location=1) out vec4 sceneDepth;void "
+                     "main(){outputColor=wireColor;sceneDepth=vec4(0,0,0,1);}";
     GLuint v = recomp_gles2_shader(s, GL_VERTEX_SHADER, vs);
     GLuint f = recomp_gles2_shader(s, GL_FRAGMENT_SHADER, fs);
     s->wireframe_program = s->gl.CreateProgram();

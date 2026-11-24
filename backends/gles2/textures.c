@@ -34,6 +34,98 @@ static unsigned tile_extent(const RecompRDPGles2 *s, unsigned axis, unsigned low
     }
     return extent;
 }
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+/* Native tiles turn over much faster than the HD working set. Keep uploaded
+ * replacements (including their mip chains) resident across native evictions. */
+static void discard_replacement(RecompRDPGles2 *s, Texture *entry) {
+    if (entry->id)
+        s->gl.DeleteTextures(1, &entry->id);
+    s->replacement_bytes -= entry->replacement_bytes;
+    *entry = (Texture){0};
+}
+void recomp_gles2_clear_replacements(RecompRDPGles2 *s) {
+    for (unsigned i = 0; i < GLES2_REPLACEMENT_BUCKETS; i++)
+        for (unsigned j = 0; j < GLES2_REPLACEMENT_WAYS; j++)
+            discard_replacement(s, &s->replacements[i][j]);
+}
+static size_t replacement_size(unsigned width, unsigned height, bool mipmaps) {
+    size_t bytes = (size_t)width * height * 4;
+    while (mipmaps && (width > 1 || height > 1)) {
+        width = width > 1 ? width / 2 : 1;
+        height = height > 1 ? height / 2 : 1;
+        bytes += (size_t)width * height * 4;
+    }
+    return bytes;
+}
+static bool reserve_replacement(RecompRDPGles2 *s, Texture *slot, size_t bytes) {
+    const size_t budget = 256u * 1024 * 1024;
+    if (!slot || bytes > budget)
+        return false;
+    discard_replacement(s, slot);
+    while (s->replacement_bytes + bytes > budget) {
+        Texture *oldest = NULL;
+        for (unsigned i = 0; i < GLES2_REPLACEMENT_BUCKETS; i++)
+            for (unsigned j = 0; j < GLES2_REPLACEMENT_WAYS; j++) {
+                Texture *entry = &s->replacements[i][j];
+                if (entry->id && (!oldest || entry->used < oldest->used))
+                    oldest = entry;
+            }
+        if (!oldest)
+            return false;
+        discard_replacement(s, oldest);
+    }
+    slot->replacement_bytes = bytes;
+    s->replacement_bytes += bytes;
+    return true;
+}
+static Texture *replacement_entry(RecompRDPGles2 *s, const Gles2PackTile *key) {
+    Texture *bucket = s->replacements[(key->hash ^ (key->hash >> 32)) % GLES2_REPLACEMENT_BUCKETS];
+    Texture *oldest = bucket;
+    for (unsigned j = 0; j < GLES2_REPLACEMENT_WAYS; ++j) {
+        Texture *entry = &bucket[j];
+        if (entry->id && entry->hash == key->hash && entry->has_rt64_id == key->has_id && entry->rt64_id == key->id)
+            return entry;
+        if (entry->used < oldest->used)
+            oldest = entry;
+    }
+    return oldest;
+}
+
+// Install completed textures between display lists, even when the original tile
+// has already left TMEM. Both texture units rebind before the next textured draw.
+void recomp_gles2_stream_replacements(RecompRDPGles2 *s) {
+    ++s->pack_draw;
+    s->textures_dirty |= s->pack_pending;
+    s->pack_pending = false;
+    size_t bytes = 0;
+    for (unsigned i = 0; i < 4 && bytes < 2 * 1024 * 1024; ++i) {
+        Gles2PackTile key;
+        Gles2PackImage image;
+        if (!gles2_texture_pack_take(s->texture_pack, &key, &image))
+            break;
+        Texture *entry = replacement_entry(s, &key);
+        size_t size = replacement_size(image.width, image.height, s->mipmaps);
+        if (reserve_replacement(s, entry, size)) {
+            s->gl.GenTextures(1, &entry->id);
+            s->gl.BindTexture(GL_TEXTURE_2D, entry->id);
+            s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                             image.pixels);
+            if (s->mipmaps)
+                s->gl.GenerateMipmap(GL_TEXTURE_2D);
+            entry->hash = key.hash;
+            entry->rt64_id = key.id;
+            entry->has_rt64_id = key.has_id;
+            entry->used = ++s->texture_clock;
+            if (s->editor && key.has_id)
+                gles2_editor_observe_replacement(s->editor, key.id, key.width, key.height, image.width, image.height,
+                                                 image.pixels);
+            bytes += size;
+            s->textures_dirty = true;
+        }
+        gles2_texture_pack_free_image(&image);
+    }
+}
+#endif
 GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     unsigned *width = &s->tex_width[unit], *height = &s->tex_height[unit];
     *width = tile_extent(s, 0, t->sl, t->sh, t->ms, t->cs, t->ss);
@@ -85,6 +177,9 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
         rt64_width = *width;
     if (t->mt && (t->ct & 2) && rt64_height > *height)
         rt64_height = *height;
+    const uint64_t rice_texels = s->rice_active ? s->rice_words[t->tmem].load : 0;
+    const uint64_t rice_palette =
+        s->rice_active && indexed ? s->rice_words[256 + (t->siz == 0 ? 16 * t->palette : 0)].load : 0;
     const bool can_id = rt64_width == *width && rt64_height == *height;
     /* An active pack needs the exact versioned identity before cache lookup.
      * The editor alone can reuse the identity of an existing visual preview
@@ -92,21 +187,56 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     bool has_rt64_id =
         replace && can_id &&
         gles2_texture_rt64_id(s->tmem, t->fmt, t->siz, t->line, t->tmem, t->palette, tlut, *width, *height, &rt64_id);
+    Gles2PackTile pack_key = {hash, rt64_id, *width, *height, has_rt64_id};
+    if (replace) {
+        Texture *r = replacement_entry(s, &pack_key);
+        if (r->id && r->hash == hash && r->has_rt64_id == has_rt64_id && r->rt64_id == rt64_id) {
+            r->used = ++s->texture_clock;
+            s->texture_id_valid[unit] = has_rt64_id;
+            s->texture_id[unit] = rt64_id;
+            return r->id;
+        }
+    }
 #endif
-    Texture *entry = NULL;
-    for (unsigned i = 0; i < 128; i++)
-        if (s->textures[i].id && s->textures[i].hash == hash
+    Texture *cached = NULL, *oldest = &s->textures[0];
+    for (unsigned i = 0; i < 128; i++) {
+        Texture *candidate = &s->textures[i];
+        if (candidate->id && candidate->hash == hash
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
-            && (!replace || (s->textures[i].has_rt64_id == has_rt64_id && s->textures[i].rt64_id == rt64_id))
+            && (!replace || (candidate->has_rt64_id == has_rt64_id && candidate->rt64_id == rt64_id))
 #endif
         ) {
-            s->textures[i].used = ++s->texture_clock;
-#ifdef RECOMP_GLES2_TEXTURE_PACKS
-            s->texture_id_valid[unit] = s->textures[i].has_rt64_id;
-            s->texture_id[unit] = s->textures[i].rt64_id;
-#endif
-            return s->textures[i].id;
+            cached = candidate;
+            break;
         }
+        if (candidate->used < oldest->used)
+            oldest = candidate;
+    }
+    Texture *entry = cached ? cached : oldest;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    /* On an incomplete first draw, retry after a fresh load at the tile
+     * base. Keep the resident GL texture if the retry still has no match. */
+    bool retry = cached && cached->retry_rice && rice_texels && (rice_texels & 511) == t->tmem &&
+                 (cached->rice_texels != rice_texels || cached->rice_palette != rice_palette);
+    if (!cached || retry || (cached->retry_draw && cached->retry_draw < s->pack_draw)) {
+        Gles2PackStatus status = GLES2_PACK_MISS;
+        if (replace && (has_rt64_id || s->rice_active))
+            status = gles2_texture_pack_request(s->texture_pack, pack_key, t, tlut, s->rice_words, s->max_texture_size);
+        entry->retry_rice = status == GLES2_PACK_INCOMPLETE;
+        entry->retry_draw = status == GLES2_PACK_PENDING ? s->pack_draw : 0;
+        entry->rice_texels = rice_texels;
+        entry->rice_palette = rice_palette;
+    }
+    s->pack_pending |= entry->retry_draw != 0;
+#endif
+    if (cached) {
+        entry->used = ++s->texture_clock;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        s->texture_id_valid[unit] = entry->has_rt64_id;
+        s->texture_id[unit] = entry->rt64_id;
+#endif
+        return entry->id;
+    }
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     if (!replace && s->editor && can_id)
         has_rt64_id = gles2_texture_rt64_id(s->tmem, t->fmt, t->siz, t->line, t->tmem, t->palette, tlut, *width,
@@ -114,11 +244,7 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     s->texture_id_valid[unit] = has_rt64_id;
     s->texture_id[unit] = rt64_id;
 #endif
-    for (unsigned i = 0; i < 128; i++)
-        if (!entry || s->textures[i].used < entry->used)
-            entry = &s->textures[i];
-    if (!entry->id)
-        s->gl.GenTextures(1, &entry->id);
+
     size_t size = (size_t)*width * *height * 4;
     uint8_t *pixels = malloc(size);
     if (!pixels)
@@ -159,42 +285,19 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
                 p[3] = (uint8_t)byte(s, ((o + 1) & 2047) | 2048);
             }
         }
-    unsigned upload_width = *width, upload_height = *height;
-    const uint8_t *upload = pixels;
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
-    Gles2PackImage replacement = {0};
     entry->has_rt64_id = has_rt64_id;
     entry->rt64_id = rt64_id;
-    s->replacement_bytes -= entry->replacement_bytes;
-    entry->replacement_bytes = 0;
-    if (has_rt64_id && replace &&
-        gles2_texture_pack_image(s->texture_pack, rt64_id, *width, *height, s->max_texture_size, &replacement)) {
-        /* Cap replacement memory independently of the native tile cache.
-         * The factor reserves additional storage for the full mip chain. */
-        size_t bytes = (size_t)replacement.width * replacement.height * (s->mipmaps ? 6 : 4);
-        if (bytes <= 64 * 1024 * 1024 - s->replacement_bytes) {
-            entry->replacement_bytes = bytes;
-            s->replacement_bytes += bytes;
-            upload_width = replacement.width;
-            upload_height = replacement.height;
-            upload = replacement.pixels;
-        }
-    }
-    if (s->editor && has_rt64_id) {
-        if (upload == pixels)
-            gles2_editor_observe(s->editor, rt64_id, *width, *height, pixels);
-        else
-            gles2_editor_observe_replacement(s->editor, rt64_id, *width, *height, upload_width, upload_height, upload);
-    }
+    if (s->editor && has_rt64_id)
+        gles2_editor_observe(s->editor, rt64_id, *width, *height, pixels);
 #endif
+    if (!entry->id)
+        s->gl.GenTextures(1, &entry->id);
     s->gl.BindTexture(GL_TEXTURE_2D, entry->id);
-    s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)upload_width, (GLsizei)upload_height, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, upload);
+    s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)*width, (GLsizei)*height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     pixels);
     if (s->mipmaps)
         s->gl.GenerateMipmap(GL_TEXTURE_2D);
-#ifdef RECOMP_GLES2_TEXTURE_PACKS
-    gles2_texture_pack_free_image(&replacement);
-#endif
     free(pixels);
     s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -215,11 +318,27 @@ static bool texture_source(RecompRDPGles2 *s, uint64_t offset, size_t bytes, uin
     *physical = (uint32_t)source;
     return true;
 }
+static void mark_source(RecompRDPGles2 *s, unsigned offset, bool valid, unsigned nibbles) {
+    s->tmem_source[offset >> 3] = valid ? (s->image_address & 0x03ffffff) + 1 : 0;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->rice_active) {
+        Gles2RiceWord *word = &s->rice_words[offset >> 3];
+        if (word->load != s->rice_load) {
+            word->load = s->rice_load;
+            word->nibbles = 0;
+        }
+        unsigned mask = nibbles << (2 * (offset & 7));
+        word->nibbles = (word->nibbles & ~mask) | (valid ? mask : 0);
+    }
+#else
+    (void)nibbles;
+#endif
+}
 static void tmem_store(RecompRDPGles2 *s, unsigned offset, bool valid, unsigned value) {
     offset &= 4095;
     s->tmem[offset] = (uint8_t)value;
     s->tmem_invalid[offset] = valid ? 0 : 255;
-    s->tmem_source[offset >> 3] = valid ? (s->image_address & 0x03ffffff) + 1 : 0;
+    mark_source(s, offset, valid, 3);
 }
 TextureTransfer recomp_gles2_texture_transfer(unsigned image_width, unsigned image_siz, unsigned tile_siz, uint32_t w0,
                                               uint32_t w1) {
@@ -245,6 +364,13 @@ void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1
     unsigned sl = (w0 >> 12) & 4095, tl = w0 & 4095, sh = (w1 >> 12) & 4095, th = w1 & 4095;
     unsigned bits = 4u << s->image_siz;
     TextureTransfer dma = recomp_gles2_texture_transfer(s->image_width, s->image_siz, t->siz, w0, w1);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->rice_active) {
+        s->rice_load = ((s->rice_load & ~UINT64_C(511)) + 512) | t->tmem;
+        gles2_texture_pack_record_load(s->texture_pack, s->rice_load, t, w0, w1, s->image_width, s->image_siz, &dma,
+                                       s->draw_ram, s->rt->rdram_size, s->image_address & 0x03ffffff);
+    }
+#endif
     /* LOADTILE also latches the tile's sampling bounds. Raw RDP video may
      * upload and draw through this same tile without a separate SETTILESIZE. */
     if (!block && !palette) {
@@ -301,7 +427,7 @@ void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1
                         unsigned mask = 15u << shift;
                         s->tmem[offset] = (uint8_t)((s->tmem[offset] & ~mask) | (nibble << shift));
                         s->tmem_invalid[offset] = (uint8_t)((s->tmem_invalid[offset] & ~mask) | (valid ? 0 : mask));
-                        s->tmem_source[offset >> 3] = valid ? (s->image_address & 0x03ffffff) + 1 : 0;
+                        mark_source(s, offset, valid, shift ? 1 : 2);
                     } else
                         tmem_store(s, offset, valid, value);
                 }
@@ -322,12 +448,15 @@ void recomp_gles2_reload_textures(RecompRDPGles2 *s) {
     }
     gles2_texture_pack_close(s->texture_pack);
     s->texture_pack = gles2_texture_pack_open(getenv("RECOMP_TEXTURE_PACK"), s->texture_overrides, title);
+    s->rice_active = !s->original_textures && gles2_texture_pack_has_rice(s->texture_pack);
+    s->rice_load = 0;
+    memset(s->rice_words, 0, sizeof(s->rice_words));
     for (unsigned i = 0; i < sizeof(s->textures) / sizeof(*s->textures); ++i) {
         if (s->textures[i].id)
             s->gl.DeleteTextures(1, &s->textures[i].id);
         s->textures[i] = (Texture){0};
     }
-    s->replacement_bytes = 0;
+    recomp_gles2_clear_replacements(s);
     s->textures_dirty = true;
 }
 

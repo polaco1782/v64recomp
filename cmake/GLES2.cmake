@@ -18,6 +18,9 @@ add_library(recomp_rdp_gles2 STATIC
     backends/gles2/combiner.c
     backends/gles2/wireframe.c
     backends/gles2/internal.h
+    backends/gles2/screen_space.h
+    backends/gles2/torch_lights.c
+    include/torch_lights.h
     backends/input.c
     include/rdp_gles2.h)
 target_link_libraries(recomp_rdp_gles2 PUBLIC recomp_rdp SDL2::SDL2)
@@ -58,6 +61,8 @@ elseif(RECOMP_GLES2_CHEATS)
 endif()
 if(RECOMP_GLES2_TEXTURE_PACKS AND NOT EMSCRIPTEN)
     if(EXISTS "${_gles2_texture_source}/common/rt64_tmem_hasher.h"
+            AND EXISTS "${_gles2_texture_source}/common/rt64_rice_hasher.cpp"
+            AND EXISTS "${_gles2_texture_source}/contrib/hlslpp/include/hlsl++.h"
             AND EXISTS "${_gles2_texture_source}/contrib/miniz/miniz.c"
             AND EXISTS "${_gles2_texture_source}/contrib/xxHash/xxhash.h"
             AND EXISTS "${_gles2_texture_source}/contrib/json/json.hpp"
@@ -66,15 +71,21 @@ if(RECOMP_GLES2_TEXTURE_PACKS AND NOT EMSCRIPTEN)
         enable_language(CXX)
         add_library(recomp_gles2_miniz STATIC "${_gles2_texture_source}/contrib/miniz/miniz.c")
         target_compile_definitions(recomp_gles2_miniz PRIVATE MINIZ_NO_ZLIB_COMPATIBLE_NAMES)
+        add_library(recomp_gles2_rice STATIC
+            "${_gles2_texture_source}/common/rt64_rice_hasher.cpp"
+            "${_gles2_texture_source}/common/rt64_replacement_database.cpp")
+        target_include_directories(recomp_gles2_rice SYSTEM PRIVATE "${_gles2_texture_source}"
+            "${_gles2_texture_source}/contrib" "${_gles2_texture_source}/contrib/hlslpp/include")
         target_sources(recomp_rdp_gles2 PRIVATE
-            backends/gles2/texture_pack.cpp backends/gles2/texture_pack.h
+            backends/gles2/texture_pack.cpp backends/gles2/texture_pack.h backends/gles2/tile.h
             backends/gles2/editor.cpp backends/gles2/editor.h)
-        set_target_properties(recomp_rdp_gles2 PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+        set_target_properties(recomp_rdp_gles2 recomp_gles2_rice PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
         target_include_directories(recomp_rdp_gles2 SYSTEM PRIVATE
             "${_gles2_texture_source}" "${_gles2_texture_source}/contrib")
-        target_link_libraries(recomp_rdp_gles2 PRIVATE recomp_gles2_miniz)
+        target_link_libraries(recomp_rdp_gles2 PRIVATE recomp_gles2_miniz recomp_gles2_rice)
         set(RECOMP_GLES2_HAS_TEXTURE_PACKS ON)
         target_compile_definitions(recomp_rdp_gles2 PRIVATE RECOMP_GLES2_TEXTURE_PACKS)
+        configure_file("${_gles2_texture_source}/contrib/hlslpp/LICENSE" "${CMAKE_BINARY_DIR}/bin/licenses/hlslpp.txt" COPYONLY)
         foreach(notice miniz nlohmann-json stb xxHash)
             configure_file("${PROJECT_SOURCE_DIR}/licenses/${notice}.txt"
                 "${CMAKE_BINARY_DIR}/bin/licenses/${notice}.txt" COPYONLY)

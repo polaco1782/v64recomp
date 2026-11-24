@@ -88,6 +88,14 @@ static void capture_inputs(RecompRDPGles2 *s, const uint32_t *words, size_t coun
             }
         } else {
             TextureTransfer dma = recomp_gles2_texture_transfer(width, siz, tiles[tile], w0, w1);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+            /* GLideN64 hashes TLUT data starting at SETTIMG, independently
+             * of the S/T offset used by the actual palette DMA below. */
+            if (s->rice_active && op == 0xf0) {
+                unsigned colors = dma.width * dma.rows;
+                capture_pages(s, image, (colors < 256 ? colors : 256) * 2);
+            }
+#endif
             for (unsigned row = 0; row < dma.rows; row++) {
                 uint64_t bit = dma.first_bit + row * dma.stride_bits;
                 capture_pages(s, image + bit / 8, ((bit & 7) + dma.row_bits + 7) / 8);
@@ -201,6 +209,14 @@ void recomp_rdp_gles2_submit(RecompRDPGles2 *s, const uint32_t *words, size_t co
     recomp_gles2_require_owner(s);
     if ((!words && count) || count > 4 * 1024 * 1024)
         recomp_fail("invalid GLES render submission", 0);
+    if (s->torch_mode) {
+        s->task_lights.count = 0;
+        s->task_lights.capsule_count = 0;
+        s->task_lights.player_min_depth = 0;
+        ++s->light_serial;
+        if (s->torch_source && !guest_parked)
+            s->torch_source(s->rt, &s->task_lights);
+    }
     RenderQueue *q = s->queue ? s->queue : create_queue(s);
     q->in_flight = true;
     q->words = words;

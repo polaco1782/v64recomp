@@ -69,6 +69,9 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "Quake 64");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     quake_controls_init(poll_controls);
+#ifdef RECOMP_WITH_GLES2
+    recomp_renderer_set_torch_source(renderer, quake_torch_lights);
+#endif
     recomp_renderer_set_fov_hook(renderer, quake_fov_adjust);
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,

@@ -47,9 +47,12 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\rdp.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\render_queue.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\renderer.c" />
+    <ClInclude Include="$(RecompRoot)backends\gles2\screen_space.h" />
     <ClCompile Include="$(RecompRoot)backends\gles2\texture_pack.cpp" />
     <ClInclude Include="$(RecompRoot)backends\gles2\texture_pack.h" />
     <ClCompile Include="$(RecompRoot)backends\gles2\textures.c" />
+    <ClInclude Include="$(RecompRoot)backends\gles2\tile.h" />
+    <ClCompile Include="$(RecompRoot)backends\gles2\torch_lights.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\wireframe.c" />
     <ClCompile Include="$(RecompRoot)backends\input.c" />
     <ClCompile Include="$(RecompRoot)backends\jpeg.c" />
@@ -104,6 +107,7 @@
     <ClInclude Include="$(RecompRoot)include\runtime.h" />
     <ClInclude Include="$(RecompRoot)include\runtime_debug.h" />
     <ClInclude Include="$(RecompRoot)include\timing.h" />
+    <ClInclude Include="$(RecompRoot)include\torch_lights.h" />
     <None Include="$(RecompRoot)msvc\Recomp.props" />
     <None Include="$(RecompRoot)requirements.txt" />
     <ClCompile Include="$(RecompRoot)runtime\bootstrap.c" />

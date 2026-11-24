@@ -70,6 +70,9 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\renderer.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\screen_space.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\gles2\texture_pack.cpp">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
@@ -77,6 +80,12 @@
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\gles2\textures.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\tile.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\torch_lights.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2\wireframe.c">
@@ -239,6 +248,9 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="$(RecompRoot)include\timing.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(RecompRoot)include\torch_lights.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <None Include="$(RecompRoot)msvc\Recomp.props">

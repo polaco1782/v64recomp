@@ -88,6 +88,22 @@ bool recomp_rdp_gles2_poll(RecompRDPGles2 *s) {
                     return false;
                 s->mouse_released = s->mouse_captured;
             }
+            if (key == SDL_SCANCODE_F1 && s->torch_mode && s->torch_source) {
+                s->show_torch_shadows = !s->show_torch_shadows;
+                fprintf(stderr, "GLES torch shadows: %s\n", s->show_torch_shadows ? "on" : "off");
+            }
+            if (key == SDL_SCANCODE_F2 && s->torch_mode && s->torch_source) {
+                s->show_torches = !s->show_torches;
+                fprintf(stderr, "GLES torch lighting: %s\n", s->show_torches ? "on" : "off");
+            }
+            if (key == SDL_SCANCODE_F3 && s->screen_effects) {
+                s->show_occlusion = !s->show_occlusion;
+                fprintf(stderr, "GLES ambient occlusion: %s\n", s->show_occlusion ? "on" : "off");
+            }
+            if (key == SDL_SCANCODE_F9 && s->screen_effects) {
+                s->show_reflections = !s->show_reflections;
+                fprintf(stderr, "GLES screen-space reflections: %s\n", s->show_reflections ? "on" : "off");
+            }
             if (key == SDL_SCANCODE_F6) {
                 s->wireframe = !s->wireframe;
                 fprintf(stderr, "GLES2 render mode: %s\n", s->wireframe ? "RDP mesh wireframe" : "textured");

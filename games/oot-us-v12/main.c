@@ -137,6 +137,9 @@ int main(int argc, char **argv) {
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_set_fov_hook(renderer, oot_fov_adjust);
     oot_controls_init(poll_controls);
+#ifdef RECOMP_WITH_GLES2
+    recomp_renderer_set_torch_source(renderer, oot_torch_lights);
+#endif
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options.mute,
                             .prebuffer_ms = 160,

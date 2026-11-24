@@ -1,4 +1,8 @@
 #include "internal.h"
+#include "screen_space.h"
+#ifdef __EMSCRIPTEN__
+#include <GLES3/gl3.h>
+#endif
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -58,6 +62,11 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     s->antialias = true;
 #endif
     s->antialias = quality_option("RECOMP_GLES2_AA", s->antialias);
+    s->show_reflections = quality_option("RECOMP_GLES2_SSR", false);
+    s->show_occlusion = quality_option("RECOMP_GLES2_SSAO", false);
+    s->show_torch_shadows = quality_option("RECOMP_GLES2_TORCH_SHADOWS", false);
+    s->show_torches = s->torch_mode = quality_option("RECOMP_GLES2_TORCH_LIGHTS", false) || s->show_torch_shadows;
+    s->screen_effects = s->torch_mode || s->show_occlusion || s->show_reflections;
     s->mipmaps = quality_option("RECOMP_GLES2_MIPMAPS", true);
     const char *scale = getenv("RECOMP_GLES2_SCALE");
     if (scale && *scale) {
@@ -170,7 +179,7 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
         "#version 300 es\nin vec4 position;in vec2 uv;out vec2 tc;void main(){gl_Position=position;tc=uv;}";
     const char *fs = "#version 300 es\nprecision highp float;\n"
                      "in vec2 tc;out vec4 outputColor;uniform sampler2D image;uniform float colorGamma,aa;"
-                     "uniform vec2 pixel;"
+                     "uniform vec2 pixel;vec3 shadeScene(vec3 base);"
                      "void main(){vec4 c=texture(image,tc);if(aa>0.0){"
                      "vec3 nw=texture(image,tc+pixel*vec2(-1.0,-1.0)).rgb;"
                      "vec3 ne=texture(image,tc+pixel*vec2(1.0,-1.0)).rgb;"
@@ -184,8 +193,10 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
                      "vec3 a=0.5*(texture(image,tc-d/6.0).rgb+texture(image,tc+d/6.0).rgb);"
                      "vec3 b=a*0.5+0.25*(texture(image,tc-d*0.5).rgb+texture(image,tc+d*0.5).rgb);"
                      "float lb=dot(b,l);c.rgb=(lb<lo||lb>hi)?a:b;}"
-                     "if(colorGamma!=1.0)c.rgb=pow(c.rgb,vec3(colorGamma));outputColor=c;}";
-    GLuint v = recomp_gles2_shader(s, GL_VERTEX_SHADER, vs), f = recomp_gles2_shader(s, GL_FRAGMENT_SHADER, fs);
+                     "c.rgb=shadeScene(c.rgb);if(colorGamma!=1.0)c.rgb=pow(c.rgb,vec3(colorGamma));outputColor=c;}";
+    const char *parts[] = {fs, s->screen_effects ? screen_space_shader : "vec3 shadeScene(vec3 base){return base;}"};
+    GLuint v = recomp_gles2_shader(s, GL_VERTEX_SHADER, vs),
+           f = recomp_gles2_shader_parts(s, GL_FRAGMENT_SHADER, parts, 2);
     s->blit = s->gl.CreateProgram();
     s->gl.AttachShader(s->blit, v);
     s->gl.AttachShader(s->blit, f);
@@ -201,6 +212,21 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     s->blit_gamma = s->gl.GetUniformLocation(s->blit, "colorGamma");
     s->blit_pixel = s->gl.GetUniformLocation(s->blit, "pixel");
     s->blit_aa = s->gl.GetUniformLocation(s->blit, "aa");
+    if (s->screen_effects) {
+        s->gl.UseProgram(s->blit);
+        s->gl.Uniform1i(s->gl.GetUniformLocation(s->blit, "sceneDepth"), 1);
+        s->blit_reflections = s->gl.GetUniformLocation(s->blit, "showReflections");
+        s->blit_torch_shadows = s->gl.GetUniformLocation(s->blit, "showTorchShadows");
+        s->blit_player_min_depth = s->gl.GetUniformLocation(s->blit, "playerMinDepth");
+        s->blit_capsule_count = s->gl.GetUniformLocation(s->blit, "capsuleCount");
+        s->blit_capsule_start = s->gl.GetUniformLocation(s->blit, "capsuleStart[0]");
+        s->blit_capsule_end = s->gl.GetUniformLocation(s->blit, "capsuleEnd[0]");
+        s->blit_camera = s->gl.GetUniformLocation(s->blit, "torchCamera");
+        s->blit_count = s->gl.GetUniformLocation(s->blit, "torchCount");
+        s->blit_centers = s->gl.GetUniformLocation(s->blit, "torchCenters[0]");
+        s->blit_colors = s->gl.GetUniformLocation(s->blit, "torchColors[0]");
+        s->blit_occlusion = s->gl.GetUniformLocation(s->blit, "showOcclusion");
+    }
 #ifdef RECOMP_DEBUG
     fprintf(stderr, "%s: scale=%u, FXAA=%s, mipmaps=%s\n", s->gl.GetString(GL_VERSION), s->render_scale,
             s->antialias ? "on" : "off", s->mipmaps ? "on" : "off");
@@ -228,9 +254,14 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
     recomp_gles2_queue_destroy(s);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     gles2_editor_destroy(s->editor);
+    gles2_texture_pack_close(s->texture_pack);
+    free(s->texture_overrides);
 #endif
     if (s->context) {
         recomp_gles2_require_owner(s);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        recomp_gles2_clear_replacements(s);
+#endif
 #ifdef RECOMP_GLES2_CHEATS
         gles2_cheats_destroy(s->cheats);
 #endif
@@ -253,10 +284,7 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
                 s->gl.DeleteTextures(1, &s->textures[i].id);
         }
         for (unsigned i = 0; i < 8; i++)
-            if (s->surfaces[i].valid) {
-                s->gl.DeleteTextures(1, &s->surfaces[i].texture);
-                s->gl.DeleteFramebuffers(1, &s->surfaces[i].framebuffer);
-            }
+            recomp_gles2_destroy_surface(s, &s->surfaces[i]);
         for (unsigned i = 0; i < 16; i++)
             if (s->depths[i].buffer)
                 s->gl.DeleteRenderbuffers(1, &s->depths[i].buffer);
