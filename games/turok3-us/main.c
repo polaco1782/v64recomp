@@ -3,11 +3,11 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
-#include "acclaim_pager.h"
+#include "../turok2-us/acclaim_pager.h"
 #ifdef RECOMP_WITH_RT64
-#include "acclaim_graphics.h"
+#include "../turok2-us/acclaim_graphics.h"
 #endif
-#include "acclaim_controls.h"
+#include "../turok2-us/acclaim_controls.h"
 #include <stdlib.h>
 #include "game_config.h"
 

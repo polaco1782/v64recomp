@@ -7,21 +7,6 @@
     <None Include="$(RecompRoot)CMakePresets.json">
       <Filter>Configuration</Filter>
     </None>
-    <ClCompile Include="$(RecompRoot)backends\acclaim_controls.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\acclaim_graphics.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\acclaim_lighting.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\acclaim_lighting.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\acclaim_pager.c">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
@@ -193,15 +178,6 @@
     <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake">
       <Filter>Configuration\cmake\toolchains</Filter>
     </None>
-    <ClInclude Include="$(RecompRoot)include\acclaim_controls.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)include\acclaim_graphics.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)include\acclaim_pager.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\cheats.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>

@@ -120,7 +120,8 @@ checked 140° projection and bounded pitch. [Retail recompilation reference](htt
   Acclaim F3DEX2 program and initialization data used by Turok 2. ROM
   `0x1114b0` contains the `0x1390`-byte text including its overlays,
   and ROM `0x1147f0` contains the `0x420`-byte data. Both games use the
-  same fingerprint-checked renderer adapter.
+  same fingerprint-checked renderer adapter in `games/turok2-us/`. Turok 3 also compiles
+  the pager and controls from that directory against its own generated configuration.
 - The audio builder at `0x00243ca8` selects ABI1. The boot program, text and
   initialized DMEM constants match Turok 2 and are checked at the first task.
   The original game submits audio through AI at the requested sample rate.

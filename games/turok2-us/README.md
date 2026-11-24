@@ -122,10 +122,10 @@ RT64's checked-out database matches the text's first `0x1390` bytes with XXH3
 `GBIUCode::Unknown`. The diagnostic hashes use RT64's word-swapped memory layout;
 its text hash extends beyond the OSTask's nominal `0x1000` text size.
 
-`backends/acclaim_graphics.c` binds a standard F3DEX2 command map through the renderer's generic
+`acclaim_graphics.c` binds a standard F3DEX2 command map through the renderer's generic
 C microcode interface and overrides vertex loading and MOVEMEM for this ROM's
 Acclaim variant. Turok 3 uses identical text and initialization data. Both
-ports share the command decoding, fingerprint checks and lighting in `backends/`.
+ports compile the command decoding, fingerprint checks and lighting from this game directory.
 
 Every submitted graphics task verifies the complete `0x1390`-byte program and
 `0x420`-byte data span in guest memory, including the RSP overlay images beyond
@@ -136,7 +136,7 @@ the task descriptor's nominal text size:
 | Text and overlays | `6734f26b67b25c6a521dc2ee56d343d33c8005ea4001c2db83fbabf539e62e57` |
 | Microcode data | `462006091cd750bfb2f191d8da8f6221d64fd4257852cacab4aacd94e27b3ff1` |
 
-`backends/acclaim_lighting.c` implements the compact 16-byte light layout and the original RSP's
+`acclaim_lighting.c` implements the compact 16-byte light layout and the original RSP's
 signed-halfword Manhattan attenuation and Q16/Q7 arithmetic. It supplies computed
 vertex shades while retaining the original normals for texture generation.
 The exact ROM's forced-matrix MOVEMEM returns directly to command dispatch and

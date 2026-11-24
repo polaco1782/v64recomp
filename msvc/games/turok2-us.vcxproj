@@ -25,6 +25,14 @@
   <Import Project="..\Recomp.props" />
   <ItemGroup>
     <None Include="$(RecompRoot)games\turok2-us\CMakeLists.txt" />
+    <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_controls.c" />
+    <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_controls.h" />
+    <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_graphics.c" />
+    <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_graphics.h" />
+    <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_lighting.c" />
+    <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_lighting.h" />
+    <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_pager.c" />
+    <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_pager.h" />
     <ClInclude Include="$(RecompRoot)games\turok2-us\audio.h" />
     <None Include="$(RecompRoot)games\turok2-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\turok2-us\main.c" />

@@ -26,11 +26,6 @@
   <ItemGroup>
     <None Include="$(RecompRoot)CMakeLists.txt" />
     <None Include="$(RecompRoot)CMakePresets.json" />
-    <ClCompile Include="$(RecompRoot)backends\acclaim_controls.c" />
-    <ClCompile Include="$(RecompRoot)backends\acclaim_graphics.c" />
-    <ClCompile Include="$(RecompRoot)backends\acclaim_lighting.c" />
-    <ClInclude Include="$(RecompRoot)backends\acclaim_lighting.h" />
-    <ClCompile Include="$(RecompRoot)backends\acclaim_pager.c" />
     <ClCompile Include="$(RecompRoot)backends\audio.c" />
     <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp" />
     <ClInclude Include="$(RecompRoot)backends\cheat_database.h" />
@@ -88,9 +83,6 @@
     <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake" />
     <ClInclude Include="$(RecompRoot)cmake\softfloat\platform.h" />
     <None Include="$(RecompRoot)cmake\toolchains\linux-aarch64.cmake" />
-    <ClInclude Include="$(RecompRoot)include\acclaim_controls.h" />
-    <ClInclude Include="$(RecompRoot)include\acclaim_graphics.h" />
-    <ClInclude Include="$(RecompRoot)include\acclaim_pager.h" />
     <ClInclude Include="$(RecompRoot)include\cheats.h" />
     <ClInclude Include="$(RecompRoot)include\embedded_rom.h" />
     <ClInclude Include="$(RecompRoot)include\fov_control.h" />
