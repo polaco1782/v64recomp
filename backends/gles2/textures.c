@@ -47,18 +47,26 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
         recomp_fail("GLES2 unsupported tile dimensions", t->sh);
     }
     uint64_t hash = UINT64_C(1469598103934665603);
-    unsigned tlut = (s->other_high >> 14) & 3, mask = (t->siz == 3 || tlut) ? 2047 : 4095;
-    unsigned row_bytes = t->siz == 3 ? *width * 2 : (*width * (4u << t->siz) + 7) / 8;
+    unsigned tlut = (s->other_high >> 14) & 3;
+    /* TEXTLUT enables palette lookup independently of the tile format. Conker
+     * uses RGBA-tagged 4- and 8-bit indices as well as ordinary CI tiles. */
+    bool indexed = (tlut & 2) != 0;
+    bool split_banks = t->siz == 3 && !indexed;
+    unsigned mask = indexed || split_banks ? 2047 : 4095;
+    unsigned sample_size = t->siz == 3 ? 2 : t->siz;
+    if (indexed && t->fmt == 1)
+        sample_size = 1; /* YUV addresses index bytes, including 4-bit indices in the high nibble. */
+    unsigned row_bytes = (*width * (4u << sample_size) + 7) / 8;
     /* Cache the tile's contents, independent of unrelated TMEM loads and of
      * where the game placed the same texture in TMEM. */
     for (unsigned y = 0; y < *height; y++)
-        for (unsigned bank = 0; bank < (t->siz == 3 ? 2u : 1u); bank++)
-            for (unsigned x = 0; x < row_bytes; x++) {
+        for (unsigned bank = 0; bank < (split_banks ? 2u : 1u); bank++)
+            for (unsigned x = 0; x < row_bytes; x += indexed && sample_size == 2 ? 2 : 1) {
                 unsigned offset = (t->tmem * 8 + y * t->line * 8 + x) ^ ((y & 1) ? 4 : 0);
                 hash ^= byte(s, (offset & mask) | (bank * 2048));
                 hash *= UINT64_C(1099511628211);
             }
-    if (tlut && t->fmt == 2)
+    if (indexed)
         for (unsigned i = 2048; i < 4096; i++) {
             hash ^= (unsigned)s->tmem[i] | ((unsigned)s->tmem_invalid[i] << 8);
             hash *= UINT64_C(1099511628211);
@@ -117,12 +125,12 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
         recomp_fail("GLES2 texture allocation failed", 0);
     for (unsigned y = 0; y < *height; y++)
         for (unsigned x = 0; x < *width; x++) {
-            unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << (t->siz == 3 ? 2 : t->siz)) >> 1);
+            unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << sample_size) >> 1);
             o ^= (y & 1) ? 4 : 0;
-            unsigned b0 = byte(s, o & mask), b1 = t->siz >= 2 ? byte(s, (o + 1) & mask) : 0,
-                     nibble = (b0 >> ((x & 1) ? 0 : 4)) & 15;
+            unsigned b0 = byte(s, o & mask), b1 = !indexed && t->siz >= 2 ? byte(s, (o + 1) & mask) : 0,
+                     nibble = (b0 >> ((sample_size == 0 && (x & 1)) ? 0 : 4)) & 15;
             uint8_t *p = pixels + ((size_t)y * *width + x) * 4;
-            if (tlut && t->fmt == 2) {
+            if (indexed) {
                 unsigned index = t->siz == 0 ? t->palette * 16 + nibble : b0;
                 unsigned k = 2048 + index * 8;
                 pixel16(byte(s, k) * 256 + byte(s, k + 1), p, tlut == 3);

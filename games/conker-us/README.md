@@ -53,7 +53,9 @@ Build with `python3 tools/build.py conker-us --release --gles` for native GLES
 or use `--wasm` for WebGL 2. Both paths run the compiled F3DEXBG.NoN program
 and its geometry overlays. The task transfers 0x800 bytes to DMEM. The renderer
 verifies the 0x780-byte constant prefix and preserves the final 0x80 bytes of
-live game parameters.
+live game parameters. The N64 logo and Conker in the opening use RGBA-tagged
+4- and 8-bit tiles as palette indices. GLES selects palette lookup from the RDP
+TEXTLUT mode and includes palette contents in its decoded texture cache key.
 
 Generate a fresh raw CPU report independently of the explicit runtime boundaries:
 

@@ -269,13 +269,13 @@ bool gles2_texture_pack_enabled(const Gles2TexturePack *pack) {
 
 bool gles2_texture_rt64_id(const uint8_t *tmem, unsigned format, unsigned size, unsigned line, unsigned address,
                            unsigned palette, unsigned tlut, unsigned width, unsigned height, uint64_t *id) {
-    const bool ci = format == G_IM_FMT_CI && size <= G_IM_SIZ_8b && (tlut == 2 || tlut == 3);
+    const bool indexed = format != G_IM_FMT_YUV && size <= G_IM_SIZ_8b && (tlut == 2 || tlut == 3);
     const bool ordinary = !tlut &&
                           ((format == G_IM_FMT_RGBA && (size == G_IM_SIZ_16b || size == G_IM_SIZ_32b)) ||
                            (format == G_IM_FMT_IA && size <= G_IM_SIZ_16b) ||
                            (format == G_IM_FMT_I && size <= G_IM_SIZ_8b));
     if (!line || !width || !height || width > 1024 || height > 1024 || palette > 15 ||
-        (size == G_IM_SIZ_4b && width > 1 && (width & 1)) || (!ci && !ordinary))
+        (size == G_IM_SIZ_4b && width > 1 && (width & 1)) || (!indexed && !ordinary))
         return false;
     RT64::LoadTile tile{};
     tile.fmt = uint8_t(format);
@@ -283,7 +283,7 @@ bool gles2_texture_rt64_id(const uint8_t *tmem, unsigned format, unsigned size, 
     tile.line = uint16_t(line);
     tile.tmem = uint16_t(address);
     tile.palette = uint8_t(palette);
-    const unsigned half = (ci || size == G_IM_SIZ_32b) ? 2048 : 4096;
+    const unsigned half = (indexed || size == G_IM_SIZ_32b) ? 2048 : 4096;
     const unsigned row = std::max((width << std::min(size, unsigned(G_IM_SIZ_16b))) >> 1, 1u);
     // Match ordinary RT64 decoded tiles only. The v5 row-tail swap assumes
     // an aligned 64-bit TMEM lane, and wraps exotic layouts differently.
