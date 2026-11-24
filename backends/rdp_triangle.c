@@ -75,7 +75,7 @@ static bool append(RecompRdpTriangle *mesh, const TriangleSetup *setup, float x,
 }
 static bool band(RecompRdpTriangle *mesh, const TriangleSetup *setup, float top, float bottom, float minor_top,
                  float minor_bottom) {
-    if (top == bottom)
+    if (top >= bottom)
         return true;
     float corners[4][2] = {
         {major_x(setup, top), top}, {minor_top, top}, {minor_bottom, bottom}, {major_x(setup, bottom), bottom}};
@@ -98,8 +98,6 @@ bool recomp_rdp_triangle_decode(const uint32_t *words, size_t count, RecompRdpTr
         return false;
     unsigned opcode = words[0] >> 24;
     float top = coordinate(words[1]), middle = coordinate(words[1] >> 16), bottom = coordinate(words[0]);
-    if (top > middle || middle > bottom)
-        return false;
     TriangleSetup setup = {
         .top = floorf(top), .major_x = fixed(words[4]), .major_dx = fixed(words[5]), .shade = (opcode & 4) != 0};
     unsigned offset = 8;
@@ -125,7 +123,12 @@ bool recomp_rdp_triangle_decode(const uint32_t *words, size_t count, RecompRdpTr
     }
     float upper_x = fixed(words[6]), upper_dx = fixed(words[7]);
     float lower_x = fixed(words[2]), lower_dx = fixed(words[3]);
-    return band(mesh, &setup, top, middle, upper_x + upper_dx * (top - setup.top),
-                upper_x + upper_dx * (middle - setup.top)) &&
-           band(mesh, &setup, middle, bottom, lower_x, lower_x + lower_dx * (bottom - middle));
+    /* YH and YL bound coverage. YM selects the minor edge and can lie
+     * outside that interval. XL is still relative to the original YM. */
+    float upper_end = middle < bottom ? middle : bottom;
+    float lower_start = middle > top ? middle : top;
+    return band(mesh, &setup, top, upper_end, upper_x + upper_dx * (top - setup.top),
+                upper_x + upper_dx * (upper_end - setup.top)) &&
+           band(mesh, &setup, lower_start, bottom, lower_x + lower_dx * (lower_start - middle),
+                lower_x + lower_dx * (bottom - middle));
 }
