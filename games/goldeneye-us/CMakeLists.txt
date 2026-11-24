@@ -1,9 +1,6 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/goldeneye.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/goldeneye-us.eeprom")
 set(RECOMP_GAME_SOURCES pager.c input.c audio_dma.c fov.c ai.c)
-if(RECOMP_RENDERER STREQUAL "rt64")
-    list(APPEND RECOMP_GAME_SOURCES graphics.cpp)
-endif()
 set(RECOMP_GAME_GLES2_SUPPORTED ON)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")
 

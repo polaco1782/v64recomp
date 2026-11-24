@@ -242,7 +242,7 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     for module in profile['discovery'].get('uso_modules', []):
         section = next(s['id'] for s in metadata['sections'] if s['name'] == module['name'])
         image, _, _, _ = prepare_text(rom, module)
-        # RDRAM stores each aligned guest word in reversed byte order for RT64.
+        # RDRAM stores each aligned guest word in reversed byte order.
         # Pin that same full image so entry checks can hash RAM without copying.
         storage = b''.join(image[n:n + 4][::-1] for n in range(0, len(image), 4))
         digest = ','.join(f'0x{b:02x}' for b in hashlib.sha256(storage).digest())

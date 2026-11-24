@@ -50,7 +50,7 @@ workers: 1.0 means one logical CPU's worth of work, not 1% machine usage. On a
 | `context_sync` | Wall time serializing guest thread contexts and queues. |
 | `guest_run` | Wall time executing a guest fiber until it yields or requests a main-stack callback, including local stack-switch overhead. This is **not** isolated guest CPU time. |
 | `host_callback` | Native services invoked through the guest-to-owner callback path. |
-| `graphics` | Display-list processing and submission, including internal RT64/GPU waits and texture collection. This is **not** GPU execution time. |
+| `graphics` | Display-list processing and submission, including render submission and synchronization. This is **not** GPU execution time. |
 | `graphics_cpu` | Calling-thread CPU time during graphics submission; excludes blocked time, render workers and GPU execution. Windows CPU accounting is coarse, so compare multi-second totals. A zero count means no valid CPU sample. |
 | `present` | Presentation preparation in the renderer. |
 | `audio` | Native DSP synthesis. |
@@ -73,17 +73,6 @@ experiment, not as proof of a bottleneck. Enabling timing adds clock reads at
 service boundaries and periodic CSV writes; it does not time every instruction
 or alter checkpoint intervals, game speed, simulation, or graphics settings.
 
-All MSVC game builds default to `RECOMP_MSVC_DEBUG_ITERATORS=OFF`. This sets
-`_ITERATOR_DEBUG_LEVEL=0` throughout local C++ code and the shared RT64 dependency
-build, avoiding STL iterator checking and tracking overhead in Debug rendering.
-Debug retains its CRT, symbols, `RECOMP_DEBUG` and guest CPU checks. Explicitly
-configure `-DRECOMP_MSVC_DEBUG_ITERATORS=ON` and rebuild when STL diagnostics are
-needed. Existing explicit cache overrides remain in effect.
-The setting participates in RT64's shared cache identity, so incompatible STL
-layouts cannot reuse the same renderer library. Changing it rebuilds the C++
-adapter and selects/builds the matching shared renderer. Do not set this macro
-on an individual translation unit: C++ objects cross the adapter/library boundary.
-
 ## Debugger and diagnostics
 
 For a new game, start with [adding a ROM and debugging a new port](adding-a-rom.md).
@@ -91,7 +80,7 @@ It covers mapping discovery, missing host/guest symbols, GDB, memory corruption
 and the shared diagnostic scripts under `tools/`.
 
 Configure and build with `python3 tools/build.py <game> --debug`. The binary is
-`build/<game>-debug/bin/<game>`; use `--help` for options. Both configurations
+`build/<game>-gles-debug/bin/<game>`; use `--help` for options. Both configurations
 compile `games/<game>/main.c`; generated sources live under the build's
 `generated/` directory. Both use the same named command-line options.
 
@@ -106,18 +95,6 @@ Disable separation with `-DRECOMP_SEPARATE_DEBUG_INFO=OFF` when needed.
 Both Linux modes explicitly link as PIE; the profiler and crash resolver account
 for the module's runtime relocation base.
 
-RT64 and its bundled dependencies share a build under `build/shared/rt64/` across
-all games and both modes, with separate caches where the Windows CRT differs.
-The default `RelWithDebInfo` configuration uses release optimization and `NDEBUG`
-(`/O2 /Zi /DNDEBUG` on MSVC, `-O2 -g -DNDEBUG` on Clang/GCC). This retains renderer
-symbols while disabling RT64 assertions, internal file logging and Vulkan
-validation layers. Game code, the shared runtime and native adapters retain
-their Debug settings and HUD. RT64 developer tools are disabled by default.
-Set `RECOMP_RT64_BUILD_TYPE=Debug` explicitly when debugging RT64 itself; this
-selects a separate shared build with its assertions and diagnostics enabled,
-and enables RT64 developer tools in the game's Debug adapter. On Windows, RT64
-uses the same CRT as its callers because C++ objects cross that boundary.
-
 Debug builds automatically print timestamped diagnostics to stderr: game and ROM
 identity, boot/code loads, native OS hook entry arguments and caller addresses,
 thread creation/start/stop/exit and priority changes, scheduling and queue waits,
@@ -126,34 +103,6 @@ Save logs include paths, offsets, sizes, results, and persistence failures.
 Controller Pak initialization reports the absent accessory.
 Once per second while the scheduler runs, status lines show thread states, VI
 retraces/framebuffer, input reads, and EEPROM counters.
-
-Rendered Debug builds also show a compact, 12-pixel green overlay at the top
-right, without capturing input. It displays presentation FPS, translated MIPS
-operations per second and total operations, interrupt events processed by the
-scheduler, VI retraces, live guest threads (including runnable and waiting
-counts), and submitted RSP tasks. It also shows triangles and recorded draw
-calls in the latest completed RT64 workload, graphics display-list tasks/second
-(`DL/s`), audio-list tasks/second (`AL/s`), pending RSP tasks, average graphics
-job wall time per DL and synthesis time per AL, audio queue depth
-in milliseconds, and playback underruns. Rates and timings use half-second
-windows. Graphics time includes RT64 backpressure and any GPU waits inside the
-job; it is not a GPU timer or exclusive CPU time. Synthesis time covers DSP
-execution. HLE runs on the owner while the guest is parked; neither timer
-includes guest execution or the scheduler handoff into the owner callback.
-`frame` means a game workload completed by DP full sync, including preceding
-split display lists, rather than an interpolated display frame. Triangle counts
-exclude rectangle expansion and geometry rejected before RT64 records it; they
-are not a count of triangles visible on screen. Draw counts describe RT64's
-recorded game calls, rather than GPU API draws. DL/AL counts describe RSP tasks,
-rather than nested display-list calls or individual audio commands.
-Audio sampling uses completed synthesis counters without waiting for pending
-work. The queue reads `off` when playback is muted/disabled, `starting` before a
-device/rate is available, and `n/a` when no audio backend is attached.
-Totals accumulate from startup. Operations
-include executed nops and delay slots, exclude annulled slots, and exclude work
-inside native hooks. IRQ events count drained libultra events, even when unbound;
-they are separate from VI retraces, which may coalesce before event delivery.
-The overlay is independent of the F1 inspector and absent from Release builds.
 
 Frequent events print their first eight occurrences and then powers of two per
 call site and host thread; OS entries include the cumulative call count. Set
@@ -213,16 +162,8 @@ EOF
 ./build/quake-us-debug/bin/quake-us --input /tmp/quake-input.txt --frames 900
 ```
 
-With `RECOMP_RT64_BUILD_TYPE=Debug`, F1 toggles RT64's inspector. In RT64 game
-Debug builds, F6 toggles wireframe on devices that support it. In GLES2, F6
-toggles an RDP mesh wireframe in both Debug and Release, using native lines and
-leaving fill and texture rectangles intact. Both backends use
-the original texture's RDRAM address to choose an edge color from the same
-15-color palette; untextured geometry is white. This is a view of
-the triangle mesh emitted by the RDP decoder, including its subdivision edges,
-not a view of the original game mesh. The visualization affects color readback;
-leave it off when checking framebuffer-dependent behavior. RT64 games support
-`--texture-dump DIR` in Debug and Release; see [texture dumps](textures.md). `RECOMP_DUKE_PERFORMANCE=1` and
+F6 toggles RDP mesh wireframe in both Debug and Release. It affects color readback.
+`RECOMP_DUKE_PERFORMANCE=1` and
 `RECOMP_NIGHTMARE_PERFORMANCE=1` retain those games' timing logs.
 
 The shared callback and function-candidate inspectors propose roots for review.

@@ -338,14 +338,11 @@ restored after the call, without changing the save or exposing another player.
 Watch, death, tank, scripted cameras and multiplayer retain the native path;
 controller/mouse replays do not inherit physical gamepad look.
 
-GoldenEye's backgrounds are CPU-projected RDP triangles. Independent RT64
-projection expansion left these clipped to the old central region. F7 now uses
+GoldenEye's backgrounds are CPU-projected RDP triangles. F7 uses
 the native player/VI aspect setters (`0x7f09b224`, `0x70004590`) at the four
 ROM-checked viewport call sites. Both CPU visibility/scale and GPU projection
 receive the same native aspect, scaled for the window and the watch's existing
-4:3/16:9 choice. Native top/bottom letterboxing and zoom are retained. RT64 then
-stretches the completed anamorphic framebuffer at scanout, with projection
-expansion disabled. Other games retain their existing RT64 aspect behavior.
+4:3/16:9 choice. Native top/bottom letterboxing and zoom are retained. GLES presents the completed anamorphic framebuffer at the accepted aspect.
 Menus, watch and excluded cameras retain original presentation. The HUD follows
 the native framebuffer layout, so it stretches horizontally in wide gameplay.
 

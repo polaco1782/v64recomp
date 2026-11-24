@@ -83,7 +83,7 @@ unverified.
 
 ## GLES2
 
-Build this backend separately from RT64:
+Build the desktop GLES renderer:
 
 ```sh
 python3 tools/build.py hexen-us --debug --gles
@@ -146,9 +146,6 @@ diagnostics use the shared crash reporter.
 
 The sky pass first draws textured clouds, writes sky-sector depth masks, and
 then clears the remaining background with a maximum-primitive-depth rectangle.
-The shared RT64 build corrects primitive Z from inclusive UNORM to unsigned
-0.15 fixed point, so that rectangle passes `LESS` against cleared depth outside
-the sky masks. See [the shared renderer correction](../../docs/recompilation.md).
 `local/replays/hexen-us-sky-depth.txt` reaches the first level, backs into the courtyard and turns
 for a focused rendering replay:
 
@@ -161,16 +158,10 @@ Debug and Release passed 55-second first-level runs with movement and turning.
 Captured-task isolation verifies the sky, depth-mask and background-clear passes
 separately. Later levels and other games have not been checked for this change.
 
-The automap uses L3DEX 1.21 at physical `0x66490`. RT64's database identifies
-this version but marks its implementation `Unknown`; its L3DEX2 line handler
-also has no implementation. `graphics.cpp` binds only Hexen's verified L3DEX
-text/data, reuses ordinary F3DEX commands and renders LINE3D segments as
-screen-space triangles through RT64's RDP path. The game retains its colors,
-scissor, combiner and blending. Other microcodes use RT64's normal lookup.
-Unverified lighting, fog, perspective lines and triangle opcodes fail explicitly.
+The automap uses L3DEX 1.21 at physical `0x66490`.
 The full text and data fingerprints match original ROM `0x1c090..0x1d090`
 and `0x20530..0x20d30`; the reported failing task contained 424 lines.
-Both builds passed 75-second desktop runs with visible automap lines and repeated
+Earlier RT64 builds passed 75-second desktop runs with visible automap lines and repeated
 returns to 3D gameplay. Release captures also verified zoom in/out and movement
 while the map was open. These focused runs do not establish later hub progression.
 

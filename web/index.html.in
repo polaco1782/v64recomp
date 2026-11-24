@@ -49,7 +49,7 @@ async function initialize() {
     game.FS.writeFile('/rom.z64', rom, {canOwn: true});
     const hasCheats = typeof game._recomp_web_toggle_cheats === 'function' && !game._recomp_web_open_media;
     if (hasCheats) {
-        const cache = '/local/rt64/@RECOMP_GAME@/cheats';
+        const cache = '/local/data/@RECOMP_GAME@/cheats';
         game.FS.mkdirTree(cache);
         game.FS.mount(game.IDBFS, {autoPersist: true}, cache);
     }

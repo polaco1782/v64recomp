@@ -1,9 +1,9 @@
 # OpenGL ES 3.0 and compiled RSP graphics
 
-With `-DRECOMP_RENDERER=gles`, graphics display lists run through
+Graphics display lists run through
 the statically recompiled RSP program checked for the selected game. All
 core runtime and generated graphics code are C11; Python performs generation.
-The cheat menu and the optional desktop texture-pack reader and editor use C++17. Audio uses its own recompiled RSP program with either renderer.
+The desktop texture reader and editor also use C11. The optional C11 cheat menu uses the C bindings for Dear ImGui. Audio uses its own recompiled RSP program.
 
 Native builds require OpenGL ES 3.0 or later. Browser builds use
 WebGL 2 and the same GLSL ES 3.00 shaders.
@@ -11,7 +11,7 @@ WebGL 2 and the same GLSL ES 3.00 shaders.
 The backend lives in `backends/gles2/`: the renderer adapter services graphics
 tasks; the RDP decoder batches draw commands; context, framebuffers, controls,
 TMEM and combiner shaders live in separate modules. The editor, pack reader
-and wireframe are separate from game code and do not link the RT64 renderer.
+and wireframe are separate from game code.
 
 ## Task execution
 
@@ -143,9 +143,6 @@ GLES backend. The generated program registers its microcode and framebuffer inve
 at renderer creation. Task submission verifies the code and data in guest RAM,
 and IMEM DMA verifies each loaded code span.
 
-RT64 is the default. Use a separate build directory for GLES3 so both executables
-are available side by side.
-
 ```sh
 python3 tools/build.py goldeneye-us --release --gles
 ./build/goldeneye-us-gles-release/bin/goldeneye-us
@@ -162,7 +159,7 @@ menus render at 1760x1320. The window starts at 1280x960 and can be resized.
 - `RECOMP_GLES2_AA=0` disables FXAA; `1` enables it.
 - `RECOMP_GLES2_MIPMAPS=0` disables mipmaps; `1` enables them.
 - By default, presentation and captures follow the game's VI gamma-enable bit,
-  using an exponent of `1/2.2` when enabled and `1` when disabled, as in RT64.
+  using an exponent of `1/2.2` when enabled and `1` when disabled.
   Set `RECOMP_GLES2_GAMMA=0.5..2.5` to force a fixed exponent in either mode.
 
 ### Experimental lighting and reflections
@@ -219,8 +216,7 @@ geometry interpolation and its SM64 vertex hooks were removed with the frontend.
 Desktop Debug and Release builds with texture support enable the F8 thumbnail
 editor without a pack. See [GLES texture packs](textures.md#gles3-texture-packs-and-editor)
 for formats and limits. F6 toggles mesh wireframe in Debug and Release. F12 opens the shared
-[GameShark cheats menu](cheats.md). The RT64 inspector and texture dumping
-remain specific to RT64.
+[GameShark cheats menu](cheats.md).
 
 F7 expands the view without stretch only when a native camera/visibility hook
 accepts the new aspect (GoldenEye and Banjo in supported scenes). With no
@@ -332,7 +328,7 @@ No Pi hardware gameplay or performance acceptance has been established.
 
 ```sh
 cmake -S . -B build/pi4 -DCMAKE_BUILD_TYPE=Release \
-  -DRECOMP_RENDERER=gles -DRECOMP_GAME=sm64-us -DCMAKE_C_FLAGS=-mcpu=cortex-a72
+  -DRECOMP_GAME=sm64-us -DCMAKE_C_FLAGS=-mcpu=cortex-a72
 cmake --build build/pi4 -j2
 ```
 

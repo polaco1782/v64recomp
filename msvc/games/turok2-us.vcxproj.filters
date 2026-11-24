@@ -10,18 +10,6 @@
     <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_controls.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_graphics.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_lighting.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)games\turok2-us\acclaim_lighting.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\turok2-us\acclaim_pager.c">
       <Filter>Source Files</Filter>
     </ClCompile>

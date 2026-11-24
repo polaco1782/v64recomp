@@ -201,13 +201,6 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "Resident Evil 2");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_wasd_stick(renderer, true);
-#ifdef RECOMP_WITH_RT64
-    /* Video writes framebuffer RAM without a graphics full-sync. PresentEarly
-     * skips VI-only updates; use RT64's original-rate VI presentation path. */
-    recomp_renderer_set_frame_rate(renderer, 0);
-#elif defined(RECOMP_WITH_GLES2)
-    recomp_renderer_set_ram_scanout(renderer);
-#endif
     RecompAudioConfig audio_config = {
         .output_enabled = true, .playback = !options.mute, .task_profile = &re2_audio_profile};
     audio = recomp_game_audio_create(&rt, &audio_config);

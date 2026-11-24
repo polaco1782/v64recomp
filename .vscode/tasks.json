@@ -10,8 +10,7 @@
         "media-player",
         "-B",
         "build/media-player-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -82,8 +81,7 @@
         "media-player",
         "-B",
         "build/media-player-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -154,8 +152,7 @@
         "bad-apple",
         "-B",
         "build/bad-apple-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -226,8 +223,7 @@
         "bad-apple",
         "-B",
         "build/bad-apple-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -298,8 +294,7 @@
         "sm64-us",
         "-B",
         "build/sm64-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -372,8 +367,7 @@
         "goldeneye-us",
         "-B",
         "build/goldeneye-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -446,8 +440,7 @@
         "shadowman-us",
         "-B",
         "build/shadowman-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -520,8 +513,7 @@
         "quake-us",
         "-B",
         "build/quake-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -594,8 +586,7 @@
         "duke-us",
         "-B",
         "build/duke-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -668,8 +659,7 @@
         "nightmare-us",
         "-B",
         "build/nightmare-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -742,8 +732,7 @@
         "oot-us-v12",
         "-B",
         "build/oot-us-v12-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -816,8 +805,7 @@
         "perfectdark-us-v11",
         "-B",
         "build/perfectdark-us-v11-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -890,8 +878,7 @@
         "conker-us",
         "-B",
         "build/conker-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -964,8 +951,7 @@
         "duke-zero-hour-us",
         "-B",
         "build/duke-zero-hour-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1038,8 +1024,7 @@
         "hexen-us",
         "-B",
         "build/hexen-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1112,8 +1097,7 @@
         "rayman2-us",
         "-B",
         "build/rayman2-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1186,8 +1170,7 @@
         "quake2-us",
         "-B",
         "build/quake2-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1260,8 +1243,7 @@
         "re2-us-v1",
         "-B",
         "build/re2-us-v1-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1334,8 +1316,7 @@
         "turok-us-v12",
         "-B",
         "build/turok-us-v12-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1408,8 +1389,7 @@
         "1080-us",
         "-B",
         "build/1080-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1482,8 +1462,7 @@
         "twine-us",
         "-B",
         "build/twine-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1556,8 +1535,7 @@
         "twine-us",
         "-B",
         "build/twine-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1630,8 +1608,7 @@
         "sm64-us",
         "-B",
         "build/sm64-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1704,8 +1681,7 @@
         "goldeneye-us",
         "-B",
         "build/goldeneye-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1778,8 +1754,7 @@
         "shadowman-us",
         "-B",
         "build/shadowman-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1852,8 +1827,7 @@
         "quake-us",
         "-B",
         "build/quake-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -1926,8 +1900,7 @@
         "duke-us",
         "-B",
         "build/duke-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2000,8 +1973,7 @@
         "nightmare-us",
         "-B",
         "build/nightmare-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2074,8 +2046,7 @@
         "oot-us-v12",
         "-B",
         "build/oot-us-v12-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2148,8 +2119,7 @@
         "perfectdark-us-v11",
         "-B",
         "build/perfectdark-us-v11-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2222,8 +2192,7 @@
         "conker-us",
         "-B",
         "build/conker-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2296,8 +2265,7 @@
         "duke-zero-hour-us",
         "-B",
         "build/duke-zero-hour-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2370,8 +2338,7 @@
         "hexen-us",
         "-B",
         "build/hexen-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2444,8 +2411,7 @@
         "rayman2-us",
         "-B",
         "build/rayman2-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2518,8 +2484,7 @@
         "quake2-us",
         "-B",
         "build/quake2-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2592,8 +2557,7 @@
         "re2-us-v1",
         "-B",
         "build/re2-us-v1-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2666,8 +2630,7 @@
         "turok-us-v12",
         "-B",
         "build/turok-us-v12-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2740,8 +2703,7 @@
         "1080-us",
         "-B",
         "build/1080-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2814,8 +2776,7 @@
         "banjo-kazooie-us",
         "-B",
         "build/banjo-kazooie-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2888,8 +2849,7 @@
         "banjo-kazooie-us",
         "-B",
         "build/banjo-kazooie-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -2962,8 +2922,7 @@
         "turok2-us",
         "-B",
         "build/turok2-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3036,8 +2995,7 @@
         "turok2-us",
         "-B",
         "build/turok2-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3110,8 +3068,7 @@
         "doom64-us",
         "-B",
         "build/doom64-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3184,8 +3141,7 @@
         "doom64-us",
         "-B",
         "build/doom64-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3258,8 +3214,7 @@
         "turok3-us",
         "-B",
         "build/turok3-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3332,8 +3287,7 @@
         "turok3-us",
         "-B",
         "build/turok3-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3406,8 +3360,7 @@
         "mm-us",
         "-B",
         "build/mm-us-debug",
-        "-DCMAKE_BUILD_TYPE=Debug",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Debug"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -3480,8 +3433,7 @@
         "mm-us",
         "-B",
         "build/mm-us-release",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DRECOMP_RENDERER=rt64"
+        "-DCMAKE_BUILD_TYPE=Release"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

@@ -152,9 +152,6 @@ int main(int argc, char **argv) {
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_wasd_stick(renderer, true);
     /* Preserve the game's VI-driven timing for its buffered startup frames. */
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_set_frame_rate(renderer, 0);
-#endif
     RecompAudioConfig ac = {
         .output_enabled = true, .playback = !options.mute, .task_profile = &shadowman_audio_task_profile};
     audio = recomp_game_audio_create(&rt, &ac);

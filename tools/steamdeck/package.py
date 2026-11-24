@@ -12,7 +12,7 @@ import tarfile
 
 # Core ABI libraries also serve the host's dynamically loaded graphics drivers.
 # Keep its C++ runtime and window-system libraries: older bundled copies can
-# prevent a newer Mesa driver from loading, hiding all Vulkan surface extensions.
+# prevent a newer Mesa driver from loading.
 SYSTEM_LIBRARY = re.compile(
     r"^(?:ld-linux.*|lib(?:c|m|pthread|dl|rt|resolv|util|anl|stdc\+\+|gcc_s)\.so.*|"
     r"lib(?:GL.*|EGL.*|GLES.*|OpenGL|GLX.*|vulkan|drm.*|gbm|"
@@ -45,9 +45,7 @@ def glibc_requirement(path):
 
 def package(game, build):
     cache = (build / "CMakeCache.txt").read_text()
-    gles = bool(re.search(r'^RECOMP_RENDERER:STRING=gles[23]?$', cache, re.M))
     embedded_rom = bool(re.search(r"^RECOMP_EMBED_ROM:BOOL=(?:ON|TRUE|1|YES|Y)$", cache, re.M | re.I))
-    embedded_textures = bool(re.search(r"^RECOMP_EMBED_TEXTURE_PACK:FILEPATH=.+$", cache, re.M))
     defaults = (build / "generated" / game / "game_defaults.h").read_text()
     paths = dict(re.findall(r'^#define RECOMP_DEFAULT_(ROM|SAVE) "([^"]+)"', defaults, re.M))
     rom = Path(paths["ROM"]).relative_to("/src/local")
@@ -98,19 +96,15 @@ def package(game, build):
         for name, value in GAMEPAD_DEFAULTS.get(game, {}).items()
     )
     rom_argument = "" if embedded_rom else f' --rom "$here/local/{rom}"'
-    texture_environment = '' if gles else (
-        f'export RECOMP_TEXTURE_REPLACEMENTS="${{RECOMP_TEXTURE_REPLACEMENTS-$here/local/textures/{game}/replacements}}"\n'
-    )
-    data_argument = '' if gles else f' --data "$here/local/rt64/{game}"'
-    driver = 'GLES 3.0' if gles else 'Vulkan'
+    data_argument = f' --data "$here/local/data/{game}"'
+    driver = 'GLES 3.0'
     launcher.write_text(f'''#!/usr/bin/env bash
 set -euo pipefail
 here=$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")" && pwd)
 export LD_LIBRARY_PATH="$here/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
 export SDL_VIDEODRIVER=x11
-export RECOMP_STEAM_DECK="${{RECOMP_STEAM_DECK-1}}"
 export RECOMP_LIVE_PATCH_DIR="${{RECOMP_LIVE_PATCH_DIR-off}}"
-{texture_environment}{gamepad_defaults}cd -- "$here"
+{gamepad_defaults}cd -- "$here"
 exec "$here/{game}"{rom_argument}{data_argument} \\
     --save "$here/local/{save}" \\
     --crash-dir "$here/local/crashes/{game}" "$@"
@@ -122,6 +116,7 @@ exec "$here/{game}"{rom_argument}{data_argument} \\
     shutil.copy2(ROOT / "LICENSE", destination)
     shutil.copy2(ROOT / "THIRD_PARTY_NOTICES.md", destination)
     shutil.copytree(ROOT / "licenses", destination / "licenses")
+    shutil.copytree(build / "bin/licenses", destination / "licenses", dirs_exist_ok=True)
     # Library copyright files ship with Debian's packages.
     for notice in sorted(Path("/usr/share/doc").glob("*/copyright")):
         target = destination / "library-notices" / notice.parent.name
@@ -147,7 +142,6 @@ exec "$here/{game}"{rom_argument}{data_argument} \\
     (destination / "README.txt").write_text(
         ("Private build: ROM content is embedded. Run ./launch.sh; no external ROM is needed.\n"
          if embedded_rom else f"No ROM is included. Supply your own verified ROM at local/{rom}, then run ./launch.sh.\n") +
-        ("The texture ZIP is embedded and loads automatically.\n" if embedded_textures else "") +
         "Keep the entire directory together. local/ holds private saves and caches.\n"
         "Requires x86_64 Linux with glibc 2.36+, GCC 12+ runtime (GLIBCXX_3.4.30),\n"
         f"X11/Xwayland and a {driver} driver.\n"
@@ -165,7 +159,7 @@ exec "$here/{game}"{rom_argument}{data_argument} \\
         "Profiling needs no Python, perf installation or sudo; CPU stacks use frame pointers.\n"
         "Existing saves are excluded. Hardware gameplay is not validated by packaging.\n"
     )
-    # Verify loader resolution and startup without initializing Vulkan or a ROM.
+    # Verify loader resolution and startup without opening a window or a ROM.
     subprocess.run([str(launcher), "--help"], check=True)
     package_name = f"{game}-steamdeck" + ("-embedded" if embedded_rom else "")
     archive = build / f"{package_name}.tar.gz"

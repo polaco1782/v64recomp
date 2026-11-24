@@ -292,7 +292,7 @@ void recomp_rdp_gles2_set_framebuffer(RecompRDPGles2 *s, uint32_t address, uint3
     recomp_gles2_require_owner(s);
     s->present_address = address;
     if (!s->gamma_overridden) {
-        /* Match RT64's VI gamma-enable bit and presentation exponent. */
+        /* Apply gamma correction when requested by VI. */
         s->color_gamma = (vi_status & 0x08u) ? 1.0f / 2.2f : 1.0f;
     }
 }

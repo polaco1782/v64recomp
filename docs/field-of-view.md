@@ -171,7 +171,7 @@ adjusted_vertical = 2 * atan(tan(incoming_native_vertical / 2) * scale)
 Keep native zoom fields unchanged so later updates cannot compound the override.
 Scope hooks with verified return addresses, matrix identities or camera state.
 Decide how multiplayer, menus, watch screens, death and scripted cameras should
-behave; verify any state globals used for that decision. RT64 F7 aspect expansion
+behave; verify any state globals used for that decision. F7 aspect expansion
 is separate from this reference-angle conversion and needs combined testing.
 
 ### Widescreen on GLES2
@@ -186,8 +186,7 @@ on GLES2) requests the drawable aspect, never narrower than 4:3. The adapter
 must update the world's projection and matching visibility state; return true
 only for native anamorphic output. GLES2 then displays that output at the
 accepted aspect, keeping stock 4:3 framing for unsupported states, CPU video
-and games without an adapter. GoldenEye and Banjo are current examples. This is not
-the general-purpose RT64 expansion, nor does it separately reposition the HUD.
+and games without an adapter. GoldenEye and Banjo are current examples.
 
 ## 6. Store evidence and integrate the setting
 

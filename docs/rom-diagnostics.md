@@ -142,12 +142,8 @@ families together and repeat discovery/translation before runtime validation.
 The preflight is read-only with respect to profiles and executables; its output
 is under the selected build's `candidate-review/<game>/preflight/` directory.
 
-For a graphics-task failure, `tools/analyze.py rsp-task REPORT.json --rom ROM
---rt64` compares captured text/data bytes against the checked-out RT64 database
-using its exact XXH3 hashes and reports whether the matched variant has a
-decoder. This optional diagnostic requires system `libxxhash`. A recognized SDK
-name or database entry does not by itself establish decoder support. The check
-does not launch a game or validate custom renderer hooks/rendered output.
+For a graphics-task failure, `tools/analyze.py rsp-task REPORT.json --rom ROM` displays
+the captured task, microcode bytes and display-list commands for comparison against the game profile.
 
 The scanner follows indexed `lw` values into `jalr` through owned control flow.
 It scans the pointer field in 4-, 8-, 16- and 32-byte records. An

@@ -26,7 +26,7 @@ count completed tasks as `jpeg_tasks`.
 
 ## GLES2 renderer
 
-RT64 remains the default. Build and run the compiled RSP/GLES2 variant separately:
+Build and run the desktop Debug configuration:
 
 ```sh
 python3 tools/build.py oot-us-v12 --debug --gles

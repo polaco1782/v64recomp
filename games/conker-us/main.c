@@ -2,9 +2,6 @@
 #include <setjmp.h>
 #include "generated.h"
 #include "audio.h"
-#ifdef RECOMP_WITH_RT64
-#include "graphics.h"
-#endif
 #include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -287,9 +284,6 @@ static void game_init(Game *game, const RecompGameOptions *options) {
         recomp_store(rt, boot_parameters[i][0], boot_parameters[i][1], 4);
     game->renderer = recomp_renderer_create_named(rt, options->data, "Conker's Bad Fur Day");
     recomp_game_require(game->renderer != NULL, "Conker renderer initialization failed", 0);
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_set_microcode_hook(game->renderer, conker_bind_microcode);
-#endif
     const char *wasd = getenv("RECOMP_CONKER_WASD");
     bool desktop = wasd && strcmp(wasd, "1") == 0;
 #ifdef RECOMP_DEBUG

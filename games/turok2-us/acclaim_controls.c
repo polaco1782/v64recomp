@@ -9,9 +9,6 @@
 static const double radians = 3.14159265358979323846 / 180.0;
 static RecompMouseBuffer mouse;
 static RecompFov fov;
-#ifdef RECOMP_WITH_RT64
-static RecompRenderer *video;
-#endif
 static double sensitivity = 0.08, invert_y = -1.0;
 enum PlayerControl { NO_CONTROL, ON_FOOT, CLIMBING };
 static enum PlayerControl control;
@@ -21,7 +18,7 @@ static RecompMouseFrame climb_mouse;
 static uint64_t last_control;
 static uint32_t look_object, look_limits;
 static int pending_steps;
-static float camera_scale = 1.0f, display_expansion = 1.0f;
+static float camera_scale = 1.0f;
 
 static float from_bits(uint32_t bits) {
     float value;
@@ -65,9 +62,6 @@ static void adjust(int steps) {
 }
 
 void acclaim_controls_init(RecompRenderer *renderer) {
-#ifdef RECOMP_WITH_RT64
-    video = renderer;
-#endif
     recomp_renderer_set_fov_hook(renderer, adjust);
     const char *mode = getenv("RECOMP_TUROK_MOUSE");
     mouse_enabled = !mode || strcmp(mode, "0");
@@ -218,10 +212,10 @@ void acclaim_player_axis(Runtime *rt, MipsContext *ctx, RecompFunction original)
 void acclaim_world_camera(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     camera_active =
         control == ON_FOOT && local_control(rt) && (uint32_t)ctx->gpr[4] == recomp_load32(rt, AC_MAIN_CAMERA);
-    camera_scale = display_expansion = 1.0f;
+    camera_scale = 1.0f;
     original(rt, ctx);
     camera_active = false;
-    camera_scale = display_expansion = 1.0f;
+    camera_scale = 1.0f;
 }
 
 void acclaim_perspective(Runtime *rt, MipsContext *ctx, RecompFunction original) {
@@ -246,36 +240,19 @@ void acclaim_perspective(Runtime *rt, MipsContext *ctx, RecompFunction original)
                 float new_vertical = (float)(2 * atan(stock_tangent * camera_scale) / radians);
                 mips_set(ctx, 6, mips_s32(to_bits(new_vertical)));
             }
-#ifdef RECOMP_WITH_RT64
-            display_expansion = fmaxf(1.0f, recomp_renderer_projection_expansion(video, 4.0f / 3));
-#endif
         }
     }
     original(rt, ctx);
-}
-
-void acclaim_fixed_matrix(Runtime *rt, MipsContext *ctx, RecompFunction original) {
-    uint32_t matrix = ctx->gpr[4];
-    bool widen = camera_active && display_expansion != 1 && (uint32_t)ctx->gpr[31] == AC_FIXED_RETURN;
-    original(rt, ctx);
-    if (widen) {
-        // RT64 expands the fixed matrix at presentation. The engine's object
-        // tests use its float copy, with clip X in column zero.
-        for (unsigned row = 0; row < 4; row++) {
-            uint32_t x = matrix + 16 * row;
-            recomp_store32(rt, x, to_bits(from_bits(recomp_load32(rt, x)) / display_expansion));
-        }
-    }
 }
 
 void acclaim_frustum_points(Runtime *rt, MipsContext *ctx, RecompFunction original) {
-    if (camera_active && (uint32_t)ctx->gpr[31] == AC_CORNERS_RETURN && (camera_scale != 1 || display_expansion != 1)) {
+    if (camera_active && (uint32_t)ctx->gpr[31] == AC_CORNERS_RETURN && camera_scale != 1) {
         uint32_t points = ctx->gpr[5];
         recomp_game_require((uint32_t)ctx->gpr[7] == 5, "unexpected Acclaim camera frustum", points);
         for (unsigned i = 1; i < 5; i++) {
             uint32_t point = points + 12 * i;
             float x = from_bits(recomp_load32(rt, point)), y = from_bits(recomp_load32(rt, point + 4));
-            float nx = x * camera_scale * display_expansion, ny = y * camera_scale;
+            float nx = x * camera_scale, ny = y * camera_scale;
             recomp_store32(rt, point, to_bits(nx));
             recomp_store32(rt, point + 4, to_bits(ny));
             if (i == 1) {

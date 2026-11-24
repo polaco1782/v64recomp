@@ -1,6 +1,6 @@
 # GameShark cheats
 
-F12 opens and closes the shared cheat menu in RT64 and GLES, in both Debug and
+F12 opens and closes the shared cheat menu on desktop and WebGL, in both Debug and
 Release. In the browser, the **Cheats** button also opens and closes it. The first opening loads cached lists, or downloads missing lists from
 [Mupen64Plus](https://github.com/mupen64plus/mupen64plus-core/blob/master/data/mupencheat.txt)
 and [Project64](https://github.com/project64/project64/tree/develop/Config/Cheats).
@@ -11,7 +11,7 @@ refresh retains the source's previous cache.
 Both ROM header CRC words and the country byte must match a database section.
 There is no fallback to a different region or revision based on the title.
 Project64 publishes individual files: `Project64Files` in
-`backends/cheat_database.cpp` maps the supported cartridges to those filenames,
+`backends/cheat_database.c` maps the supported cartridges to those filenames,
 and each downloaded file's section is independently matched. Mupen64Plus uses
 one database and needs no per-game filename mapping. Identical fixed-code
 sequences from the two providers appear once; parameterized entries remain
@@ -28,7 +28,6 @@ the GameShark button used by button-activated codes.
 Mouse input and keyboard navigation (Tab, arrows, Space) operate the menu.
 F12, Escape, or the close button dismisses it. Controller and keyboard gameplay
 input is suppressed while it is open; guest execution and audio continue.
-Opening the menu closes an open RT64 inspector so it cannot cover the menu.
 After closing, keyboard input resumes once the held keys are released, so
 Escape used to close the menu does not also exit the game.
 
@@ -64,29 +63,28 @@ relocation cannot always be identified from those ranges: modifying its RAM
 bytes still cannot change the compiled C instructions. A downloaded code being
 available does not guarantee its intended effect in a native recompilation.
 
-Both renderers use the same catalog, ImGui panel and GameShark interpreter.
+Desktop and browser builds share the catalog, ImGui panel and GameShark interpreter.
 The SDL owner validates and applies enabled programs once per input poll,
 between guest dispatches. The download worker handles only catalog data.
-RT64 renders the panel through Vulkan under the inspector mutex. GLES draws it
+GLES draws the panel
 after the final game image blit and before the window swap or WebGL frame commit.
 Opening the panel releases captured mouse input so it can be used for navigation.
 
-GLES builds use Dear ImGui from the pinned RT64 checkout. Initialize its
-submodules to include the menu, or configure with `-DRECOMP_GLES2_CHEATS=OFF`
-for a build without it. Native builds with the menu require libcurl 7.85 or
+GLES builds use Dear ImGui through the vendored cimgui C API. Set `-DRECOMP_GLES2_CHEATS=OFF` to omit the menu. Native builds with the menu require libcurl 7.85 or
 newer and the OpenGL ES 3 development headers and library.
 
 ## Downloading and cache
 
 Files live under `<data>/cheats/<CRC1>-<CRC2>-C-<country>/`, where `<data>` is
 the renderer data directory selected by `--data` (normally
-`local/rt64/<game>`). `Mupen64Plus.txt` and `Project64.txt` are separate raw
+`local/data/<game>`). `Mupen64Plus.txt` and `Project64.txt` are separate raw
 source caches. Close and reopen the menu to keep using the current list;
 **Refresh downloads** explicitly updates it. Removing a cache file causes the
 next launch's first menu opening to download that source again. The folder uses
 `C-<country>` so it is valid on Windows; database section matching and the ROM ID
 shown in the menu retain `C:<country>`. Older caches in folders with a colon are
-downloaded again under the new name.
+downloaded again under the new name. To reuse a desktop cache from an earlier
+build, pass its existing game data directory with `--data DIR`.
 
 The downloader uses libcurl on Windows and Linux, with HTTPS-only requests and
 redirects, TLS verification, connection/transfer timeouts, an 8 MiB response

@@ -28,7 +28,7 @@ tools/build.py turok-us-v12 --gles --release
 GLES2 runs the recompiled F3DLX.NoN, F3DEX.NoN and L3DEX 1.00 graphics
 programs from the verified RNC-decoded ROM image. A 2,850-presentation Debug
 replay reached first-person gameplay, displayed the automap and opened the
-pause menu. RT64 remains the default renderer.
+pause menu.
 
 The normalized ROM is `local/turok.us.v12.z64`, size `0x800000`, SHA-1
 `c7ed00dee20f4235823bcf50d32fa5d6862d6fce`. Other games and revisions are rejected.
@@ -66,23 +66,7 @@ are focused acceptance paths, not full-game coverage.
 Nonzero PCM and SDL queue activity are verified, while listening quality remains
 unverified. Use `--capture-every N` for optional periodic screenshots.
 
-Turok uses the shared expanded widescreen viewport and 60 FPS interpolation. Disabling interpolation or widescreen did not fix
-the starting-camera fog flashes. The verified cause was RT64's combined
-view/projection decomposition dividing by a zero or nearly zero X component.
-The shared RT64 integration now pivots on the largest view-axis component.
-The user confirmed the fog correction in Turok and reported improved GoldenEye
-fog as well. Quantized camera matrices and the captured Turok starting pose were
-checked against the actual shared build at O0 and O2.
-
 The automap switches to L3DEX 1.00 at `0x800b4ca0` with data `0x800f86b0`.
-RT64 recognizes this version but does not implement its command decoder. Treating
-it as a usable decoder skips `G_ENDDL` and runs beyond the submitted list, eventually
-causing `invalid RT64 DP receipt`. The shared `backends/rt64_l3dex.cpp` adapter checks the
-complete task text/data fingerprints, decodes the ordinary F3DEX commands and
-renders the map's line commands through RT64's RDP triangle path. Its orthographic
-projection uses constant homogeneous W=32; screen coordinates already divide by W.
-Lines with varying W, lighting or texture-coordinate generation produce a diagnostic. Core task token
-and duplicate completion checks remain enabled.
 
 ## Loading and checked boundaries
 

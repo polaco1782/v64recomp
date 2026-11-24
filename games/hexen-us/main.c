@@ -1,8 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
 #include "game.h"
-#ifdef RECOMP_WITH_RT64
-#include "graphics.h"
-#endif
 #include "audio.h"
 #include "generated.h"
 #include "game_config.h"
@@ -135,9 +132,6 @@ static void game_init(Game *g, const RecompGameOptions *options) {
     recomp_renderer_set_fov_hook(g->renderer, hexen_fov_adjust);
     g->running = true;
     hexen_input_init(poll_command_input);
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_set_microcode_hook(g->renderer, hexen_bind_microcode);
-#endif
     RecompAudioConfig ac = {.output_enabled = true,
                             .playback = !options->mute,
                             .prebuffer_ms = 160,

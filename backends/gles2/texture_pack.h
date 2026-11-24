@@ -27,12 +27,9 @@ bool gles2_texture_pack_has_rice(const Gles2TexturePack *pack);
 void gles2_texture_pack_record_load(Gles2TexturePack *pack, uint64_t serial, const Tile *tile, uint32_t w0, uint32_t w1,
                                     unsigned image_width, unsigned image_size, const TextureTransfer *dma,
                                     const uint8_t *ram, size_t ram_size, uint32_t address);
-bool gles2_texture_rt64_id(const uint8_t *tmem, unsigned format, unsigned size, unsigned line, unsigned address,
-                           unsigned palette, unsigned tlut, unsigned width, unsigned height, uint64_t *id);
 typedef struct Gles2PackTile {
-    uint64_t hash, id;
+    uint64_t hash;
     unsigned width, height;
-    bool has_id;
 } Gles2PackTile;
 typedef enum Gles2PackStatus { GLES2_PACK_MISS, GLES2_PACK_INCOMPLETE, GLES2_PACK_PENDING } Gles2PackStatus;
 Gles2PackStatus gles2_texture_pack_request(Gles2TexturePack *pack, Gles2PackTile key, const Tile *tile, unsigned tlut,

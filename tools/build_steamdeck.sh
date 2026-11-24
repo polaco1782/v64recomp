@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Build in an older userspace; never reuse the host's CMake or RT64 cache.
+# Build in an older userspace; never reuse the host's CMake cache.
 set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: tools/build_steamdeck.sh [GAME] [JOBS] [rt64|gles]
+Usage: tools/build_steamdeck.sh [GAME] [JOBS] [gles]
 
-Defaults: oot-us-v12, 4 jobs, RT64. Supports Podman, Docker and Bubblewrap.
-Outputs: build/steamdeck/GAME/package and GAME-steamdeck.tar.gz
+Defaults: oot-us-v12, 4 jobs, GLES. Supports Podman, Docker and Bubblewrap.
+Outputs: build/steamdeck/GAME-gles/package and GAME-steamdeck.tar.gz
 Set CONTAINER_ENGINE=podman, docker or bwrap to select the engine.
 Automatic selection tries Podman, Docker, then Bubblewrap.
 The package excludes ROMs and existing saves; see docs/steamdeck.md.
@@ -17,8 +17,8 @@ if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
 if (( $# > 3 )); then usage >&2; exit 2; fi
 game=${1:-oot-us-v12}
 jobs=${2:-4}
-renderer=${3:-rt64}
-if [[ $renderer != rt64 && $renderer != gles ]]; then usage >&2; exit 2; fi
+renderer=${3:-gles}
+if [[ $renderer != gles ]]; then usage >&2; exit 2; fi
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 if [[ ! $game =~ ^[a-z0-9]+(-[a-z0-9]+)*$ || ! -f $root/games/$game/profile.toml ]]; then
     printf 'Unknown game: %s\n' "$game" >&2; exit 2
@@ -43,10 +43,10 @@ if [[ $engine != podman && $engine != docker && $engine != bwrap ]]; then
     printf 'CONTAINER_ENGINE must be podman, docker or bwrap\n' >&2; exit 2
 fi
 command -v "$engine" >/dev/null
-mkdir -p "$root/build/steamdeck" "$root/build/shared/rt64/steamdeck"
+mkdir -p "$root/build/steamdeck"
 printf 'Steam Deck build engine: %s\n' "$engine"
 if [[ $engine == bwrap ]]; then
-    exec bash "$root/tools/steamdeck/bwrap.sh" "$root" "$game" "$jobs" "$renderer"
+    exec bash "$root/tools/steamdeck/bwrap.sh" "$root" "$game" "$jobs"
 fi
 image=localhost/v64recomp-steamdeck:bookworm
 # Only build recipes are sent to the image builder, never the checkout or ROMs.
@@ -59,5 +59,4 @@ if [[ $engine == podman ]]; then user_options+=(--userns keep-id); fi
     --security-opt label=disable --env HOME=/tmp \
     --volume "$root:/src:ro" \
     --volume "$root/build/steamdeck:/src/build/steamdeck:rw" \
-    --volume "$root/build/shared/rt64/steamdeck:/src/build/shared/rt64/steamdeck:rw" \
-    --workdir /src "$image" bash tools/steamdeck/build.sh "$game" "$jobs" "$renderer"
+    --workdir /src "$image" bash tools/steamdeck/build.sh "$game" "$jobs"

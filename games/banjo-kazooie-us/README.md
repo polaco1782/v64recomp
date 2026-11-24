@@ -26,7 +26,7 @@ and [Debug options](../../docs/debugging.md).
 
 ## Desktop controls
 
-WASD and mouse controls are enabled by default on RT64 and GLES2.
+WASD and mouse controls are enabled by default on GLES.
 
 | Input | Action |
 | --- | --- |

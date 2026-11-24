@@ -70,11 +70,6 @@ void recomp_turok_rom_read(Runtime *rt, MipsContext *ctx) {
     mips_set(ctx, 3, mips_s32(destination + size));
     mips_set(ctx, 6, UINT64_MAX);
 }
-#ifdef RECOMP_WITH_RT64
-static bool turok_bind_microcode(void *interpreter, size_t ram_size, uint32_t code, uint32_t data) {
-    return code == 0xb4ca0 && recomp_renderer_bind_l3dex_1_00(interpreter, ram_size, code, data);
-}
-#endif
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt;
     (void)opaque;
@@ -124,9 +119,6 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Turok IO/task init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Turok");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_set_microcode_hook(renderer, turok_bind_microcode);
-#endif
     turok_controls_init(poll_command_input);
     recomp_renderer_set_fov_hook(renderer, turok_fov_adjust);
     RecompAudioConfig ac = {

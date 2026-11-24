@@ -2,18 +2,16 @@
 
 Install Visual Studio 2022 (17.5+) or Visual Studio 2026 with **Desktop development
 with C++**, the x64 compiler, Windows SDK, and C++ CMake tools. Install Python
-3.11+ (`python3 --version`) and Git. A Vulkan-capable GPU driver is required to
-play; RT64 supplies its Vulkan headers and shader compiler.
+3.11+ (`python3 --version`) and Git. The graphics backend uses OpenGL ES 3 through SDL and ANGLE.
 
 From PowerShell at the repository root:
 
 ```powershell
-git submodule update --init --recursive
 .\tools\setup_windows.ps1
 ```
 
 Setup creates `.venv`, installs `requirements.txt`, installs the pinned vcpkg
-manifest (OpenSSL, SDL2, libcurl and PThreads4W), and updates `v64recomp.sln`.
+manifest (OpenSSL, SDL2, libcurl, ANGLE and PThreads4W), and updates `v64recomp.sln`.
 It uses Visual Studio's CMake and vcpkg when available. Set `VCPKG_ROOT` or pass
 `-VcpkgRoot` for another checkout; `-Python C:\path\to\python.exe` overrides Python.
 
@@ -25,7 +23,7 @@ Open **v64recomp.sln** at the project root. It contains:
 
 The projects and filters are kept under `msvc/`, with relative paths and stable
 project IDs. Sources are visible even before a ROM is imported. No separate
-SDL, OpenSSL or RT64 projects appear in the main solution. Each game references
+SDL or OpenSSL projects appear in the main solution. Each game references
 Recomp; building it invokes the common CMake pipeline, which generates its CPU
 code, compiles the correct configuration and links all required libraries.
 Dependency DLLs and license notices are copied beside the executable.
@@ -107,9 +105,8 @@ Downloads, generated CPU sources, libraries, saves and captures stay outside the
 checked project files. Keep the deployed DLLs beside the executable and retain
 PDBs for native crash investigation.
 
-Windows uses an SDL Win32 window with RT64 Vulkan graphics. Core crash reports
+Windows uses an SDL Win32 window with OpenGL ES 3 graphics. Core crash reports
 retain the shared format and native symbols when available. The built-in
 signal-based profiler, X11 desktop replay and perf tools remain Linux-only.
 Linux retains its existing presets and system dependencies: OpenSSL, SDL2,
-libcurl 7.85+, X11 and Xrandr. RT64 remains shared under `build/shared/rt64/`;
-Debug uses an optimized renderer cache with the matching debug CRT and STL ABI.
+libcurl 7.85+, OpenGL ES 3 headers and libraries, and SDL window-system support.

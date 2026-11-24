@@ -10,34 +10,16 @@
     <ClCompile Include="$(RecompRoot)backends\audio.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\cheat_database.cpp">
+    <ClCompile Include="$(RecompRoot)backends\cheat_database.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClInclude Include="$(RecompRoot)backends\cheat_database.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\cheat_menu.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\cheat_menu.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\cheat_panel.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\cheat_panel.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
     <ClInclude Include="$(RecompRoot)backends\gles2\cheat_overlay.h">
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\gles2\cheats.cpp">
+    <ClCompile Include="$(RecompRoot)backends\gles2\cheats.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2\combiner.c">
@@ -49,7 +31,7 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\controls.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\gles2\editor.cpp">
+    <ClCompile Include="$(RecompRoot)backends\gles2\editor.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClInclude Include="$(RecompRoot)backends\gles2\editor.h">
@@ -70,10 +52,16 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\renderer.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\rice.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\rice.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)backends\gles2\screen_space.h">
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\gles2\texture_pack.cpp">
+    <ClCompile Include="$(RecompRoot)backends\gles2\texture_pack.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClInclude Include="$(RecompRoot)backends\gles2\texture_pack.h">
@@ -100,42 +88,6 @@
     <ClCompile Include="$(RecompRoot)backends\rdp_triangle.c">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\rt64.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)backends\rt64_l3dex.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\texture_decode.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\texture_editor.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\texture_editor.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)backends\texture_editor_hooks.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClInclude Include="$(RecompRoot)backends\texture_editor_paths.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\texture_editor_zip.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\texture_editor_zip.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\textures.cpp">
-      <Filter>Source Files\backends</Filter>
-    </ClCompile>
-    <ClInclude Include="$(RecompRoot)backends\textures.h">
-      <Filter>Header Files\backends</Filter>
-    </ClInclude>
-    <None Include="$(RecompRoot)cmake\BuildRT64.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
     <None Include="$(RecompRoot)cmake\GLES2.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
@@ -154,9 +106,6 @@
     <None Include="$(RecompRoot)cmake\SeparateDebug.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
-    <None Include="$(RecompRoot)cmake\SharedRT64.cmake">
-      <Filter>Configuration\cmake</Filter>
-    </None>
     <None Include="$(RecompRoot)cmake\SoftFloat.cmake">
       <Filter>Configuration\cmake</Filter>
     </None>
@@ -165,24 +114,6 @@
     </None>
     <None Include="$(RecompRoot)cmake\WebAssembly.cmake">
       <Filter>Configuration\cmake</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\AnamorphicPresentation.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\CMakeLists.txt">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\LookAtMatching.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\PrimitiveDepth.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\StableProjection.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
-    </None>
-    <None Include="$(RecompRoot)cmake\rt64\TextureEditor.cmake">
-      <Filter>Configuration\cmake\rt64</Filter>
     </None>
     <ClInclude Include="$(RecompRoot)cmake\softfloat\platform.h">
       <Filter>Header Files\cmake\softfloat</Filter>
@@ -409,9 +340,6 @@
     <None Include="$(RecompRoot)tools\discover.py">
       <Filter>Source Files\tools</Filter>
     </None>
-    <None Include="$(RecompRoot)tools\embed_texture_pack.py">
-      <Filter>Source Files\tools</Filter>
-    </None>
     <None Include="$(RecompRoot)tools\emit.py">
       <Filter>Source Files\tools</Filter>
     </None>
@@ -515,9 +443,6 @@
     </Filter>
     <Filter Include="Configuration\cmake">
       <UniqueIdentifier>{E5AD29D0-B01C-5827-9290-D7B25CEF7790}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Configuration\cmake\rt64">
-      <UniqueIdentifier>{1CBD586A-9036-5A81-A764-F240AF05E3D4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Configuration\cmake\toolchains">
       <UniqueIdentifier>{20EE7F38-027F-5260-B59B-593AAB48DA5E}</UniqueIdentifier>

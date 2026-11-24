@@ -34,7 +34,7 @@ python3 tools/build.py twine-us --debug --gles
 
 GLES2 compiles the ROM-verified F3DEX 2.08 text and its overlays. The latter
 command is a bounded smoke run; press Start at the title screen to enter the
-menu. The default renderer remains RT64.
+menu.
 EEPROM uses `local/saves/twine-us.eeprom`; the first Controller Pak uses that path
 with `.pak` appended. Save type/capacity and persistence still need acceptance.
 

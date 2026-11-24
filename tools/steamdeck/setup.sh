@@ -6,5 +6,5 @@ apt-get update
 apt-get install -y --no-install-recommends \
     ca-certificates clang llvm llvm-14-linker-tools cmake g++ ninja-build pkg-config \
     python3 python3-dev python3-venv libssl-dev libsdl2-dev libcurl4-openssl-dev \
-    libgles2-mesa-dev libgtk-3-dev libx11-dev libxrandr-dev
+    libgles2-mesa-dev
 rm -rf /var/lib/apt/lists/*

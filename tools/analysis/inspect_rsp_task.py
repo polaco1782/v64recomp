@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
-import ctypes
-import ctypes.util
 import hashlib
 import json
 from pathlib import Path
@@ -65,58 +63,6 @@ class Snapshot:
         return words
 
 
-def rt64_microcode(snapshot: Snapshot, words: list[int], source: Path) -> dict:
-    """Match RT64's exact text/data hashes and report its decoder assignment.
-
-    Names embedded in microcode are not enough: known variants can retain a
-    stock SDK string while having an unimplemented decoder in RT64's database.
-    Hash the word-swapped memory layout that RT64 itself receives.
-    """
-    library = ctypes.util.find_library('xxhash')
-    if library is None:
-        raise RecompError('--rt64 requires the system xxhash library (XXH3_64bits)')
-    xxhash = ctypes.CDLL(library)
-    digest = xxhash.XXH3_64bits
-    digest.argtypes, digest.restype = [ctypes.c_void_p,ctypes.c_size_t],ctypes.c_uint64
-    text = source.read_text()
-    instances = {name:dict(name=label,decoder=decoder) for name,label,decoder in re.findall(
-        r'const GBIInstance\s+(\w+)\s*=\s*\{\s*"([^"]+)"\s*,\s*GBIUCode::(\w+)',text)}
-    implemented = set(re.findall(r'case GBIUCode::(\w+)\s*:',text))
-    matches = {}
-    for kind,address in (('text',words[4]),('data',words[6])):
-        block = re.search(r'\b'+kind+r'Segments\s*=\s*\{(.*?)\n\s*\};',text,re.S)
-        if block is None:
-            raise RecompError('unrecognized RT64 microcode database layout')
-        segments = re.findall(r'GBISegment\s*\{\s*(0x[0-9A-Fa-f]+)\s*,\s*'
-                              r'(0x[0-9A-Fa-f]+)ULL\s*,\s*\{([^}]+)\}',block[1])
-        if not segments:
-            raise RecompError('empty RT64 microcode hash database')
-        hashes,found = {},[]
-        for length,expected,names in sorted(segments,key=lambda row:int(row[0],16)):
-            size = int(length,16)
-            if size not in hashes:
-                raw = snapshot.read(address & ~7,size)
-                if size % 4:
-                    raise RecompError('RT64 microcode hash length is not word aligned')
-                swapped = bytearray(size)
-                for i in range(4):
-                    swapped[i::4] = raw[3-i::4]
-                hashes[size] = digest(bytes(swapped),size)
-            if hashes[size] == int(expected,16):
-                found.append(dict(bytes=size,hash=expected,instances=re.findall(r'&(\w+)',names)))
-        matches[kind] = found
-    # RT64 sorts segments by length and keeps the last matching segment.
-    text_names = matches['text'][-1]['instances'] if matches['text'] else []
-    data_names = matches['data'][-1]['instances'] if matches['data'] else []
-    common = [name for name in text_names if name in data_names]
-    if any(name not in instances for name in common):
-        raise RecompError('RT64 database references an undefined microcode instance')
-    selected = instances[common[0]] if common else None
-    return dict(source=str(source),segments=matches,instance=selected,
-                decoder_available=bool(selected and selected['decoder'] in implemented),
-                note='Database assignment only; this does not validate rendered output or custom renderer hooks.')
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('report', type=Path)
@@ -128,8 +74,6 @@ def main() -> int:
     parser.add_argument('--commands', type=int, default=32, help='maximum flat command rows to print')
     parser.add_argument('--opcode', type=lambda x: int(x, 0), help='print only this opcode')
     parser.add_argument('--extract', type=Path, help='write microcode and graphics/audio command bytes here')
-    parser.add_argument('--rt64', action='store_true',
-                        help='match the checked-out RT64 database and report decoder availability (requires libxxhash)')
     args = parser.parse_args()
     if not 1 <= args.list_scale <= 65536:
         raise RecompError('invalid task list scale')
@@ -139,13 +83,6 @@ def main() -> int:
     words = snapshot.task()
     for name, word in zip(FIELDS, words):
         print(f'{name:20s} {word:#010x} ({word})')
-    if args.rt64:
-        if words[0] != 1:
-            raise RecompError('--rt64 requires a graphics OSTask')
-        source = Path(__file__).resolve().parents[2] / 'third_party/rt64/src/gbi/rt64_gbi.cpp'
-        result = rt64_microcode(snapshot,words,source)
-        print('\nRT64 microcode database:')
-        print(json.dumps(result,indent=2))
     rom = args.rom.read_bytes() if args.rom else None
     if rom is not None and hashlib.sha1(rom).hexdigest() != snapshot.report['rom_sha1']:
         raise RecompError('ROM identity differs from the crash report')

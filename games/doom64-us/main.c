@@ -58,12 +58,6 @@ static void retire_boot(Runtime *rt, uint32_t address) {
     }
 }
 
-#ifdef RECOMP_WITH_RT64
-static bool bind_microcode(void *interpreter, size_t ram_size, uint32_t code, uint32_t data) {
-    return code == 0x4b470 && recomp_renderer_bind_l3dex_1_00(interpreter, ram_size, code, data);
-}
-#endif
-
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt;
     (void)opaque;
@@ -110,9 +104,6 @@ int main(int argc, char **argv) {
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     doom64_controls_init(renderer);
     doom64_fov_init(renderer);
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_set_microcode_hook(renderer, bind_microcode);
-#endif
     RecompAudioConfig ac = {
         .output_enabled = true, .playback = !options.mute, .prebuffer_ms = 160, .task_profile = &doom64_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);

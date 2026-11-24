@@ -1,7 +1,7 @@
 # Turok 3: Shadow of Oblivion
 
 This port targets the North American retail Nintendo 64 cartridge, revision 0,
-with an Expansion Pak and desktop RT64 or GLES2. The normalized 32 MiB ROM has SHA-1
+with an Expansion Pak and desktop GLES. The normalized 32 MiB ROM has SHA-1
 `a2e0a28dc0d3a48c7c02cb9e4c4b38fe04b2d436`, internal title
 `Turok 3: Shadow of O`, cartridge ID `NTKE` and entry `0x80000400`.
 

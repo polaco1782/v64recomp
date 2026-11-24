@@ -11,11 +11,11 @@ All 24 targets have a [browser build](docs/webassembly.md) that loads the matchi
 | Make it yours | What you can do |
 | --- | --- |
 | **[Widescreen and ultrawide](#a-little-more-room-to-see)** | Expand the view to fit your window with **F7**, or keep the original proportions. |
-| **[Texture packs, built right in](#your-favorite-textures-in-one-place)** | Load a compatible texture ZIP directly, or embed it in the executable so it comes along whenever you move the game. |
+| **[Texture packs, built right in](#your-favorite-textures-in-one-place)** | Load Rice/GLideN64 PNG ZIPs directly and edit individual textures during play. |
 | **[Adjustable field of view](#controls-that-feel-familiar)** | Find a comfortable view with **keypad + / −**, from the original angle up to **140°** in supported games. |
 | **[WASD and mouse](#controls-that-feel-familiar)** | Move, look and aim with familiar PC controls in supported games, including mouse menu navigation in GoldenEye. |
-| **[Steam Deck and preset controls](#take-it-to-your-steam-deck)** | Play through a native Linux package with a **1280×800 expanded view** and the included **v64recomp - N64** Steam Input layout. |
-| **[Low CPU usage](#a-lighter-load-on-your-steam-deck)** | Static recompilation and RT64's optimized Vulkan pipeline are designed to keep CPU work light, including on Steam Deck. |
+| **[Steam Deck and preset controls](#take-it-to-your-steam-deck)** | Play through a native Linux package with the included **v64recomp - N64** Steam Input layout. |
+| **[Low CPU usage](#a-lighter-load-on-your-steam-deck)** | Run the game's recompiled CPU instructions directly on the host. |
 
 [Get started](#build-and-play) · [Games and progress](#games-and-progress) ·
 [Controls](#controls-and-data) · [How it works](#technical-information-how-it-works)
@@ -33,14 +33,7 @@ what has been tried and what still needs work, so you can choose where to start.
 ### A little more room to see
 
 Have a wide monitor? Resize the game window and press **F7** to expand the view.
-Press it again to return to the game's original aspect ratio. Desktop builds
-start with the original proportions in a 1280×960 window; Steam Deck packages
-start at 1280×800 with expansion already enabled.
-
-RT64 also provides 4× rendering resolution, 4× MSAA to soften jagged edges, and
-interpolated rendering targeting 60 FPS. The game's logic and audio keep their
-original timing. Widescreen and the adjustable camera FOV are separate settings,
-so you can choose your screen shape and viewing angle independently.
+Press it again to return to the game's original aspect ratio. Desktop builds start in a resizable 1280×960 window.
 
 On GLES3, **F7** uses the game's native projection when a verified aspect
 hook is available. Other titles keep their original framing rather than
@@ -48,33 +41,14 @@ stretching the picture.
 
 ### Your favorite textures, in one place
 
-With RT64, pass a compatible Rice/GLideN64 texture ZIP straight to the game. There's no need to unpack it or convert it first:
+Pass a Rice/GLideN64 PNG ZIP directly to the desktop game. For GoldenEye 007:
 
 ```sh
-./build/sm64-us-release/bin/sm64-us --texture-pack /path/to/pack.zip
+./build/goldeneye-us-gles-release/bin/goldeneye-us --texture-pack ~/Downloads/ge007-hd-v2025.12.30-gliden64-png-hd.zip
 ```
 
-Want the pack to travel with your build? **Embed the texture ZIP in the
-executable** when you compile it:
-
-```sh
-cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release -DRECOMP_EMBED_TEXTURE_PACK=/path/to/pack.zip
-cmake --build build/sm64-us-release
-```
-
-The game then loads those textures automatically, without the original ZIP
-beside it. This works in Debug and Release, with or without ROM embedding.
-You can still choose another pack with `--texture-pack`.
-
-Press **F5** to switch between the original and replacement textures and reload
-pack changes. Textures without a matching replacement keep their original look.
-To export original textures as PNGs with JSON metadata, pass `--texture-dump DIR`
-to an RT64 game in Debug or Release. The directory is created automatically as needed.
-See the [texture guide](docs/textures.md) for supported filenames, loose folders,
-texture dumps and matching caches.
-Desktop GLES3 supports a smaller set of packs. With texture support built in,
-**F8** opens the thumbnail editor in Debug and Release without loading a ZIP.
-See the [GLES texture instructions](docs/textures.md#gles3-texture-packs-and-editor).
+**F5** switches between original and replacement textures. **F8** opens the thumbnail
+editor, where you can drop a PNG to override a texture. [Texture guide](docs/textures.md).
 
 ### Controls that feel familiar
 
@@ -159,9 +133,7 @@ expanded; the package is not a claim that every port is fully tested on Deck.
 
 The design aims for **very low CPU usage on Steam Deck**. Static recompilation translates
 the game's CPU instructions **once, when you build**, into native machine code.
-During play, your Deck runs that compiled code directly. RT64's optimized Vulkan
-pipeline handles rendering on the GPU, with asynchronous upload, rendering and
-presentation work that can overlap the game CPU work.
+During play, your Deck runs that compiled code directly. The GLES renderer processes graphics on a separate thread.
 
 Together, these help keep CPU work light on a handheld. Actual CPU usage depends
 on the game, scene and settings; shader compilation and Debug builds can add
@@ -174,25 +146,21 @@ You'll need your own ROM for the exact revision the game profile expects.
 The import tool checks it for you, so there's no need to rename files or convert
 byte order by hand. ROMs and texture packs aren't included.
 
-RT64 is the default renderer. For games with verified graphics microcode,
-`--gles` selects the native OpenGL ES 3.0 renderer and statically compiled graphics RSP. Use `--wasm` for a browser build, which runs the same shaders on WebGL 2. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
+Desktop builds use OpenGL ES 3.0 and statically recompiled graphics microcode. Use `--wasm` for a browser build, which runs the same shaders on WebGL 2. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
 
 ### 1. Get the source and dependencies
 
-Clone with submodules so RT64 and its dependencies come along too:
+Clone the repository:
 
 ```sh
-git clone --recurse-submodules https://github.com/polaco1782/v64recomp.git
+git clone https://github.com/polaco1782/v64recomp.git
 cd v64recomp
 ```
-
-Already have a checkout? Run `git submodule update --init --recursive` from its
-root. CMake uses those local sources; it doesn't download missing submodules.
 
 | Platform | What to prepare |
 | --- | --- |
 | **Windows** | Follow [Windows setup](docs/windows.md) for Visual Studio, Python and vcpkg dependencies. Open `v64recomp.sln`, select your game and build Release. |
-| **Linux** | Python 3.11+, a C/C++ compiler, CMake 3.25+, Ninja, OpenSSL 3, SDL2, libcurl 7.85+, X11/Xwayland and a Vulkan-capable driver. |
+| **Linux** | Python 3.11+, a C/C++ compiler, CMake 3.25+, Ninja, OpenSSL 3, SDL2, libcurl 7.85+, OpenGL ES 3 development headers and a GLES 3 driver. |
 | **Steam Deck** | Follow the [container build guide](docs/steamdeck.md) on your Linux PC. It uses Debian 12 so the package doesn't depend on newer host libraries. |
 
 On Linux, install the Python build dependencies from the checkout root:
@@ -230,18 +198,17 @@ From the repository root, these commands build Super Mario 64 US:
 
 | Target | Release | Debug |
 | --- | --- | --- |
-| Desktop RT64 (default) | `python3 tools/build.py sm64-us --release --rt64` | `python3 tools/build.py sm64-us --debug --rt64` |
 | Desktop GLES3 | `python3 tools/build.py sm64-us --release --gles` | `python3 tools/build.py sm64-us --debug --gles` |
 | Browser WebAssembly | `python3 tools/build.py sm64-us --release --wasm` | `python3 tools/build.py sm64-us --debug --wasm` |
 
-`python3 tools/build.py sm64-us` defaults to RT64 Release. Replace `sm64-us`
+`python3 tools/build.py sm64-us` defaults to desktop GLES Release. Replace `sm64-us`
 with any [game ID](#games-and-progress) for desktop or browser builds. The browser build
 reuses Emscripten from an existing Wasm configuration or finds an installed SDK.
 
 Run the executable from its build tree, or serve the browser build locally:
 
 ```sh
-./build/sm64-us-release/bin/sm64-us
+./build/sm64-us-gles-release/bin/sm64-us
 ./build/sm64-us-gles-debug/bin/sm64-us
 python3 tools/serve_web.py --directory build/sm64-us-wasm-release/bin
 ```
@@ -261,18 +228,18 @@ keeps the detailed validation history and known gaps.
 | [Super Mario 64](games/sm64-us/README.md) | `sm64-us` | Castle Grounds gameplay and castle lobby transition. |
 | [GoldenEye 007](games/goldeneye-us/README.md) | `goldeneye-us` | Menus and playable Dam. |
 | [Ocarina of Time US V1.2](games/oot-us-v12/README.md) | `oot-us-v12` | File selection and new-game opening; broader validation in progress. |
-| [Majora’s Mask US](games/mm-us/README.md) | `mm-us` | File creation, FlashRAM reload and playable opening forest on desktop RT64. |
+| [Majora’s Mask US](games/mm-us/README.md) | `mm-us` | File creation, FlashRAM reload and playable opening forest in earlier RT64 builds. |
 | [Perfect Dark US V1.1](games/perfectdark-us-v11/README.md) | `perfectdark-us-v11` | Carrington Institute and a tested mission transition. |
 | [Quake 64](games/quake-us/README.md) | `quake-us` | Original menus and playable first level. |
 | [Quake II](games/quake2-us/README.md) | `quake2-us` | Strogg Outpost gameplay; Expansion Pak enabled. |
-| [Doom 64 US](games/doom64-us/README.md) | `doom64-us` | Staging Area gameplay, shotgun pickup and Controller Pak creation on RT64 and GLES2. |
+| [Doom 64 US](games/doom64-us/README.md) | `doom64-us` | Staging Area gameplay, shotgun pickup and Controller Pak creation on GLES. |
 | [Duke Nukem 64](games/duke-us/README.md) | `duke-us` | Menus and first-level gameplay. |
 | [Hexen](games/hexen-us/README.md) | `hexen-us` | Class selection and first-level fighter gameplay. |
 | [Nightmare Creatures](games/nightmare-us/README.md) | `nightmare-us` | Character selection and playable Chelsea. |
 | [Shadow Man](games/shadowman-us/README.md) | `shadowman-us` | Menus, movement and rendered level progression. |
 | [Turok: Dinosaur Hunter US v1.2](games/turok-us-v12/README.md) | `turok-us-v12` | Experimental; first-person gameplay and automap. |
-| [Turok 2: Seeds of Evil US 1.0](games/turok2-us/README.md) | `turok2-us` | Port of Adia gameplay with WASD, mouse-look and the native pause menu on desktop RT64. |
-| [Turok 3: Shadow of Oblivion US](games/turok3-us/README.md) | `turok3-us` | Playable opening of Chapter 1, The Breach, on desktop RT64 with WASD, mouse-look and adjustable FOV. |
+| [Turok 2: Seeds of Evil US 1.0](games/turok2-us/README.md) | `turok2-us` | Port of Adia gameplay with WASD, mouse-look and the native pause menu in earlier RT64 builds. |
+| [Turok 3: Shadow of Oblivion US](games/turok3-us/README.md) | `turok3-us` | Playable opening of Chapter 1, The Breach, in earlier RT64 builds with WASD, mouse-look and adjustable FOV. |
 | [1080 Snowboarding JU revision 0](games/1080-us/README.md) | `1080-us` | Intro, title and Select Rider; riding unvalidated. |
 | [Banjo-Kazooie US revision 0](games/banjo-kazooie-us/README.md) | `banjo-kazooie-us` | Experimental; original startup and callback bring-up in progress. |
 | [Resident Evil 2 US revision 1](games/re2-us-v1/README.md) | `re2-us-v1` | Experimental; opening movie and title menu. |
@@ -330,11 +297,11 @@ Keep these shortcuts handy while you play:
 | Key | What it does |
 | --- | --- |
 | **F7** | Toggle widescreen expansion (GLES3: only with a game-specific aspect hook, in supported scenes). |
-| **F8** | Edit textures (RT64: launch with a ZIP; desktop GLES3 with texture support: no ZIP required). |
-| **F6** | Toggle wireframe (GLES3: Debug or Release; RT64: Debug with a wireframe-capable device). |
+| **F8** | Open the desktop texture editor. |
+| **F6** | Toggle wireframe in Debug or Release. |
 | **F5** | Reload texture packs and switch original/replacement textures. |
 | **Keypad + / −** | Adjust FOV in the [supported games](#controls-that-feel-familiar). |
-| **F12** | Open or close GameShark cheats in RT64 and GLES3. Browser builds also have a **Cheats** button below the canvas. |
+| **F12** | Open or close GameShark cheats on desktop. Browser builds also have a **Cheats** button below the canvas. |
 | **Escape / F4** | Release / recapture the mouse when a mouse adapter is enabled. |
 | **F10 (mouse mode) / close window** | Quit. With the original keyboard mapping, Escape quits. |
 
@@ -348,10 +315,7 @@ for the stick, A/X/Z for N64 A/B/Z, S for Start, C/V for L/R, and I/J/K/L for
 C-buttons. See the [individual control guides](#controls-that-feel-familiar)
 for the WASD layouts.
 
-ROMs, saves, texture packs and crash dumps stay in ignored `local/`. Loose texture
-replacements default to `local/textures/<game>/replacements`;
-`RECOMP_TEXTURE_REPLACEMENTS` selects another location. The [texture guide](docs/textures.md)
-covers ZIP overrides and disabling replacements. The [cheat menu](docs/cheats.md)
+ROMs, saves, texture packs and crash dumps stay in ignored `local/`. Editor replacements go in the data directory under `texture-overrides/`. The [cheat menu](docs/cheats.md)
 downloads ROM-specific codes from Mupen64Plus and Project64 and caches them for
 offline use.
 
@@ -365,7 +329,7 @@ and [live code repair](docs/live-repair.md) for the next steps.
 ## More build options
 
 <details>
-<summary>Build presets, compiler selection and the shared RT64 cache</summary>
+<summary>Build presets and compiler selection</summary>
 
 List game workflows with `cmake --workflow --list-presets`. The flag launcher
 runs `cmake --workflow --preset <game>` with a configuration-specific build
@@ -376,7 +340,7 @@ CPU and graphics RSP code directly.
 For a custom configuration, pass CMake cache flags directly and build that directory:
 
 ```sh
-cmake --preset quake2-us -B build/quake2-us-gles-debug -DCMAKE_BUILD_TYPE=Debug -DRECOMP_RENDERER=gles
+cmake --preset quake2-us -B build/quake2-us-gles-debug -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/quake2-us-gles-debug -j 8
 ```
 
@@ -412,16 +376,7 @@ CMake selects one game per build tree and regenerates CPU sources when the ROM,
 profiles, inventories or generator change. Unchanged generation is cached. Missing
 ROMs or generation failures stop configuration explicitly. The generation log is
 in the build directory. CPU sources are split into smaller files for parallel
-compilation. Use `-DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF` to build shared libraries.
-
-RT64, its shaders and bundled libraries build once under `build/shared/rt64/`
-and are reused by every game and both game modes. The shared build uses
-`RelWithDebInfo` by default; `-DRECOMP_RT64_BUILD_TYPE=Release` selects another
-renderer configuration. Compiler, toolchain and relevant flag changes select a
-separate cache directory. Source edits rebuild the affected RT64 files.
-`-DRECOMP_RT64_JOBS=4` controls its compiler jobs, independently of game build
-parallelism. Builds from different game directories serialize access to RT64.
-Cleaning a game removes its local library links while retaining the shared cache.
+compilation. Use `-DRECOMP_GAME=none` to build shared libraries.
 
 </details>
 
@@ -434,7 +389,7 @@ zeroed before embedding:
 ```sh
 cmake --preset sm64-us -B build/sm64-us-release -DCMAKE_BUILD_TYPE=Release -DRECOMP_EMBED_ROM=ON
 cmake --build build/sm64-us-release -j 4
-./build/sm64-us-release/bin/sm64-us
+./build/sm64-us-gles-release/bin/sm64-us
 ```
 
 The original ROM is required to build, but embedded builds launch without an
@@ -458,7 +413,7 @@ globally for the build tree, preserving an explicitly configured path.
 If UPX is outside `PATH`, configure with
 `-DRECOMP_UPX_EXECUTABLE=/path/to/upx`.
 
-To bundle replacement textures, use the [texture embedding steps](#your-favorite-textures-in-one-place).
+Pass a texture ZIP at launch with `--texture-pack`.
 
 </details>
 
@@ -481,10 +436,7 @@ when adding a title.
 
 Release retains correctness checks and shared crash reporting without routine
 reports or captures. Debug adds symbols, unoptimized game code, tracing,
-and optional captures. GLES3 retains F6 wireframe in Release. RT64 wireframe
-and the F1 inspector are [debug tools](docs/debugging.md).
-Both modes reuse RT64's optimized `RelWithDebInfo` build by default. Game code,
-the shared runtime and native adapters retain their selected configuration flags.
+and optional captures. GLES3 retains F6 wireframe in Release. Game code and native adapters use the selected configuration.
 
 For a pause and in-process repair of missing compiled code or checked
 indirect targets, see [live code repair](docs/live-repair.md).
@@ -575,7 +527,7 @@ ROM supplies its original assets and data.
 
 The shared runtime implements the OS and device behavior the game expects:
 thread scheduling, message queues, timers, input, saves and task completion.
-Verified OS/library routines call native handlers. RT64 renders graphics tasks;
+Verified OS/library routines call native handlers. The graphics RSP produces commands for the GLES renderer;
 the native audio backend processes supported sound tasks and sends PCM to SDL.
 
 The technical documentation covers each part:
@@ -599,10 +551,9 @@ The technical documentation covers each part:
 - `runtime/`, `include/`, `backends/`: shared runtime and rendering/audio services.
 - `cmake/`, `CMakePresets.json`: game selection, generation, build and run integration.
 - `tools/`: shared ROM import, discovery, translation and crash inspection tools.
-- `third_party/`: RT64 and the audio DSP dependency.
+- `third_party/`: vendored runtime, UI and texture libraries.
 - `local/`: private ROMs, saves, packs, renderer data and crash dumps.
 - `build/`: disposable generated sources, binaries and debug output.
-- `build/shared/rt64/`: reusable RT64 builds, grouped by compiler and configuration.
 
 See [audio](docs/audio.md), [floating point](docs/fpu.md),
 [threading](docs/threading.md), [native hooks](docs/native-hooks.md),
@@ -618,6 +569,3 @@ This repository does not include or distribute ROM images or copyrighted game
 assets. Users must provide their own ROM files. The project uses free and
 open-source software; each third-party component remains subject to its own
 license.
-
-Graphics are provided by [RT64](https://github.com/rt64/rt64), an open-source
-N64 graphics renderer used by this project for Vulkan rendering.

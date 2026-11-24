@@ -80,11 +80,9 @@ Consumed buffers post AI events, with bounded transport retries and the SDK's
 nonblocking behavior for a full guest queue. Host sound-device progress does not
 determine guest completion.
 
-Graphics receipts are published after RT64's display-list interpreter has
-finished guest RAM readbacks and copied the inputs needed by its render queues.
-The adapter does not wait for GPU presentation before releasing the shared RSP
-for audio synthesis. Presentation pacing stays on RT64's queues; texture reload
-and shutdown retain their explicit GPU barriers.
+The graphics owner posts SP completion after handing RDP work to the render thread.
+Audio synthesis can proceed while the GPU draws. Framebuffer writes are synchronized
+before DP completion. [Graphics task execution](armv8-gles2.md#task-execution).
 
 `recomp_ai_set_output` attaches an owner-thread PCM sink. It copies a buffer when
 it becomes active, including promotion of a queued successor. SDL receives signed

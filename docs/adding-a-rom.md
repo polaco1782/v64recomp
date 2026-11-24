@@ -459,15 +459,12 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    or skipping it. For Zelda-style JPEG tasks, declare the task descriptor and initialized data
    in `[jpeg]`, reference the checked bootstrap variants and JPEG text in `[jpeg.rsp]`,
    and link `recomp_jpeg`.
-   Keep game-specific graphics commands, microcode fingerprints and lighting in
-   `games/<game>/`. C11 adapters can use the generic microcode callback interface
-   in `renderer.h`; the shared backend contains only reusable RT64 operations.
+   Declare graphics RSP images and their verified identities in the game profile.
 5. Run the scheduler, input, presentation and deadlines from the app loop.
    Use `recomp_game_input`, `recomp_game_present` and
    `recomp_game_audio_create` from `game.h` so shared Debug replay, captures and
    audio recording work after game-specific input mapping. Keep SDL
-   input/window operations and synchronous HLE on their owner thread. Drain RT64
-   queues and destroy backends before runtime teardown.
+   input/window operations and synchronous HLE on their owner thread. Drain pending rendering work and destroy backends before runtime teardown.
    Once the guest clock follows wall time and its priority-zero idle thread has
    been verified/configured, prefer `recomp_game_pace(rt, deadline)` between
    presentations so VI/AI/timers and queued RSP completions remain serviced.

@@ -1,5 +1,7 @@
 # Game support
 
+Desktop builds now use GLES. RT64 results below record validation of earlier builds. See [desktop GLES coverage](desktop-coverage.md) for renderer-specific results.
+
 The experimental [WebAssembly target](webassembly.md) covers the game catalog and automatically loads the profile ROM alongside the WebAssembly module. See the browser validation notes for tested scenes and configurations.
 
 These are the established port milestones, not new full-game acceptance claims.

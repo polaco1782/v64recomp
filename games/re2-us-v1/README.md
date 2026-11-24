@@ -44,7 +44,7 @@ the fixed camera compositions are tied to their pre-rendered backgrounds.
 
 ## Experimental GLES2 bring-up
 
-RT64 remains the default. The GLES2 profile binds the captured F3DEX.Rej FIFO
+The GLES2 profile binds the captured F3DEX.Rej FIFO
 and S2DEX FIFO task code and data to exact spans of the decoded `.main` image.
 Its bootstrap and overlay instructions are checked again during generation.
 The boot depth command uses a 512-pixel stride (including the immediate at

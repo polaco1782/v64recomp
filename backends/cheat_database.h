@@ -1,35 +1,37 @@
 #pragma once
 #include "cheats.h"
-#include <atomic>
-#include <filesystem>
-#include <string>
-#include <vector>
+#include <stdatomic.h>
 
-namespace RecompCheats {
-struct Option {
-    uint16_t value;
-    std::string name;
-};
-struct Line {
+typedef struct {
     uint32_t address;
     uint16_t value, mask;
-};
-struct Cheat {
-    std::string name, note, source, problem;
-    std::vector<Line> lines;
-    std::vector<Option> options;
-    std::vector<RecompCheatCode> program;
-    int option = 0;
-    bool enabled = false;
-    void compile(const Runtime *runtime);
-};
-struct Catalog {
-    std::vector<Cheat> cheats;
-    std::string status;
-};
-std::string rom_key(const Runtime *runtime);
-std::filesystem::path cache_directory(const std::filesystem::path& data_directory, const std::string& key);
-/* Background I/O only: never reads Runtime or touches ImGui. */
-Catalog load_catalog(const std::string& key, const std::filesystem::path& directory, bool refresh,
-                     const std::atomic<bool>& cancel);
-}
+} CheatLine;
+
+typedef struct {
+    uint16_t value;
+    const char *name;
+} CheatOption;
+
+typedef struct {
+    const char *name, *source;
+    char *note;
+    char problem[192];
+    CheatLine *lines;
+    CheatOption *options;
+    RecompCheatCode *program;
+    size_t line_count, option_count, option;
+    bool enabled;
+} Cheat;
+
+typedef struct {
+    Cheat *cheats;
+    size_t count;
+    char status[768];
+    /* Names and option labels point into the two parsed source buffers. */
+    char *sources[2];
+} CheatCatalog;
+
+void cheat_catalog_load(CheatCatalog *, const char *key, const char *directory, bool refresh,
+                        const atomic_bool *cancel);
+void cheat_catalog_destroy(CheatCatalog *);
+void cheat_compile(Cheat *, const Runtime *);

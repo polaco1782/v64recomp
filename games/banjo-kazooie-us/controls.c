@@ -107,9 +107,6 @@ bool banjo_controls_poll(Runtime *rt, RecompRenderer *renderer, RecompPad *pad) 
     recomp_renderer_mouse_mode(renderer, enabled, live);
     if (!recomp_renderer_input(renderer, pad))
         return false;
-#ifdef RECOMP_WITH_RT64
-    expansion = fmax(1.0, recomp_renderer_projection_expansion(renderer, 4.0f / 3));
-#endif
     RecompMouseFrame frame = recomp_renderer_mouse_frame(renderer);
     unsigned camera = 0, map = 0;
     if (frame.active && camera_live) {

@@ -11,8 +11,8 @@ From the repository root, import your cartridge once and choose a renderer.
 .venv/bin/python tools/import_rom.py --profile games/doom64-us/profile.toml \
   --rom '/path/to/Doom 64 (U) [!].z64'
 
-tools/build.py doom64-us --rt64 --release
-./build/doom64-us-release/bin/doom64-us
+tools/build.py doom64-us --gles --release
+./build/doom64-us-gles-release/bin/doom64-us
 ```
 
 For GLES2 with the statically recompiled graphics RSP, use:

@@ -15,7 +15,7 @@ internal content, and `--rom PATH` explicitly selects an external, original ROM.
 Both paths use the shared loader and crash reporter. The returned buffer remains
 owned by the app, so existing boot copies, PI DMA, cartridge reads and teardown
 keep their current behavior. Saves and renderer state remain external files.
-Texture ZIPs can be embedded separately with `RECOMP_EMBED_TEXTURE_PACK`.
+Load external Rice/GLideN64 ZIPs with `--texture-pack`.
 
 The runtime checks the expected original ROM identity and size against the
 embedded descriptor, then verifies the sanitized payload's own SHA-1 with the

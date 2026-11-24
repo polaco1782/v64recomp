@@ -4,7 +4,6 @@ function_wrappers = [
   {section = ".engine", vram = 0x002646dc, size = 0x84, sha256 = "739c5f55d973edc6932d074f296e712ac30ed034ee003c00e735e84a13bf573f", handler = "acclaim_player_axis"},
   {section = ".engine", vram = 0x0028ea30, size = 0xadc, sha256 = "068767f6b78a85d6e2e1d37b92e9aa644116c25664833337b185e6631f13b8f1", handler = "acclaim_world_camera"},
   {section = ".engine", vram = 0x002e5d2c, size = 0x18c, sha256 = "8ef43770772ef86c378882ac9404544531eac3a6d522e02f6a5a9d58c9867cca", handler = "acclaim_perspective"},
-  {section = ".engine", vram = 0x0025fe24, size = 0x5e0, sha256 = "df07075d49dc43cbf675d785c3d8a5e5d4e84ec36f6c110d32a153c16e062f01", handler = "acclaim_fixed_matrix"},
   {section = ".engine", vram = 0x002628e8, size = 0xcc, sha256 = "bc808a7a46136f27fc91656991db7eb82459c6f95bfed02e8d5234805a0fc7fc", handler = "acclaim_frustum_points"},
 ]
 
@@ -440,7 +439,6 @@ functions = [
   {name = "func_0023272c", vram = 0x0023272c, size = 0x48, sha256 = "ebc3e08fca521d060f9e21dbc5aa67bfe96ef0d374c7c58a0bd5d4b32ef8728b"},
   {name = "func_00238868", vram = 0x00238868, size = 0xd8, sha256 = "b3b88faea3be6d5ef46561334f6040bfa2ca3219f50b779ff3c82852a3de614d"},
   {name = "func_00251c94", vram = 0x00251c94, size = 0x144, sha256 = "8cd3979b2dd55acb6e2d45fdacddec10f9cd739a83c08cf5e334ba30b2465d11"},
-  {name = "fixed_matrix", vram = 0x0025fe24, size = 0x5e0, sha256 = "df07075d49dc43cbf675d785c3d8a5e5d4e84ec36f6c110d32a153c16e062f01"},
   {name = "frustum_points", vram = 0x002628e8, size = 0xcc, sha256 = "bc808a7a46136f27fc91656991db7eb82459c6f95bfed02e8d5234805a0fc7fc"},
   {name = "player_axis", vram = 0x002646dc, size = 0x84, sha256 = "739c5f55d973edc6932d074f296e712ac30ed034ee003c00e735e84a13bf573f"},
   {name = "func_00285efc", vram = 0x00285efc, size = 0x14, sha256 = "81596c6aa79ba37c5c56ae375c05b4aaff79d85a48b9a7dc9d5caf5e25e42d3c"},
@@ -473,7 +471,6 @@ bindings = [
   {name = "climb_yaw_limit", kind = "address", pcs = [0x002d27f8, 0x002d27fc], words = [0x3c018010, 0xc420df68], value = 0x800fdf68},
   {name = "pitch_return", kind = "return", pcs = [0x002cfbf4, 0x002cfbf8], words = [0x0c0991b7, 0x26040dd0], value = 0x2cfbfc},
   {name = "projection_return", kind = "return", pcs = [0x0028f094, 0x0028f098], words = [0x0c0b974b, 0xe7a00018], value = 0x28f09c},
-  {name = "fixed_return", kind = "return", pcs = [0x0028f0fc, 0x0028f100], words = [0x0c097f89, 0x02852821], value = 0x28f104},
   {name = "corners_return", kind = "return", pcs = [0x0028e974, 0x0028e978], words = [0x0c098a3a, 0x46000506], value = 0x28e97c},
 ]
 

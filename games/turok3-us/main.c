@@ -4,9 +4,6 @@
 #include "renderer.h"
 #include "audio.h"
 #include "../turok2-us/acclaim_pager.h"
-#ifdef RECOMP_WITH_RT64
-#include "../turok2-us/acclaim_graphics.h"
-#endif
 #include "../turok2-us/acclaim_controls.h"
 #include <stdlib.h>
 #include "game_config.h"
@@ -81,10 +78,6 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)opaque;
     recomp_game_require(task->words[0] == 1 || task->words[0] == 2, "unsupported Turok 3 RSP task",
                         task->guest_address);
-#ifdef RECOMP_WITH_RT64
-    if (task->words[0] == 1)
-        acclaim_graphics_verify(rt, task);
-#endif
     bool okay = task->words[0] == 2 ? recomp_audio_submit(audio, task) : recomp_renderer_submit(renderer, task);
     recomp_game_require(okay, "Turok 3 task profile rejected", task->words[4]);
     return true;
@@ -130,9 +123,6 @@ int main(int argc, char **argv) {
     recomp_game_require(recomp_io_init(&rt, &io) && recomp_tasks_init(&rt, &backend), "Turok 3 IO init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Turok 3: Shadow of Oblivion");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-#ifdef RECOMP_WITH_RT64
-    acclaim_graphics_init(renderer);
-#endif
     acclaim_controls_init(renderer);
     RecompAudioConfig config = {
         .output_enabled = true, .playback = !options.mute, .task_profile = &turok3_audio_profile};

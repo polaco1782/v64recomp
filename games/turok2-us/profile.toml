@@ -6,7 +6,6 @@ function_wrappers = [
   {section = ".engine", vram = 0x002117dc, size = 0x84, sha256 = "0a15e7958449b374ad6ea5d6dd0cf3c4fd705ba8fb1af2e1387f0ea9071920a2", handler = "acclaim_player_axis"},
   {section = ".engine", vram = 0x0027d160, size = 0xea0, sha256 = "56c805772e74948cf3fa6737bfae6836f0626d24b9f8c418f6256f8391379011", handler = "acclaim_world_camera"},
   {section = ".engine", vram = 0x0029815c, size = 0x18c, sha256 = "aecac42c870819ff0e2a40c4a448c925f4754a31bacaa78ec449b1d090da3750", handler = "acclaim_perspective"},
-  {section = ".engine", vram = 0x0020cc94, size = 0x5e0, sha256 = "8b6b28b6b90cb8498c0e10117cdd2a794664a81f373d2905035e37c4b59633c3", handler = "acclaim_fixed_matrix"},
   {section = ".engine", vram = 0x0020f908, size = 0xcc, sha256 = "bc808a7a46136f27fc91656991db7eb82459c6f95bfed02e8d5234805a0fc7fc", handler = "acclaim_frustum_points"},
 ]
 
@@ -316,7 +315,6 @@ expected_words = [0x40085000, 0x40840000, 0x3c098000, 0x40895000, 0x40801000, 0x
 # copy for per-object rejection. Both yaw and pitch call the interpolation helper.
 [input_adapter]
 functions = [
-  {name = "fixed_matrix", vram = 0x0020cc94, size = 0x5e0, sha256 = "8b6b28b6b90cb8498c0e10117cdd2a794664a81f373d2905035e37c4b59633c3"},
   {name = "frustum_points", vram = 0x0020f908, size = 0xcc, sha256 = "bc808a7a46136f27fc91656991db7eb82459c6f95bfed02e8d5234805a0fc7fc"},
   {name = "player_axis", vram = 0x002117dc, size = 0x84, sha256 = "0a15e7958449b374ad6ea5d6dd0cf3c4fd705ba8fb1af2e1387f0ea9071920a2"},
   {name = "func_00219bc0", vram = 0x00219bc0, size = 0x3b4, sha256 = "44a4f10dcbda4d432f038711c3d5a7860a32400e591098ef81b6c62bb2181f2f"},
@@ -350,7 +348,6 @@ bindings = [
   {name = "climb_pitch_stick", kind = "immediate", pcs = [0x00250f98], words = [0xc6000a58], value = 0xa58},
   {name = "climb_yaw_limit", kind = "address", pcs = [0x00250f7c, 0x00250f80], words = [0x3c01800a, 0xc4206f7c], value = 0x800a6f7c},
   {name = "projection_return", kind = "return", pcs = [0x0027d9e4, 0x0027d9e8], words = [0x0c0a6057, 0xe7a00018], value = 0x27d9ec},
-  {name = "fixed_return", kind = "return", pcs = [0x0027da4c, 0x0027da50], words = [0x0c083325, 0x02852821], value = 0x27da54},
   {name = "corners_return", kind = "return", pcs = [0x0027dd00, 0x0027dd04], words = [0x0c083e42, 0x24070005], value = 0x27dd08},
 ]
 

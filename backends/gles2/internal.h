@@ -106,9 +106,9 @@ typedef struct Texture {
     uint64_t hash, used;
     GLuint id;
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
-    uint64_t rt64_id, rice_texels, rice_palette, retry_draw;
+    uint64_t rice_texels, rice_palette, retry_draw;
     size_t replacement_bytes;
-    bool has_rt64_id, retry_rice;
+    bool retry_rice;
 #endif
 } Texture;
 typedef struct Surface {
@@ -179,8 +179,7 @@ struct RecompRDPGles2 {
     unsigned max_texture_size;
     uint64_t pack_draw;
     bool pack_pending;
-    uint64_t texture_id[2];
-    bool texture_id_valid[2], original_textures;
+    bool original_textures;
 #endif
     bool textures_dirty;
     Surface surfaces[8];

@@ -33,7 +33,7 @@ services cover these groups:
 | Common memory/string routines | `memcpy`, `memset`, `bcopy`, `bzero`, `bcmp`, `strlen`, `strchr` | Operate on guest addresses while preserving byte order, return values and each routine's overlap behavior. |
 
 Ordinary game logic, including movement, physics, AI and command-list
-construction, remains compiled from the ROM. RT64 interprets graphics display lists and GLES runs the recompiled graphics microcode.
+construction, remains compiled from the ROM. GLES runs the recompiled graphics microcode.
 Audio tasks run the recompiled synthesis microcode. AI forwards the resulting PCM to SDL. Game-specific adapters handle custom startup, paging,
 graphics extensions and overlay relocation. Device and task coverage remains
 specific to each port; see [game support](status.md).
@@ -81,7 +81,7 @@ call would break this synchronization and change the game's behavior.
 
 Graphics HLE parsing and audio DSP run synchronously on the owner while the
 guest is parked. They use live RAM and finish their output writes before queuing
-SP/DP completion events. RT64 rendering and SDL playback remain asynchronous.
+SP/DP completion events. GLES rendering and SDL playback remain asynchronous.
 AI buffer timing and completion are modeled by the runtime. SDL sound-device
 progress does not determine guest AI completion.
 

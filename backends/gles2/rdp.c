@@ -30,9 +30,6 @@ void recomp_gles2_flush(RecompRDPGles2 *s) {
         if (!s->texture_enabled || !p->texture[i]) {
             s->active_texture[i] = s->white;
             s->tex_width[i] = s->tex_height[i] = 1;
-#ifdef RECOMP_GLES2_TEXTURE_PACKS
-            s->texture_id_valid[i] = false;
-#endif
         } else if (s->textures_dirty)
             s->active_texture[i] = recomp_gles2_texture(s, t, i);
         s->gl.BindTexture(GL_TEXTURE_2D, s->active_texture[i]);

@@ -128,13 +128,8 @@ static void directory(const char *path) {
     recomp_game_require(recomp_create_directories(path), "cannot create game directory", 0);
 }
 int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
-#ifdef RECOMP_WITH_RT64
-    const char *texture_dump = NULL;
-#endif
-#if defined(RECOMP_WITH_RT64) || defined(RECOMP_GLES2_TEXTURE_PACKS)
-    const char *texture_pack = NULL;
-#endif
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
+    const char *texture_pack = NULL;
     bool texture_editor = false;
 #endif
     const char *profile_directory = NULL;
@@ -147,17 +142,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         const char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
             printf("usage: %s [--rom FILE] [--data DIR] [--save FILE] [--crash-dir DIR] [--frames N] [--mute] "
-#ifdef RECOMP_WITH_RT64
-                   "[--texture-pack ZIP] [--texture-dump DIR]\n"
-                   "  --texture-pack ZIP    Load a texture pack and enable its F8 editor\n"
-                   "  --texture-dump DIR    Export original textures as PNGs with JSON metadata\n"
-                   "                        Skip textures below 64 pixels or with a single RGBA color\n"
-#elif defined(RECOMP_GLES2_TEXTURE_PACKS)
-                   "[--texture-pack ZIP] [--texture-editor]\n"
-                   "  --texture-pack ZIP    Load a compatible texture ZIP\n"
-                   "  --texture-editor      Force-enable the F8 editor (on by default)\n"
-#else
                    "\n"
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+                   "  --texture-pack ZIP     Load a Rice/GLideN64 PNG archive\n"
+                   "  --texture-editor       Enable the F8 texture editor\n"
 #endif
 #ifdef RECOMP_WITH_GLES2
                    "  --torch-shadows        Enable torch lighting with scene and player shadows (F1 toggles shadows)\n"
@@ -249,19 +237,23 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             o->capture_every = (uint32_t)n;
         }
 #endif
-#if defined(RECOMP_WITH_RT64) || defined(RECOMP_GLES2_TEXTURE_PACKS)
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
         else if (!strcmp(arg, "--texture-pack")) {
+#ifdef _WIN32
+            struct _stat64 source;
+            wchar_t *path = recomp_wide_path(value);
+            bool regular = path && !_wstat64(path, &source) && S_ISREG(source.st_mode);
+            free(path);
+#else
             struct stat source;
-            if (stat(value, &source) || !S_ISREG(source.st_mode)) {
+            bool regular = !stat(value, &source) && S_ISREG(source.st_mode);
+#endif
+            if (!regular) {
                 fprintf(stderr, "texture pack must be a ZIP file: %s\n", value);
                 return -1;
             }
             texture_pack = value;
         }
-#endif
-#ifdef RECOMP_WITH_RT64
-        else if (!strcmp(arg, "--texture-dump"))
-            texture_dump = value;
 #endif
         else if (!strcmp(arg, "--profile"))
             profile_directory = value;
@@ -311,35 +303,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
         directory(parent);
     }
     crash_dir = o->crash_dir;
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_configure_texture_dump(texture_dump);
-#endif
-#if defined(RECOMP_WITH_RT64) || defined(RECOMP_GLES2_TEXTURE_PACKS)
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     recomp_renderer_enable_texture_editor(texture_editor || texture_pack != NULL);
-#else
-    recomp_renderer_enable_texture_editor(texture_pack != NULL);
-#endif
-#ifdef RECOMP_WITH_RT64
-    if (!getenv("RECOMP_TEXTURE_REPLACEMENTS"))
-        setenv("RECOMP_TEXTURE_REPLACEMENTS", RECOMP_DEFAULT_TEXTURES, 1);
-#endif
     if (texture_pack)
-        setenv("RECOMP_TEXTURE_PACK", texture_pack, 1);
-#ifdef RECOMP_EMBED_TEXTURE_PACK
-    else if (!getenv("RECOMP_TEXTURE_PACK")) {
-        char executable[4096];
-#ifdef _WIN32
-        DWORD n = GetModuleFileNameA(NULL, executable, sizeof(executable));
-        recomp_game_require(n > 0 && n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
-#else
-        ssize_t n = readlink("/proc/self/exe", executable, sizeof(executable));
-        recomp_game_require(n > 0 && (size_t)n < sizeof(executable), "cannot locate embedded texture ZIP", 0);
-#endif
-        executable[n] = 0;
-        recomp_game_require(!setenv("RECOMP_TEXTURE_PACK", executable, 1), "cannot select embedded texture ZIP", 0);
-    }
-#endif
+        recomp_game_require(!setenv("RECOMP_TEXTURE_PACK", texture_pack, 1), "cannot select texture ZIP", 0);
 #endif
     if (profile_directory && !recomp_profile_start(profile_directory, profile_hz, profile_delay, profile_seconds))
         return -1;

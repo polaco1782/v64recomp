@@ -128,8 +128,7 @@ promote live functions before compilation. Build with
 `python3 tools/build.py <game> --debug` or `--release`. Follow `cmake/Game.cmake` for ROM/save defaults,
 additional sources, generated headers, source splitting, and mode selection. Ensure new preparation
 inputs participate in CMake dependencies and generation cache invalidation.
-Reuse the shared RT64 targets from `cmake/SharedRT64.cmake`; never configure a
-game-specific RT64 copy. Its independent build cache is under `build/shared/rt64/`.
+Use the shared GLES renderer and declare graphics microcode in the game profile.
 List only additional root-level translation units in `RECOMP_GAME_SOURCES`;
 `cmake/Game.cmake` always compiles `main.c`. Keep separate input, graphics, paging
 or codec adapters only for independent responsibilities. Check source lists,
@@ -342,9 +341,7 @@ python3 tools/build.py <game> --debug
 ./build/<game>-debug/bin/<game> --frames 300
 ```
 
-Inspect `generation.log` when configuration fails. Check Python dependencies and
-the populated pinned `third_party/rt64` submodules before attributing toolchain
-failures to the port. The current playable CMake target requires graphics and
+Inspect `generation.log` when configuration fails. Check Python and GLES development dependencies before attributing toolchain failures to the port. The current playable CMake target requires graphics and
 audio; use a bounded diagnostic path if headless bootstrap isolation is needed.
 
 Use short bounded runs to reach successive milestones: BSS/system entry, initial
@@ -376,7 +373,7 @@ variants; its masked matches are hypotheses requiring full-body/ABI review.
 For high CPU usage, use the maintained profiling workflows in
 [CPU profiling](docs/profiling.md). Measure a settled **Release** scene; Debug's
 unoptimized game code and diagnostics change the workload. Attribute costs to
-guest threads, shared runtime, audio, RT64 and driver work before optimizing.
+guest threads, shared runtime, audio, GLES and driver work before optimizing.
 
 - Apps using the shared command line support the built-in x86-64 Linux sampler,
   including packaged Steam Deck builds, without Python or `perf`:
@@ -437,12 +434,7 @@ For games such as Hexen whose graphics descriptor stores command counts instead
 of bytes, pass `--list-scale 8` after verifying the submission adapter. Nested
 lists are not followed. Extracted bytes belong in ignored `build/` or `local/`.
 Fingerprint the full verified text/data spans; a microcode name or an address
-alone does not prove compatibility. Check whether RT64 actually implements the
-identified GBI: a database entry can still map to `Unknown` or a stub handler.
-Use the existing microcode hook for a game-specific extension, keep its commands,
-fingerprints and lighting in the game's parent folder, and retain fatal checks
-for unsupported behavior. C11 extensions use the generic callback interface in
-`renderer.h`; game semantics do not belong in the shared backend. Replay
+alone does not prove compatibility. Check the generated RSP program and its ROM-bound task registration. Replay
 the triggering feature and transitions back to ordinary graphics, then visually
 inspect the feature's output; accepting a task without rendering its commands
 does not resolve the failure.

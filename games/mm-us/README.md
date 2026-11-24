@@ -1,28 +1,28 @@
 # The Legend of Zelda: Majora's Mask (US)
 
-Import the 32 MiB NTSC-U cartridge with game ID `NZSE` and SHA-1 `d6133ace5afaa0882cf214cf88daba39e266c078`. The desktop build defaults to RT64 and uses an 8 MiB Expansion Pak configuration.
+Import the 32 MiB NTSC-U cartridge with game ID `NZSE` and SHA-1 `d6133ace5afaa0882cf214cf88daba39e266c078`. The desktop build uses an 8 MiB Expansion Pak configuration.
 
 ```sh
 tools/import_rom.py --profile games/mm-us/profile.toml --rom "/path/to/Majora's Mask.z64"
-tools/build.py mm-us --release --rt64
-./build/mm-us-release/bin/mm-us
+tools/build.py mm-us --release --gles
+./build/mm-us-gles-release/bin/mm-us
 ```
 
-For input replay, frame captures and audio recording, build with `--debug` and run `./build/mm-us-debug/bin/mm-us --help`. Flash saves use `local/saves/mm-us.flash` by default.
+For input replay, frame captures and audio recording, build with `--debug` and run `./build/mm-us-gles-debug/bin/mm-us --help`. Flash saves use `local/saves/mm-us.flash` by default.
 
 To exercise file creation with a fresh save, run the Debug replay from the repository root. Choose an unused save filename.
 
 ```sh
-./build/mm-us-debug/bin/mm-us --frames 3200 --input games/mm-us/new-file.txt --save build/mm-us-debug/new-file.flash
+./build/mm-us-gles-debug/bin/mm-us --frames 3200 --input games/mm-us/new-file.txt --save build/mm-us-debug/new-file.flash
 ```
 
 The game loads its main executable and overlays from its DMA table at ROM offset `0x1a500`. Generation checks the decompressed main executable and 617 overlays against their SHA-256 fingerprints. At runtime the original loader performs DMA, Yaz0 decompression and MIPS relocations. The host checks each image before enabling its compiled functions. The entry inventory uses the NTSC-U ELF function starts from [Zelda64RecompSyms](https://github.com/Zelda64Recomp/Zelda64RecompSyms/tree/5815f864c3bc75a582ca9c73496ab455264fdde9), checked against the supplied cartridge. Its symbol file uses the name `mm.us.rev1` for this image.
 
-RT64 processes the game's F3DZEX and S2DEX graphics tasks. The audio backend checks the MM NEAD audio program, and JPEG tasks run the ROM’s recompiled decoder. Desktop validation covered the title, file creation and reload, opening cutscene, movement in the first forest, and pause and resume.
+The compiled graphics RSP executes the game's F3DZEX and S2DEX programs. The audio backend checks the MM NEAD audio program, and JPEG tasks run the ROM’s recompiled decoder. Desktop validation covered the title, file creation and reload, opening cutscene, movement in the first forest, and pause and resume.
 
 ## GLES2 renderer
 
-RT64 remains the default. Build and run the compiled RSP/GLES2 variant separately:
+Build and run the desktop Debug configuration:
 
 ```sh
 python3 tools/build.py mm-us --debug --gles

@@ -24,7 +24,7 @@
       },
       "cacheVariables": {
         "RECOMP_GAME": "none",
-        "RECOMP_BUILD_RT64": "ON",
+        "RECOMP_BUILD_GRAPHICS": "ON",
         "RECOMP_BUILD_AUDIO": "ON",
         "RECOMP_EMBED_ROM": "OFF",
         "CMAKE_BUILD_TYPE": "Release",

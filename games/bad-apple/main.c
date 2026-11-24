@@ -189,9 +189,6 @@ int main(int argc, char **argv) {
     rt.device_write = device_write;
     demo.renderer = recomp_renderer_create_named(&rt, options.data, "Bad Apple!! - v64recomp");
     recomp_game_require(demo.renderer != NULL, "Bad Apple renderer init failed", 0);
-#ifdef RECOMP_WITH_RT64
-    recomp_renderer_set_frame_rate(demo.renderer, 0);
-#endif
     RecompAudioConfig audio_config = {.playback = !options.mute, .output_enabled = true};
     demo.audio = recomp_game_audio_create(&rt, &audio_config);
     recomp_game_require(demo.audio != NULL, "Bad Apple audio init failed", 0);

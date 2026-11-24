@@ -34,6 +34,8 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     SDL_GL_ResetAttributes();
 #ifdef __linux__
     SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
+#elif defined(_WIN32)
+    SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
 #endif
     if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES) ||
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3) || SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0) ||

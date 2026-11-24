@@ -17,7 +17,7 @@ flowchart TD
     Metadata --> Translation[MIPS instructions to C11 functions]
     Translation --> Compiler[Host C and C++ compiler]
     Runtime[Native runtime and game adapters] --> Compiler
-    Backends[RT64 graphics and native audio] --> Compiler
+    Backends[GLES graphics and native audio] --> Compiler
     Compiler --> Executable[Native game executable]
     ROM --> Executable
     Executable --> Diagnostics[Failure reports and RAM snapshots]
@@ -290,13 +290,12 @@ Native services preserve guest memory structures, calling conventions and
 completion events expected by the translated game.
 See [native threading](threading.md) for scheduling and HLE ownership.
 
-The RT64 backend passes graphics tasks to RT64 for Vulkan rendering.
 GLES runs verified graphics microcode on the guest owner and hands its RDP
 output to a render thread. The owner signals SP completion after the handoff
 and publishes synchronized framebuffer writes before DP completion.
 [Graphics RSP and game coverage](armv8-gles2.md).
 
-The translated game prepares its audio synthesis tasks. Both renderers execute
+The translated game prepares its audio synthesis tasks. The runtime executes
 the recompiled audio program on live RAM. The native AI service supplies buffer
 timing and completion events, and SDL plays the samples. [Audio](audio.md).
 
@@ -322,31 +321,3 @@ continues into its own body. Discovery and metadata validation permit exactly
 this one shared word, with the preceding `jr ra` checked against the ROM. Other
 body overlaps remain errors. Turok US v1.2 uses this arrangement at `0x80000c78`
 in its original RNC2 unpacker.
-
-The shared RT64 build applies `cmake/rt64/StableProjection.cmake` to a private build
-copy of the pinned math translation unit. Combined view/projection decomposition
-selects the largest view-axis component before dividing, avoiding a zero X pivot
-and amplification of 16.16 quantization around axis-aligned cameras. The source
-checkout is unchanged; a changed upstream calculation stops configuration for
-review. The correction was checked against the captured starting camera and
-quantized axis-aligned matrices at O0 and O2.
-
-The shared build also applies `cmake/rt64/PrimitiveDepth.cmake` to its private RDP
-translation unit. Primitive Z uses unsigned 0.15 fixed point: `0x7fff` is
-`32767 / 32768`, below the cleared D32 depth of `1.0`. The pinned RT64 calculation
-uses `32767` as the divisor, causing a maximum-depth rectangle to fail `LESS`
-against a cleared buffer. Hexen draws its sky, writes sky-sector depth masks,
-then uses this rectangle to clear the remaining background. The incorrect
-conversion leaves blue sky visible outside those masks. The correction retains
-the game's commands and ordinary depth testing. The replacement is guarded
-against upstream source changes. The fixed-point interpretation also matches
-[GLideN64's primitive-depth decoder](https://github.com/gonetz/GLideN64/blob/master/src/gDP.cpp#L104-L108).
-
-`cmake/rt64/LookAtMatching.cmake` patches the build copy of the frame matcher.
-Look-at indices encode a per-vertex texture-generation enable bit; draw-time
-geometry mode alone does not establish that a vertex has a look-at entry.
-Matching checks that bit and the face, vertex, data, and mapping bounds before
-adding candidates. It also excludes candidates from other workloads because
-the existing matching loop indexes the first workload's arrays. Invalid or
-unsupported candidates retain their original data without look-at interpolation.
-The replacement is guarded against upstream source changes.

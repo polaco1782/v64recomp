@@ -40,7 +40,7 @@ static void wireframe_initialize(RecompRDPGles2 *s) {
 }
 
 void recomp_gles2_draw_wireframe(RecompRDPGles2 *s, const Program *program) {
-    /* Same UltraHLE palette and first sampled tile rule as RT64. The color
+    /* Use the UltraHLE palette and the first sampled tile. The color
      * follows the original RDRAM image, not a GL name or replacement hash. */
     static const uint32_t colors[] = {
         0x000099ff, 0x009900ff, 0x009999ff, 0x990000ff, 0x990099ff, 0x999900ff, 0x808080ff, 0x333333ff,

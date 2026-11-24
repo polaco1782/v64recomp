@@ -139,8 +139,7 @@ def promote_observations(game, profile_path, profile, rom, build_dir, directory,
         return
     # Generate in isolation. A failed or interrupted trial cannot damage the
     # current build, profile or the observed evidence.
-    renderer = next((line.partition('=')[2] for line in (build_dir/'CMakeCache.txt').read_text().splitlines()
-                     if line.startswith('RECOMP_RENDERER:')), 'rt64')
+    renderer = 'gles'
     before = {(f['section'], f['vram'], f['status']) for f in coverage['functions'] if f['selected']}
     accepted = []
 

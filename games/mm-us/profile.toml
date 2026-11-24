@@ -789,8 +789,8 @@ functions = [
 framebuffers = [{width = 320, height = 240}]
 
 # The graph thread submits F3DZEX2; S2DEX2 is loaded from display lists.
-# Text/data starts were matched against RT64's microcode database using
-# the decompressed cartridge .code image. Sizes follow the original OSTask.
+# Text/data starts refer to the decompressed cartridge .code image.
+# Sizes follow the original OSTask.
 [[graphics.microcodes]]
 name = "F3DZEX2.NoN.fifo 2.08I"
 code = {image = ".code", offset = 0x13c6a0, size = 0x1000, sha256 = "c6f4d390a2070a33a1bdfe7eabc43335647dcac9c3aa8d852a1897c48fc654ee"}

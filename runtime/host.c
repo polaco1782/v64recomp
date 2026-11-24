@@ -12,6 +12,20 @@
 #include <windows.h>
 #include <stdlib.h>
 
+wchar_t *recomp_wide_path(const char *path) {
+    int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path, -1, NULL, 0);
+    unsigned page = CP_UTF8;
+    if (!length) {
+        page = CP_ACP;
+        length = MultiByteToWideChar(page, 0, path, -1, NULL, 0);
+    }
+    wchar_t *wide = length ? malloc((size_t)length * sizeof(*wide)) : NULL;
+    if (wide && !MultiByteToWideChar(page, 0, path, -1, wide, length)) {
+        free(wide);
+        return NULL;
+    }
+    return wide;
+}
 int clock_gettime(int clock, struct timespec *value) {
     if (!value) {
         errno = EINVAL;
@@ -138,9 +152,13 @@ bool recomp_create_directories(const char *path) {
         *p = 0;
 #ifdef _WIN32
         /* Skip a drive root, e.g. C:, which already exists. */
-        if (!(p == buffer + 2 && buffer[1] == ':'))
-            if (_mkdir(buffer) && errno != EEXIST)
+        if (!(p == buffer + 2 && buffer[1] == ':')) {
+            wchar_t *wide = recomp_wide_path(buffer);
+            bool ok = wide && (!_wmkdir(wide) || errno == EEXIST);
+            free(wide);
+            if (!ok)
                 return false;
+        }
 #else
         if (mkdir(buffer, 0755) && errno != EEXIST)
             return false;

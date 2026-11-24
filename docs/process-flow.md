@@ -19,7 +19,7 @@ flowchart TD
     Profile -.-> Generate
     Generate --> Sources["Generated CPU C files<br/>Registry, headers and reports in build/"]
     Sources --> Compile["Host C/C++ compilation and linking"]
-    Shared["Runtime + game adapters<br/>Debug or Release app<br/>Shared RT64 + native audio"] --> Compile
+    Shared["Runtime + game adapters<br/>Debug or Release app<br/>Shared GLES + native audio"] --> Compile
     Local --> Embed{"Embed ROM content?"}
     Sources -. "checked instruction ownership" .-> Embed
     Embed -->|"Yes, supported layout"| Strip["Erase verified CPU instructions<br/>Preserve offsets and required data<br/>Generate embedded content source"]
@@ -34,11 +34,11 @@ flowchart TD
     Launch --> Load["Allocate runtime and verify ROM content<br/>Install shared crash reporter"]
     Load --> Boot["Load boot sections and parameters<br/>Initialize scheduler, devices and backends<br/>Enter compiled guest startup"]
     Boot --> Play["Run compiled game logic<br/>Schedule guest threads and process events"]
-    Play --> Output["RT64 graphics + SDL audio<br/>Controller input + persistent saves"]
+    Play --> Output["GLES graphics + SDL audio<br/>Controller input + persistent saves"]
     Output --> Play
     Play --> Exit{"Close or frame limit?"}
     Exit -->|No| Play
-    Exit -->|Yes| Cleanup["Drain RT64 queues and finalize captures<br/>Destroy backends, then runtime<br/>Free ROM memory"]
+    Exit -->|Yes| Cleanup["Finish pending rendering and finalize captures<br/>Destroy backends, then runtime<br/>Free ROM memory"]
     Play -->|"Controlled failure"| Crash["Shared crash JSON + RDRAM snapshot"]
     Generate -->|"Discovery or translation issue"| Review["Inspect evidence and fix owning layer"]
     Crash --> Review
@@ -77,7 +77,7 @@ flowchart TD
     Config --> Split["Split CPU bodies into cpu-*.c<br/>Keep function registry in functions.c<br/>Write sources.cmake and cache manifest"]
     Split --> NativeBuild["Compile generated C + selected app<br/>Game adapters + shared runtime and backends"]
     Reuse --> NativeBuild
-    RT64["cmake/SharedRT64.cmake<br/>Reusable RT64 and dependencies<br/>build/shared/rt64/"] --> Link["Link native executable"]
+    GLES["cmake/GLES2.cmake<br/>GLES renderer"] --> Link["Link native executable"]
     NativeBuild --> Link
     Link --> Run["Launch compiled game with verified content"]
 ```
@@ -128,9 +128,9 @@ flowchart TD
     OS --> SP["Submit supported graphics or audio task<br/>One active SP task<br/>Park guest for owner processing"]
     RAM --> SP
     SP --> Kind{"Task type"}
-    Kind -->|Graphics| Video["Owner: RT64 display-list processing<br/>Readbacks use live RAM"]
+    Kind -->|Graphics| Video["Owner: compiled graphics RSP<br/>Readbacks use live RAM"]
     Kind -->|Audio| Audio["Owner: validate microcode and DSP commands<br/>Synthesize PCM in live RAM"]
-    Video --> GPU["RT64 render and presentation queues<br/>Vulkan GPU → window"]
+    Video --> GPU["RDP render queue<br/>GLES GPU → window"]
     Video --> Merge["HLE returns with output in live RAM<br/>Queue task completion receipts"]
     Audio --> Merge
     Merge --> Events["Post applicable device completion events<br/>SP/DP, PI, SI and AI messages"]
@@ -148,12 +148,9 @@ flowchart TD
     Present -->|Exit| Drain["Drain outstanding work<br/>Finalize enabled captures and statistics<br/>Destroy backends before runtime"]
 ```
 
-Graphics HLE parsing, readbacks and audio DSP run synchronously on the owner
-while guest CPU execution is parked. They use live RAM without full-memory
-snapshots or merges. Graphics completion follows display-list processing,
-readbacks and capturing render inputs; RT64 rendering and presentation remain
-asynchronous. Guest AI completion follows the guest clock rather than the host
-sound device. See [native threading](threading.md) for the RAM ownership contract.
+The owner runs the compiled graphics and audio RSP on live guest RAM. A graphics task
+hands its RDP commands and input pages to the render thread before SP completion.
+The owner synchronizes framebuffer writes before DP completion. [Threading](threading.md).
 
 Custom paging, overlay loading, relocation and graphics extensions belong to the
 game adapter. Section load state determines which compiled guest addresses are
@@ -191,9 +188,9 @@ flowchart LR
         Sound --> Callback
     end
     end
-    subgraph Renderer["RT64 internal threads and GPU"]
+    subgraph Renderer["GLES render thread and GPU"]
         Render["Workload/render queues<br/>Rendering and supporting workers"]
-        Present["Presentation thread<br/>GPU scheduling and window output"]
+        Present["Present completed frame to window"]
         Render --> Present
     end
     Dispatch -->|"Select one"| Game
@@ -250,7 +247,7 @@ queue can similarly park a blocking sender until space becomes available.
 | --- | --- |
 | Main stack on owner OS thread | Runs SDL, scheduling, graphics HLE and audio DSP while guest fibers are suspended. |
 | One guest fiber on owner OS thread | Executes translated game code; the main stack and other guest fibers are suspended. |
-| RT64 internal threads and GPU | Render and present captured workload data independently; can overlap guest CPU execution without accessing live guest RAM. |
+| GLES render thread and GPU | Render and present captured workload data independently; can overlap guest CPU execution without accessing live guest RAM. |
 | SDL audio device thread | Consumes queued host PCM independently; does not drive guest AI completion timing. |
 
 The SP service allows one active task. HLE writes live RAM before queuing
@@ -258,7 +255,7 @@ completion receipts; polling delivers SP before DP. Split lists without full
 sync retire after SP. A whole-list HLE call cannot be suspended midway through
 processing; a late yield polls its queued completion first.
 
-Shutdown drains RT64 queues, destroys backends before the runtime and releases
+Shutdown finishes pending rendering, destroys backends before the runtime and releases
 guest fiber stacks. HLE failures occur directly on the owner
 and use the shared crash reporter. See [native threading](threading.md) and
 [audio](audio.md) for memory ownership and buffering.
@@ -313,7 +310,7 @@ stacks and generated functions. See [CPU profiling](profiling.md).
 | Guest scheduling and OS | [`runtime/scheduler.c`](../runtime/scheduler.c), [`runtime/os.c`](../runtime/os.c), [threading](threading.md), [OS emulation](os-emulation.md) |
 | Time, devices and task receipts | [`runtime/time.c`](../runtime/time.c), [`runtime/platform.c`](../runtime/platform.c), [`runtime/tasks.c`](../runtime/tasks.c), [`runtime/video.c`](../runtime/video.c) |
 | Input and saves | [`runtime/io.c`](../runtime/io.c) |
-| Graphics and textures | [`backends/rt64.cpp`](../backends/rt64.cpp), [`backends/textures.cpp`](../backends/textures.cpp), [textures](textures.md) |
+| Graphics and textures | [`backends/gles2/renderer.c`](../backends/gles2/renderer.c), [`backends/gles2/textures.c`](../backends/gles2/textures.c), [textures](textures.md) |
 | Audio synthesis and output | [`backends/audio.c`](../backends/audio.c), [`runtime/rsp.c`](../runtime/rsp.c), [audio](audio.md) |
-| Shared renderer build | [`cmake/SharedRT64.cmake`](../cmake/SharedRT64.cmake) |
+| Shared renderer build | [`cmake/GLES2.cmake`](../cmake/GLES2.cmake) |
 | Crash investigation | [`tools/analyze.py crash`](../tools/analysis/inspect_crash.py), [debugging](debugging.md) |

@@ -1,7 +1,7 @@
 # Native threading
 
 See the [thread ownership graph and blocking-receive sequence](process-flow.md#thread-ownership-and-concurrency)
-for the scheduler, guest fibers, synchronous HLE and RT64 presentation flow.
+for the scheduler, guest fibers, synchronous HLE and GLES presentation flow.
 
 Each libultra thread has a stackful fiber, a native C stack and its own
 `MipsContext`. The scheduler resumes one fiber at a time on the main owner OS
@@ -93,19 +93,6 @@ directly. SDL input, window creation, event handling and audio
 queue admission stay on that thread. This preserves application callback state
 and SDL's main-thread requirements.
 
-With RT64, graphics display-list parsing, framebuffer readbacks and audio DSP synthesis
-execute synchronously on the owner with guest CPU execution parked. Both use
-live `Runtime.rdram`; there are no task RAM snapshots, full-RAM merges or
-`n64-audio`/`n64-video` adapter threads. This follows the execution model of
-UltraHLE's synchronous HLE path. The SP service still permits one active task.
-
-RT64 captures vertices, matrices, textures and framebuffer data into its own
-workload/presentation storage before returning from the owner call. Its internal
-render, upload and present threads, GPU rendering and SDL playback remain
-asynchronous and can overlap guest execution. No RT64 queue receives a pointer
-into guest RAM for later consumption. Texture reload, capture and shutdown keep
-the explicit RT64 queue barriers they require.
-
 With GLES, the owner executes compiled RSP code on live RAM. A graphics task
 hands the render thread its RDP command buffer and the referenced graphics
 input pages, then posts SP completion. The owner publishes framebuffer writes
@@ -119,14 +106,12 @@ can start the next audio task while GLES is drawing.
 
 Guest and HLE failures occur on the owner and use its shared crash reporter.
 Diagnostic unwinding stops at the guest fiber's entry stack boundary.
-Backends must be destroyed before the runtime. Four-MiB games retain an eight-MiB
-host allocation for RT64's physical address window and RAM dump; guest bounds
-and Expansion Pak detection still use the configured four-MiB logical size.
+Backends must be destroyed before the runtime. The host allocates the configured guest RDRAM size.
 
 The synchronous path removes snapshot copying, merge scanning and adapter-worker
 handoffs, but also removes CPU/HLE overlap. Compare equivalent settled scenes
 before claiming a gameplay improvement; see [CPU profiling](profiling.md).
 
 Build the shared services with `cmake -S . -B build/host -G Ninja
--DRECOMP_GAME=none -DRECOMP_BUILD_RT64=OFF`, then `cmake --build build/host`.
+-DRECOMP_GAME=none`, then `cmake --build build/host`.
 Game diagnostic runs use the debug presets described in [debugging](debugging.md).

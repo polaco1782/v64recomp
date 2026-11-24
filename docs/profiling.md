@@ -38,10 +38,10 @@ The capture contains:
 
 Start with `hotspots.txt` to identify the busy thread, then find its TID in
 `thread-hotspots.txt`. `recomp_s<section>_<vram>` identifies translated guest
-functions; scheduler, memory, audio, RT64, and driver symbols identify
+functions; scheduler, memory, audio, GLES, and driver symbols identify
 native work. Folded stacks retain the caller paths behind those costs. C++ names
 are demangled when libstdc++ is available. The collector also reads native ELF
-symbol tables to name static runtime helpers and RT64's hidden functions. Local
+symbol tables to name static runtime helpers. Local
 functions include an address suffix to distinguish identical names. Stripped
 libraries can still appear as module offsets; keep the matching executable and
 libraries to resolve those addresses with `addr2line` or another native symbolizer.
@@ -67,8 +67,7 @@ and `allocation_failures` flag lost detail.
 
 Stacks use interrupted x86-64 registers and bounded, fault-safe reads through
 `/proc/self/mem`; allocation, symbol resolution, and file output run on the
-collector thread. Our generated code, runtime, audio adapter, renderer adapter,
-RT64 and Plume retain frame pointers. Third-party code may omit frame pointers,
+collector thread. Our generated code, runtime, audio adapter and GLES renderer retain frame pointers. Third-party code may omit frame pointers,
 optimized tail calls may disappear, and deep stacks may be truncated. Samples
 include user and kernel CPU time, but kernel work is attributed to the userspace
 instruction where the signal is delivered; they do not provide kernel stacks.
@@ -156,8 +155,7 @@ distribution's `perf` package matching the running kernel for function sampling.
 The tool does not change kernel permissions or invoke `sudo`.
 
 Start a **Release** build, reach the scene to measure, and let shader compilation
-settle. Release game targets retain symbols and frame pointers; shared RT64 uses
-optimized `RelWithDebInfo` by default. Debug game code is unoptimized and includes
+settle. Release game targets retain symbols and frame pointers. Debug game code is unoptimized and includes
 extra diagnostics, so its CPU consumption is not representative of Release.
 
 ## Capture
@@ -255,7 +253,7 @@ Route hot symbols to the corresponding code:
 | `ram_address`, `recomp_load*`, `recomp_store*` | Shared memory helpers in `runtime/memory.c` |
 | `mips_fp_*` | Floating-point helpers in `runtime/fpu.c` |
 | `sync_guest`, `save_context`, `recomp_scheduler_run` | Guest scheduling/context serialization in `runtime/scheduler.c` |
-| `RT64::…`, Vulkan driver symbols | Renderer/driver CPU work |
+| `recomp_gles2_…`, GLES driver symbols | Renderer/driver CPU work |
 | Audio synthesis functions | Compiled RSP synthesis and audio backend work |
 
 Map a generated function's guest address to discovery evidence using the
@@ -279,11 +277,8 @@ so CPU profiles attribute their execution to `goldeneye-us`. The profile's
 entry-address labels (`n64-main`, `n64-idle`, `n64-scheduler`, `n64-sound` and
 `n64-controller`) identify logical guest threads in diagnostics, with
 `n64-<guest ID>` as the fallback. Older captures with separate guest pthreads
-retain their original native thread names. Graphics HLE,
-audio synthesis and presentation preparation now run synchronously on the main
-host thread while guest execution is parked. The adapter no longer creates
-`n64-video` or `n64-audio` threads. RT64 retains its own workload, texture, buffer
-and presentation threads; SDL retains its playback thread.
+retain their original native thread names. The owner runs compiled graphics and audio RSP programs. GLES consumes RDP commands
+on its render thread and SDL consumes the queued PCM.
 
 A busy main thread can reflect HLE processing, guest context serialization,
 device services or scheduling. Use sampled call trees to distinguish these from

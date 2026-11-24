@@ -1,7 +1,7 @@
 # Turok 2: Seeds of Evil US 1.0
 
 The US revision-0 desktop port reaches first-person play in the Port of Adia.
-RT64 uses the Acclaim graphics adapter; GLES2 compiles the verified Acclaim
+GLES compiles the verified Acclaim
 RSP image instead. Both renderers use the same desktop controls and ABI1
 audio service. RT64 validation covered the title, new-game menus, both opening cinematics,
 on-foot movement, mouse look, pausing and returning to play. Later levels and Controller
@@ -116,17 +116,6 @@ an ordinary byte-sized display-list descriptor. Exact ROM spans and task hashes:
 | Graphics text | `0xbd000` | `0x1000` | `962fad8d596512b7a4b95f2c2ad8736f2b09b0dad70ae2cd793100df8ffb42af` |
 | Graphics data | `0xc0340` | `0x800` | `c4ba783211d6f282eea4575dde556da810b0a617833ac6b1e7932dbc4610b409` |
 
-RT64's checked-out database matches the text's first `0x1390` bytes with XXH3
-`0x07287e3b3682efbb` and data's first `0x420` bytes with
-`0xd62bdc3a200cbb35`. Both select `F3DEX2_NON_FIFO_ACCLAIM`, currently assigned
-`GBIUCode::Unknown`. The diagnostic hashes use RT64's word-swapped memory layout;
-its text hash extends beyond the OSTask's nominal `0x1000` text size.
-
-`acclaim_graphics.c` binds a standard F3DEX2 command map through the renderer's generic
-C microcode interface and overrides vertex loading and MOVEMEM for this ROM's
-Acclaim variant. Turok 3 uses identical text and initialization data. Both
-ports compile the command decoding, fingerprint checks and lighting from this game directory.
-
 Every submitted graphics task verifies the complete `0x1390`-byte program and
 `0x420`-byte data span in guest memory, including the RSP overlay images beyond
 the task descriptor's nominal text size:
@@ -135,13 +124,6 @@ the task descriptor's nominal text size:
 | --- | --- |
 | Text and overlays | `6734f26b67b25c6a521dc2ee56d343d33c8005ea4001c2db83fbabf539e62e57` |
 | Microcode data | `462006091cd750bfb2f191d8da8f6221d64fd4257852cacab4aacd94e27b3ff1` |
-
-`acclaim_lighting.c` implements the compact 16-byte light layout and the original RSP's
-signed-halfword Manhattan attenuation and Q16/Q7 arithmetic. It supplies computed
-vertex shades while retaining the original normals for texture generation.
-The exact ROM's forced-matrix MOVEMEM returns directly to command dispatch and
-consumes one command. The implementation follows that continuation rather than
-skipping an extra command based on another microcode variant.
 
 The initial black output also required complete-body native bindings for this
 SDK's VI mode, special-feature and current-framebuffer routines. Guest SDK
@@ -160,13 +142,11 @@ Adon’s scene play through and skipped the Port introduction with A.
   --input games/turok2-us/boot-menu.txt --capture-every 300
 ```
 
-The shared snapshot inspector can reproduce the capability check without
-launching the game (optional `--rt64` requires system `libxxhash`). Its database
-check does not execute or validate this game's custom C hook:
+To inspect the captured microcode and the first display-list commands:
 
 ```sh
 .venv/bin/python tools/analyze.py rsp-task local/crashes/turok2-us/REPORT.json \
-  --rom local/turok2.us.z64 --rt64 --commands 16
+  --rom local/turok2.us.z64 --commands 16
 ```
 
 The separate DRAM-output DP path also remains under review: this ROM's

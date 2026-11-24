@@ -174,7 +174,7 @@ def load_generator(game):
     return generator
 
 
-def generate(game: str, output: Path, report_only: bool, renderer: str = "rt64", *, observed=()) -> None:
+def generate(game: str, output: Path, report_only: bool, renderer: str = "gles", *, observed=()) -> None:
     with GenerationProgress(game) as progress:
         _generate(game, output, report_only, progress, renderer, observed)
 
@@ -308,7 +308,7 @@ def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game',required=True,choices=GAMES)
     parser.add_argument('--output',required=True,type=Path)
-    parser.add_argument('--renderer',choices=('rt64','gles'),default='rt64')
+    parser.add_argument('--renderer',choices=('gles',),default='gles')
     parser.add_argument('--report-only',action='store_true')
     args=parser.parse_args()
     try:generate(args.game,args.output.resolve(),args.report_only,args.renderer)

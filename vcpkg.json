@@ -6,6 +6,7 @@
     "openssl",
     "sdl2",
     { "name": "curl", "default-features": false, "features": ["ssl"] },
+    { "name": "angle", "platform": "windows" },
     { "name": "pthreads", "platform": "windows" }
   ]
 }

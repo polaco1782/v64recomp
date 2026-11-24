@@ -2,7 +2,7 @@
 
 This covers the exact 22 game profiles in the tree, not the separate Bad Apple
 and Media Player demos. A feature listed here is implemented, not necessarily
-accepted in gameplay. RT64 remains the default. "Offscreen" uses the software
+accepted in gameplay. "Offscreen" uses the software
 GLES2 backend without physical desktop input; a boot or menu check does not
 establish gameplay, camera quality, audio playback, or hardware compatibility.
 

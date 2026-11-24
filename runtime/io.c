@@ -578,12 +578,18 @@ bool recomp_save_image(const char *path, const uint8_t *bytes, size_t size) {
         return false;
     snprintf(temp, length, "%s.tmp.XXXXXX", path);
 #ifdef _WIN32
+    wchar_t *destination = recomp_wide_path(path);
+    wchar_t *temporary = NULL;
     int fd = -1;
     /* Exclusive creation prevents concurrent saves from sharing a temporary. */
     static _Thread_local unsigned sequence;
     for (unsigned attempt = 0; attempt < 100; attempt++) {
         snprintf(temp, length, "%s.%08x.tmp", path, (unsigned)GetCurrentThreadId() ^ ++sequence);
-        if (!_sopen_s(&fd, temp, _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _SH_DENYRW, _S_IREAD | _S_IWRITE))
+        free(temporary);
+        temporary = recomp_wide_path(temp);
+        if (!temporary || !destination)
+            break;
+        if (!_wsopen_s(&fd, temporary, _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _SH_DENYRW, _S_IREAD | _S_IWRITE))
             break;
         if (errno != EEXIST)
             break;
@@ -605,11 +611,13 @@ bool recomp_save_image(const char *path, const uint8_t *bytes, size_t size) {
             okay = false;
         if (_close(fd))
             okay = false;
-        if (okay && !MoveFileExA(temp, path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+        if (okay && !MoveFileExW(temporary, destination, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
             okay = false;
     }
     if (!okay && fd >= 0)
-        _unlink(temp);
+        _wunlink(temporary);
+    free(temporary);
+    free(destination);
 #else
     int fd = mkstemp(temp);
     bool okay = fd >= 0;

@@ -43,6 +43,8 @@ bool recomp_create_directories(const char *path);
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* Allocate a native path for an SDL/UTF-8 filename. Free it with free(). */
+wchar_t *recomp_wide_path(const char *path);
 int clock_gettime(int clock, struct timespec *value);
 int nanosleep(const struct timespec *duration, struct timespec *remaining);
 int clock_nanosleep(int clock, int flags, const struct timespec *value, struct timespec *remaining);

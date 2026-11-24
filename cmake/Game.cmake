@@ -1,6 +1,6 @@
 # Only the selected game is generated and compiled. Python is a build dependency.
 if(TARGET recomp_rdp_gles2 AND NOT RECOMP_GAME_GLES2_SUPPORTED)
-    message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES graphics path. Select -DRECOMP_RENDERER=rt64.")
+    message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES graphics path.")
 endif()
 set(RECOMP_GAME_DIR "${CMAKE_SOURCE_DIR}/games/${RECOMP_GAME}")
 if(NOT DEFINED RECOMP_OPTIMIZE_DEBUG_DEFAULT)
@@ -10,7 +10,6 @@ option(RECOMP_OPTIMIZE_DEBUG "Optimize Debug game/runtime code while retaining d
     ${RECOMP_OPTIMIZE_DEBUG_DEFAULT})
 option(RECOMP_EMBED_ROM "Embed verified ROM content in the game executable" OFF)
 option(RECOMP_STRIP_EMBEDDED_ROM "Erase verified CPU instructions from embedded ROM content" ON)
-set(RECOMP_EMBED_TEXTURE_PACK "" CACHE FILEPATH "Texture ZIP to append to the game executable (empty disables embedding)")
 set(RECOMP_OPT_LEVEL "2" CACHE STRING "Optimization level for release game code")
 if(NOT RECOMP_OPT_LEVEL MATCHES "^(2|3)$")
     message(FATAL_ERROR "RECOMP_OPT_LEVEL must be 2 or 3")
@@ -21,17 +20,6 @@ elseif(EXISTS "${CMAKE_SOURCE_DIR}/.venv/bin/python")
     set(Python3_EXECUTABLE "${CMAKE_SOURCE_DIR}/.venv/bin/python" CACHE FILEPATH "Python with rabbitizer")
 endif()
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
-if(RECOMP_EMBED_TEXTURE_PACK AND TARGET recomp_rdp_gles2)
-    message(FATAL_ERROR "RECOMP_EMBED_TEXTURE_PACK requires the RT64 renderer")
-endif()
-if(RECOMP_EMBED_TEXTURE_PACK)
-    get_filename_component(RECOMP_EMBED_TEXTURE_PACK "${RECOMP_EMBED_TEXTURE_PACK}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-    execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
-        --pack "${RECOMP_EMBED_TEXTURE_PACK}" RESULT_VARIABLE RECOMP_TEXTURE_PACK_RESULT)
-    if(NOT RECOMP_TEXTURE_PACK_RESULT EQUAL 0)
-        message(FATAL_ERROR "Invalid RECOMP_EMBED_TEXTURE_PACK; supply a supported texture ZIP.")
-    endif()
-endif()
 set(RECOMP_GENERATED "${CMAKE_BINARY_DIR}/generated/${RECOMP_GAME}")
 file(GLOB_RECURSE RECOMP_GENERATOR_INPUTS CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/tools/*.py" "${CMAKE_SOURCE_DIR}/tools/*.toml" "${CMAKE_SOURCE_DIR}/tools/symbols.json"
@@ -40,7 +28,7 @@ file(GLOB_RECURSE RECOMP_GENERATOR_INPUTS CONFIGURE_DEPENDS
 # The content cache makes repeat configures cheap and detects deleted outputs.
 message(STATUS "Checking ${RECOMP_GAME} CPU source generation")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -u "${CMAKE_SOURCE_DIR}/tools/generate_game.py"
-    --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}" --renderer "${RECOMP_RENDERER}"
+    --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}"
     OUTPUT_VARIABLE RECOMP_GENERATION_LOG
     ERROR_VARIABLE RECOMP_GENERATION_LOG
     ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
@@ -80,13 +68,13 @@ add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AU
     "${RECOMP_GENERATED}/symbols.json" "${RECOMP_GENERATED}/coverage.json"
     "${RECOMP_GENERATED}/function-candidates.json"
     COMMAND "${Python3_EXECUTABLE}" -u "${CMAKE_SOURCE_DIR}/tools/generate_game.py"
-        --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}" --renderer "${RECOMP_RENDERER}"
+        --game "${RECOMP_GAME}" --output "${RECOMP_GENERATED}"
     DEPENDS ${RECOMP_GENERATOR_INPUTS} "${RECOMP_ROM}"
     COMMENT "Checking ${RECOMP_GAME} CPU source generation" USES_TERMINAL VERBATIM)
 set(RECOMP_LOCAL "${CMAKE_SOURCE_DIR}/local")
 set(RECOMP_DEBUG_OUTPUT_DIR "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
 if(EMSCRIPTEN)
-    if(RECOMP_EMBED_ROM OR RECOMP_EMBED_TEXTURE_PACK)
+    if(RECOMP_EMBED_ROM)
         message(FATAL_ERROR "Browser builds serve the verified ROM as a separate asset")
     endif()
     execute_process(COMMAND "${Python3_EXECUTABLE}" -c
@@ -131,22 +119,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
 endif()
 set_property(TARGET ${RECOMP_GAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 recomp_separate_release_debug(${RECOMP_GAME})
-if(RECOMP_EMBED_TEXTURE_PACK)
-    target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_EMBED_TEXTURE_PACK)
-    # A changed ZIP must relink before appending, avoiding accumulated overlays.
-    # A generated source also tracks this dependency with Visual Studio generators.
-    set(RECOMP_TEXTURE_PACK_SOURCE "${RECOMP_GENERATED}/assets/embedded_texture_pack.c")
-    add_custom_command(OUTPUT "${RECOMP_TEXTURE_PACK_SOURCE}"
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
-            --pack "${RECOMP_EMBED_TEXTURE_PACK}" --build-source "${RECOMP_TEXTURE_PACK_SOURCE}"
-        DEPENDS "${RECOMP_EMBED_TEXTURE_PACK}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
-        COMMENT "Checking embedded texture ZIP" VERBATIM)
-    target_sources(${RECOMP_GAME} PRIVATE "${RECOMP_TEXTURE_PACK_SOURCE}")
-    add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/embed_texture_pack.py"
-            --binary "$<TARGET_FILE:${RECOMP_GAME}>" --pack "${RECOMP_EMBED_TEXTURE_PACK}"
-        COMMENT "Appending ${RECOMP_GAME} texture ZIP" VERBATIM)
-endif()
 if(RECOMP_EMBED_ROM)
     target_sources(${RECOMP_GAME} PRIVATE "${RECOMP_PACKAGE_DIR}/embedded_rom.c")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_EMBED_ROM)
@@ -196,13 +168,22 @@ if(EMSCRIPTEN)
     configure_file("${CMAKE_SOURCE_DIR}/web/index.html.in" "${CMAKE_BINARY_DIR}/bin/index.html" @ONLY)
 endif()
 if(WIN32)
+    if(VCPKG_INSTALLED_DIR AND VCPKG_TARGET_TRIPLET)
+        # SDL loads EGL/GLES dynamically. Deploy both ANGLE DLLs even with cheats disabled.
+        set(angle_bin "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/$<$<CONFIG:Debug>:debug/>bin")
+        add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${angle_bin}/libEGL.dll" "${angle_bin}/libGLESv2.dll" "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
+    endif()
     add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_SOURCE_DIR}/LICENSE" "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
             "$<TARGET_FILE_DIR:${RECOMP_GAME}>"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_BINARY_DIR}/bin/licenses"
+            "$<TARGET_FILE_DIR:${RECOMP_GAME}>/licenses"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/licenses"
             "$<TARGET_FILE_DIR:${RECOMP_GAME}>/licenses" VERBATIM)
-    foreach(dependency openssl sdl2 curl pthreads zlib)
+    foreach(dependency angle openssl sdl2 curl pthreads zlib)
         set(notice "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/${dependency}/copyright")
         if(EXISTS "${notice}")
             add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
@@ -210,23 +191,10 @@ if(WIN32)
                     "$<TARGET_FILE_DIR:${RECOMP_GAME}>/licenses/${dependency}.txt" VERBATIM)
         endif()
     endforeach()
-    # Shader compiler DLLs are delay-loaded by RT64. vcpkg deploys its own DLLs.
-    if(RECOMP_RENDERER STREQUAL "rt64")
-        foreach(dll dxcompiler dxil)
-            add_custom_command(TARGET ${RECOMP_GAME} POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                    "${RECOMP_RT64_SOURCE}/src/contrib/dxc/bin/x64/${dll}.dll"
-                    "$<TARGET_FILE_DIR:${RECOMP_GAME}>" VERBATIM)
-        endforeach()
-    endif()
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
     target_compile_definitions(${RECOMP_GAME} PRIVATE RECOMP_DEBUG)
-endif()
-if(RECOMP_GAME STREQUAL "goldeneye-us" AND RECOMP_RENDERER STREQUAL "rt64")
-    target_include_directories(${RECOMP_GAME} SYSTEM PRIVATE ${RECOMP_RT64_INCLUDES})
-    target_compile_definitions(${RECOMP_GAME} PRIVATE HLSL_CPU FFX_GCC IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND RECOMP_OPTIMIZE_DEBUG)
     include("${CMAKE_SOURCE_DIR}/cmake/OptimizeDebug.cmake")
@@ -239,8 +207,6 @@ add_custom_target(pack
         "-DINPUT=$<TARGET_FILE:${RECOMP_GAME}>"
         "-DOUTPUT=$<TARGET_FILE_DIR:${RECOMP_GAME}>/packed/$<TARGET_FILE_NAME:${RECOMP_GAME}>"
         "-DUPX_EXECUTABLE=${RECOMP_UPX_EXECUTABLE}"
-        "-DTEXTURE_PACK=${RECOMP_EMBED_TEXTURE_PACK}"
-        "-DPYTHON_EXECUTABLE=${Python3_EXECUTABLE}"
         -P "${CMAKE_SOURCE_DIR}/cmake/PackUPX.cmake"
     DEPENDS ${RECOMP_GAME}
     COMMENT "Packing ${RECOMP_GAME} with maximum UPX compression"

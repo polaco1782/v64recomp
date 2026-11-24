@@ -66,19 +66,18 @@ def wasm_toolchain(game, mode, env):
 
 def main():
     presets = json.loads((ROOT / 'CMakePresets.json').read_text())
-    parser = argparse.ArgumentParser(description=__doc__, epilog='Default: RT64 Release. Browser builds require Emscripten.')
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Default: GLES Release. Browser builds require Emscripten.')
     parser.add_argument('game', choices=[p['name'] for p in presets['workflowPresets']])
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument('--debug', dest='mode', action='store_const', const='Debug', help='build with diagnostics')
     mode.add_argument('--release', dest='mode', action='store_const', const='Release', help='build the optimized configuration')
     target = parser.add_mutually_exclusive_group()
-    for name, help_text in [('rt64', 'desktop RT64'), ('gles', 'desktop OpenGL ES 3.0'), ('wasm', 'browser WebAssembly with WebGL 2')]:
+    for name, help_text in [('gles', 'desktop OpenGL ES 3.0'), ('wasm', 'browser WebAssembly with WebGL 2')]:
         target.add_argument('--' + name, dest='target', action='store_const', const=name, help=help_text)
-    parser.set_defaults(mode='Release', target='rt64')
+    parser.set_defaults(mode='Release', target='gles')
     args = parser.parse_args()
-    variant = args.mode.lower() if args.target == 'rt64' else f'{args.target}-{args.mode.lower()}'
-    env = dict(os.environ, V64_BUILD_SUFFIX='-' + variant, CMAKE_BUILD_TYPE=args.mode,
-               V64_WORKFLOW_RENDERER='gles' if args.target == 'wasm' else args.target)
+    variant = f'{args.target}-{args.mode.lower()}'
+    env = dict(os.environ, V64_BUILD_SUFFIX='-' + variant, CMAKE_BUILD_TYPE=args.mode)
     if args.target == 'wasm':
         try:
             toolchain = wasm_toolchain(args.game, args.mode, env)
