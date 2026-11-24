@@ -406,6 +406,14 @@ static void draw_begin(RecompRDPGles2 *s) {
     s->started = true;
     recomp_gles2_bind_surface(s);
 }
+size_t recomp_gles2_command_words(uint32_t w0, size_t available) {
+    w0 |= 0xc0000000u;
+    unsigned op = w0 >> 24;
+    size_t n = op >= 0xc8 && op <= 0xcf ? recomp_rdp_triangle_words(w0) : (op == 0xe4 || op == 0xe5 ? 4 : 2);
+    if (n > available)
+        recomp_fail("truncated RDP command", w0);
+    return n;
+}
 void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size, const uint32_t *words, size_t count) {
     recomp_gles2_require_owner(s);
     if (!ram || ram_size != s->rt->rdram_size || (!words && count) || count > 4 * 1024 * 1024)
@@ -414,15 +422,10 @@ void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size,
     s->rdp_perspective = false;
     draw_begin(s);
     for (size_t offset = 0; offset < count;) {
-        if (count - offset < 2)
-            recomp_fail("truncated RDP command", (uint32_t)offset * 4);
+        size_t length = recomp_gles2_command_words(words[offset], count - offset);
         uint32_t w0 = words[offset] | 0xc0000000u, w1 = words[offset + 1];
         unsigned op = w0 >> 24;
-        size_t length = 2;
         if (op >= 0xc8 && op <= 0xcf) {
-            length = recomp_rdp_triangle_words(w0);
-            if (count - offset < length)
-                recomp_fail("truncated RDP triangle", (uint32_t)offset * 4);
             uint32_t packet[RECOMP_RDP_TRIANGLE_WORDS];
             memcpy(packet, words + offset, length * sizeof(*packet));
             packet[0] = w0;
@@ -434,9 +437,6 @@ void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size,
             bool redundant = (op == 0xef && s->other_high == (w0 & 0xffffff) && s->other_low == w1) ||
                              (op == 0xfc && s->mux0 == (w0 & 0xffffff) && s->mux1 == w1);
             if (op == 0xe4 || op == 0xe5) {
-                length = 4;
-                if (count - offset < length)
-                    recomp_fail("truncated RDP texture rectangle", (uint32_t)offset * 4);
                 texture_rectangle(s, w0, w1, words[offset + 2], words[offset + 3], op == 0xe5);
             } else if (!redundant && !consume_rdp(s, w0, w1)) {
                 fprintf(stderr, "RDP command %08x %08x at word %zu\n", w0, w1, offset);

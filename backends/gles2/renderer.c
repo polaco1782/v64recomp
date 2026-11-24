@@ -2,7 +2,7 @@
 #include "rdp_gles2.h"
 #include "game.h"
 #include "timing.h"
-#include "rsp_worker.h"
+#include "rsp.h"
 #include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,11 +16,11 @@ struct RecompRenderer {
     size_t microcode_count;
     RecompGles2InputConfig input_config;
     uint64_t first_display;
-    RecompRspWorker *worker;
+    RecompRspState rsp;
     RecompTask pending;
+    bool registered;
     bool raw_vi;
 };
-static void rsp_service(Runtime *, void *, bool);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 static bool texture_editor_enabled;
 
@@ -106,63 +106,34 @@ static const RecompGraphicsMicrocode *identify(RecompRenderer *s, uint32_t code,
     }
     recomp_fail("GLES2 graphics microcode is not in the game's verified profile", code);
 }
-typedef struct RspServiceRequest {
-    RecompRenderer *renderer;
-    bool wait;
-} RspServiceRequest;
-static void rsp_service_on_host(Runtime *rt, void *opaque) {
-    RspServiceRequest *request = opaque;
-    RecompRenderer *s = request->renderer;
-    if (!s->pending.token)
-        return;
-    const RecompRspState *result = recomp_rsp_worker_result(s->worker, request->wait);
-    if (!result)
-        return;
-    if (result->error) {
-        fprintf(stderr, "RSP pc=%03x instruction=%08x address=%08x after %llu instructions: %s\n",
-                result->instruction_pc, result->error_word, result->error_address,
-                (unsigned long long)result->instructions, result->error);
-        recomp_fail(result->error, result->error_address);
-    }
-    uint64_t begin = recomp_game_monotonic();
-    uint64_t cpu_begin = rt->timing ? recomp_timing_thread_clock() : 0;
-    /* RDP texture reads and color readback use the task's immutable snapshot.
-     * Commit only actual DMA writes and the completed native color image. */
-    recomp_rdp_gles2_draw_rdp(s->gpu, result->ram, result->ram_size, result->rdp, result->rdp_count);
-    for (size_t i = 0; i < result->write_count; i++) {
-        const RecompRspWrite *write = &result->writes[i];
-        memcpy(rt->rdram + write->address, result->ram + write->address, write->bytes);
-    }
-    uint64_t elapsed = recomp_game_monotonic() - begin;
+static void finish_draw(Runtime *rt, void *opaque) {
+    RecompRenderer *s = opaque;
+    uint64_t elapsed, cpu;
+    recomp_rdp_gles2_collect(s->gpu, &elapsed, &cpu);
     s->stats.submit_ns += elapsed;
     recomp_timing_add(rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
-    if (cpu_begin)
-        recomp_timing_add(rt, RECOMP_TIMING_GRAPHICS_CPU, recomp_timing_thread_clock() - cpu_begin, 1);
-    if (!recomp_task_complete(rt, s->pending.token, RECOMP_SP_DONE))
-        recomp_fail("invalid native RSP SP completion", s->pending.guest_address);
-    s->stats.sp_callbacks++;
+    if (cpu)
+        recomp_timing_add(rt, RECOMP_TIMING_GRAPHICS_CPU, cpu, 1);
     if (recomp_rdp_gles2_full_sync(s->gpu)) {
         if (!recomp_task_complete(rt, s->pending.token, RECOMP_DP_DONE))
-            recomp_fail("invalid native RSP DP completion", s->pending.guest_address);
+            recomp_fail("invalid native RDP completion", s->pending.guest_address);
         s->stats.dp_callbacks++;
     } else {
         if (!recomp_task_finish_without_dp(rt, s->pending.token))
-            recomp_fail("invalid native RSP task without DP sync", s->pending.guest_address);
+            recomp_fail("invalid native RDP task without DP sync", s->pending.guest_address);
         s->stats.graphics_tasks_without_dp++;
     }
-#ifdef RECOMP_DEBUG
-    if (s->stats.graphics_tasks < 4 || !(s->stats.graphics_tasks & 255))
-        fprintf(stderr, "RSP native task=%llu instructions=%llu RDP words=%zu DMA ranges=%zu\n",
-                (unsigned long long)s->pending.token, (unsigned long long)result->instructions, result->rdp_count,
-                result->write_count);
-#endif
     s->stats.rdp_triangles = recomp_rdp_gles2_triangles(s->gpu);
     s->pending.token = 0;
-    recomp_rsp_worker_release(s->worker);
 }
-static void rsp_service(Runtime *rt, void *opaque, bool wait) {
-    RspServiceRequest request = {opaque, wait};
-    recomp_on_host(rt, rsp_service_on_host, &request);
+static void render_service(Runtime *rt, void *opaque, bool wait) {
+    RecompRenderer *s = opaque;
+    if (s->pending.token && recomp_rdp_gles2_ready(s->gpu, wait))
+        recomp_on_host(rt, finish_draw, s);
+}
+static void wait_draw(RecompRenderer *s) {
+    if (s->pending.token)
+        render_service(s->rt, s, true);
 }
 bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
     if (task->resumed || task->words[0] != 1)
@@ -171,26 +142,41 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
      * transfers the standard 4 KiB IMEM span. Authenticate that entire span. */
     uint32_t code_size = task->words[5] ? task->words[5] : 0x1000;
     const RecompGraphicsMicrocode *microcode = identify(s, task->words[4], task->words[6], code_size, task->words[7]);
-    if (s->pending.token)
-        recomp_fail("native RSP worker already has a task", task->guest_address);
-    if (!s->worker) {
-        s->worker = recomp_rsp_worker_create(s->rt->rdram_size);
-        if (!s->worker || !recomp_task_service_add(s->rt, rsp_service, s))
-            recomp_fail("native RSP worker initialization failed", task->guest_address);
+    wait_draw(s);
+    if (!s->registered) {
+        if (!recomp_task_service_add(s->rt, render_service, s))
+            recomp_fail("GLES render service initialization failed", task->guest_address);
+        s->registered = true;
+        recomp_rsp_init(&s->rsp, s->rt->rdram, s->rt->rdram_size, microcode->rsp);
     }
-    s->pending = *task;
+    s->rsp.program = microcode->rsp;
     s->raw_vi = false;
     /* The OS loads the task bootstrap by DMA from its physical address. */
     uint32_t words[16];
     memcpy(words, task->words, sizeof(words));
     words[2] = recomp_ram_address(s->rt, words[2], words[3]);
-    if (!recomp_rsp_worker_submit(s->worker, microcode->rsp, words, s->rt->rdram))
-        recomp_fail("native RSP worker rejected a task", task->guest_address);
     s->stats.graphics_tasks++;
+    if (!recomp_rsp_start(&s->rsp, words)) {
+        fprintf(stderr, "RSP pc=%03x instruction=%08x after %llu instructions\n", s->rsp.instruction_pc,
+                s->rsp.error_word, (unsigned long long)s->rsp.instructions);
+        recomp_fail(s->rsp.error, s->rsp.error_address);
+    }
+    recomp_rdp_gles2_submit(s->gpu, s->rsp.rdp, s->rsp.rdp_count, false);
+    s->pending = *task;
+    if (!recomp_task_complete(s->rt, task->token, RECOMP_SP_DONE))
+        recomp_fail("invalid native RSP completion", task->guest_address);
+    s->stats.sp_callbacks++;
+#ifdef RECOMP_DEBUG
+    if (s->stats.graphics_tasks < 4 || !(s->stats.graphics_tasks & 255))
+        fprintf(stderr, "RSP native task=%llu instructions=%llu RDP words=%zu DMA ranges=%zu\n",
+                (unsigned long long)task->token, (unsigned long long)s->rsp.instructions, s->rsp.rdp_count,
+                s->rsp.write_count);
+#endif
     return true;
 }
 
 bool recomp_renderer_present(RecompRenderer *s) {
+    wait_draw(s);
     uint64_t start = recomp_game_monotonic();
     if (!s->raw_vi) {
         RecompViState vi = recomp_vi_state(s->rt);
@@ -211,9 +197,11 @@ bool recomp_renderer_present(RecompRenderer *s) {
     return true;
 }
 bool recomp_renderer_input(RecompRenderer *s, RecompPad *pad) {
+    wait_draw(s);
     return recomp_rdp_gles2_input(s->gpu, pad);
 }
 bool recomp_renderer_capture(RecompRenderer *s, const char *path) {
+    wait_draw(s);
     return recomp_rdp_gles2_capture(s->gpu, path);
 }
 RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {
@@ -221,19 +209,20 @@ RecompRendererStats recomp_renderer_stats(RecompRenderer *s) {
 }
 void recomp_renderer_destroy(RecompRenderer *s) {
     if (s) {
-        if (s->worker) {
-            rsp_service(s->rt, s, true);
+        wait_draw(s);
+        if (s->registered)
             recomp_task_service_remove(s->rt, s);
-            recomp_rsp_worker_destroy(s->worker);
-        }
+        recomp_rsp_destroy(&s->rsp);
         recomp_rdp_gles2_destroy(s->gpu);
         free(s);
     }
 }
 void recomp_renderer_set_ram_scanout(RecompRenderer *s) {
+    wait_draw(s);
     recomp_rdp_gles2_set_ram_scanout(s->gpu);
 }
 void recomp_renderer_set_framebuffer_sizes(RecompRenderer *s, const RecompFramebufferSize *sizes, size_t count) {
+    wait_draw(s);
     recomp_rdp_gles2_set_framebuffer_sizes(s->gpu, sizes, count);
 }
 bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end, const RecompViRegisters *vi,
@@ -243,15 +232,20 @@ bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
     uint32_t bytes = end - start;
     start = recomp_ram_address(s->rt, start, bytes);
     end = start + bytes;
-    if (s->pending.token)
-        rsp_service(s->rt, s, true);
+    wait_draw(s);
     size_t count = (end - start) / 4;
     uint32_t *words = count ? malloc(count * sizeof(*words)) : NULL;
     if (count && !words)
         recomp_fail("raw RDP command allocation failed", start);
     for (size_t i = 0; i < count; i++)
         words[i] = recomp_load32(s->rt, 0x80000000u | (start + (uint32_t)i * 4));
-    recomp_rdp_gles2_draw_rdp(s->gpu, s->rt->rdram, s->rt->rdram_size, words, count);
+    recomp_rdp_gles2_submit(s->gpu, words, count, true);
+    /* The raw DPC caller consumes FULLSYNC and the color image on return. */
+    uint64_t elapsed, cpu;
+    recomp_rdp_gles2_collect(s->gpu, &elapsed, &cpu);
+    recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS, elapsed, 1);
+    if (cpu)
+        recomp_timing_add(s->rt, RECOMP_TIMING_GRAPHICS_CPU, cpu, 1);
     free(words);
     recomp_rdp_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, framebuffer, 1), vi->status);
     s->raw_vi = true;
@@ -260,37 +254,46 @@ bool recomp_renderer_submit_rdp(RecompRenderer *s, uint32_t start, uint32_t end,
     return recomp_rdp_gles2_full_sync(s->gpu);
 }
 void recomp_renderer_mouse_mode(RecompRenderer *s, bool enabled, bool gameplay) {
+    wait_draw(s);
     s->input_config.mouse_enabled = enabled;
     s->input_config.mouse_gameplay = gameplay;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 RecompMouseFrame recomp_renderer_mouse_frame(RecompRenderer *s) {
+    wait_draw(s);
     return recomp_rdp_gles2_mouse_frame(s->gpu);
 }
 void recomp_renderer_separate_mouse_actions(RecompRenderer *s, bool enabled) {
+    wait_draw(s);
     s->input_config.separate_mouse_actions = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
+    wait_draw(s);
     s->input_config.keyboard_c_buttons = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 void recomp_renderer_wasd_stick(RecompRenderer *s, bool enabled) {
+    wait_draw(s);
     s->input_config.wasd_stick = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 void recomp_renderer_gamepad_camera_mode(RecompRenderer *s, bool enabled) {
+    wait_draw(s);
     s->input_config.gamepad_camera = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 RecompCameraStick recomp_renderer_camera_stick(RecompRenderer *s) {
+    wait_draw(s);
     return recomp_rdp_gles2_camera_stick(s->gpu);
 }
 void recomp_renderer_set_fov_hook(RecompRenderer *s, void (*adjust)(int)) {
+    wait_draw(s);
     s->input_config.fov_adjust = adjust;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
 void recomp_renderer_set_aspect_hook(RecompRenderer *s, bool (*update)(void *, float), void *userdata) {
+    wait_draw(s);
     s->input_config.aspect_update = update;
     s->input_config.aspect_userdata = userdata;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);

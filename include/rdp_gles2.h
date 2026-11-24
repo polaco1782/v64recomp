@@ -30,9 +30,12 @@ bool recomp_rdp_gles2_poll(RecompRDPGles2 *);
 void recomp_rdp_gles2_enable_texture_editor(RecompRDPGles2 *);
 uint64_t recomp_rdp_gles2_editor_paused_ns(void);
 #endif
-/* Host-order RDP words produced by a compiled RSP task. The memory view stays
- * private to this synchronous owner-thread draw. Color writes update both the
- * task view (for later texture loads) and the corresponding live RDRAM bytes. */
+/* The caller retains the immutable command buffer until collection. Submission
+ * snapshots pages named by texture loads and 8-bit color-image imports. A
+ * parked caller can lend live RAM until the mandatory blocking collection. */
+void recomp_rdp_gles2_submit(RecompRDPGles2 *, const uint32_t *words, size_t count, bool guest_parked);
+bool recomp_rdp_gles2_ready(RecompRDPGles2 *, bool wait);
+void recomp_rdp_gles2_collect(RecompRDPGles2 *, uint64_t *elapsed_ns, uint64_t *cpu_ns);
 void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *, uint8_t *rdram, size_t ram_size, const uint32_t *words, size_t count);
 /* Extent of the final synchronized color image. */
 void recomp_rdp_gles2_readback_range(RecompRDPGles2 *, uint32_t *address, size_t *bytes);

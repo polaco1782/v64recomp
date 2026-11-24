@@ -106,18 +106,16 @@ asynchronous and can overlap guest execution. No RT64 queue receives a pointer
 into guest RAM for later consumption. Texture reload, capture and shutdown keep
 the explicit RT64 queue barriers they require.
 
-With GLES2, the owner snapshots guest RAM and submits one graphics task to the
-RSP worker. The worker executes the verified program and records RDP commands
-and DMA writes. The owner draws, commits the writes and signals SP completion.
-A graphics task signals DP completion when its output contains FULLSYNC.
+With GLES, the owner executes compiled RSP code on live RAM. A graphics task
+hands the render thread its RDP command buffer and the referenced graphics
+input pages, then posts SP completion. The owner publishes framebuffer writes
+before DP completion on FULLSYNC. Lists without FULLSYNC retire without a DP
+event. A render failure returns to the owner for shared crash reporting.
 [Graphics execution and synchronization](armv8-gles2.md#task-execution).
 
 Audio writes PCM and decoder state directly into live RAM before queuing SP
-completion. Graphics queues SP and applicable DP receipts after parsing and
-readbacks; completion does not wait for GPU presentation. The task service
-delivers queued guest events during polling, in SP-before-DP order. A split list
-without DP full sync still retires after SP. HLE tasks finish at whole-list
-boundaries; a late yield first polls their queued completion.
+completion. The scheduler delivers queued events in SP-before-DP order and
+can start the next audio task while GLES is drawing.
 
 Guest and HLE failures occur on the owner and use its shared crash reporter.
 Diagnostic unwinding stops at the guest fiber's entry stack boundary.

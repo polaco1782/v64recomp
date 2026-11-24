@@ -225,6 +225,7 @@ void recomp_rdp_gles2_enable_cheats(RecompRDPGles2 *s, const char *data_path) {
 void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
     if (!s)
         return;
+    recomp_gles2_queue_destroy(s);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     gles2_editor_destroy(s->editor);
 #endif

@@ -17,7 +17,7 @@ typedef struct TaskService {
 } TaskService;
 struct RecompTasks {
     RecompTaskBackend backend;
-    TaskRecord *records, *active;
+    TaskRecord *records, **append, *active;
     RecompTask loaded;
     RecompTask observed;
     bool has_observed;
@@ -182,6 +182,8 @@ static void poll_tasks(Runtime *rt) {
         bool done = r->sp_emitted && (r->task.words[0] != 1 || r->yielded || r->no_dp_sync || r->dp_emitted);
         if (done) {
             *link = r->next;
+            if (!r->next)
+                t->append = link;
             free(r);
             t->stats.pending_records--;
         } else
@@ -196,6 +198,7 @@ bool recomp_tasks_init(Runtime *rt, const RecompTaskBackend *backend) {
     if (!t)
         return false;
     t->backend = *backend;
+    t->append = &t->records;
     t->lock = (atomic_flag)ATOMIC_FLAG_INIT;
     rt->tasks = t;
     rt->destroy_tasks = recomp_tasks_destroy;
@@ -240,10 +243,13 @@ static void buffer(Runtime *rt, uint32_t address, uint32_t bytes, bool required,
 }
 static void wait_sp_load_on_host(Runtime *rt, void *opaque) {
     uint32_t object = *(uint32_t *)opaque;
-    /* SDK __osSpSetPc retries until SP_STATUS_HALT. Drain deferred services and
-     * deliver queued HLE completions before the next task can be loaded. */
-    recomp_task_services_flush(rt);
+    /* SDK __osSpSetPc retries until SP_STATUS_HALT. A queued SP completion
+     * permits the next load even while the display processor is busy. */
     poll_tasks(rt);
+    if (tasks(rt)->active) {
+        recomp_task_services_flush(rt);
+        poll_tasks(rt);
+    }
     if (tasks(rt)->active)
         recomp_fail("SP task did not halt before load", object);
 }
@@ -347,8 +353,10 @@ void recomp_os_sp_task_start_go(Runtime *rt, MipsContext *ctx) {
     t->observed = r->task;
     if (t->has_yielded_task && t->yielded_key == recomp_ram_address(rt, object, 64))
         t->has_yielded_task = false;
-    r->next = t->records;
-    t->records = r;
+    /* The previous DP and a later task can both finish between guest polls.
+     * Deliver ready records in submission order, preserving SP-before-DP. */
+    *t->append = r;
+    t->append = &r->next;
     t->active = r;
     t->has_loaded = false;
     t->stats.submissions++;
@@ -360,8 +368,11 @@ static void yield_on_host(Runtime *rt, void *opaque) {
     RecompTasks *t = tasks(rt);
     /* Supported HLE tasks finish at a whole-list boundary. Deliver their queued
      * completions before deciding whether a backend yield is still needed. */
-    recomp_task_services_flush(rt);
     poll_tasks(rt);
+    if (tasks(rt)->active) {
+        recomp_task_services_flush(rt);
+        poll_tasks(rt);
+    }
     if (!t->active) {
         /* A VI notification can reach the game before the queued SP event.
          * Remember its late request so Yielded clears the guest DP-wait flag. */

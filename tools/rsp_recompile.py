@@ -135,16 +135,8 @@ def block_barrier(word: int) -> bool:
 
 
 def instruction_blocks(words: list[int]) -> list[tuple[int, ...]]:
-    leaders = {0}
-    for i, word in enumerate(words):
-        op = word >> 26
-        if branch_instruction(word):
-            leaders.add(i + 2)
-            if op in (1, 4, 5, 6, 7):
-                immediate = (word & 65535) - (65536 if word & 32768 else 0)
-                leaders.add(i + 1 + immediate)
-        if block_barrier(word):
-            leaders.add(i + 1)
+    # Every instruction has a suffix entry. A branch destination inside a
+    # straight-line sequence can therefore share the same native fall-through.
     blocks = []
     start = 0
     while start < len(words):
@@ -159,7 +151,7 @@ def instruction_blocks(words: list[int]) -> list[tuple[int, ...]]:
                 # barrier. Any pending transfer on entry uses the single step.
                 end = min(end + 1, len(words))
                 break
-            if end - start >= MAX_BLOCK_INSTRUCTIONS or end in leaders:
+            if end - start >= MAX_BLOCK_INSTRUCTIONS:
                 break
         blocks.append(tuple(words[start:end]))
         start = end
@@ -245,19 +237,27 @@ def emit_program(output: Path, images: list[tuple[str, bytes]], *, stem: str = '
                   'if (s->blocks[at / 4] < length || s->next_pc != ((at + 4) & 4095) ||',
                   's->instructions > s->instruction_limit || length > s->instruction_limit - s->instructions) {',
                   'rsp_step(s); continue; }',
-                  'uint32_t pc = at, next_pc = (at + 4) & 4095;',
+                  'uint32_t end = (at + 4 * length) & 4095;',
+                  'uint32_t pc = end, next_pc = (end + 4) & 4095;',
                   '/* Only the final instruction may halt, fault or replace IMEM.',
                   ' * Helpers in earlier instructions must preserve that invariant. */',
                   's->instructions += length;', 'switch (entry) {'])
     for block, base in blocks.items():
         for i, word in enumerate(block):
-            lines.extend([f'case {base + i}: {{', 'at = pc; pc = next_pc; next_pc = (next_pc + 4) & 4095;'])
-            if i + 1 == len(block):
-                lines.append('s->instruction_pc = at;')
-            lines.append(instruction(word).replace('s->next_pc', 'next_pc'))
-            lines.extend(['break;', '}'] if i + 1 == len(block) else ['}', '/* fall through */'])
-    lines.extend(['}', 's->pc = pc; s->next_pc = next_pc; s->instruction_pc = at;',
-                  's->gpr[0] = 0;', '}', '}'])
+            lines.append(f'case {base + i}: {{')
+            last = i + 1 == len(block)
+            operation = instruction(word)
+            if last:
+                lines.extend(['at = (end - 4) & 4095;', 's->instruction_pc = at;'])
+            if not last and branch_instruction(word):
+                # Only the delay slot follows. Its PC is sequential, while its
+                # successor is the target selected here, before the slot runs.
+                lines.extend(['at = (end - 8) & 4095;', operation.replace('s->next_pc', 'pc'),
+                              'next_pc = (pc + 4) & 4095;'])
+            else:
+                lines.append(operation.replace('s->next_pc', 'next_pc'))
+            lines.extend(['break;', '}'] if last else ['}', '/* fall through */'])
+    lines.extend(['}', 's->pc = pc; s->next_pc = next_pc;', 's->gpr[0] = 0;', '}', '}'])
     for index, (image, entries) in enumerate(zip(words_by_image, entries_by_image)):
         lines.append(f'static const uint32_t rsp_words_{index}[] = {{')
         for offset in range(0, len(image), 8):

@@ -406,9 +406,24 @@ BYTES(lv, 4)
 BYTES(dv, 8)
 #undef BYTES
 void recomp_rsp_lqv(RecompRspState *s, unsigned r, unsigned e, uint32_t a) {
+    if (e == 0 && (a & 15) == 0) {
+        const uint8_t *src = &s->dmem[a & 4095];
+        for (unsigned i = 0; i < 8; i++)
+            s->v[r][i] = (uint16_t)((uint16_t)src[2 * i] << 8 | src[2 * i + 1]);
+        return;
+    }
     load_bytes(s, r, e, a, 16 - (a & 15));
 }
 void recomp_rsp_sqv(RecompRspState *s, unsigned r, unsigned e, uint32_t a) {
+    if (e == 0 && (a & 15) == 0) {
+        uint8_t *dst = &s->dmem[a & 4095];
+        for (unsigned i = 0; i < 8; i++) {
+            uint16_t lane = s->v[r][i];
+            dst[2 * i] = (uint8_t)(lane >> 8);
+            dst[2 * i + 1] = (uint8_t)lane;
+        }
+        return;
+    }
     store_bytes(s, r, e, a, 16 - (a & 15));
 }
 void recomp_rsp_lrv(RecompRspState *s, unsigned r, unsigned e, uint32_t a) {

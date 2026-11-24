@@ -202,28 +202,26 @@ void recomp_gles2_readback_color(RecompRDPGles2 *s) {
             const uint8_t *p = pixels + ((size_t)(height - y - 1) * width + x) * 4;
             uint32_t offset = target + (y * width + x) * bpp;
             /* On 8-bit color targets the RDP stores red at even byte addresses and
-             * green at odd addresses. Mirror the same guest lanes into both
-             * the task snapshot and live memory, including partial words. */
+             * green at odd addresses. Preserve the guest byte lanes when packing
+             * the image, including partial words. */
             if (bpp == 1) {
                 uint8_t value = p[offset & 1];
 #if RECOMP_LITTLE_ENDIAN_HOST
                 offset ^= 3;
 #endif
                 s->draw_ram[offset] = value;
-                s->rt->rdram[offset] = value;
             } else if (bpp == 2) {
                 uint16_t value = (uint16_t)((p[0] >> 3) << 11 | (p[1] >> 3) << 6 | (p[2] >> 3) << 1 | (p[3] >= 128));
 #if RECOMP_LITTLE_ENDIAN_HOST
                 offset ^= 2;
 #endif
                 memcpy(s->draw_ram + offset, &value, sizeof(value));
-                memcpy(s->rt->rdram + offset, &value, sizeof(value));
             } else {
                 uint32_t value = (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3];
                 memcpy(s->draw_ram + offset, &value, sizeof(value));
-                memcpy(s->rt->rdram + offset, &value, sizeof(value));
             }
         }
+    recomp_gles2_record_color(s, target, pixels_count * bpp);
     s->color_dirty = false;
     free(pixels);
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);

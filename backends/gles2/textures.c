@@ -221,9 +221,30 @@ static void tmem_store(RecompRDPGles2 *s, unsigned offset, bool valid, unsigned 
     s->tmem_invalid[offset] = valid ? 0 : 255;
     s->tmem_source[offset >> 3] = valid ? (s->image_address & 0x03ffffff) + 1 : 0;
 }
+TextureTransfer recomp_gles2_texture_transfer(unsigned image_width, unsigned image_siz, unsigned tile_siz, uint32_t w0,
+                                              uint32_t w1) {
+    unsigned sl = (w0 >> 12) & 4095, tl = w0 & 4095, sh = (w1 >> 12) & 4095, th = w1 & 4095;
+    unsigned bits = 4u << image_siz;
+    unsigned op = (w0 >> 24) | 0xc0;
+    if (sh < sl || (op != 0xf3 && th < tl))
+        recomp_fail("GLES2 malformed texture DMA", w0);
+    if (op == 0xf3) {
+        unsigned words = ((sh - sl) >> (4 - tile_siz)) + 1;
+        return (TextureTransfer){((uint64_t)tl * image_width + sl) * bits, 0, words * 64, 1, 0};
+    }
+    unsigned width = (sh - sl) / 4 + 1, height = (th - tl) / 4 + 1;
+    if (op == 0xf0) {
+        width = (sh >> 2) - (sl >> 2) + 1;
+        height = (th >> 2) - (tl >> 2) + 1;
+        bits = 16;
+    }
+    return (TextureTransfer){((uint64_t)(tl >> 2) * image_width + (sl >> 2)) * bits, image_width * bits, width * bits,
+                             height, width};
+}
 void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1, bool block, bool palette) {
     unsigned sl = (w0 >> 12) & 4095, tl = w0 & 4095, sh = (w1 >> 12) & 4095, th = w1 & 4095;
     unsigned bits = 4u << s->image_siz;
+    TextureTransfer dma = recomp_gles2_texture_transfer(s->image_width, s->image_siz, t->siz, w0, w1);
     /* LOADTILE also latches the tile's sampling bounds. Raw RDP video may
      * upload and draw through this same tile without a separate SETTILESIZE. */
     if (!block && !palette) {
@@ -233,13 +254,10 @@ void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1
         t->th = th;
     }
     if (palette) {
-        if (sh < sl || th < tl)
-            recomp_fail("GLES2 malformed palette load", w0);
-        unsigned width = (sh >> 2) - (sl >> 2) + 1, height = (th >> 2) - (tl >> 2) + 1;
-        for (unsigned y = 0; y < height; y++) {
+        unsigned width = dma.width;
+        for (unsigned y = 0; y < dma.rows; y++) {
             uint32_t src = 0;
-            bool valid =
-                texture_source(s, ((uint64_t)((tl >> 2) + y) * s->image_width + (sl >> 2)) * 2, width * 2, &src);
+            bool valid = texture_source(s, (dma.first_bit + y * dma.stride_bits) / 8, width * 2, &src);
             for (unsigned i = 0; i < width; i++)
                 for (unsigned lane = 0; lane < 4; lane++) {
                     unsigned dst = t->tmem * 8 + y * t->line * 32 + i * 8 + lane * 2;
@@ -250,11 +268,9 @@ void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1
     } else if (block) {
         /* LOADBLOCK coordinates are integer texels, unlike LOADTILE/TLUT's
          * quarter-texel bounds. Each transfer reads a complete 64-bit word. */
-        if (sh < sl)
-            recomp_fail("GLES2 malformed texture block load", w0);
-        unsigned words = ((sh - sl) >> (4 - t->siz)) + 1, bytes = words * 8;
+        unsigned bytes = dma.row_bits / 8;
         uint32_t src = 0;
-        bool valid = texture_source(s, ((uint64_t)tl * s->image_width + sl) * bits / 8, bytes, &src);
+        bool valid = texture_source(s, dma.first_bit / 8, bytes, &src);
         for (unsigned i = 0; i < bytes; i++) {
             unsigned word = i / 8, row = (word * th) >> 11;
             unsigned offset = t->tmem * 8 + i + row * t->line * 8;
@@ -267,12 +283,9 @@ void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1
             tmem_store(s, offset, valid, valid ? load(s, src + i, 1) : 0);
         }
     } else {
-        unsigned width = (sh - sl) / 4 + 1, height = (th - tl) / 4 + 1;
-        if (sh < sl || th < tl || width > 1024 || height > 1024)
-            recomp_fail("GLES2 malformed texture tile load", w0);
-        for (unsigned y = 0; y < height; y++)
-            for (unsigned x = 0; x < width; x++) {
-                uint64_t bit = ((uint64_t)((tl >> 2) + y) * s->image_width + (sl >> 2) + x) * bits;
+        for (unsigned y = 0; y < dma.rows; y++)
+            for (unsigned x = 0; x < dma.width; x++) {
+                uint64_t bit = dma.first_bit + y * dma.stride_bits + x * bits;
                 unsigned bpp = bits >= 8 ? bits / 8 : 1;
                 uint32_t src = 0;
                 bool valid = texture_source(s, bit / 8, bpp, &src);

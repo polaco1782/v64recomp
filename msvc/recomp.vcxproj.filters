@@ -64,6 +64,9 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\rdp.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\render_queue.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2\renderer.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
@@ -229,9 +232,6 @@
     <ClInclude Include="$(RecompRoot)include\rsp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="$(RecompRoot)include\rsp_worker.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="$(RecompRoot)include\runtime.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -299,9 +299,6 @@
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\rsp_vector.c">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RecompRoot)runtime\rsp_worker.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\scheduler.c">

@@ -15,18 +15,32 @@ and wireframe are separate from game code and do not link the RT64 renderer.
 
 ## Task execution
 
-```text
-Original CPU display lists -> OSTask -> snapshot RDRAM and descriptor
-  -> wake RSP worker -> compiled microcode -> RDP words and DMA writes
-  -> owner thread GLES draw/readback -> commit writes -> SP/DP completion
-```
+The guest owner executes compiled graphics, audio and JPEG microcode directly
+against live RDRAM. A graphics task hands its RDP command buffer to the GLES
+render thread and posts SP completion. The buffer stays owned by that task
+until the render thread finishes. One draw can be in flight.
 
-One task is in flight, matching the single SP. The worker owns private RAM,
-scalar/vector registers, 48-bit accumulators and DMEM/IMEM. It never touches guest
-CPU dispatch, `Runtime`, SDL, GL or completion callbacks. The owner task service
-polls or waits at required task boundaries; shutdown drains and joins the worker.
-Only actual DMA writes and completed native color readback enter live RAM.
-SP and DP events remain separate; a task without `FULLSYNC` has no DP event.
+Before handing off a draw, the owner captures the 4 KiB pages referenced by
+texture and palette DMA and 8-bit color-image imports. Draws reuse the same
+staging allocation. A readback updates that private view immediately, so later
+commands in the same list can sample the result. The owner publishes the exact
+framebuffer byte ranges and posts DP completion for lists containing FULLSYNC.
+Raw DPC submissions keep the caller parked and lend live RAM through readback.
+
+The guest can run and submit audio while a draw is in flight. The next graphics
+task, presentation, capture, input using the GL context, and teardown collect
+outstanding work before reusing shared state. SDL window events and presentation
+stay on the application thread. The render thread has exclusive use of the GL
+context during a draw. Set `RECOMP_GLES2_RENDER_THREAD=0` for synchronous GLES
+drawing when comparing output or timings.
+
+On two captured Ocarina of Time tasks, the render handoff copied 196 KiB and
+184 KiB out of 8 MiB. Median submission times were 33 and 27 microseconds over
+101 repetitions on a native Linux Radeon GPU at scale 1. Waiting immediately
+for completion took 3.73 and 3.03 ms including submission. Synchronous draws
+took 3.64 and 2.99 ms. The handoff frees the guest owner during drawing.
+Both tasks produced identical pixels and RDRAM writes with the guest memory
+overwritten after submission.
 
 Python emits constant-operand C11 basic blocks and per-image IMEM maps.
 IMEM DMA binds bytes from installed RDRAM to compiled entries after matching
@@ -37,17 +51,13 @@ code from installed RDRAM, unsupported instructions, out-of-range DMA writes
 and instruction/output budgets still fail explicitly.
 
 Blocks group straight-line instructions and include a terminating branch's
-delay slot. PC bookkeeping stays local and instruction budgets are charged once
-per block. Every instruction also has a suffix entry for computed jumps into
+delay slot. The generated code computes the next PC and charges the instruction
+budget once per block. Every instruction also has a suffix entry for computed jumps into
 the middle of a block. DMA/status writes and faults end blocks; an IMEM load
 rebuilds the verified span map, truncating any block affected by a partial overlay.
 Pending branch delays, incomplete spans and limits that expire inside a block
 use one precompiled instruction at a time, preserving exact fault state. Normal
 straight-line blocks are capped at 32 instructions, plus a branch delay slot.
-
-This models completed graphics tasks rather than RSP cycle timing or resumable
-hardware yield. Full-RDRAM snapshots add memory traffic; threading is not a speed
-claim, and ARM performance has not been measured.
 
 The GLES pipeline consumes RDP edge/coefficient triangles, fill/texture
 rectangles, TMEM palettes and RGBA/IA/I/CI textures. It retains combiner shaders,

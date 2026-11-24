@@ -44,7 +44,8 @@ Serve that directory together. Anyone with access to the page can download its R
 
 - Emscripten runs the game on an application worker. Guest CPU threads use the
   shared minicoro scheduler, with Asyncify saving and restoring Wasm call frames.
-  A separate worker executes compiled graphics RSP tasks. SDL/WebGL and WebAudio
+  The application worker executes compiled RSP tasks. A render worker consumes
+  GLES command lists and captured graphics input pages. SDL, WebGL and WebAudio
   use the browser main thread where required.
 - WebGL context creation/presentation use Emscripten's explicit proxy API, so
   worker texture uploads share the correct context. SDL retains window/input

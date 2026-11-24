@@ -291,15 +291,14 @@ completion events expected by the translated game.
 See [native threading](threading.md) for scheduling and HLE ownership.
 
 The RT64 backend passes graphics tasks to RT64 for Vulkan rendering.
-The GLES2 backend runs verified graphics microcode on a dedicated RSP worker
-and sends its RDP output to GLES2. [Graphics RSP and game coverage](armv8-gles2.md). The translated game's audio
-code prepares synthesis tasks. Every port that submits these tasks runs its statically recompiled
-audio RSP program with either renderer. The native AI service supplies
-buffer timing and completion events, and SDL plays the samples. Audio synthesis,
-graphics display-list parsing and presentation preparation run on the main
-owner thread with the guest parked. They use live RAM and queue SP/DP completion
-after output writes. RT64's internal rendering queues and SDL playback remain
-asynchronous. SDL window and input operations stay on the main thread. A separate RSP translator generates the audio and GLES graphics programs. See [audio](audio.md).
+GLES runs verified graphics microcode on the guest owner and hands its RDP
+output to a render thread. The owner signals SP completion after the handoff
+and publishes synchronized framebuffer writes before DP completion.
+[Graphics RSP and game coverage](armv8-gles2.md).
+
+The translated game prepares its audio synthesis tasks. Both renderers execute
+the recompiled audio program on live RAM. The native AI service supplies buffer
+timing and completion events, and SDL plays the samples. [Audio](audio.md).
 
 ### 5. Record gaps and investigate runtime failures
 

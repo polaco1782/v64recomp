@@ -118,7 +118,8 @@ typedef struct DepthSurface {
 } DepthSurface;
 struct RecompRDPGles2 {
     Runtime *rt;
-    uint8_t *draw_ram; /* Worker snapshot during a task, live RDRAM otherwise. */
+    uint8_t *draw_ram;
+    struct RenderQueue *queue;
     SDL_Window *window;
 #ifdef RECOMP_GLES2_CHEATS
     Gles2Cheats *cheats;
@@ -211,6 +212,17 @@ void recomp_gles2_load_tile(RecompRDPGles2 *, Tile *, uint32_t w0, uint32_t w1, 
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 void recomp_gles2_reload_textures(RecompRDPGles2 *);
 #endif
+
+/* Bit offsets preserve the first nibble of odd 4-bit rows. */
+typedef struct TextureTransfer {
+    uint64_t first_bit;
+    unsigned stride_bits, row_bits, rows, width;
+} TextureTransfer;
+TextureTransfer recomp_gles2_texture_transfer(unsigned image_width, unsigned image_siz, unsigned tile_siz, uint32_t w0,
+                                              uint32_t w1);
+size_t recomp_gles2_command_words(uint32_t w0, size_t available);
+void recomp_gles2_record_color(RecompRDPGles2 *, uint32_t address, size_t bytes);
+void recomp_gles2_queue_destroy(RecompRDPGles2 *);
 
 static inline uint32_t span(RecompRDPGles2 *s, uint32_t a, size_t n) {
     return recomp_ram_address(s->rt, 0x80000000u | (a & 0x03ffffff), n);

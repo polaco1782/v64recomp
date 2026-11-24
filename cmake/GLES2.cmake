@@ -1,7 +1,6 @@
 if(NOT TARGET SDL2::SDL2)
     find_package(SDL2 REQUIRED)
 endif()
-target_sources(recomp_rsp PRIVATE runtime/rsp_worker.c include/rsp_worker.h)
 add_library(recomp_rdp STATIC backends/rdp_triangle.c include/rdp_triangle.h)
 target_link_libraries(recomp_rdp PUBLIC recomp_runtime)
 if(MSVC)
@@ -11,6 +10,7 @@ else()
 endif()
 add_library(recomp_rdp_gles2 STATIC
     backends/gles2/rdp.c
+    backends/gles2/render_queue.c
     backends/gles2/context.c
     backends/gles2/controls.c
     backends/gles2/framebuffer.c
