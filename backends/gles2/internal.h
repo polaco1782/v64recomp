@@ -97,7 +97,7 @@ typedef struct Vertex {
 typedef struct Program {
     uint32_t mux0, mux1, cycle;
     GLuint id;
-    GLint prim, env, fog, lod, alpha, coverage_alpha, fogen, perspective;
+    GLint prim, env, fog, lod, alpha, coverage_alpha, fogen, perspective, uv_bounds;
     GLint tile[2][3], record_depth, blended;
     bool texture[2];
 } Program;

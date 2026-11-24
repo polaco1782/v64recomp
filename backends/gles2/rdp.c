@@ -1,5 +1,6 @@
 #include "internal.h"
 #include "rdp_triangle.h"
+#include <float.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -9,11 +10,12 @@ static void rgba(uint32_t bits, float *c) {
     for (unsigned i = 0; i < 4; i++)
         c[i] = (float)((bits >> (24 - i * 8)) & 255) / 255;
 }
-void recomp_gles2_flush(RecompRDPGles2 *s) {
+static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     if (!s->batch_count)
         return;
     Program *p = recomp_gles2_combiner(s);
     s->gl.UseProgram(p->id);
+    s->gl.Uniform4fv(p->uv_bounds, 1, uv_bounds);
     s->gl.Uniform4fv(p->prim, 1, s->prim);
     s->gl.Uniform4fv(p->env, 1, s->env);
     s->gl.Uniform4fv(p->fog, 1, s->fog_color);
@@ -117,6 +119,11 @@ void recomp_gles2_flush(RecompRDPGles2 *s) {
     s->batch_count = 0;
 }
 
+void recomp_gles2_flush(RecompRDPGles2 *s) {
+    static const float unbounded[4] = {-FLT_MAX, -FLT_MAX, FLT_MAX, FLT_MAX};
+    flush(s, unbounded);
+}
+
 static void rectangle(RecompRDPGles2 *s, float x0, float y0, float x1, float y1, float u, float v, float du, float dv,
                       bool flip) {
     recomp_gles2_flush(s);
@@ -133,6 +140,13 @@ static void rectangle(RecompRDPGles2 *s, float x0, float y0, float x1, float y1,
     bool primitive_z = ((s->other_high >> 20) & 3) < 2 && (s->other_low & 4);
     s->depth_test = primitive_z;
     s->fog = false;
+    /* S/T name the first native pixel's sample. GLES interpolates from
+     * rectangle edges, half a pixel before that sample on each axis. */
+    float last_u = u + fmaxf((flip ? y1 - y0 : x1 - x0) - 1, 0) * du;
+    float last_v = v + fmaxf((flip ? x1 - x0 : y1 - y0) - 1, 0) * dv;
+    float uv_bounds[4] = {fminf(u, last_u), fminf(v, last_v), fmaxf(u, last_u), fmaxf(v, last_v)};
+    u -= 0.5f * du;
+    v -= 0.5f * dv;
     Vertex q[4] = {0};
     float x[4] = {x0, x1, x1, x0}, y[4] = {y0, y0, y1, y1};
     for (unsigned i = 0; i < 4; i++) {
@@ -149,7 +163,7 @@ static void rectangle(RecompRDPGles2 *s, float x0, float y0, float x1, float y1,
         s->batch[s->batch_count++] = q[order[i]];
 
     s->drawing_rectangle = true;
-    recomp_gles2_flush(s);
+    flush(s, uv_bounds);
     s->drawing_rectangle = false;
     s->depth_test = depth;
     s->fog = fog;
@@ -174,11 +188,6 @@ static void texture_rectangle(RecompRDPGles2 *s, uint32_t w0, uint32_t w1, uint3
     s->texture_enabled = true;
     s->textures_dirty = true;
     float u = (float)(int16_t)(coordinates >> 16) / 32, v = (float)(int16_t)coordinates / 32;
-    /* Copy samples start at the upper-left pixel. GL interpolates at pixel centers. */
-    if (cycle == 2) {
-        u -= du * 0.5f;
-        v -= dv * 0.5f;
-    }
     rectangle(s, x0, y0, x1, y1, u, v, du, dv, flip);
     s->texture_enabled = enabled;
     s->texture_tile = tile;

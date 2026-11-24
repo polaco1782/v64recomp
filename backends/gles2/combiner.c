@@ -73,7 +73,7 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
                  "in vec4 shade;in vec2 texcoord;in float fogfactor;in float invw;uniform vec4 "
                  "prim,env,fogc;uniform "
                  "float lod,alphatest,coverageAlpha,fogen,rdpPerspective;"
-                 "uniform sampler2D tex0,tex1;uniform vec4 dim0,dim1,origin0,origin1,wrap0,wrap1;"
+                 "uniform sampler2D tex0,tex1;uniform vec4 dim0,dim1,origin0,origin1,wrap0,wrap1,uvBounds;"
                  "vec2 coord(vec2 uv,vec4 d,vec4 o,vec4 w){vec2 p=uv*d.zw-o.xy;"
                  "if(o.z<0.5){if(w.x>0.0){p.x=mod(p.x,w.x*(w.z>0.0?2.0:1.0));"
                  "if(w.z>0.0)p.x=min(p.x,w.x*2.0-1.0-p.x);}p.x=clamp(p.x,0.0,d.x-1.0);}"
@@ -84,6 +84,8 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
                  "if(rdpPerspective>0.5){sourceUV=invw<=0.0?vec2(1023.96875):"
                  "clamp(texcoord/invw*16384.0,vec2(-1024.0),vec2(1023.96875));}"
                  "vec2 dx=dFdx(sourceUV),dy=dFdy(sourceUV);"
+                 /* At higher render scales, keep edge fragments within the native rectangle samples. */
+                 "sourceUV=clamp(sourceUV,uvBounds.xy,uvBounds.zw);"
                  "vec4 t0=textureGrad(tex0,coord(sourceUV,dim0,origin0,wrap0),dx*dim0.zw/dim0.xy,dy*dim0.zw/dim0.xy);"
                  "vec4 t1=textureGrad(tex1,coord(sourceUV,dim1,origin1,wrap1),dx*dim1.zw/dim1.xy,dy*dim1.zw/dim1.xy);"
                  "float noise=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5);vec4 combined=vec4(0.0);",
@@ -156,6 +158,7 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
     p->alpha = s->gl.GetUniformLocation(p->id, "alphatest");
     p->coverage_alpha = s->gl.GetUniformLocation(p->id, "coverageAlpha");
     p->fogen = s->gl.GetUniformLocation(p->id, "fogen");
+    p->uv_bounds = s->gl.GetUniformLocation(p->id, "uvBounds");
     p->perspective = s->gl.GetUniformLocation(p->id, "rdpPerspective");
     const char *names[2][3] = {{"dim0", "origin0", "wrap0"}, {"dim1", "origin1", "wrap1"}};
     for (unsigned i = 0; i < 2; i++) {
