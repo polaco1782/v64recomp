@@ -28,9 +28,13 @@ def write_graphics_program(profile: dict, rom: bytes, output: Path, images: dict
             checked_span(f'{entry["name"]} {name}', entry[name], rom, images, 8192)
         name = json.dumps(entry['name'], ensure_ascii=True)
         code, data = entry['code'], entry['data']
+        data_size = data.get('task_size', data['size'])
+        if type(data_size) is not int or not data['size'] <= data_size <= 8192:
+            raise RecompError('invalid graphics task data size')
         native = ', .rsp = &game_rsp_program'
         lines.append(f'    {{.name = {name}, '
-                     f'.code_size = 0x{code["size"]:x}, .data_size = 0x{data["size"]:x}, '
+                     f'.code_size = 0x{code["size"]:x}, .data_size = 0x{data_size:x}, '
+                     f'.data_fingerprint_size = 0x{data["size"]:x}, '
                      f'.code_sha256 = "{code["sha256"]}", .data_sha256 = "{data["sha256"]}"{native}}},')
     lines.append('};')
     sizes = profile['graphics'].get('framebuffers')

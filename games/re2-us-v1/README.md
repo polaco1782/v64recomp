@@ -52,17 +52,15 @@ The boot depth command uses a 512-pixel stride (including the immediate at
 settings come from the captured VI mode and restored scissor; they do not
 establish the game's full dynamic-resolution inventory.
 
-An experimental GLES2 Debug build ran through visible opening graphics, then
-later captures were black despite continued RSP completions and active scanout.
-The run was stopped at user request before the requested frame limit. The
-movie, title, gameplay, and later resolution transitions are not accepted, so
-the normal GLES2 build gate remains off. To reproduce the diagnostic path only:
+The video tasks write the movie and other software-generated images directly
+into guest RAM. GLES presents the active VI framebuffer from RAM so that
+writes between graphics tasks are visible. Native GLES Debug captures show
+the opening movie and the title menu. Both native configurations completed
+1,200 presentations.
 
 ```sh
-cmake -S . -B build/re2-us-v1-gles-debug -G Ninja \
-  -DRECOMP_GAME=re2-us-v1 -DRECOMP_RENDERER=gles \
-  -DRECOMP_GAME_GLES2_SUPPORTED=ON -DCMAKE_BUILD_TYPE=Debug
-cmake --build build/re2-us-v1-gles-debug -j2
+python3 tools/build.py re2-us-v1 --debug --gles
+python3 tools/build.py re2-us-v1 --release --wasm
 ```
 
 ## Loading model

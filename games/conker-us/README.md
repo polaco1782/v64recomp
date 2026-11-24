@@ -49,14 +49,11 @@ keep their original behavior. This is a pad mapping, not relative camera
 control. Mouse look and adjustable FoV need a verified gameplay and
 camera path, which this port has not reached yet.
 
-GLES2 is not enabled for this profile: the checked F3DEXBG.NoN adapter
-uses RT64-specific microcode and framebuffer-copy logic. The observed US
-graphics tasks declare a 0x800-byte data span, but the immutable microcode
-data is only its first 0x780 bytes; the final 0x80 contains mutable task
-data. The existing GLES2 identity check requires its authenticated data
-span to equal the task size. A native RSP path must verify the immutable
-part without overwriting the task data, then validate the intro's packed
-framebuffer reads. A build flag alone cannot do that.
+Build with `python3 tools/build.py conker-us --release --gles` for native GLES
+or use `--wasm` for WebGL 2. Both paths run the compiled F3DEXBG.NoN program
+and its geometry overlays. The task transfers 0x800 bytes to DMEM. The renderer
+verifies the 0x780-byte constant prefix and preserves the final 0x80 bytes of
+live game parameters.
 
 Generate a fresh raw CPU report independently of the explicit runtime boundaries:
 

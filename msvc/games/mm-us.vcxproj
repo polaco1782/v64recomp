@@ -32,7 +32,6 @@
     <ClInclude Include="$(RecompRoot)games\mm-us\flash.h" />
     <None Include="$(RecompRoot)games\mm-us\function-entries.json" />
     <None Include="$(RecompRoot)games\mm-us\generate.py" />
-    <ClInclude Include="$(RecompRoot)games\mm-us\jpeg.h" />
     <ClCompile Include="$(RecompRoot)games\mm-us\main.c" />
     <ClCompile Include="$(RecompRoot)games\mm-us\overlays.c" />
     <ClInclude Include="$(RecompRoot)games\mm-us\overlays.h" />

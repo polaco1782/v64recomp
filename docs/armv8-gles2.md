@@ -3,9 +3,9 @@
 With `-DRECOMP_RENDERER=gles`, graphics display lists run through
 the statically recompiled RSP program checked for the selected game. All
 core runtime and generated graphics code are C11; Python performs generation.
-The optional desktop texture-pack reader and editor use C++17. Audio uses its own recompiled RSP program with either renderer.
+The cheat menu and the optional desktop texture-pack reader and editor use C++17. Audio uses its own recompiled RSP program with either renderer.
 
-Native builds require OpenGL ES 3.0 or later. The SM64 browser build uses
+Native builds require OpenGL ES 3.0 or later. Browser builds use
 WebGL 2 and the same GLSL ES 3.00 shaders.
 
 The backend lives in `backends/gles2/`: the renderer adapter services graphics
@@ -104,11 +104,14 @@ Only the exact ROM revisions pinned by the game profiles are covered.
 | Rayman 2 US / F3DEX.NoN 1.23 | CPU intro, resolution transitions and rendered first scene with character/HUD. |
 | SM64 US / Fast3D 2.0D | Native bootstrap/full program pinned; regression results below. |
 | 1080 JU revision 0 / F3DEX 1.23 | Native bootstrap/full program pinned; a separate CPU scene mismatch limits later progression. |
+| Conker US / F3DEXBG.NoN | 1,200-presentation Debug and Release startup runs, including the 64×64 CI8 intro target. |
+| Resident Evil 2 US v1.1 / F3DEX.Rej and S2DEX | Opening logos, movie and title menu with RAM scanout. |
+| Ocarina of Time US v1.2 / F3DZEX2 and S2DEX2 | First-slot Temple of Time exterior, including prerendered background strips. |
 | Shadow Man US / F3DEX2 2.08 | Native bootstrap/full program pinned; regression results below. |
 
 Additional builds and current limitations are tracked in the
 [per-ROM coverage matrix](desktop-coverage.md), including compile-only
-variants and ports still gated off. Bad Apple submits raw RDP commands directly,
+variants and scene-specific limits. Bad Apple submits raw RDP commands directly,
 and Media Player keeps its native SDL interface; neither uses a display-list
 HLE frontend. A compiled microcode program does not prove that every emitted
 RDP effect or CPU game path works.
@@ -119,7 +122,8 @@ Keep all graphics declarations in the game's `profile.toml`.
 `[[graphics.microcodes]]` pins task `name`, `code` and `data` spans with
 `rom_offset`, `size` and `sha256`. `[graphics.rsp].images` lists the original
 bootstrap first, then complete program text including IMEM overlays, with the
-same bounds/fingerprint fields. Compressed images use a verified named `image`
+same bounds/fingerprint fields. An optional `data.task_size` records a larger
+DMA transfer when mutable parameters follow the authenticated data prefix. Compressed images use a verified named `image`
 and `offset` supplied by the game's preparation helper.
 
 For compressed images the game generator exposes `rsp_images(rom, profile)` for audio and graphics,
@@ -160,8 +164,9 @@ before CPU readback, without FXAA or display color correction. The former HLE
 geometry interpolation and its SM64 vertex hooks were removed with the frontend.
 Desktop Debug and Release builds with texture support enable the F8 thumbnail
 editor without a pack. See [GLES texture packs](textures.md#gles3-texture-packs-and-editor)
-for formats and limits. F6 toggles mesh wireframe in Debug and Release. The RT64
-inspector, texture dumping and the cheat UI are not provided by this backend.
+for formats and limits. F6 toggles mesh wireframe in Debug and Release. F12 opens the shared
+[GameShark cheats menu](cheats.md). The RT64 inspector and texture dumping
+remain specific to RT64.
 
 F7 expands the view without stretch only when a native camera/visibility hook
 accepts the new aspect (GoldenEye and Banjo in supported scenes). With no
@@ -278,5 +283,5 @@ cmake --build build/pi4 -j2
 ```
 
 `cmake/toolchains/linux-aarch64.cmake` supports cross builds with a target sysroot
-containing SDL2, GLES3, OpenSSL and POSIX threads. Cross compilation cannot certify
+containing SDL2, GLES3, OpenSSL, libcurl and POSIX threads. Cross compilation cannot certify
 hardware behavior.

@@ -2,8 +2,10 @@
 #include <setjmp.h>
 #include "generated.h"
 #include "audio.h"
+#ifdef RECOMP_WITH_RT64
 #include "graphics.h"
-#include <openssl/evp.h>
+#endif
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,12 +29,11 @@ enum { GAME_BASE = 0x15000000, PAGE_BYTES = 0x1000, CODE_PAGES = 507, MANAGEMENT
 static void initialize_services(Runtime *rt);
 static void verify(Runtime *rt, uint32_t address, size_t size, const uint8_t expected[32]) {
     uint8_t *raw = malloc(size), digest[32];
-    unsigned length = 0;
+
     recomp_game_require(raw != NULL, "Conker image verification allocation failed", address);
     for (size_t i = 0; i < size; i++)
         raw[i] = (uint8_t)recomp_load(rt, address + (uint32_t)i, 1);
-    bool valid =
-        EVP_Digest(raw, size, digest, &length, EVP_sha256(), NULL) && length == 32 && !memcmp(digest, expected, 32);
+    bool valid = recomp_sha256(raw, size, digest) && !memcmp(digest, expected, 32);
     free(raw);
     recomp_game_require(valid, "Conker loaded image fingerprint mismatch", address);
 }
@@ -286,7 +287,9 @@ static void game_init(Game *game, const RecompGameOptions *options) {
         recomp_store(rt, boot_parameters[i][0], boot_parameters[i][1], 4);
     game->renderer = recomp_renderer_create_named(rt, options->data, "Conker's Bad Fur Day");
     recomp_game_require(game->renderer != NULL, "Conker renderer initialization failed", 0);
+#ifdef RECOMP_WITH_RT64
     recomp_renderer_set_microcode_hook(game->renderer, conker_bind_microcode);
+#endif
     const char *wasd = getenv("RECOMP_CONKER_WASD");
     bool desktop = wasd && strcmp(wasd, "1") == 0;
 #ifdef RECOMP_DEBUG

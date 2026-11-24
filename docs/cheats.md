@@ -1,11 +1,11 @@
 # GameShark cheats
 
-F12 opens and closes the shared cheat menu in every rendered Debug and Release
-build. The first opening loads cached lists, or downloads missing lists from
+F12 opens and closes the shared cheat menu in RT64 and GLES, in both Debug and
+Release. In the browser, the **Cheats** button also opens and closes it. The first opening loads cached lists, or downloads missing lists from
 [Mupen64Plus](https://github.com/mupen64plus/mupen64plus-core/blob/master/data/mupencheat.txt)
 and [Project64](https://github.com/project64/project64/tree/develop/Config/Cheats).
 The menu shows each source's download/cache status. Downloads run in a background
-thread; gameplay and the menu continue while they complete. An unsuccessful
+thread. Gameplay and the menu continue while they complete. An unsuccessful
 refresh retains the source's previous cache.
 
 Both ROM header CRC words and the country byte must match a database section.
@@ -64,13 +64,17 @@ relocation cannot always be identified from those ranges: modifying its RAM
 bytes still cannot change the compiled C instructions. A downloaded code being
 available does not guarantee its intended effect in a native recompilation.
 
-`backends/rt64.cpp` routes F12 and menu events before RT64's inspector filter.
-`backends/cheat_menu.cpp` owns a private ImGui context and Vulkan resources in
-both configurations. The SDL owner handles events, builds the UI and validates
-and applies enabled programs between guest dispatches, once per input poll.
-The present hook only renders completed draw data. All context switches and
-draw-data access use RT64's inspector mutex, alongside the Debug HUD and
-inspector. The network worker never accesses Runtime or ImGui.
+Both renderers use the same catalog, ImGui panel and GameShark interpreter.
+The SDL owner validates and applies enabled programs once per input poll,
+between guest dispatches. The download worker handles only catalog data.
+RT64 renders the panel through Vulkan under the inspector mutex. GLES draws it
+after the final game image blit and before the window swap or WebGL frame commit.
+Opening the panel releases captured mouse input so it can be used for navigation.
+
+GLES builds use Dear ImGui from the pinned RT64 checkout. Initialize its
+submodules to include the menu, or configure with `-DRECOMP_GLES2_CHEATS=OFF`
+for a build without it. Native builds with the menu require libcurl 7.85 or
+newer and the OpenGL ES 3 development headers and library.
 
 ## Downloading and cache
 
@@ -92,6 +96,5 @@ command-line runtime dependency. vcpkg installs libcurl on Windows; Linux builds
 use a system development package or vcpkg, and portable packages include the
 linked library and its dependencies.
 
-Build/link checks cover the shared implementation in both configurations.
-Interactive menu, network-error handling and in-game cheat acceptance are left
-for manual testing.
+Browser builds fetch the lists over HTTPS and persist the cache in IndexedDB
+for the origin serving the game. A page reload starts with all cheats disabled.

@@ -8,7 +8,7 @@
 #include "game_config.h"
 #include "hexen_input.h"
 #include "fov.h"
-#include <openssl/sha.h>
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,9 +46,9 @@ static void check_image(Runtime *rt, uint32_t address, uint32_t size, const uint
     recomp_game_require(raw != NULL, "Hexen image check allocation failed", address);
     for (uint32_t i = 0; i < size; i++)
         raw[i] = (uint8_t)recomp_load(rt, address + i, 1);
-    SHA256(raw, size, digest);
+    bool hashed = recomp_sha256(raw, size, digest);
     free(raw);
-    recomp_game_require(!memcmp(digest, expected, 32), "Hexen guest decoded image mismatch", address);
+    recomp_game_require(hashed && !memcmp(digest, expected, 32), "Hexen guest decoded image mismatch", address);
 }
 static void prepare_call(Runtime *rt, uint32_t address) {
     if (address == BOOT_MAIN_HANDOFF_CALL) {

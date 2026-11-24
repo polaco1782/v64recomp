@@ -72,17 +72,13 @@ license are linked above.
 
 ## Mupen64Plus RSP HLE
 
-The JPEG task code under `third_party/rsp-hle/` comes from
-Mupen64Plus-rsp-hle. Source files specify GPL version 2 or later and retain
-individual copyright notices. The upstream license and author list are
-preserved in [licenses/Mupen64Plus-rsp-hle.txt](licenses/Mupen64Plus-rsp-hle.txt).
-
 RE2's integer video cores in `games/re2-us-v1/video_dsp.c` are adapted
 from [Salsa64](https://github.com/ricowp81/Salsa64), revision
 `59cb166c99e7bee2dbf6467814dfab9a13625d1f`, `src/rsp/jpeg/re2.c` and `re2.h`.
 It is GPL version 2 or later, retains the original Gilles Siberlin notice,
 and builds on the Mupen64Plus RE2 task implementation. Its local adapter adds
-ROM-bound microcode authentication and validates the complete RAM plan.
+ROM-bound microcode authentication and validates the complete RAM plan. The
+[upstream license and author list](licenses/Mupen64Plus-rsp-hle.txt) accompany the port.
 
 ## n64sym signature data
 
@@ -100,6 +96,9 @@ Windows dependencies are pinned in `vcpkg.json`: OpenSSL (Apache-2.0), SDL2
 (zlib), libcurl (curl license), and PThreads4W (Apache-2.0). libcurl is also
 used on Linux. Installed vcpkg packages preserve their complete notices in
 `build/vcpkg_installed/x64-windows/share/<package>/copyright`.
+
+The GLES cheat menu uses Dear ImGui (MIT) from the pinned RT64 checkout.
+Builds with the menu include its notice in `licenses/Dear-ImGui.txt`.
 
 RT64's bundled dependencies retain their licenses under `third_party/rt64/`,
 including the notices in its submodules and `src/contrib/`. External libraries

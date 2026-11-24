@@ -80,8 +80,6 @@ def main():
     env = dict(os.environ, V64_BUILD_SUFFIX='-' + variant, CMAKE_BUILD_TYPE=args.mode,
                V64_WORKFLOW_RENDERER='gles' if args.target == 'wasm' else args.target)
     if args.target == 'wasm':
-        if args.game != 'sm64-us':
-            parser.error('the browser ROM loader currently supports sm64-us only')
         try:
             toolchain = wasm_toolchain(args.game, args.mode, env)
         except ValueError as error:

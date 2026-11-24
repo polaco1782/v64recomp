@@ -1,14 +1,13 @@
 # Browser build (experimental)
 
-**Super Mario 64 US** builds for the browser with Emscripten. Its graphics tasks
-run through the same ROM-verified, statically compiled RSP program and GLES3 RDP
-renderer as the native `--gles` build. The browser requires WebGL 2.
-The browser loader currently accepts the pinned SM64 US ROM.
+All 22 game profiles and the Bad Apple and Media Player demos have Emscripten
+builds. Games run their compiled graphics RSP programs through WebGL 2.
+Bad Apple submits raw RDP commands. Media Player uses its SDL interface.
 
 ## Build and run
 
-Install the normal Python generation dependencies and import the pinned SM64 US
-ROM to `local/sm64.us.z64`, as described in the root README. An existing Wasm
+Install the normal Python generation dependencies and import the selected profile’s
+ROM into `local/`, as described in the root README. An existing Wasm
 build reuses its configured Emscripten toolchain. A fresh Debug or Release tree
 can reuse the other configuration's SDK.
 
@@ -23,21 +22,23 @@ python3 tools/build.py sm64-us --release --wasm
 python3 tools/serve_web.py --directory build/sm64-us-wasm-release/bin --port 8080
 ```
 
-Open `http://localhost:8080`, select the ROM and press **Play**. The loader
-normalizes `.z64`, `.v64` and `.n64` byte orders and checks the US ROM's SHA-1;
-the runtime independently validates the normalized ROM. The browser build does
-not embed or download ROMs. The server serves only `build/sm64-us-wasm-release/bin`.
-The chosen ROM is kept in the page's in-memory filesystem and is not uploaded.
+Replace `sm64-us` with any catalog ID in both commands. Open
+`http://localhost:8080`. The page fetches `<game-id>.z64` alongside the
+WebAssembly module and starts the game automatically. The runtime verifies the
+ROM against the selected profile. Click the canvas to enable controls and audio.
+Media Player also offers **Open MP3** to select a track after startup.
 
 ```sh
 python3 tools/build.py sm64-us --debug --wasm
 python3 tools/serve_web.py --directory build/sm64-us-wasm-debug/bin --port 8081
 ```
 
-Both configurations use `games/sm64-us/main.c`. Debug retains shared diagnostics,
-controller replay support, captures, browser assertions and stack checks.
-The `bin` directory contains the page, JavaScript, Wasm and license notices.
-Serve those files together. Do not serve the repository root or private `local/`.
+Both configurations use the selected game’s `main.c`. Debug retains shared diagnostics,
+controller replay support, captures, browser assertions and stack checks. The
+Debug build optimizes translated CPU functions before Asyncify instruments them
+so large guest functions fit the browser’s per-function local limit.
+The `bin` directory contains the page, JavaScript, Wasm, ROM and license notices.
+Serve that directory together. Anyone with access to the page can download its ROM.
 
 ## Runtime choices
 
@@ -52,7 +53,7 @@ Serve those files together. Do not serve the repository root or private `local/`
   independently rounded performance time origins. Guest clock checks remain active.
 - Emscripten calls the WebGL 2 entry points directly. The browser uses the same
   GLSL ES 3.00 shaders, 24-bit depth buffers and mipmap sampling as native GLES.
-  Browser rendering starts at native 320×240 internal resolution, displayed on a 960×720 canvas.
+  Browser rendering uses the game’s native framebuffer resolution by default, displayed on a 960×720 canvas.
 - `RECOMP_SOFTFLOAT=ON` is the browser default. Berkeley SoftFloat implements
   guest arithmetic, rounding and exception flags. The existing VR4300 NaN,
   denormal, flush and trap policy remains in `runtime/fpu.c`; no relaxed guest
@@ -63,8 +64,8 @@ Serve those files together. Do not serve the repository root or private `local/`
   remains their default.
 - Synchronous SHA-1/SHA-256 fingerprints use portable code in the browser;
   desktop builds keep OpenSSL behind the same shared hash interface.
-- EEPROM is mounted under `/saves` using IndexedDB with automatic persistence.
-  **Download save** exports the current EEPROM. Browser storage is origin-specific:
+- Games with a configured save file mount `/saves` using IndexedDB with automatic persistence.
+  **Download save** exports the configured save file. Browser storage is origin-specific:
   changing the hostname or port selects a different save store. Save import is
   not implemented yet.
 - Native shared-library live repair and the Linux sampling profiler are not
@@ -83,13 +84,17 @@ See [Emscripten pthreads](https://emscripten.org/docs/porting/pthreads.html)
 and [GLES/WebGL mapping](https://emscripten.org/docs/porting/multimedia_and_graphics/OpenGL-support.html).
 A plain file URL or server without isolation headers will not start the game.
 
+Use the **Cheats** button below the canvas to open the [GameShark menu](cheats.md).
+Downloaded lists are cached in the browser for subsequent visits.
+
 ## Validation and limits
 
 ### WebGL 2
 
-With Emscripten 6.0.13, SM64 Debug and Release both rendered in Chromium using
-SwiftShader. Both builds used GLSL ES 3.00 shaders and produced multicolor
-frames on the WebGL 2 canvas.
+Chromium with SwiftShader rendered multicolor frames in Debug and Release for
+all 22 games and Bad Apple. Media Player opened an MP3 and produced nonzero
+WebAudio samples in both configurations. All 48 browser bundles included the
+profile-matched ROM. Both Zelda pages fetched it and rendered without a click.
 
 ### Earlier WebGL 1 build
 

@@ -4,7 +4,7 @@
 #include "renderer.h"
 #include "audio.h"
 #include "controls.h"
-#include "jpeg.h"
+#include "recomp_jpeg.h"
 #include "flash.h"
 #include "overlays.h"
 #include "game_config.h"
@@ -29,12 +29,7 @@ static void retire_boot(Runtime *rt, uint32_t address) {
 }
 static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     if (task->words[0] == 4) {
-        /* Compiled graphics tasks can install the ROM's verified restart entry. */
-        RecompJpegProfile restart = mm_jpeg_profile;
-        restart.sha256[0] = MM_RSP_BOOT_RESTART_SHA256;
-        recomp_game_require(recomp_jpeg_decode_ps(rt, task, &mm_jpeg_profile) ||
-                                recomp_jpeg_decode_ps(rt, task, &restart),
-                            "Majora's Mask JPEG task rejected", task->words[4]);
+        recomp_game_require(recomp_jpeg_submit(rt, task), "Majora's Mask JPEG task rejected", task->words[4]);
         return recomp_task_complete(rt, task->token, RECOMP_SP_DONE);
     }
     (void)opaque;

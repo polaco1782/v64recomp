@@ -19,9 +19,6 @@
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClInclude Include="$(RecompRoot)games\oot-us-v12\jpeg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

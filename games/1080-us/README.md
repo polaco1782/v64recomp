@@ -19,6 +19,11 @@ replays stop at a separate scene-image mismatch at `0x803f0c2c`; Debug visibly
 reaches Select Rider first. The rare yield timing was not reproduced before
 that stop, so these replays do not establish complete runtime acceptance.
 
+In browser Debug, the scheduler also called `osSpTaskYielded` with a cleared
+task slot. The verified SDK body only accesses the descriptor if SP status bit
+`0x80` is set. The shared hook now follows that branch. Debug and Release
+both reached rendered startup in Chromium.
+
 ## Build and run
 
 The normalized big-endian ROM is 16 MiB, title `1080 SNOWBOARDING`, country

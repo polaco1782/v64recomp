@@ -1,6 +1,9 @@
 #ifndef RECOMP_GLES2_INTERNAL_H
 #define RECOMP_GLES2_INTERNAL_H
 
+#ifdef RECOMP_GLES2_CHEATS
+#include "cheat_overlay.h"
+#endif
 #include "input.h"
 #include "rdp_gles2.h"
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
@@ -117,6 +120,9 @@ struct RecompRDPGles2 {
     Runtime *rt;
     uint8_t *draw_ram; /* Worker snapshot during a task, live RDRAM otherwise. */
     SDL_Window *window;
+#ifdef RECOMP_GLES2_CHEATS
+    Gles2Cheats *cheats;
+#endif
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context;
 #else
@@ -158,6 +164,7 @@ struct RecompRDPGles2 {
     Surface readback, capture, cpu_image;
     Surface *surface;
     unsigned render_scale;
+    bool ram_scanout;
     unsigned width, height, color_siz;
     const RecompFramebufferSize *framebuffer_sizes;
     size_t framebuffer_size_count;

@@ -4,7 +4,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "game_config.h"
-#include <openssl/sha.h>
+#include "hash.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,13 +42,13 @@ static uint64_t guest_time(void *opaque) {
 
 static bool matches_image(Runtime *rt, size_t n) {
     uint8_t *image = malloc(banjo_images[n].size);
-    uint8_t digest[SHA256_DIGEST_LENGTH];
+    uint8_t digest[32];
     recomp_game_require(image != NULL, "Banjo image verification allocation failed", banjo_images[n].address);
     for (uint32_t i = 0; i < banjo_images[n].size; i++)
         image[i] = (uint8_t)recomp_load(rt, banjo_images[n].address + i, 1);
-    SHA256(image, banjo_images[n].size, digest);
+    bool hashed = recomp_sha256(image, banjo_images[n].size, digest);
     free(image);
-    return !memcmp(digest, banjo_images[n].sha256, sizeof(digest));
+    return hashed && !memcmp(digest, banjo_images[n].sha256, sizeof(digest));
 }
 
 static void services(Runtime *rt, bool core) {

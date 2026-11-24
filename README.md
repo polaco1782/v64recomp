@@ -6,7 +6,7 @@ v64recomp rebuilds N64 games as native Windows and Linux applications. Bring you
 own ROM, build the game, and settle in with a wider view, familiar controls and
 a few comforts that weren't around in the cartridge days.
 
-Super Mario 64 US also has an experimental [browser build](docs/webassembly.md) using WebAssembly and WebGL 2.
+All 24 targets have a [browser build](docs/webassembly.md) that loads the matching ROM on page open.
 
 | Make it yours | What you can do |
 | --- | --- |
@@ -175,7 +175,7 @@ The import tool checks it for you, so there's no need to rename files or convert
 byte order by hand. ROMs and texture packs aren't included.
 
 RT64 is the default renderer. For games with verified graphics microcode,
-`--gles` selects the native OpenGL ES 3.0 renderer and statically compiled graphics RSP. Use `--wasm` for the SM64 browser build, which runs the same shaders on WebGL 2. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
+`--gles` selects the native OpenGL ES 3.0 renderer and statically compiled graphics RSP. Use `--wasm` for a browser build, which runs the same shaders on WebGL 2. [Supported games and build commands](docs/armv8-gles2.md#checked-programs-and-acceptance).
 
 ### 1. Get the source and dependencies
 
@@ -235,9 +235,7 @@ From the repository root, these commands build Super Mario 64 US:
 | Browser WebAssembly | `python3 tools/build.py sm64-us --release --wasm` | `python3 tools/build.py sm64-us --debug --wasm` |
 
 `python3 tools/build.py sm64-us` defaults to RT64 Release. Replace `sm64-us`
-with a [game ID](#games-and-progress) for desktop builds. GLES3 requires a
-[supported game](docs/armv8-gles2.md#checked-programs-and-acceptance); the
-[browser target](docs/webassembly.md) currently supports SM64 US. The build
+with any [game ID](#games-and-progress) for desktop or browser builds. The browser build
 reuses Emscripten from an existing Wasm configuration or finds an installed SDK.
 
 Run the executable from its build tree, or serve the browser build locally:
@@ -336,7 +334,7 @@ Keep these shortcuts handy while you play:
 | **F6** | Toggle wireframe (GLES3: Debug or Release; RT64: Debug with a wireframe-capable device). |
 | **F5** | Reload texture packs and switch original/replacement textures. |
 | **Keypad + / −** | Adjust FOV in the [supported games](#controls-that-feel-familiar). |
-| **F12** | Open the shared GameShark cheat menu. |
+| **F12** | Open or close GameShark cheats in RT64 and GLES3. Browser builds also have a **Cheats** button below the canvas. |
 | **Escape / F4** | Release / recapture the mouse when a mouse adapter is enabled. |
 | **F10 (mouse mode) / close window** | Quit. With the original keyboard mapping, Escape quits. |
 

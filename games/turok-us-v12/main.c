@@ -6,7 +6,7 @@
 #include "controls.h"
 #include "game_config.h"
 #include <inttypes.h>
-#include <openssl/sha.h>
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,9 +37,9 @@ static void activate_program(Runtime *rt) {
         recomp_game_require(raw != NULL, "program verification allocation failed", BOOT_DECODED_ADDRESS);
         for (uint32_t i = 0; i < BOOT_DECODED_SIZE; i++)
             raw[i] = (uint8_t)recomp_load(rt, BOOT_DECODED_ADDRESS + i, 1);
-        SHA256(raw, BOOT_DECODED_SIZE, digest);
+        bool hashed = recomp_sha256(raw, BOOT_DECODED_SIZE, digest);
         free(raw);
-        recomp_game_require(!memcmp(digest, decoded_sha256, 32), "Turok guest decoded image mismatch",
+        recomp_game_require(hashed && !memcmp(digest, decoded_sha256, 32), "Turok guest decoded image mismatch",
                             BOOT_DECODED_ADDRESS);
         rt->section_loaded[BOOT_MAIN_SECTION] = true;
         program_verified = true;

@@ -30,7 +30,6 @@
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\controls.h" />
     <None Include="$(RecompRoot)games\oot-us-v12\controls_analysis.py" />
     <None Include="$(RecompRoot)games\oot-us-v12\generate.py" />
-    <ClInclude Include="$(RecompRoot)games\oot-us-v12\jpeg.h" />
     <ClCompile Include="$(RecompRoot)games\oot-us-v12\main.c" />
     <ClInclude Include="$(RecompRoot)games\oot-us-v12\overlays.h" />
     <None Include="$(RecompRoot)games\oot-us-v12\prepare.py" />

@@ -456,7 +456,9 @@ thread addresses, timing calibration and audio profile are Duke-specific.
    from submitted tasks. For RSP audio, pin the bootstrap, executable text and overlays in `[audio.rsp].images`
    and bind the generated program in `audio.h`. Supply any required graphics
    extensions; an unknown RSP task is not fixed by declaring it standard graphics
-   or skipping it. Link `recomp_jpeg` if the port requires the supported JPEG path.
+   or skipping it. For Zelda-style JPEG tasks, declare the task descriptor and initialized data
+   in `[jpeg]`, reference the checked bootstrap variants and JPEG text in `[jpeg.rsp]`,
+   and link `recomp_jpeg`.
    Keep game-specific graphics commands, microcode fingerprints and lighting in
    `games/<game>/`. C11 adapters can use the generic microcode callback interface
    in `renderer.h`; the shared backend contains only reusable RT64 operations.

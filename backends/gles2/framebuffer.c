@@ -201,7 +201,7 @@ void recomp_gles2_readback_color(RecompRDPGles2 *s) {
         for (unsigned x = 0; x < width; x++) {
             const uint8_t *p = pixels + ((size_t)(height - y - 1) * width + x) * 4;
             uint32_t offset = target + (y * width + x) * bpp;
-            /* On I8 targets the RDP stores red at even byte addresses and
+            /* On 8-bit color targets the RDP stores red at even byte addresses and
              * green at odd addresses. Mirror the same guest lanes into both
              * the task snapshot and live memory, including partial words. */
             if (bpp == 1) {
@@ -245,6 +245,9 @@ void recomp_rdp_gles2_set_framebuffer(RecompRDPGles2 *s, uint32_t address, uint3
         s->color_gamma = (vi_status & 0x08u) ? 1.0f / 2.2f : 1.0f;
     }
 }
+void recomp_rdp_gles2_set_ram_scanout(RecompRDPGles2 *s) {
+    s->ram_scanout = true;
+}
 void recomp_rdp_gles2_set_framebuffer_sizes(RecompRDPGles2 *s, const RecompFramebufferSize *sizes, size_t count) {
     recomp_gles2_require_owner(s);
     if (s->started || !sizes || !count || count > 16)
@@ -263,7 +266,8 @@ void recomp_rdp_gles2_set_framebuffer_sizes(RecompRDPGles2 *s, const RecompFrame
 static Surface *display_image(RecompRDPGles2 *s) {
     RecompViState state = recomp_vi_state(s->rt);
     for (unsigned i = 0; i < 8; i++)
-        if (!state.black && s->present_address && s->surfaces[i].valid && s->surfaces[i].address == s->present_address)
+        if (!s->ram_scanout && !state.black && s->present_address && s->surfaces[i].valid &&
+            s->surfaces[i].address == s->present_address)
             return &s->surfaces[i];
     /* Loading screens and software video may be drawn by the CPU, without an
      * RSP color surface. Use the OS VI format and a profile-bounded extent. */
@@ -276,7 +280,13 @@ static Surface *display_image(RecompRDPGles2 *s) {
         for (size_t i = 0; i < s->framebuffer_size_count; i++)
             if (s->framebuffer_sizes[i].width == width)
                 height = s->framebuffer_sizes[i].height;
-        if (!height)
+        /* Software-only modes have no RDP color image to establish height.
+         * VI vertical start/end are half-lines and the scale has ten fraction bits. */
+        if (!height && s->ram_scanout) {
+            unsigned lines = (vi.v_start & 1023) - ((vi.v_start >> 16) & 1023);
+            height = (lines * (vi.y_scale & 4095) + 2047) / 2048;
+        }
+        if (!width || width > 1024 || !height || height > 1024)
             recomp_fail("GLES2 VI width is not in the game's framebuffer profile", width);
     }
     Surface *image = &s->cpu_image;
@@ -349,6 +359,10 @@ void recomp_rdp_gles2_present(RecompRDPGles2 *s) {
         if (w > 0 && h > 0)
             blit_texture(s, image, 0, (width - w) / 2, (height - h) / 2, w, h, true);
     }
+#ifdef RECOMP_GLES2_CHEATS
+    if (s->cheats)
+        gles2_cheats_draw(s->cheats);
+#endif
 #ifdef __EMSCRIPTEN__
     if (emscripten_webgl_commit_frame() != EMSCRIPTEN_RESULT_SUCCESS)
         recomp_fail("WebGL frame presentation failed", 0);

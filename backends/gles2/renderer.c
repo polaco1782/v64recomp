@@ -55,7 +55,7 @@ static bool authenticate(Runtime *rt, uint32_t address, uint32_t bytes, const ch
     return !strcmp(hex, expected);
 }
 RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path, const char *title) {
-#ifndef RECOMP_GLES2_TEXTURE_PACKS
+#if !defined(RECOMP_GLES2_TEXTURE_PACKS) && !defined(RECOMP_GLES2_CHEATS)
     (void)data_path;
 #endif
     RecompRenderer *s = calloc(1, sizeof(*s));
@@ -67,6 +67,9 @@ RecompRenderer *recomp_renderer_create_named(Runtime *rt, const char *data_path,
         free(s);
         return NULL;
     }
+#ifdef RECOMP_GLES2_CHEATS
+    recomp_rdp_gles2_enable_cheats(s->gpu, data_path);
+#endif
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     recomp_rdp_gles2_set_texture_path(s->gpu, data_path);
     const char *texture_editor = getenv("RECOMP_GLES2_TEXTURE_EDITOR");
@@ -85,7 +88,8 @@ void recomp_renderer_set_graphics_microcodes(RecompRenderer *s, const RecompGrap
     for (size_t i = 0; i < count; i++) {
         const RecompGraphicsMicrocode *m = &microcodes[i];
         if (!m->name || !m->rsp || !m->code_size || m->code_size > 8192 || !m->data_size || m->data_size > 8192 ||
-            !m->code_sha256 || !m->data_sha256 || strlen(m->code_sha256) != 64 || strlen(m->data_sha256) != 64)
+            !m->data_fingerprint_size || m->data_fingerprint_size > m->data_size || !m->code_sha256 ||
+            !m->data_sha256 || strlen(m->code_sha256) != 64 || strlen(m->data_sha256) != 64)
             recomp_fail("invalid GLES2 microcode identity", (uint32_t)i);
     }
     s->microcodes = microcodes;
@@ -97,7 +101,7 @@ static const RecompGraphicsMicrocode *identify(RecompRenderer *s, uint32_t code,
         const RecompGraphicsMicrocode *m = &s->microcodes[i];
         if (code_size == m->code_size && (!data_size || data_size == m->data_size) &&
             authenticate(s->rt, code, m->code_size, m->code_sha256) &&
-            authenticate(s->rt, data, m->data_size, m->data_sha256))
+            authenticate(s->rt, data, m->data_fingerprint_size, m->data_sha256))
             return m;
     }
     recomp_fail("GLES2 graphics microcode is not in the game's verified profile", code);
@@ -176,7 +180,11 @@ bool recomp_renderer_submit(RecompRenderer *s, const RecompTask *task) {
     }
     s->pending = *task;
     s->raw_vi = false;
-    if (!recomp_rsp_worker_submit(s->worker, microcode->rsp, task->words, s->rt->rdram))
+    /* The OS loads the task bootstrap by DMA from its physical address. */
+    uint32_t words[16];
+    memcpy(words, task->words, sizeof(words));
+    words[2] = recomp_ram_address(s->rt, words[2], words[3]);
+    if (!recomp_rsp_worker_submit(s->worker, microcode->rsp, words, s->rt->rdram))
         recomp_fail("native RSP worker rejected a task", task->guest_address);
     s->stats.graphics_tasks++;
     return true;
@@ -221,6 +229,9 @@ void recomp_renderer_destroy(RecompRenderer *s) {
         recomp_rdp_gles2_destroy(s->gpu);
         free(s);
     }
+}
+void recomp_renderer_set_ram_scanout(RecompRenderer *s) {
+    recomp_rdp_gles2_set_ram_scanout(s->gpu);
 }
 void recomp_renderer_set_framebuffer_sizes(RecompRenderer *s, const RecompFramebufferSize *sizes, size_t count) {
     recomp_rdp_gles2_set_framebuffer_sizes(s->gpu, sizes, count);

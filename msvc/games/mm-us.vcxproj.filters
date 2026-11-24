@@ -25,9 +25,6 @@
     <None Include="$(RecompRoot)games\mm-us\generate.py">
       <Filter>Source Files</Filter>
     </None>
-    <ClInclude Include="$(RecompRoot)games\mm-us\jpeg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="$(RecompRoot)games\mm-us\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

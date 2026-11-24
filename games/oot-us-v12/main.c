@@ -3,7 +3,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "audio.h"
-#include "jpeg.h"
+#include "recomp_jpeg.h"
 #include "controls.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,12 +36,11 @@ static void oot_prepare_call(Runtime *rt, uint32_t address) {
     if (address == 0x80003040 && !rt->section_loaded[2] &&
         (uint32_t)recomp_thread_context(rt, 0)->gpr[31] == 0x800adacc) {
         uint8_t *image = malloc(OOT_DD_SIZE), digest[32];
-        unsigned length = 0;
+
         recomp_game_require(image != NULL, "OOT DD verification allocation failed", 0);
         for (uint32_t i = 0; i < OOT_DD_SIZE; i++)
             image[i] = (uint8_t)recomp_load(rt, 0x801c7740 + i, 1);
-        bool valid = EVP_Digest(image, OOT_DD_SIZE, digest, &length, EVP_sha256(), NULL) && length == 32 &&
-                     !memcmp(digest, oot_dd_sha256, 32);
+        bool valid = recomp_sha256(image, OOT_DD_SIZE, digest) && !memcmp(digest, oot_dd_sha256, 32);
         free(image);
         recomp_game_require(valid, "OOT DD code fingerprint mismatch", 0x801c7740);
         rt->section_loaded[2] = true;
@@ -53,12 +52,11 @@ static void oot_prepare_call(Runtime *rt, uint32_t address) {
     if (address == 0x80004ad0 && !rt->section_loaded[1] &&
         (uint32_t)recomp_thread_context(rt, 0)->gpr[31] == 0x800005ec) {
         uint8_t *image = malloc(OOT_CODE_SIZE), digest[32];
-        unsigned length = 0;
+
         recomp_game_require(image != NULL, "OOT code verification allocation failed", 0);
         for (uint32_t i = 0; i < OOT_CODE_SIZE; i++)
             image[i] = (uint8_t)recomp_load(rt, 0x800116e0 + i, 1);
-        bool valid = EVP_Digest(image, OOT_CODE_SIZE, digest, &length, EVP_sha256(), NULL) && length == 32 &&
-                     !memcmp(digest, oot_code_sha256, 32);
+        bool valid = recomp_sha256(image, OOT_CODE_SIZE, digest) && !memcmp(digest, oot_code_sha256, 32);
         free(image);
         recomp_game_require(valid, "OOT decompressed code fingerprint mismatch", 0x800116e0);
         rt->section_loaded[1] = true;
@@ -86,12 +84,7 @@ static bool submit(Runtime *rt, void *opaque, const RecompTask *task) {
     (void)rt;
     (void)opaque;
     if (task->words[0] == 4) {
-        /* Compiled graphics tasks can install the ROM's verified restart entry. */
-        RecompJpegProfile restart = oot_jpeg_profile;
-        restart.sha256[0] = OOT_RSP_BOOT_RESTART_SHA256;
-        recomp_game_require(recomp_jpeg_decode_ps(rt, task, &oot_jpeg_profile) ||
-                                recomp_jpeg_decode_ps(rt, task, &restart),
-                            "OOT JPEG task rejected", task->words[4]);
+        recomp_game_require(recomp_jpeg_submit(rt, task), "OOT JPEG task rejected", task->words[4]);
         return recomp_task_complete(rt, task->token, RECOMP_SP_DONE);
     }
     recomp_game_require(task->words[0] == 1 || task->words[0] == 2, "unsupported RSP task type", task->guest_address);

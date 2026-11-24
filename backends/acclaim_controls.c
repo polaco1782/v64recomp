@@ -9,7 +9,9 @@
 static const double radians = 3.14159265358979323846 / 180.0;
 static RecompMouseBuffer mouse;
 static RecompFov fov;
+#ifdef RECOMP_WITH_RT64
 static RecompRenderer *video;
+#endif
 static double sensitivity = 0.08, invert_y = -1.0;
 enum PlayerControl { NO_CONTROL, ON_FOOT, CLIMBING };
 static enum PlayerControl control;
@@ -63,7 +65,9 @@ static void adjust(int steps) {
 }
 
 void acclaim_controls_init(RecompRenderer *renderer) {
+#ifdef RECOMP_WITH_RT64
     video = renderer;
+#endif
     recomp_renderer_set_fov_hook(renderer, adjust);
     const char *mode = getenv("RECOMP_TUROK_MOUSE");
     mouse_enabled = !mode || strcmp(mode, "0");

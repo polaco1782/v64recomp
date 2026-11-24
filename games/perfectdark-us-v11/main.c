@@ -5,7 +5,7 @@
 #include "recomp_audio.h"
 #include "audio.h"
 #include "controls.h"
-#include <openssl/evp.h>
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,12 +36,11 @@ static void prepare_call(Runtime *rt, uint32_t address) {
 }
 static void verify(Runtime *rt, uint32_t address, size_t size, const uint8_t expected[32]) {
     uint8_t *raw = malloc(size), digest[32];
-    unsigned length = 0;
+
     recomp_game_require(raw != NULL, "Perfect Dark verification allocation failed", address);
     for (size_t i = 0; i < size; i++)
         raw[i] = (uint8_t)recomp_load(rt, address + (uint32_t)i, 1);
-    bool valid =
-        EVP_Digest(raw, size, digest, &length, EVP_sha256(), NULL) && length == 32 && !memcmp(digest, expected, 32);
+    bool valid = recomp_sha256(raw, size, digest) && !memcmp(digest, expected, 32);
     free(raw);
     recomp_game_require(valid, "Perfect Dark loaded image fingerprint mismatch", address);
 }
@@ -60,9 +59,9 @@ void recomp_pd_boot_rom_read(Runtime *rt, MipsContext *ctx) {
      * boot ROM word. Native DMA is already serialized by the runtime. */
     uint32_t base = (uint32_t)recomp_load(rt, 0x80000308, 4);
     uint32_t address = (base | 0xb764b4fd) ^ 0x0764bea1;
-    recomp_game_require(address >= 0xb0000000 && address - 0xb0000000 <= rt->rom_size - 4,
+    recomp_game_require(rt->rom_size >= 4 && address >= 0xb0000000 && address - 0xb0000000 <= rt->rom_size - 4,
                         "Perfect Dark boot ROM read outside cartridge", address);
-    const uint8_t *p = rt->rom + address - 0xb0000000;
+    const uint8_t *p = rt->rom + (address - 0xb0000000);
     uint32_t value = (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3];
     mips_set(ctx, 2, mips_s32(value));
 }

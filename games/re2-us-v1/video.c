@@ -7,16 +7,16 @@
 #include "video.h"
 #include "game.h"
 #include "video_dsp.h"
-#include <openssl/evp.h>
+#include "hash.h"
 #include <string.h>
 
 static bool hash_matches(Runtime *rt, uint32_t address, size_t size, const char *expected) {
     uint8_t image[4096], digest[32];
-    unsigned count = 0;
+
     recomp_game_require(size <= sizeof(image), "RE2 video fingerprint size", address);
     for (size_t i = 0; i < size; i++)
         image[i] = (uint8_t)recomp_load(rt, address + (uint32_t)i, 1);
-    if (!EVP_Digest(image, size, digest, &count, EVP_sha256(), NULL) || count != 32)
+    if (!recomp_sha256(image, size, digest))
         return false;
     static const char hex[] = "0123456789abcdef";
     for (unsigned i = 0; i < 32; i++)

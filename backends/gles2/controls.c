@@ -50,6 +50,10 @@ bool recomp_rdp_gles2_poll(RecompRDPGles2 *s) {
             s->mouse_released = true;
             s->mouse_frame = (RecompMouseFrame){0};
         }
+#ifdef RECOMP_GLES2_CHEATS
+        if (s->cheats && gles2_cheats_event(s->cheats, &event))
+            continue;
+#endif
         if (event.type == SDL_MOUSEMOTION && s->mouse_captured) {
             s->mouse_frame.dx += event.motion.xrel;
             s->mouse_frame.dy += event.motion.yrel;
@@ -135,7 +139,13 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
             s->presentation_aspect = aspect;
     }
     bool focused = (SDL_GetWindowFlags(s->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
-    bool capture = focused && s->input_config.mouse_enabled && s->input_config.mouse_gameplay && !s->mouse_released;
+    bool menu_input = false;
+#ifdef RECOMP_GLES2_CHEATS
+    if (s->cheats)
+        menu_input = gles2_cheats_update(s->cheats);
+#endif
+    bool capture =
+        !menu_input && focused && s->input_config.mouse_enabled && s->input_config.mouse_gameplay && !s->mouse_released;
     if (capture != s->mouse_captured) {
         if (SDL_SetRelativeMouseMode(capture ? SDL_TRUE : SDL_FALSE) != 0)
             capture = false;
@@ -147,7 +157,7 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
     if (!capture)
         s->mouse_frame = (RecompMouseFrame){0};
     *pad = (RecompPad){.connected = true};
-    if (!focused)
+    if (!focused || menu_input)
         return true;
     const uint8_t *key = SDL_GetKeyboardState(NULL);
     bool keyboard_c = s->input_config.keyboard_c_buttons;

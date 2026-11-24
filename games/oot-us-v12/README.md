@@ -1,6 +1,6 @@
 # Ocarina of Time US V1.2
 
-Original title, file select, name entry and new-game opening with verified decompressed code and 469 relocatable overlays. Zelda NEAD audio and native JPEG SP decoding are supported. Inventory and full-game validation remain incomplete.
+Original title, file select, name entry and new-game opening with verified decompressed code and 469 relocatable overlays. Zelda NEAD audio and JPEG image tasks run recompiled RSP microcode. Inventory and full-game validation remain incomplete.
 
 From the project root, import the pinned ROM using
 `tools/import_rom.py --profile games/oot-us-v12/profile.toml --rom /path/to/rom`.
@@ -18,11 +18,10 @@ Headers, adapters, `generate.py`, `profile.toml`, inventories and maintained
 replay inputs live beside it. Generated code stays under the selected build
 directory; private ROMs and saves stay in `local/`.
 
-JPEG tasks decode the game's coefficient buffers into RGBA5551 tiles before
-posting SP completion. The native decoder uses the pinned Mupen64Plus RSP-HLE
-implementation and verifies the boot, code and data images against this ROM's
-SHA-256 profile. Link's house background was checked through the original opening;
-other JPEG rooms and full-game progression still need validation. Debug reports
+The guest CPU entropy-decodes JPEG data. The recompiled RSP program takes the
+resulting coefficients and quantization tables and writes RGBA5551 tiles.
+On the Temple of Time exit, all 75 captured tasks matched the cxd4 RSP
+interpreter across the entire 8 MiB of RDRAM after each task. Debug reports
 count completed tasks as `jpeg_tasks`.
 
 ## GLES2 renderer
@@ -38,13 +37,14 @@ The ROM profile verifies the original RSP boot program, the F3DZEX2 task text
 and data, and the F3DZEX2 and S2DEX2 instruction images used for IMEM loads.
 The images come from the pinned ROM and its decompressed `.code`, not from
 a separate microcode download. The original boot and the cartridge's
-observed restart jump are fingerprinted separately. The native JPEG path
-accepts either verified boot image without relaxing its task validation.
+observed restart jump are fingerprinted separately. The JPEG task executes either bootstrap and the ROM’s recompiled JPEG microcode.
 Desktop controls and native audio are unchanged.
 
-The first native graphics task executed in a Linux Debug smoke test.
-The restart image now passes static generation checks, but its rendered
-startup and gameplay are not yet verified.
+A native GLES replay of the first save slot reproduced horizontal bands outside
+the Temple of Time. S2DEX2 copies this background in six-row strips with zero
+tile bounds and 15-bit wrap masks. The renderer now uses the rectangle coordinates
+to size those textures. Replaying the 320×240 copy against the decoded
+background in guest RAM reproduced all 76,800 RGBA5551 pixels.
 
 ## Keyboard and mouse
 

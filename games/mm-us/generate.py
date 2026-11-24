@@ -74,9 +74,6 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.append('static const uint32_t mm_boot_parameters[][2] = {')
     lines.extend(f'    {{{address}, {value:#x}}},' for address, value in boot['parameters'].items())
     lines.append('};')
-    boot_restart = next(span for span in profile['graphics']['rsp']['images']
-                        if span.get('image') == 'rsp-boot-restart')
-    lines.append(f'#define MM_RSP_BOOT_RESTART_SHA256 "{boot_restart["sha256"]}"')
     (output / 'game_config.h').write_text('\n'.join([*lines, '']))
     bindings = [f'#define MM_CTL_{name.upper()} UINT32_C({value:#x})'
                 for name, value in profile['controls'].items() if isinstance(value, int)]

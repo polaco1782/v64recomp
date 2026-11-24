@@ -214,6 +214,14 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     return s;
 }
 
+#ifdef RECOMP_GLES2_CHEATS
+void recomp_rdp_gles2_enable_cheats(RecompRDPGles2 *s, const char *data_path) {
+    recomp_gles2_require_owner(s);
+    if (!s->cheats && s->rt->rom && s->rt->rom_size >= 64)
+        s->cheats = gles2_cheats_create(s->rt, s->window, data_path ? data_path : ".");
+}
+#endif
+
 void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
     if (!s)
         return;
@@ -222,6 +230,9 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
 #endif
     if (s->context) {
         recomp_gles2_require_owner(s);
+#ifdef RECOMP_GLES2_CHEATS
+        gles2_cheats_destroy(s->cheats);
+#endif
         recomp_gles2_destroy_surface(s, &s->cpu_image);
         if (s->mouse_captured)
             SDL_SetRelativeMouseMode(SDL_FALSE);

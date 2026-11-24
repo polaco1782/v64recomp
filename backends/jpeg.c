@@ -1,95 +1,40 @@
 #include "recomp_jpeg.h"
-#include "hle_internal.h"
-#include "memory.h"
-#include "hash.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-typedef struct RecompJpegContext {
-    jmp_buf skip_task;
-    uint32_t address;
-    bool done;
-} RecompJpegContext;
-void recomp_jpeg_verbose(void *opaque, const char *message, ...) {
-    (void)opaque;
-    (void)message;
+static bool physical_range(Runtime *rt, uint32_t address, uint64_t bytes) {
+    return !(address & 7) && address < rt->rdram_size && bytes <= rt->rdram_size - address;
 }
-void recomp_jpeg_warn(void *opaque, const char *message, ...) {
-    RecompJpegContext *context = opaque;
-    char detail[256], warning[288];
-    va_list args;
-    va_start(args, message);
-    vsnprintf(detail, sizeof(detail), message, args);
-    va_end(args);
-    snprintf(warning, sizeof(warning), "JPEG HLE: %s", detail);
-    recomp_warn(warning, context->address);
-    longjmp(context->skip_task, 1);
-}
-void recomp_jpeg_break(struct hle_t *hle, unsigned flags) {
-    RecompJpegContext *context = hle->user_defined;
-    if (flags != SP_STATUS_TASKDONE || context->done)
-        recomp_fail("invalid JPEG task completion", flags);
-    context->done = true;
-}
-static bool fingerprint(Runtime *rt, uint32_t address, uint32_t bytes, const char *hex) {
-    if (!bytes || !hex || strlen(hex) != 64)
+
+bool recomp_jpeg_submit(Runtime *rt, const RecompTask *task) {
+    const RecompJpegProfile *profile = &game_jpeg_profile;
+    if (rt->rdram_size > 0x1000000 || task->words[0] != 4 || task->words[1] || task->resumed || task->words[12] % 8 ||
+        task->words[13] != 0x20 || memcmp(task->words + 2, profile->descriptor, sizeof(profile->descriptor)))
         return false;
-    uint32_t physical = recomp_ram_address(rt, address, bytes);
-    uint8_t *image = malloc(bytes);
-    if (!image)
-        return false;
-    for (uint32_t i = 0; i < bytes; i++)
-        image[i] = rt->rdram[(physical + i) ^ 3];
-    uint8_t digest[32];
-    bool ok = recomp_sha256(image, bytes, digest);
-    free(image);
-    for (unsigned i = 0; ok && i < 32; i++) {
-        unsigned expected;
-        if (sscanf(hex + i * 2, "%2x", &expected) != 1 || expected != digest[i])
-            ok = false;
-    }
-    return ok;
-}
-static bool physical_range(Runtime *rt, uint32_t address, uint64_t bytes, unsigned alignment) {
-    return address % alignment == 0 && address < rt->rdram_size && bytes <= rt->rdram_size - address;
-}
-bool recomp_jpeg_decode_ps(Runtime *rt, const RecompTask *task, const RecompJpegProfile *profile) {
-    if (!profile || rt->rdram_size > 0x1000000 || task->words[0] != 4 || task->words[1] || task->resumed ||
-        task->words[12] % 4 || task->words[13] != 0x20)
-        return false;
-    for (unsigned i = 0; i < 6; i++)
-        if (task->words[2 + i] != profile->descriptor[i])
+    uint32_t words[16];
+    memcpy(words, task->words, sizeof(words));
+    for (unsigned i = 2; i <= 6; i += 2)
+        words[i] = recomp_ram_address(rt, words[i], words[i + 1]);
+    for (size_t i = 0; i < profile->data_size; i++)
+        if (rt->rdram[(words[6] + i) ^ 3] != profile->data[i])
             return false;
-    for (unsigned i = 0; i < 3; i++) {
-        if (profile->fingerprint_bytes[i] > task->words[3 + i * 2] ||
-            !fingerprint(rt, task->words[2 + i * 2], profile->fingerprint_bytes[i], profile->sha256[i]))
-            return false;
-    }
-    uint32_t header = recomp_ram_address(rt, task->words[12], task->words[13]);
-    uint32_t buffer = (uint32_t)recomp_load(rt, task->words[12], 4);
-    uint32_t count = (uint32_t)recomp_load(rt, task->words[12] + 4, 4);
-    uint32_t mode = (uint32_t)recomp_load(rt, task->words[12] + 8, 4);
-    if ((mode != 0 && mode != 2) || !count || !physical_range(rt, buffer, (uint64_t)count * (mode + 4) * 64 * 2, 2))
+    uint32_t header = task->words[12];
+    words[12] = recomp_ram_address(rt, header, words[13]);
+    if (words[15])
+        words[14] = recomp_ram_address(rt, words[14], words[15]);
+    uint32_t buffer = recomp_load32(rt, header);
+    uint32_t count = recomp_load32(rt, header + 4);
+    uint32_t mode = recomp_load32(rt, header + 8);
+    if ((mode != 0 && mode != 2) || !count || !physical_range(rt, buffer, (uint64_t)count * (mode + 4) * 128))
         return false;
-    for (unsigned i = 0; i < 3; i++) {
-        uint32_t table = (uint32_t)recomp_load(rt, task->words[12] + 12 + i * 4, 4);
-        if (!physical_range(rt, table, 128, 2))
+    for (unsigned i = 0; i < 3; i++)
+        if (!physical_range(rt, recomp_load32(rt, header + 12 + i * 4), 128))
             return false;
-    }
-    /* The task header and every coefficient/table/output span are validated
-     * before upstream's unchecked, 24-bit word-swapped memory accessors run. */
-    _Alignas(16) uint8_t dmem[4096] = {0};
-    RecompJpegContext context = {.address = task->words[12]};
-    struct hle_t hle = {.dram = rt->rdram, .dmem = dmem, .user_defined = &context};
-    *dmem_u32(&hle, TASK_DATA_PTR) = header;
-    if (setjmp(context.skip_task) == 0)
-        jpeg_decode_PS(&hle);
-    else
-        context.done = true;
-    if (!context.done)
-        recomp_fail("JPEG decoder did not complete", task->guest_address);
-    return true;
+
+    RecompRspState rsp;
+    recomp_rsp_init(&rsp, rt->rdram, rt->rdram_size, profile->program);
+    if (!recomp_rsp_start(&rsp, words))
+        recomp_fail(rsp.error, rsp.error_address);
+    bool completed = (rsp.cp0[4] & RECOMP_RSP_STATUS_TASKDONE) && !rsp.rdp_count;
+    recomp_rsp_destroy(&rsp);
+    return completed;
 }

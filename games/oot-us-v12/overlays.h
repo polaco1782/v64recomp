@@ -1,5 +1,5 @@
 #pragma once
-#include <openssl/evp.h>
+#include "hash.h"
 /* Canonical addresses describe compiled code. RAM addresses belong to the
  * game's original allocator and are assigned by its translated overlay loader. */
 typedef struct OotOverlay {
@@ -41,13 +41,12 @@ void recomp_oot_overlay_relocate(Runtime *rt, MipsContext *ctx) {
         recomp_fail("OOT unknown overlay relocation", vram);
     recomp_ram_address(rt, base, o->size + o->bss_size);
     uint8_t *raw = malloc(o->size), digest[32];
-    unsigned length = 0;
+
     if (!raw)
         recomp_fail("OOT overlay verification allocation failed", vram);
     for (uint32_t i = 0; i < o->size; i++)
         raw[i] = (uint8_t)recomp_load(rt, base + i, 1);
-    bool valid =
-        EVP_Digest(raw, o->size, digest, &length, EVP_sha256(), NULL) && length == 32 && !memcmp(digest, o->sha256, 32);
+    bool valid = recomp_sha256(raw, o->size, digest) && !memcmp(digest, o->sha256, 32);
     free(raw);
     if (!valid)
         recomp_fail("OOT loaded overlay fingerprint mismatch", vram);

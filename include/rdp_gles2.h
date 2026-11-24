@@ -18,6 +18,9 @@ typedef struct RecompGles2InputConfig {
  * to the creating host thread. The task adapter owns SP/DP completion events;
  * unsupported graphics commands fail explicitly. */
 RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *, const char *title);
+#ifdef RECOMP_GLES2_CHEATS
+void recomp_rdp_gles2_enable_cheats(RecompRDPGles2 *, const char *data_path);
+#endif
 void recomp_rdp_gles2_destroy(RecompRDPGles2 *);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 void recomp_rdp_gles2_set_texture_path(RecompRDPGles2 *, const char *data_path);
@@ -42,6 +45,7 @@ RecompCameraStick recomp_rdp_gles2_camera_stick(RecompRDPGles2 *);
 bool recomp_rdp_gles2_full_sync(RecompRDPGles2 *);
 uint64_t recomp_rdp_gles2_triangles(RecompRDPGles2 *);
 void recomp_rdp_gles2_set_framebuffer(RecompRDPGles2 *, uint32_t physical, uint32_t vi_status);
+void recomp_rdp_gles2_set_ram_scanout(RecompRDPGles2 *);
 void recomp_rdp_gles2_set_framebuffer_sizes(RecompRDPGles2 *, const RecompFramebufferSize *, size_t count);
 #ifdef __cplusplus
 }

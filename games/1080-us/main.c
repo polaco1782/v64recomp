@@ -3,7 +3,7 @@
 #include "generated.h"
 #include "renderer.h"
 #include "game_config.h"
-#include <openssl/sha.h>
+#include "hash.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,10 +30,10 @@ static uint32_t activate_module(Runtime *rt, uint32_t address) {
         if (address < uso_modules[n].address || address - uso_modules[n].address >= uso_modules[n].size)
             continue;
         candidate = true;
-        uint8_t digest[SHA256_DIGEST_LENGTH];
+        uint8_t digest[32];
         uint32_t physical = recomp_ram_address(rt, uso_modules[n].address, uso_modules[n].size);
-        SHA256(rt->rdram + physical, uso_modules[n].size, digest);
-        rt->section_loaded[uso_modules[n].section] = !memcmp(digest, uso_modules[n].storage_sha256, sizeof(digest));
+        rt->section_loaded[uso_modules[n].section] = recomp_sha256(rt->rdram + physical, uso_modules[n].size, digest) &&
+                                                     !memcmp(digest, uso_modules[n].storage_sha256, sizeof(digest));
         matched |= rt->section_loaded[uso_modules[n].section];
     }
     /* Process modules reuse earlier Text allocations. Reject stale images,
@@ -46,13 +46,13 @@ static uint32_t activate_module(Runtime *rt, uint32_t address) {
 static void prepare_call(Runtime *rt, uint32_t address) {
     if (address == 0x80001088 && !bootup_verified) {
         uint8_t *image = malloc(BOOT_BOOTUP_SIZE);
-        uint8_t digest[SHA256_DIGEST_LENGTH];
+        uint8_t digest[32];
         recomp_game_require(image != NULL, "1080 bootup text verification allocation failed", BOOT_BOOTUP_ADDRESS);
         for (uint32_t i = 0; i < BOOT_BOOTUP_SIZE; i++)
             image[i] = (uint8_t)recomp_load(rt, BOOT_BOOTUP_ADDRESS + i, 1);
-        SHA256(image, BOOT_BOOTUP_SIZE, digest);
+        bool hashed = recomp_sha256(image, BOOT_BOOTUP_SIZE, digest);
         free(image);
-        recomp_game_require(!memcmp(digest, bootup_sha256, sizeof(digest)),
+        recomp_game_require(hashed && !memcmp(digest, bootup_sha256, sizeof(digest)),
                             "1080 guest bootup USO differs from compiled image", BOOT_BOOTUP_ADDRESS);
         rt->section_loaded[BOOT_BOOTUP_SECTION] = true;
         rt->interrupt_global_mask_address = BOOT_GLOBAL_INTERRUPT_MASK;

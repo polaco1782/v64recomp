@@ -35,9 +35,6 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         lines.append('static const uint8_t oot_dd_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(dd).digest()) + '};')
         lines.append(f'#define OOT_CODE_SIZE {len(raw)}')
         lines.append('static const uint8_t oot_code_sha256[32] = {' + ','.join(str(b) for b in hashlib.sha256(raw).digest()) + '};')
-    boot_restart = next(span for span in profile['graphics']['rsp']['images']
-                        if span.get('image') == 'rsp-boot-restart')
-    lines.append(f'#define OOT_RSP_BOOT_RESTART_SHA256 "{boot_restart["sha256"]}"')
     (output / 'game_config.h').write_text('\n'.join(lines))
     spec = profile['controls']
     lines = ['/* Verified NTSC 1.2 camera/input operands from profile.toml. */']

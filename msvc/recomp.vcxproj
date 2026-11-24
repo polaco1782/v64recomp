@@ -36,8 +36,12 @@
     <ClInclude Include="$(RecompRoot)backends\cheat_database.h" />
     <ClCompile Include="$(RecompRoot)backends\cheat_menu.cpp" />
     <ClInclude Include="$(RecompRoot)backends\cheat_menu.h" />
+    <ClCompile Include="$(RecompRoot)backends\cheat_panel.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\cheat_panel.h" />
     <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp" />
     <ClInclude Include="$(RecompRoot)backends\debug_overlay.h" />
+    <ClInclude Include="$(RecompRoot)backends\gles2\cheat_overlay.h" />
+    <ClCompile Include="$(RecompRoot)backends\gles2\cheats.cpp" />
     <ClCompile Include="$(RecompRoot)backends\gles2\combiner.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\context.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\controls.c" />

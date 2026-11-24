@@ -525,6 +525,24 @@ counter_hz = 0x2cb4178
 0x80000314 = 0x1
 0x80000318 = 0x400000
 
+[graphics]
+# First VI mode uses a 292-pixel stride and the game allocates 216 rows.
+# The intro reinterprets a 64x64 CI8 target as a 32x64 RGBA16 texture.
+framebuffers = [{width = 64, height = 64}, {width = 292, height = 216}, {width = 320, height = 240}]
+
+[[graphics.microcodes]]
+name = "F3DEXBG.NoN"
+code = {rom_offset = 0x36e90, size = 0x1000, sha256 = "95e3adfbbffa9627366b26d802a28febed0efa64fe4868e593a2c97b5881f37e"}
+# The task transfers 0x800 bytes. Its last 0x80 bytes hold mutable parameters.
+data = {rom_offset = 0x3f410, size = 0x780, sha256 = "eded3bafe0d2ea7f1c3b7d2d0633fb38854b200b98763af8d355781e170b3fe8", task_size = 0x800}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x290d0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEXBG.NoN with overlays", rom_offset = 0x36e90, size = 0x14a0, sha256 = "55a64255ef5c60046c3e88bb73891f72ee095e0005b4b748f78f5ff296b35cfa"},
+  {name = "Intro geometry overlay", rom_offset = 0x32b98, size = 0x388, sha256 = "c6c527b86a334868986431da051575c7ca8c04482bb1ebd599263cadc30cb234"},
+]
+
 [audio.rsp]
 images = [
   {name = "Audio RSP bootstrap", rom_offset = 0x290d0, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},

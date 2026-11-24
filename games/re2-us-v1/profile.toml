@@ -470,6 +470,81 @@ roots = [
   {name = "table_80061c98", vram = 0x80061c98, section = ".main"},
   {name = "table_80062150", vram = 0x80062150, section = ".main"},
   {name = "table_80062520", vram = 0x80062520, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8012f914; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound. The
+  # pinned ROM and decoded section 1 match their recorded hashes. At 2148062880, instruction
+  # 4257801 calls the pointer loaded from 2148727060 plus four times the unsigned byte at
+  # 2148712345. The dispatch has no range check. Seven pointer words followed by two zero
+  # words establish the adjacent data layout, but the selector’s reachable range remains
+  # unproved. Slots 0, 1, 2 and 6 each point to a distinct, closed function body with no
+  # overlap with baseline-owned instructions. Slot 3 is already registered. Slots 4 and 5
+  # contain computed jumps whose targets are unchecked in the baseline.
+  {name = "table_8008bda0", vram = 0x8008bda0, section = ".main"},
+  {name = "table_8008bdd4", vram = 0x8008bdd4, section = ".main"},
+  {name = "table_8008d6b4", vram = 0x8008d6b4, section = ".main"},
+  {name = "table_8008d6fc", vram = 0x8008d6fc, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8012fa90; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Slot 2 at 0x8012fa98 contains 0x80092994 in the fingerprinted .main image decoded from
+  # the pinned ROM. Its 33 instructions have no overlap with any registered body. Both
+  # direct calls target 0x80077adc, and every path returns through the same epilogue. At
+  # 0x80092948, jalr consumes a pointer indexed by the shared state byte at 0x8012bf99,
+  # scaled by four. The producer has no range check, and the non-pointer word at 0x8012faa0
+  # establishes no selector bound. Slots 0 and 1 already have registered entries. Slot 3
+  # requires a checked local switch at 0x80092a70 before its body qualifies as closed in the
+  # prepared metadata.
+  {name = "table_80092994", vram = 0x80092994, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8012fe08; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Verified slot 2 as an individual root. The pinned ROM and decoded section 1 match their
+  # recorded hashes. At PC 2148092820, instruction 4257801 calls the pointer loaded from
+  # 2148728328 plus four times the unsigned byte at 2148712345. The dispatch has no range
+  # check. Five pointer words precede packed data, but the reachable selector range remains
+  # unproved. Slot 2 at 2148728336 contains 2148092936. Its 109-instruction body begins
+  # after the caller’s return delay slot, has no overlap with registered instructions, and
+  # closes at its own return before the registered slot 3 entry. Slots 0, 1 and 3 already
+  # have registered roots. Slot 4 contains a computed jump without checked targets in the
+  # supplied metadata.
+  {name = "table_80094c08", vram = 0x80094c08, section = ".main"},
+  # ROM-verified function roots.
+  # The pinned ROM establishes a callable entry in section 1. The dispatcher at 0x80079470
+  # loads the byte at object offset 4, indexes the word table at 0x8011a870, and calls the
+  # selected pointer with jalr at 0x800794e0. Slot 0 points to 0x80079818, whose store at
+  # 0x80079a24 sets that selector byte to 1. Slot 1 at 0x8011a874 contains 0x8007bc10. The
+  # entry follows the preceding return delay slot at 0x8007bc0c, saves ra in its own 24-byte
+  # frame, and restores the frame in its return delay slot at 0x8007bc90. Its two paths
+  # directly call 0x8007efe8 or 0x8007bc9c. Both callees directly call 0x800807cc and
+  # 0x80080af4. All four descendants have distinct frames and returns, and none of the five
+  # bodies overlaps baseline-owned instructions. This verifies the individual root from
+  # static ROM evidence.
+  {name = "reviewed_8007bc10", vram = 0x8007bc10, section = ".main"},
+  # ROM-verified function roots.
+  # The pinned ROM establishes 0x800795c8 as a section 1 callback. The initializer at
+  # 0x8007a754 installs dispatcher 0x80079470. That dispatcher indexes the table at
+  # 0x8011a894 using the object byte at offset 8 minus 0x40, then calls the selected pointer
+  # with JALR at 0x80079510. Selectors 0x41 and 0x43 read slots 0x8011a898 and 0x8011a8a0,
+  # both containing 0x800795c8. The raw cartridge match at 0x01d38020 adds no dispatch
+  # evidence. The root starts immediately after the preceding return delay slot. Both branch
+  # paths reach the JALs at 0x80079644 and 0x8007964c, then restore the saved registers and
+  # release the 0x18-byte frame in the return delay slot at 0x80079660. The two callees,
+  # 0x8007acc0 and 0x8007ad14, each have their own frame and return. All three bodies are
+  # disjoint from existing section 1 function ownership. Verification is static.
+  {name = "reviewed_800795c8", vram = 0x800795c8, section = ".main"},
+  # ROM-verified function roots.
+  # The pinned ROM’s decoded section 1 contains a static call path from registered function
+  # 0x8007bc9c through 0x8007bd9c to dispatcher 0x8007c724. For input byte 0x10, the
+  # dispatcher reads zero from 0x8011b220, selects slot zero at 0x8011b250, loads
+  # 0x8007c2f0, and calls it with JALR at 0x8007c820. The entry immediately follows the
+  # preceding return delay slot. Its 60 instructions occupy 0x8007c2f0–0x8007c3dc, have no
+  # overlap with registered code, and converge on an epilogue that restores RA, S0, and the
+  # 24-byte frame. JALs at 0x8007c324 and 0x8007c354 target two separate functions.
+  # 0x80080c68 owns a 56-byte frame and returns before 0x80080d64, which is a frameless leaf
+  # with its own returns. This verifies the root statically. Runtime execution was not
+  # observed.
+  {name = "reviewed_8007c2f0", vram = 0x8007c2f0, section = ".main"},
 ]
 
 # Startup 0x80000598 selects record 1 through 0x80001180 and inflates it.

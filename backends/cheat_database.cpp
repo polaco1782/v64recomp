@@ -5,7 +5,11 @@
 #include <cerrno>
 #include <cstdio>
 #include <fstream>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#else
 #include <curl/curl.h>
+#endif
 #include <mutex>
 #include <memory>
 #ifdef _WIN32
@@ -87,6 +91,52 @@ std::string read(const std::filesystem::path& path) {
         return {};
     return text;
 }
+#ifdef __EMSCRIPTEN__
+extern "C" EMSCRIPTEN_KEEPALIVE bool recomp_web_cheat_cancelled(const std::atomic<bool> *cancel) {
+    return cancel->load();
+}
+
+// Runs on the catalog worker. Stream into a bounded Wasm buffer and abort
+// the request on shutdown even when the server has stopped sending data.
+// clang-format off
+EM_ASYNC_JS(int, fetch_cheat_text, (const char *url, char *out, int capacity, const void *cancel), {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+    const watch = setInterval(() => {
+        if (_recomp_web_cheat_cancelled(cancel)) controller.abort();
+    }, 100);
+    try {
+        const response = await fetch(UTF8ToString(url), {signal: controller.signal, credentials: 'omit', cache: 'no-cache'});
+        if (!response.ok) return -response.status;
+        const reader = response.body.getReader();
+        let length = 0;
+        for (;;) {
+            const chunk = await reader.read();
+            if (chunk.done) return length;
+            if (chunk.value.length > capacity - length) return -1;
+            HEAPU8.set(chunk.value, out + length);
+            length += chunk.value.length;
+        }
+    } catch (e) {
+        return -1;
+    } finally {
+        controller.abort();
+        clearTimeout(timeout);
+        clearInterval(watch);
+    }
+});
+// clang-format on
+std::string fetch_text(const std::string& url, const std::atomic<bool>& cancel) {
+    std::string contents(MaxBytes, '\0');
+    int size = fetch_cheat_text(url.c_str(), contents.data(), static_cast<int>(contents.size()), &cancel);
+    if (cancel)
+        throw std::runtime_error("Download cancelled");
+    if (size < 0)
+        throw std::runtime_error(size == -1 ? "Browser download failed" : "HTTP " + std::to_string(-size));
+    contents.resize(static_cast<size_t>(size));
+    return contents;
+}
+#else
 // Use libcurl on both hosts: HTTPS only, verified TLS, bounded size and cancellation.
 struct Download {
     std::string bytes;
@@ -109,8 +159,7 @@ size_t receive(char *data, size_t size, size_t count, void *opaque) {
 int progress(void *opaque, curl_off_t, curl_off_t, curl_off_t, curl_off_t) {
     return static_cast<Download *>(opaque)->cancel ? 1 : 0;
 }
-std::string download(const std::string& url, const std::filesystem::path& destination,
-                     const std::atomic<bool>& cancel) {
+std::string fetch_text(const std::string& url, const std::atomic<bool>& cancel) {
     static std::once_flag initialized;
     std::call_once(initialized, [] {
         if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
@@ -143,7 +192,12 @@ std::string download(const std::string& url, const std::filesystem::path& destin
         throw std::runtime_error("Download cancelled");
     if (error != CURLE_OK)
         throw std::runtime_error(std::string("HTTPS download failed: ") + curl_easy_strerror(error));
-    const std::string& contents = state.bytes;
+    return std::move(state.bytes);
+}
+#endif
+std::string download(const std::string& url, const std::filesystem::path& destination,
+                     const std::atomic<bool>& cancel) {
+    const std::string contents = fetch_text(url, cancel);
     // An HTML error page with HTTP 200 must not replace a useful cached file.
     if (contents.empty() || contents.find('\0') != std::string::npos ||
         (contents.find("crc ") == std::string::npos &&

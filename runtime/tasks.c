@@ -388,10 +388,13 @@ void recomp_os_sp_task_yielded(Runtime *rt, MipsContext *ctx) {
     RECOMP_TRACE_OS(rt, ctx);
     RecompTasks *t = tasks(rt);
     uint32_t object = (uint32_t)ctx->gpr[4];
-    if (recomp_ram_address(rt, object, 64) != t->last_key)
-        recomp_fail("yield query does not match SP completion", object);
-    uint32_t flags = (uint32_t)recomp_load(rt, object + 4, 4);
-    if (t->last_requested)
+    /* The SDK reads SP status first. It only accesses the caller's OSTask
+     * when the yield-request bit is set. */
+    if (t->last_requested) {
+        if (recomp_ram_address(rt, object, 64) != t->last_key)
+            recomp_fail("yield query does not match SP completion", object);
+        uint32_t flags = (uint32_t)recomp_load(rt, object + 4, 4);
         recomp_store(rt, object + 4, (flags | (t->last_yielded ? 1u : 0u)) & ~2u, 4);
+    }
     mips_set(ctx, 2, t->last_yielded ? 1 : 0);
 }

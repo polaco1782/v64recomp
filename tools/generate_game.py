@@ -259,7 +259,8 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
     graphics_rsp = renderer == 'gles' and 'rsp' in original_profile.get('graphics', {})
     audio_rsp = original_profile.get('audio', {}).get('rsp')
     images = None
-    if graphics_rsp or audio_rsp:
+    jpeg = original_profile.get('jpeg')
+    if graphics_rsp or audio_rsp or jpeg:
         if hasattr(generator, 'rsp_images'):
             images = generator.rsp_images(original_rom, original_profile)
         elif graphics_rsp and hasattr(generator, 'graphics_images'):
@@ -275,6 +276,21 @@ def _generate(game: str, output: Path, report_only: bool, progress: GenerationPr
         progress.stage('Compiling RSP audio microcode')
         program = write_rsp_program(output, 'game_audio_rsp', audio_rsp['images'], original_rom, images)
         manifest += f'set(RECOMP_AUDIO_RSP_SOURCE "{program.as_posix()}")\n'
+        rsp_sources.append(program)
+    if jpeg:
+        from rsp_recompile import checked_span, write_rsp_program
+        progress.stage('Compiling RSP JPEG microcode')
+        boot_images = {entry['name']: entry for entry in original_profile['graphics']['rsp']['images']}
+        entries = [boot_images[name] for name in jpeg['rsp']['bootstraps']] + jpeg['rsp']['images']
+        program = write_rsp_program(output, 'game_jpeg_rsp', entries, original_rom, images)
+        constants = checked_span('JPEG data', jpeg['data'], original_rom, images, jpeg['descriptor'][5])
+        with program.open('a') as stream:
+            stream.write('#include "recomp_jpeg.h"\n')
+            stream.write('static const uint8_t jpeg_data[] = {' + ','.join(map(str, constants)) + '};\n')
+            descriptor = ', '.join(hex(value) for value in jpeg['descriptor'])
+            stream.write('const RecompJpegProfile game_jpeg_profile = {'
+                         f'{{{descriptor}}}, jpeg_data, sizeof(jpeg_data), &game_jpeg_rsp_program}};\n')
+        manifest += f'set(RECOMP_JPEG_RSP_SOURCE "{program.as_posix()}")\n'
         rsp_sources.append(program)
     (output/'sources.cmake').write_text(manifest)
     progress.stage('Finalizing generated files and cache')

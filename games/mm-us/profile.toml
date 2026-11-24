@@ -811,3 +811,13 @@ images = [
 images = [
   {name = "Audio RSP program", image = ".code", offset = 0x104ff0, size = 0x1000, sha256 = "b19b603dd2c2c37ac28734648a5acfb39712caa8b154c46336c8ea1e1bc0e8d6"},
 ]
+
+[jpeg]
+descriptor = [0x800969c0, 0x160, 0x801ad370, 0x1000, 0x801e3f40, 0x800]
+data = {image = ".code", offset = 0x13e480, size = 0x60, sha256 = "e961dab96ea15e04f8acf3d8185a1e6e6b66fd9094ee3f22fc3db84ef2503f72"}
+
+[jpeg.rsp]
+bootstraps = ["RSP bootstrap", "RSP bootstrap with restart entry"]
+images = [
+  {name = "JPEG decoder", image = ".code", offset = 0x1078b0, size = 0xaf0, dma_size = 0xf80, sha256 = "0f56b7fd8dbe334877b26a0bba5e7e536ed0c21ff898841e77af6cdf30989b9e"},
+]

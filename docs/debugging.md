@@ -277,7 +277,7 @@ Recoverable HLE operations use `recomp_warn(message, address)`. It captures the
 same native stack, guest state and RAM snapshot once per message/address site
 (up to 32 sites per thread), writing `warning-*.json` and a matching RAM dump.
 The report marks
-`failure.severity` as `warning`; the process keeps running. JPEG decoder warnings skip the remainder of the current task and publish its completion.
+`failure.severity` as `warning`; the process keeps running.
 An unrecognized graphics microcode skips its display list and publishes SP/DP
 completion. Unsupported game-specific display-list commands skip that command.
 Visuals from a skipped operation may be missing until the next task.

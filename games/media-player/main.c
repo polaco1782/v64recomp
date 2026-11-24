@@ -2,6 +2,19 @@
 #include <SDL.h>
 #include <stdlib.h>
 #include <stb_easy_font.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/proxying.h>
+#include <emscripten/threading.h>
+
+#include <stdatomic.h>
+
+/* A file can be chosen while the application worker is initializing SDL. */
+static atomic_bool web_media_selected;
+EMSCRIPTEN_KEEPALIVE void recomp_web_open_media(void) {
+    atomic_store(&web_media_selected, true);
+}
+#endif
 #ifdef _WIN32
 #include <SDL_syswm.h>
 #include <windows.h>
@@ -153,6 +166,8 @@ static void choose_file(Player *p) {
     }
     if (p->started && !p->paused)
         SDL_PauseAudioDevice(p->device, 0);
+#elif defined(__EMSCRIPTEN__)
+    snprintf(p->status, sizeof(p->status), "Use Open MP3 below the game");
 #else
     snprintf(p->status, sizeof(p->status), "Drag an MP3 from your file manager");
 #endif
@@ -167,6 +182,16 @@ static void queue_stream(Player *p) {
         recomp_game_require(SDL_QueueAudio(p->device, buffer, (Uint32)bytes) == 0, SDL_GetError(), 0);
     }
     recomp_game_require(bytes == 0, SDL_GetError(), 0);
+}
+
+static void open_audio_device(void *opaque) {
+    Player *p = opaque;
+    SDL_AudioSpec desired = {0};
+    desired.freq = 48000;
+    desired.format = AUDIO_S16SYS;
+    desired.channels = 2;
+    desired.samples = 1024;
+    p->device = SDL_OpenAudioDevice(NULL, 0, &desired, NULL, 0);
 }
 
 int main(int argc, char **argv) {
@@ -197,14 +222,21 @@ int main(int argc, char **argv) {
         p->renderer = SDL_CreateRenderer(p->window, -1, SDL_RENDERER_SOFTWARE);
     recomp_game_require(p->renderer != NULL, SDL_GetError(), 0);
     SDL_RenderSetLogicalSize(p->renderer, 720, 372);
-    SDL_AudioSpec desired = {0};
-    desired.freq = 48000;
-    desired.format = AUDIO_S16SYS;
-    desired.channels = 2;
-    desired.samples = 1024;
-    p->device = SDL_OpenAudioDevice(NULL, 0, &desired, NULL, 0);
+#ifdef __EMSCRIPTEN__
+    em_proxying_queue *queue = em_proxying_queue_create();
+    recomp_game_require(queue &&
+                            emscripten_proxy_sync(queue, emscripten_main_runtime_thread_id(), open_audio_device, p),
+                        "browser audio initialization failed", 0);
+    em_proxying_queue_destroy(queue);
+#else
+    open_audio_device(p);
+#endif
     recomp_game_require(p->device != 0, SDL_GetError(), 0);
+#ifdef __EMSCRIPTEN__
+    choose_file(p);
+#else
     snprintf(p->status, sizeof(p->status), "Choose a file or drag it onto this window");
+#endif
     const char *initial = getenv("RECOMP_MEDIA_FILE");
     bool running = true;
     int result = 0;
@@ -218,6 +250,10 @@ int main(int argc, char **argv) {
         result = 2;
     }
     while (running) {
+#ifdef __EMSCRIPTEN__
+        if (atomic_exchange(&web_media_selected, false) && open_file(p, "/selected.mp3"))
+            result = 0;
+#endif
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             SDL_Keycode key = 0;

@@ -1,6 +1,3 @@
-if(EMSCRIPTEN AND NOT RECOMP_GAME STREQUAL "sm64-us")
-    message(FATAL_ERROR "The browser ROM loader currently supports sm64-us only")
-endif()
 # Only the selected game is generated and compiled. Python is a build dependency.
 if(TARGET recomp_rdp_gles2 AND NOT RECOMP_GAME_GLES2_SUPPORTED)
     message(FATAL_ERROR "${RECOMP_GAME} has no checked GLES graphics path. Select -DRECOMP_RENDERER=rt64.")
@@ -78,7 +75,7 @@ if(RECOMP_EMBED_ROM)
 endif()
 file(GLOB RECOMP_GENERATED_HEADERS "${RECOMP_GENERATED}/*.h")
 list(FILTER RECOMP_GENERATED_HEADERS EXCLUDE REGEX "/game_defaults\\.h$")
-add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AUDIO_RSP_SOURCE} ${RECOMP_GENERATED_HEADERS}
+add_custom_command(OUTPUT ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AUDIO_RSP_SOURCE} ${RECOMP_JPEG_RSP_SOURCE} ${RECOMP_GENERATED_HEADERS}
     "${RECOMP_GENERATED}/sources.cmake" "${RECOMP_GENERATED}/generation.key"
     "${RECOMP_GENERATED}/symbols.json" "${RECOMP_GENERATED}/coverage.json"
     "${RECOMP_GENERATED}/function-candidates.json"
@@ -90,10 +87,18 @@ set(RECOMP_LOCAL "${CMAKE_SOURCE_DIR}/local")
 set(RECOMP_DEBUG_OUTPUT_DIR "${CMAKE_BINARY_DIR}/debug-output/${RECOMP_GAME}")
 if(EMSCRIPTEN)
     if(RECOMP_EMBED_ROM OR RECOMP_EMBED_TEXTURE_PACK)
-        message(FATAL_ERROR "Browser builds load a user-selected ROM; embedding is unsupported")
+        message(FATAL_ERROR "Browser builds serve the verified ROM as a separate asset")
+    endif()
+    execute_process(COMMAND "${Python3_EXECUTABLE}" -c
+        "import html,sys,tomllib; print(html.escape(tomllib.load(open(sys.argv[1], 'rb'))['game']['name']))"
+        "${RECOMP_GAME_DIR}/profile.toml" OUTPUT_VARIABLE RECOMP_WEB_TITLE
+        OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+    configure_file("${RECOMP_ROM}" "${CMAKE_BINARY_DIR}/bin/${RECOMP_GAME}.z64" COPYONLY)
+    get_filename_component(RECOMP_WEB_SAVE "${RECOMP_SAVE}" NAME)
+    if(RECOMP_WEB_SAVE)
+        set(RECOMP_SAVE "/saves/${RECOMP_WEB_SAVE}")
     endif()
     set(RECOMP_ROM "/rom.z64")
-    set(RECOMP_SAVE "/saves/${RECOMP_GAME}.eeprom")
     set(RECOMP_LOCAL "/local")
     set(RECOMP_DEBUG_OUTPUT_DIR "/debug-output/${RECOMP_GAME}")
 endif()
@@ -101,7 +106,7 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/game_defaults.h.in" "${RECOMP_GENERATE
 if(RECOMP_RSP_SOURCE)
     target_compile_definitions(recomp_renderer PRIVATE RECOMP_HAS_RSP_PROGRAM)
 endif()
-add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AUDIO_RSP_SOURCE}
+add_executable(${RECOMP_GAME} "${RECOMP_GAME_DIR}/main.c" ${RECOMP_CPU_SOURCES} ${RECOMP_RSP_SOURCE} ${RECOMP_AUDIO_RSP_SOURCE} ${RECOMP_JPEG_RSP_SOURCE}
     "${CMAKE_SOURCE_DIR}/runtime/game.c" ${RECOMP_GAME_SOURCES})
 if(RECOMP_GLES2_HAS_TEXTURE_PACKS)
     set_property(SOURCE "${CMAKE_SOURCE_DIR}/runtime/game.c" APPEND PROPERTY
@@ -173,9 +178,14 @@ recomp_optimize_release_target(${RECOMP_GAME})
 recomp_optimize_release_cpu(${RECOMP_CPU_SOURCES})
 target_link_libraries(${RECOMP_GAME} PRIVATE recomp_renderer recomp_audio)
 if(EMSCRIPTEN)
+    # Unoptimized translated functions can exceed the WebAssembly engine's
+    # locals limit after Asyncify. Keep Debug assertions and symbols.
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set_property(SOURCE ${RECOMP_CPU_SOURCES} APPEND PROPERTY COMPILE_OPTIONS -Og)
+    endif()
     set_target_properties(${RECOMP_GAME} PROPERTIES SUFFIX ".js")
     target_link_options(${RECOMP_GAME} PRIVATE
-        "$<$<CONFIG:Debug>:-O0;-g2;-sASSERTIONS=2;-sSTACK_OVERFLOW_CHECK=2>"
+        "$<$<CONFIG:Debug>:-O2;-g2;-sASSERTIONS=2;-sSTACK_OVERFLOW_CHECK=2>"
         "$<$<NOT:$<CONFIG:Debug>>:-O${RECOMP_OPT_LEVEL}>"
         -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2
         -sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=65536 -sPROXY_TO_PTHREAD=1 -sOFFSCREEN_FRAMEBUFFER=1 -sPTHREAD_POOL_SIZE=8 -sSTACK_SIZE=8388608

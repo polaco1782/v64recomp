@@ -1,5 +1,6 @@
 #include "internal.h"
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,19 +9,35 @@ static unsigned byte(RecompRDPGles2 *s, unsigned offset) {
         recomp_fail("GLES2 drawing consumes an invalid texture DMA", offset & 4095);
     return s->tmem[offset & 4095];
 }
-static unsigned tile_extent(unsigned low, unsigned high, unsigned mask, unsigned mode) {
+static unsigned tile_extent(const RecompRDPGles2 *s, unsigned axis, unsigned low, unsigned high, unsigned mask,
+                            unsigned mode, unsigned shift) {
     unsigned extent = high >= low ? (high - low) / 4 + 1 : 1;
-    /* A wrapping axis addresses an entire mask period, regardless of the
-     * (possibly stale or unset) SETTILESIZE bounds. Retain the bounded upload
-     * for oversized periods that this decoded texture cache cannot store. */
-    if (mask && !(mode & 2) && (1u << mask) <= 1024)
-        extent = 1u << mask;
+    if (!mask || (mode & 2))
+        return extent;
+    if (mask <= 10)
+        return 1u << mask;
+    /* S2DEX backgrounds set a very large wrap mask and zero tile bounds.
+     * Each rectangle addresses a slice of TMEM. Decode the texels covered
+     * by its coordinates, including reversed and mirrored axes. */
+    if (s->drawing_rectangle) {
+        float scale = shift > 10 ? (float)(1u << (16 - shift)) : 1.0f / (float)(1u << shift);
+        float last = 0;
+        for (unsigned i = 0; i < s->batch_count; i++) {
+            float uv = s->batch[i].uv[axis] * scale - (float)low / 4;
+            if (uv < 0 && (mode & 1))
+                uv = -1.0f - uv;
+            last = fmaxf(last, uv);
+        }
+        unsigned sampled = (unsigned)fminf(1024, floorf(last) + 1);
+        if (sampled > extent)
+            extent = sampled;
+    }
     return extent;
 }
 GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     unsigned *width = &s->tex_width[unit], *height = &s->tex_height[unit];
-    *width = tile_extent(t->sl, t->sh, t->ms, t->cs);
-    *height = tile_extent(t->tl, t->th, t->mt, t->ct);
+    *width = tile_extent(s, 0, t->sl, t->sh, t->ms, t->cs, t->ss);
+    *height = tile_extent(s, 1, t->tl, t->th, t->mt, t->ct, t->st);
     /* The RDP accepts a zero TMEM line stride: rows share a base, but
      * the address swizzle still uses the sampled row parity. */
     if (*width > 1024 || *height > 1024) {

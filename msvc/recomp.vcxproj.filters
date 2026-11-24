@@ -37,12 +37,24 @@
     <ClInclude Include="$(RecompRoot)backends\cheat_menu.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\cheat_panel.cpp">
+      <Filter>Source Files\backends</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\cheat_panel.h">
+      <Filter>Header Files\backends</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\debug_overlay.cpp">
       <Filter>Source Files\backends</Filter>
     </ClCompile>
     <ClInclude Include="$(RecompRoot)backends\debug_overlay.h">
       <Filter>Header Files\backends</Filter>
     </ClInclude>
+    <ClInclude Include="$(RecompRoot)backends\gles2\cheat_overlay.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\cheats.cpp">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2\combiner.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>

@@ -160,16 +160,21 @@ static void texture_rectangle(RecompRDPGles2 *s, uint32_t w0, uint32_t w1, uint3
     float du = (float)(int16_t)(derivatives >> 16) / 1024, dv = (float)(int16_t)derivatives / 1024;
     if (cycle == 2) {
         du /= 4;
-        x1++;
-        y1++;
+        x1 = floorf(x1) + 1;
+        y1 = floorf(y1) + 1;
     }
     unsigned tile = s->texture_tile;
     s->texture_tile = (w1 >> 24) & 7;
     bool enabled = s->texture_enabled;
     s->texture_enabled = true;
     s->textures_dirty = true;
-    rectangle(s, x0, y0, x1, y1, (float)(int16_t)(coordinates >> 16) / 32, (float)(int16_t)coordinates / 32, du, dv,
-              flip);
+    float u = (float)(int16_t)(coordinates >> 16) / 32, v = (float)(int16_t)coordinates / 32;
+    /* Copy samples start at the upper-left pixel. GL interpolates at pixel centers. */
+    if (cycle == 2) {
+        u -= du * 0.5f;
+        v -= dv * 0.5f;
+    }
+    rectangle(s, x0, y0, x1, y1, u, v, du, dv, flip);
     s->texture_enabled = enabled;
     s->texture_tile = tile;
     s->textures_dirty = true;
@@ -266,7 +271,7 @@ static bool consume_rdp(RecompRDPGles2 *s, uint32_t w0, uint32_t w1) {
         case 0xff: {
             unsigned siz = (w0 >> 19) & 3;
             unsigned fmt = (w0 >> 21) & 7;
-            if (!(fmt == 0 && siz >= 2) && !(fmt == 4 && siz == 1))
+            if (!(fmt == 0 && siz >= 2) && !((fmt == 2 || fmt == 4) && siz == 1))
                 return false;
             unsigned width = (w0 & 4095) + 1, height = 0;
             for (size_t i = 0; i < s->framebuffer_size_count; i++)
@@ -442,7 +447,7 @@ void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size,
     }
     recomp_gles2_flush(s);
     if (s->full_sync) {
-        if (s->color_image_set)
+        if (s->color_image_set && (!s->ram_scanout || s->color_dirty))
             recomp_gles2_readback_color(s);
         else
             s->gl.Finish();

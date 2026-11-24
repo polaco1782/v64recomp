@@ -6,7 +6,7 @@
 #include "game_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <openssl/evp.h>
+#include "hash.h"
 #include <string.h>
 #include <inttypes.h>
 
@@ -21,12 +21,11 @@ static unsigned pending_patch = UINT32_MAX;
 
 static void verify_main(Runtime *rt) {
     uint8_t *image = malloc(BOOT_MAIN_SIZE), digest[32];
-    unsigned length = 0;
+
     recomp_game_require(image != NULL, "cannot verify RE2 main image", BOOT_MAIN_ADDRESS);
     for (uint32_t i = 0; i < BOOT_MAIN_SIZE; i++)
         image[i] = (uint8_t)recomp_load(rt, BOOT_MAIN_ADDRESS + i, 1);
-    bool ok = EVP_Digest(image, BOOT_MAIN_SIZE, digest, &length, EVP_sha256(), NULL) && length == 32 &&
-              !memcmp(digest, main_sha256, 32);
+    bool ok = recomp_sha256(image, BOOT_MAIN_SIZE, digest) && !memcmp(digest, main_sha256, 32);
     free(image);
     recomp_game_require(ok, "RE2 main image differs from compiled image", BOOT_MAIN_ADDRESS);
     rt->section_loaded[1] = true;
@@ -70,13 +69,12 @@ static uint64_t guest_time(void *opaque) {
 }
 static bool image_matches(Runtime *rt, uint32_t address, uint32_t size, const uint8_t expected[32]) {
     uint8_t *image = malloc(size), digest[32];
-    unsigned length = 0;
+
     recomp_game_require(image != NULL, "cannot verify RE2 overlay", address);
     (void)recomp_ram_address(rt, address, size);
     for (uint32_t i = 0; i < size; i++)
         image[i] = (uint8_t)recomp_load(rt, address + i, 1);
-    bool ok =
-        EVP_Digest(image, size, digest, &length, EVP_sha256(), NULL) && length == 32 && !memcmp(digest, expected, 32);
+    bool ok = recomp_sha256(image, size, digest) && !memcmp(digest, expected, 32);
     free(image);
     return ok;
 }
@@ -207,6 +205,8 @@ int main(int argc, char **argv) {
     /* Video writes framebuffer RAM without a graphics full-sync. PresentEarly
      * skips VI-only updates; use RT64's original-rate VI presentation path. */
     recomp_renderer_set_frame_rate(renderer, 0);
+#elif defined(RECOMP_WITH_GLES2)
+    recomp_renderer_set_ram_scanout(renderer);
 #endif
     RecompAudioConfig audio_config = {
         .output_enabled = true, .playback = !options.mute, .task_profile = &re2_audio_profile};
