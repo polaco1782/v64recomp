@@ -40,6 +40,12 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\framebuffer.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\hq2x.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\hq2x.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
     <ClInclude Include="$(RecompRoot)backends\gles2\internal.h">
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>

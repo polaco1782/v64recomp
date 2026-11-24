@@ -44,6 +44,9 @@ stretching the picture.
 
 ### Your favorite textures, in one place
 
+HQ2x smooths edges on native N64 textures by default. Set `RECOMP_GLES2_HQ2X=0`
+before launching a game to use the original texels. Texture packs take priority.
+
 Pass a Rice/GLideN64 PNG ZIP directly to the desktop game. For GoldenEye 007:
 
 ```sh

@@ -105,6 +105,7 @@ enum { GLES2_REPLACEMENT_BUCKETS = 256, GLES2_REPLACEMENT_WAYS = 4 };
 typedef struct Texture {
     uint64_t hash, used;
     GLuint id;
+    unsigned hq2x_wrap;
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     uint64_t rice_texels, rice_palette, retry_draw;
     size_t replacement_bytes;
@@ -159,7 +160,7 @@ struct RecompRDPGles2 {
     uint64_t light_serial;
     RecompTorchSource torch_source;
     GLint blit_reflections, blit_occlusion;
-    bool antialias, mipmaps, screen_effects, show_reflections, show_occlusion;
+    bool antialias, mipmaps, hq2x, screen_effects, show_reflections, show_occlusion;
     Program programs[256];
     unsigned program_count;
     Texture textures[128];

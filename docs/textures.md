@@ -4,6 +4,12 @@
 <a id="gles2-texture-packs-and-editor"></a>
 
 
+HQ2x doubles the width and height of decoded N64 tiles before GLES uploads them.
+It runs once per texture cache miss and blends RGBA edges, including across
+repeating texture seams. Larger-than-TMEM tiles (over 8192 texels) use native
+resolution. Texture packs and editor overrides use the resolution of the supplied
+image. Set `RECOMP_GLES2_HQ2X=0` before launch to disable enhancement.
+
 Desktop GLES3 loads Rice/GLideN64 PNG ZIPs directly. On the first draw of a
 texture, it checks the original texture and palette loads against the Rice
 filenames in the ZIP. It remembers matches in memory. Exact IDs, CI palette or texture `$` wildcards,

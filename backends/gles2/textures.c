@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "hq2x.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -180,10 +181,19 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
         }
     }
 #endif
+    // 4 KiB of TMEM holds at most 8192 distinct 4-bit texels. Some rectangles
+    // span a much larger repeated address range. Bound enhancement cost there.
+    bool enhance = s->hq2x && *width * *height <= 8192;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    enhance = enhance && !s->original_textures;
+#endif
+    bool wrap_x = enhance && !t->cs && t->ms && (1u << t->ms) == *width;
+    bool wrap_y = enhance && !t->ct && t->mt && (1u << t->mt) == *height;
+    unsigned hq2x_wrap = (unsigned)wrap_x | ((unsigned)wrap_y << 1);
     Texture *cached = NULL, *oldest = &s->textures[0];
     for (unsigned i = 0; i < 128; i++) {
         Texture *candidate = &s->textures[i];
-        if (candidate->id && candidate->hash == hash) {
+        if (candidate->id && candidate->hash == hash && candidate->hq2x_wrap == hq2x_wrap) {
             cached = candidate;
             break;
         }
@@ -258,13 +268,24 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     if (!entry->id)
         s->gl.GenTextures(1, &entry->id);
     s->gl.BindTexture(GL_TEXTURE_2D, entry->id);
-    s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)*width, (GLsizei)*height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                     pixels);
+    unsigned scale = 1;
+    if (enhance) {
+        uint32_t *scaled = malloc(size * 4);
+        if (scaled) {
+            gles2_hq2x(pixels, *width, *height, wrap_x, wrap_y, scaled);
+            free(pixels);
+            pixels = (uint8_t *)scaled;
+            scale = 2;
+        }
+    }
+    s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)(*width * scale), (GLsizei)(*height * scale), 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, pixels);
     if (s->mipmaps)
         s->gl.GenerateMipmap(GL_TEXTURE_2D);
     free(pixels);
     s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    entry->hq2x_wrap = hq2x_wrap;
     entry->hash = hash;
     entry->used = ++s->texture_clock;
     return entry->id;

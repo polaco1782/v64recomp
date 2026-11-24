@@ -69,6 +69,7 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     s->show_torch_shadows = quality_option("RECOMP_GLES2_TORCH_SHADOWS", false);
     s->show_torches = s->torch_mode = quality_option("RECOMP_GLES2_TORCH_LIGHTS", false) || s->show_torch_shadows;
     s->screen_effects = s->torch_mode || s->show_occlusion || s->show_reflections;
+    s->hq2x = quality_option("RECOMP_GLES2_HQ2X", true);
     s->mipmaps = quality_option("RECOMP_GLES2_MIPMAPS", true);
     const char *scale = getenv("RECOMP_GLES2_SCALE");
     if (scale && *scale) {
@@ -230,8 +231,8 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
         s->blit_occlusion = s->gl.GetUniformLocation(s->blit, "showOcclusion");
     }
 #ifdef RECOMP_DEBUG
-    fprintf(stderr, "%s: scale=%u, FXAA=%s, mipmaps=%s\n", s->gl.GetString(GL_VERSION), s->render_scale,
-            s->antialias ? "on" : "off", s->mipmaps ? "on" : "off");
+    fprintf(stderr, "%s: scale=%u, FXAA=%s, mipmaps=%s, HQ2x=%s\n", s->gl.GetString(GL_VERSION), s->render_scale,
+            s->antialias ? "on" : "off", s->mipmaps ? "on" : "off", s->hq2x ? "on" : "off");
 #endif
     s->input = recomp_input_create();
     if (!s->input)

@@ -14,6 +14,8 @@ add_library(recomp_rdp_gles2 STATIC
     backends/gles2/context.c
     backends/gles2/controls.c
     backends/gles2/framebuffer.c
+    backends/gles2/hq2x.c
+    backends/gles2/hq2x.h
     backends/gles2/textures.c
     backends/gles2/combiner.c
     backends/gles2/wireframe.c
@@ -25,6 +27,8 @@ add_library(recomp_rdp_gles2 STATIC
     include/rdp_gles2.h)
 target_link_libraries(recomp_rdp_gles2 PUBLIC recomp_rdp SDL2::SDL2)
 target_compile_definitions(recomp_rdp_gles2 PRIVATE SDL_MAIN_HANDLED)
+
+configure_file("licenses/hq2x.txt" "${CMAKE_BINARY_DIR}/bin/licenses/hq2x.txt" COPYONLY)
 
 option(RECOMP_GLES2_TEXTURE_PACKS "Load and edit native GLES texture packs" ON)
 set(_imgui "${PROJECT_SOURCE_DIR}/third_party/cimgui/imgui")

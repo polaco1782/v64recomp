@@ -157,6 +157,7 @@ menus render at 1760x1320. The window starts at 1280x960 and can be resized.
 
 - `RECOMP_GLES2_SCALE=1..4` selects internal scale.
 - `RECOMP_GLES2_AA=0` disables FXAA; `1` enables it.
+- HQ2x enhances native texture tiles by default. Set `RECOMP_GLES2_HQ2X=0` for native texels.
 - `RECOMP_GLES2_MIPMAPS=0` disables mipmaps; `1` enables them.
 - By default, presentation and captures follow the game's VI gamma-enable bit,
   using an exponent of `1/2.2` when enabled and `1` when disabled.

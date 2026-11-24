@@ -21,6 +21,15 @@ The native interface uses Sean Barrett's public-domain `stb_easy_font.h` in
 `third_party/stb/`. The header includes its MIT and public-domain license options. The external homebrew ROM and user music are not
 included in the repository or executable.
 
+## HQ2x texture enhancement
+
+The GLES renderer implements the HQ2x algorithm by Maxim Stepin. It uses the
+integer color conversion and declared Y/U/V/A thresholds from
+[vnes](https://github.com/polaco1782/vnes/tree/51a7be8d2f4927254333feb1f3d92e78665cb411/src)
+and compares each threshold in the corresponding channel's byte range. The
+compact corner interpolation rules come from Clément Bœsch’s FFmpeg
+implementation under the [ISC license](licenses/hq2x.txt).
+
 ## Rice / GLideN64 texture hashing
 
 The C11 texture matcher implements the RiceVideo and GLideN64 checksums.
