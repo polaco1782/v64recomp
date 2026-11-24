@@ -24,7 +24,7 @@ add_library(recomp_rdp_gles2 STATIC
     backends/input.c
     include/rdp_gles2.h)
 target_link_libraries(recomp_rdp_gles2 PUBLIC recomp_rdp SDL2::SDL2)
-target_compile_definitions(recomp_rdp_gles2 PUBLIC RECOMP_WITH_GLES2 PRIVATE SDL_MAIN_HANDLED)
+target_compile_definitions(recomp_rdp_gles2 PRIVATE SDL_MAIN_HANDLED)
 
 option(RECOMP_GLES2_TEXTURE_PACKS "Load and edit native GLES texture packs" ON)
 set(_imgui "${PROJECT_SOURCE_DIR}/third_party/cimgui/imgui")

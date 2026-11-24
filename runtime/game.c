@@ -147,12 +147,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                    "  --texture-pack ZIP     Load a Rice/GLideN64 PNG archive\n"
                    "  --texture-editor       Enable the F8 texture editor\n"
 #endif
-#ifdef RECOMP_WITH_GLES2
                    "  --torch-shadows        Enable torch lighting with scene and player shadows (F1 toggles shadows)\n"
                    "  --torch-lights         Light surfaces near Zelda and Quake torches (F2 toggles the effect)\n"
                    "  --ssao                 Test screen-space ambient occlusion (F3 toggles the effect)\n"
                    "  --ssr                  Test screen-space reflections (F9 toggles the effect)\n"
-#endif
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
                    "  --profile-hz N         CPU samples per second per busy thread (default 99, max 1000)\n"
                    "  --profile-delay N      Wait N seconds before profiling (default 0)\n"
@@ -166,7 +164,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
 #endif
             return 1;
         }
-#ifdef RECOMP_WITH_GLES2
         if (!strcmp(arg, "--torch-shadows")) {
             recomp_game_require(!setenv("RECOMP_GLES2_TORCH_SHADOWS", "1", 1), "cannot enable torch shadows", 0);
             continue;
@@ -183,7 +180,6 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             recomp_game_require(!setenv("RECOMP_GLES2_SSR", "1", 1), "cannot enable GLES reflections", 0);
             continue;
         }
-#endif
         if (!strcmp(arg, "--mute")) {
             o->mute = true;
             continue;

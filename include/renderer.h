@@ -3,14 +3,11 @@
 #include "runtime.h"
 #include "mouse_input.h"
 #include "input.h"
-#ifdef RECOMP_WITH_GLES2
 #include "rsp.h"
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
 typedef struct RecompRenderer RecompRenderer;
-#ifdef RECOMP_WITH_GLES2
 /* ROM-bound task identity and its statically compiled RSP program. */
 typedef struct RecompGraphicsMicrocode {
     const char *name;
@@ -28,7 +25,6 @@ void recomp_renderer_set_framebuffer_sizes(RecompRenderer *, const RecompFramebu
 /* Present live VI memory for games that mix RDP output and software video. */
 void recomp_renderer_set_ram_scanout(RecompRenderer *);
 void recomp_gles2_configure_game(RecompRenderer *renderer);
-#endif
 typedef struct RecompRendererStats {
     uint64_t graphics_tasks, sp_callbacks, dp_callbacks, presentations;
     uint64_t submit_ns, present_ns;

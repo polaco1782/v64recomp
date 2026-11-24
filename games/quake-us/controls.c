@@ -198,7 +198,6 @@ void quake_planes_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
         recomp_store32(rt, (i < 3 ? Q_CTL_RIGHT : Q_CTL_UP_VECTOR) + (i % 3) * 4, saved[i]);
 }
 
-#ifdef RECOMP_WITH_GLES2
 /* Quake omits the first-person player model from the world draw. Fit a
  * standing body to the local server entity's origin and collision hull. */
 static void quake_player_shadow(Runtime *rt, uint32_t entity, const RecompTorchCamera *camera,
@@ -252,4 +251,3 @@ void quake_torch_lights(Runtime *rt, RecompTorchLights *lights) {
     if (lights->count)
         quake_player_shadow(rt, player, &camera, lights);
 }
-#endif

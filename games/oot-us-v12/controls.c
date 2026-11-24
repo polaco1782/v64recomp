@@ -249,7 +249,6 @@ void oot_normal_camera_hook(Runtime *rt, MipsContext *ctx, RecompFunction origin
     recomp_store16(rt, camera + OOT_CTL_INPUT_DIR + 4, 0);
 }
 
-#ifdef RECOMP_WITH_GLES2
 static void oot_player_shadow(Runtime *rt, const RecompTorchCamera *camera, RecompTorchLights *lights) {
     uint32_t main = recomp_load32(rt, play + OOT_CTL_CAMERA_PTRS);
     if (!valid(rt, main, 0x94) || recomp_load32(rt, main + OOT_CTL_CAMERA_PLAY) != play)
@@ -309,4 +308,3 @@ void oot_torch_lights(Runtime *rt, RecompTorchLights *lights) {
     if (lights->count)
         oot_player_shadow(rt, &camera, lights);
 }
-#endif

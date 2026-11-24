@@ -41,7 +41,6 @@ static void adjust_fov(int steps) {
         fov_scale = tan(fov.horizontal * radians / 2) / tan(fov.original * radians / 2);
 }
 
-#ifdef RECOMP_WITH_GLES2
 static bool widescreen_playing(Runtime *rt) {
     return playing(rt) && !recomp_load8(rt, BK_TRANSITION) && recomp_load16(rt, BK_DIALOG_TEXT) == 0xffff;
 }
@@ -56,7 +55,6 @@ static bool update_aspect(void *opaque, float aspect) {
     }
     return false;
 }
-#endif
 
 void banjo_controls_init(Runtime *rt, RecompRenderer *renderer) {
     const char *option = getenv("RECOMP_BANJO_MOUSE");
@@ -75,13 +73,9 @@ void banjo_controls_init(Runtime *rt, RecompRenderer *renderer) {
     wide_world_display_list = 0;
     recomp_fov_init(&fov, 40.0, stock_aspect);
     recomp_renderer_set_fov_hook(renderer, adjust_fov);
-#ifdef RECOMP_WITH_GLES2
     const char *wide = getenv("RECOMP_BANJO_WIDESCREEN");
     if (!wide || strcmp(wide, "0"))
         recomp_renderer_set_aspect_hook(renderer, update_aspect, rt);
-#else
-    (void)rt;
-#endif
 }
 
 // bsDroneLook_update reads these angles, applies the stick and updates Banjo's facing.
@@ -215,7 +209,6 @@ void banjo_world_fov(Runtime *rt, MipsContext *ctx, RecompFunction original) {
 }
 
 void banjo_world_projection(Runtime *rt, MipsContext *ctx, RecompFunction original) {
-#ifdef RECOMP_WITH_GLES2
     const uint32_t caller = (uint32_t)ctx->gpr[31];
     if (expansion > 1.0 && (caller == BK_WORLD_VIEWPORT_FIRST_RETURN || caller == BK_WORLD_VIEWPORT_SECOND_RETURN) &&
         widescreen_playing(rt)) {
@@ -227,7 +220,6 @@ void banjo_world_projection(Runtime *rt, MipsContext *ctx, RecompFunction origin
             return;
         }
     }
-#endif
     original(rt, ctx);
 }
 
@@ -255,10 +247,8 @@ void banjo_view_planes(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     // isolates that component, including the plane's offset from the origin.
     for (unsigned pair = 0; pair < 2; pair++) {
         double horizontal = 1.0;
-#ifdef RECOMP_WITH_GLES2
         if (pair == 0 && expansion > 1.0 && widescreen_playing(rt))
             horizontal = expansion;
-#endif
         double scale = fov_scale * horizontal;
         if (scale == 1.0)
             continue;

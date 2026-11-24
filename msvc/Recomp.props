@@ -16,7 +16,7 @@
     <LocalDebuggerWorkingDirectory>$(RecompRoot)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <NMakeIncludeSearchPath>$(RecompRoot)include;$(RecompRoot)backends;$(RecompRoot)games\$(RecompGame);$(RecompBuildDir)\generated\$(RecompGame);$(RecompRoot)build\vcpkg_installed\x64-windows\include;$(RecompRoot)build\vcpkg_installed\x64-windows\include\SDL2;$(RecompRoot)third_party\cimgui;$(RecompRoot)third_party\miniz;$(RecompRoot)third_party\stb;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
-    <NMakePreprocessorDefinitions>_WIN32;_WIN64;NOMINMAX;WIN32_LEAN_AND_MEAN;SDL_MAIN_HANDLED;RECOMP_WITH_GLES2;RECOMP_WITH_AUDIO;RECOMP_GLES2_TEXTURE_PACKS;RECOMP_GLES2_CHEATS;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_WIN32;_WIN64;NOMINMAX;WIN32_LEAN_AND_MEAN;SDL_MAIN_HANDLED;RECOMP_WITH_AUDIO;RECOMP_GLES2_TEXTURE_PACKS;RECOMP_GLES2_CHEATS;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <NMakePreprocessorDefinitions>RECOMP_DEBUG;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
