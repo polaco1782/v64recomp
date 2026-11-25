@@ -44,6 +44,16 @@ run. Both browser configurations rendered the title sequence in Chromium.
 
 ## Desktop controls
 
+For widescreen, resize the GLES window to 16:9 and press **F7** in the ordinary
+third-person camera. Press F7 again for 4:3. Window ratios above 4:3 through
+21:9 show more of the world horizontally at the current vertical zoom. Menus,
+dialogue and scripted cameras use 4:3. The HUD shares the expanded framebuffer
+and can look wider.
+
+Desktop GLES Debug and Release replays toggled between 4:3 and 16:9 in South
+Clock Town. Release also rendered the same scene at 21:9 and returned to 4:3
+when the window exceeded that limit. File select and the opening story used 4:3.
+
 WASD moves Link with the N64 analog stick. Hold Shift to walk slowly. Move the mouse to orbit the ordinary third-person camera. Use the left mouse button for the sword, the right mouse button for Z-targeting, Ctrl for the shield, and E or Space for the A action. Q, R and F activate the left, down and right C buttons respectively. Shift+F activates C-Up.
 
 Tab presses Start. In menus, use the arrow keys to move, Enter to confirm and E to go back. Escape releases the mouse and F4 recaptures it. Set `RECOMP_MM_MOUSE=0` for the original desktop keyboard mapping, or adjust `RECOMP_MOUSE_SENSITIVITY` in degrees per mouse count (default `0.08`). A connected controller keeps the original N64 controls.

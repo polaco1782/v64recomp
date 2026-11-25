@@ -22,21 +22,19 @@ enum {
     ACT_PREARGH = 7,
     ACT_ATTACK = 8,
     ACT_PATROL = 14,
-    ACT_GOPOS = 15,
-    ACT_THROW_GRENADE = 20
+    ACT_GOPOS = 15
 };
 enum { CHR_INVINCIBLE = 0x10, CHR_NEAR_MISS = 4, CHR_SHOOT_GUARDS = 0x40, PROP_CHR = 3, ATTACK_BOND = 6 };
 enum { DECISION_TICKS = 6, EVADE_TICKS = 180, MEMORY_TICKS = 600, REPATH_TICKS = 60 };
 enum { GUARD_TARGET = 0x4004, WANDER_TIMEOUT = 1800 };
 enum { WANDER_SEARCH_LIMIT = 64, WANDER_GRAPH_LIMIT = 4096, WANDER_STUCK_TICKS = 180 };
-enum { GRENADE_ITEM = 26, GRENADE_MODEL = 196, GRENADE_COOLDOWN = 900, GRENADE_TIME_SCALE = 5 };
 
 typedef struct GuardBrain {
     uint32_t chr, model, decision, evade, routed_at, route_stimulus, threat;
     uint32_t noise_serial, random;
     uint32_t sound_serial, sound_tick, sound_tile, sound_position[3], routed_sound;
     uint32_t enemy, enemy_model, enemy_prop, enemy_tick, enemy_route_tick;
-    uint32_t grenade_prop, grenade_position[3], next_grenade, next_sneeze, next_grenade_scan;
+    uint32_t next_sneeze;
     uint32_t next_wander, wander_tick, wander_progress_tick, wander_position[3], wander_avoid;
     uint16_t number, enemy_number;
     bool decided, evaded, pursuing, scripted, sound_done, scientist_hostile, scientist_friendly, enemy_routed, roaming;
@@ -61,28 +59,6 @@ static bool enabled(Runtime *rt) {
 static bool valid(Runtime *rt, uint32_t address, uint32_t size) {
     return address >= 0x80000000 && address < 0x80400000 && !(address & 3) &&
            (address & 0x1fffffff) + size <= rt->rdram_size;
-}
-
-static bool bigger_explosions(void) {
-    const char *setting = getenv("RECOMP_GOLDENEYE_EXPLOSIONS");
-    return !setting || strcmp(setting, "0");
-}
-
-static void configure_explosions(Runtime *rt) {
-    /* Accept the checked native or already adjusted value. This also handles
-     * stage changes and a fresh runtime without ever multiplying twice. */
-    for (size_t i = 0; i < sizeof(ge_explosion_changes) / sizeof(ge_explosion_changes[0]); i++) {
-        const uint32_t *change = ge_explosion_changes[i];
-        recomp_game_require(valid(rt, change[0], 4), "invalid GoldenEye explosion definition", change[0]);
-        uint32_t value = recomp_load32(rt, change[0]);
-        recomp_game_require(value == change[1] || value == change[2], "GoldenEye explosion definition changed",
-                            change[0]);
-    }
-    for (size_t i = 0; i < sizeof(ge_explosion_changes) / sizeof(ge_explosion_changes[0]); i++) {
-        const uint32_t *change = ge_explosion_changes[i];
-        if (recomp_load32(rt, change[0]) != change[2])
-            recomp_store32(rt, change[0], change[2]);
-    }
 }
 
 static void synchronize(Runtime *rt) {
@@ -310,23 +286,6 @@ static bool hear_noise(Runtime *rt, const MipsContext *ctx, GuardBrain *g) {
     return true;
 }
 
-static bool grenade_scenery_valid(Runtime *rt, uint32_t prop, uint32_t object) {
-    if (!valid(rt, prop, GE_AI_PROP_PREV + 4) || recomp_load8(rt, prop + GE_AI_PROP_TYPE) != 1 ||
-        !(recomp_load8(rt, prop + GE_AI_PROP_FLAGS) & 4) || recomp_load32(rt, prop + GE_AI_PROP_PARENT) ||
-        !valid(rt, object, GE_AI_OBJECT_RUNTIME_FLAGS + 4) || recomp_load32(rt, prop + GE_AI_PROP_DATA) != object ||
-        recomp_load8(rt, object + GE_AI_OBJECT_TYPE) != 3 || recomp_load8(rt, object + GE_AI_OBJECT_STATE) & 0x80 ||
-        recomp_load32(rt, object + GE_AI_OBJECT_PROP) != prop || !recomp_load32(rt, object + GE_AI_OBJECT_MODEL) ||
-        recomp_load32(rt, object + GE_AI_OBJECT_RUNTIME_FLAGS) & 0xd4 || /* tagged, removed, embedded, projectile */
-        recomp_load32(rt, object + GE_AI_OBJECT_FLAGS) & 0x2002c000 ||   /* protected/assigned/contained/moving */
-        recomp_load32(rt, object + GE_AI_OBJECT_FLAGS2) & 0x2018c400)    /* no AI, safe-linked or gunfire-immune */
-        return false;
-    uint16_t model = recomp_load16(rt, object + GE_AI_OBJECT_MODEL_ID);
-    for (size_t i = 0; i < sizeof(ge_ai_scenery_models) / sizeof(ge_ai_scenery_models[0]); i++)
-        if (model == ge_ai_scenery_models[i])
-            return true;
-    return false;
-}
-
 static bool idle_sneeze(Runtime *rt, const MipsContext *ctx, GuardBrain *g) {
     uint8_t current = recomp_load8(rt, g->chr + GE_AI_ACTION);
     if (current != ACT_STAND && current != ACT_ANIM)
@@ -348,98 +307,6 @@ static bool idle_sneeze(Runtime *rt, const MipsContext *ctx, GuardBrain *g) {
     bool started = (uint32_t)call.gpr[2] != 0;
     g->next_sneeze = clock_tick + (started ? 600 + random_next(g) % 300 : 60);
     return started;
-}
-
-static bool grenade_target(Runtime *rt, const MipsContext *ctx, GuardBrain *g, uint32_t target) {
-    uint32_t self = recomp_load32(rt, g->chr + GE_AI_PROP);
-    double distance = 0;
-    for (unsigned axis = 0; axis < 3; axis++) {
-        double delta = load_float(rt, target + GE_AI_PROP_POSITION + axis * 4) -
-                       load_float(rt, self + GE_AI_PROP_POSITION + axis * 4);
-        if (axis == 1 && fabs(delta) > 150)
-            return false;
-        distance += delta * delta;
-    }
-    if (!isfinite(distance) || distance < 40000 || distance > 1440000)
-        return false;
-    MipsContext facing = invoke(rt, ctx, GE_AI_GRENADE_ANGLE, g->chr, target + GE_AI_PROP_POSITION, 0, 0);
-    float angle;
-    memcpy(&angle, &facing.fpr[0], sizeof(angle));
-    /* The short pre-release turn cannot reach scenery behind us. Filter before
-     * the reservoir selection so an unsuitable box cannot hide a suitable one. */
-    return isfinite(angle) && (angle <= 0.7853982f || angle >= 5.4977871f);
-}
-
-static bool scenery_grenade(Runtime *rt, const MipsContext *ctx, GuardBrain *g, uint32_t target) {
-    uint32_t right = recomp_load32(rt, g->chr + GE_AI_WEAPONS);
-    uint32_t left = recomp_load32(rt, g->chr + GE_AI_WEAPONS + 4);
-    if (right && left)
-        return false;
-    uint32_t hand = right ? 1 : 0;
-    uint32_t prop = (uint32_t)invoke(rt, ctx, GE_AI_GIVE_WEAPON, g->chr, GRENADE_MODEL, GRENADE_ITEM,
-                                     hand ? UINT32_C(0x10000000) : 0)
-                        .gpr[2];
-    if (!prop)
-        return false;
-    recomp_game_require(valid(rt, prop, GE_AI_PROP_DATA + 4), "invalid GoldenEye grenade prop", prop);
-    uint32_t object = recomp_load32(rt, prop + GE_AI_PROP_DATA);
-    recomp_game_require(valid(rt, object, GE_AI_WEAPON_ITEM + 1) &&
-                            recomp_load8(rt, object + GE_AI_WEAPON_ITEM) == GRENADE_ITEM &&
-                            recomp_load32(rt, g->chr + GE_AI_WEAPONS + hand * 4) == prop,
-                        "invalid GoldenEye held grenade", prop);
-    recomp_store32(rt, object + GE_AI_OBJECT_RUNTIME_FLAGS,
-                   recomp_load32(rt, object + GE_AI_OBJECT_RUNTIME_FLAGS) | 0x800);
-    g->grenade_prop = prop;
-    for (unsigned axis = 0; axis < 3; axis++)
-        g->grenade_position[axis] = recomp_load32(rt, target + GE_AI_PROP_POSITION + axis * 4);
-    g->next_grenade = clock_tick + GRENADE_TIME_SCALE * (GRENADE_COOLDOWN + random_next(g) % 600);
-    (void)invoke(rt, ctx, GE_AI_THROW_GRENADE, g->chr, prop, hand, 1);
-    return true;
-}
-
-static bool idle_grenade(Runtime *rt, const MipsContext *ctx, GuardBrain *g) {
-    uint32_t now = clock_tick;
-    uint8_t current = recomp_load8(rt, g->chr + GE_AI_ACTION);
-    if (current != ACT_STAND && current != ACT_ANIM)
-        return false;
-    if (!g->next_grenade)
-        g->next_grenade = now + GRENADE_TIME_SCALE * (240 + random_next(g) % 240);
-    if ((int32_t)(now - g->next_grenade) < 0 || (g->next_grenade_scan && (int32_t)(now - g->next_grenade_scan) < 0) ||
-        !action(rt, ctx, GE_AI_READY, g->chr))
-        return false;
-    g->next_grenade_scan = now + 120;
-    if (recomp_load32(rt, g->chr + GE_AI_WEAPONS) && recomp_load32(rt, g->chr + GE_AI_WEAPONS + 4))
-        return false;
-    uint32_t self = recomp_load32(rt, g->chr + GE_AI_PROP);
-    uint32_t grenade = 0, grenade_count = 0;
-    uint32_t prop = (uint32_t)invoke(rt, ctx, GE_AI_ACTIVE_PROPS, 0, 0, 0, 0).gpr[2];
-    for (unsigned scanned = 0; prop && scanned < 600; scanned++) {
-        if (!valid(rt, prop, GE_AI_PROP_PREV + 4))
-            break;
-        uint32_t object = recomp_load32(rt, prop + GE_AI_PROP_DATA);
-        if (grenade_scenery_valid(rt, prop, object)) {
-            double distance = 0;
-            for (unsigned axis = 0; axis < 3; axis++) {
-                double delta = load_float(rt, prop + GE_AI_PROP_POSITION + axis * 4) -
-                               load_float(rt, self + GE_AI_PROP_POSITION + axis * 4);
-                distance += delta * delta;
-            }
-            uint32_t tile = recomp_load32(rt, prop + GE_AI_PROP_TILE);
-            if (distance >= 40000 && distance <= 1440000 && valid(rt, tile, 4)) {
-                bool clear =
-                    (uint32_t)invoke(rt, ctx, GE_AI_VISIBLE_POSITION, g->chr, prop + GE_AI_PROP_POSITION, tile, 0)
-                        .gpr[2] != 0;
-                /* The visibility ray may stop on the chosen box itself. Any
-                 * earlier wall, door or other prop rejects it. */
-                if (clear || recomp_load32(rt, GE_AI_LAST_HIT_PROP) == prop) {
-                    if (grenade_target(rt, ctx, g, prop) && random_next(g) % ++grenade_count == 0)
-                        grenade = prop;
-                }
-            }
-        }
-        prop = recomp_load32(rt, prop + GE_AI_PROP_PREV);
-    }
-    return grenade && scenery_grenade(rt, ctx, g, grenade);
 }
 
 static bool wander_progress(Runtime *rt, GuardBrain *g) {
@@ -676,11 +543,6 @@ void goldeneye_ai_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
     uint32_t chr = (uint32_t)ctx->gpr[4];
     GuardBrain *g = enabled(rt) && (uint32_t)ctx->gpr[5] == PROP_CHR ? brain(rt, chr) : NULL;
     if (g && !g->scripted) {
-        if (g->grenade_prop) {
-            if (recomp_load8(rt, chr + GE_AI_ACTION) == ACT_THROW_GRENADE)
-                return; /* Finish the owned throw without the VM switching targets. */
-            g->grenade_prop = 0;
-        }
         if (retaliate(rt, ctx, g))
             return;
         scientist_reaction(rt, ctx, g);
@@ -765,7 +627,7 @@ void goldeneye_ai_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
         uint32_t heard = recomp_load32(rt, chr + GE_AI_LAST_HEARD);
         if ((!seen || clock_tick - seen > MEMORY_TICKS) && (!heard || clock_tick - heard > MEMORY_TICKS) &&
             !g->pursuing && !g->sound_serial) {
-            if (!idle_sneeze(rt, ctx, g) && !idle_grenade(rt, ctx, g))
+            if (!idle_sneeze(rt, ctx, g))
                 wander(rt, ctx, g);
         }
     }
@@ -814,13 +676,9 @@ void goldeneye_ai_impact_hook(Runtime *rt, MipsContext *ctx, RecompFunction orig
 }
 
 void goldeneye_ai_explosion_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
-    bool larger = bigger_explosions();
-    if (larger)
-        configure_explosions(rt);
     if (enabled(rt)) {
         uint32_t type = (uint32_t)ctx->gpr[7];
-        bool blast = type >= 2 && type <= 20 && type != 15 && type != 16;
-        float radius = type == 1 || type == 16 ? 1400 : (larger && blast ? 13500 : 4500);
+        float radius = type == 1 || type == 16 ? 1400 : 4500;
         noise_at(rt, (uint32_t)ctx->gpr[5], (uint32_t)ctx->gpr[6], radius);
     }
     original(rt, ctx);
@@ -886,20 +744,6 @@ void goldeneye_ai_hit_hook(Runtime *rt, MipsContext *ctx, RecompFunction origina
         g->sound_serial = 0;
         g->enemy_routed = g->pursuing = g->decided = g->roaming = false;
     }
-}
-
-void goldeneye_ai_grenade_angle_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
-    uint64_t position = ctx->gpr[5];
-    if ((uint32_t)ctx->gpr[31] == GE_AI_GRENADE_TURN_RETURN) {
-        GuardBrain *g = brain(rt, (uint32_t)ctx->gpr[4]);
-        if (g && g->grenade_prop && recomp_load8(rt, g->chr + GE_AI_ACTION) == ACT_THROW_GRENADE) {
-            for (unsigned axis = 0; axis < 3; axis++)
-                recomp_store32(rt, g->chr + GE_AI_LAST_POSITION + axis * 4, g->grenade_position[axis]);
-            ctx->gpr[5] = mips_s32(g->chr + GE_AI_LAST_POSITION);
-        }
-    }
-    original(rt, ctx);
-    ctx->gpr[5] = position;
 }
 
 void goldeneye_ai_list_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {

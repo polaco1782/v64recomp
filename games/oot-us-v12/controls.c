@@ -10,6 +10,7 @@ static bool mouse_enabled, gamepad_camera_enabled, fov_enabled, orbit_active;
 static bool orbit_seen;
 static RecompFov fov;
 static uint32_t play, orbit_camera, updating_camera;
+static uint32_t wide_aspect_bits;
 static double sensitivity, invert_y, orbit_yaw, orbit_pitch, fov_scale;
 static RecompMouseBuffer mouse;
 static RecompCameraStick camera_stick;
@@ -56,6 +57,27 @@ static uint32_t main_camera(Runtime *rt) {
 }
 static bool oot_controls_playable(Runtime *rt) {
     return (mouse_enabled || gamepad_camera_enabled) && main_camera(rt);
+}
+static bool normal_setting(Runtime *rt, uint32_t camera) {
+    if (!camera)
+        return false;
+    unsigned setting = recomp_load16(rt, camera + OOT_CTL_SETTING);
+    return setting < sizeof(oot_normal_settings) && oot_normal_settings[setting];
+}
+bool oot_update_aspect(void *opaque, float aspect) {
+    Runtime *rt = opaque;
+    wide_aspect_bits = 0;
+    if (!(aspect > 4.0f / 3 && aspect <= 21.0f / 9) || !normal_setting(rt, main_camera(rt)))
+        return false;
+    memcpy(&wide_aspect_bits, &aspect, sizeof(aspect));
+    return true;
+}
+void oot_world_perspective(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    // a1 points to the view's perspective normalizer; a3 holds the viewport aspect.
+    if (wide_aspect_bits && (uint32_t)ctx->gpr[31] == OOT_CTL_PERSPECTIVE_RETURN &&
+        (uint32_t)ctx->gpr[5] == play + OOT_CTL_VIEW + OOT_CTL_VIEW_NORM && normal_setting(rt, main_camera(rt)))
+        ctx->gpr[7] = wide_aspect_bits;
+    original(rt, ctx);
 }
 void oot_controls_init(void (*poll)(Runtime *, void *)) {
     poll_live_input = poll;
@@ -162,10 +184,7 @@ void oot_camera_update_hook(Runtime *rt, MipsContext *ctx, RecompFunction origin
     orbit_seen = previous_seen;
     if (camera == main_camera(rt) && (!seen || recomp_load16(rt, camera + OOT_CTL_MODE)))
         clear();
-    if (!fov_enabled || camera != main_camera(rt))
-        return;
-    unsigned setting = recomp_load16(rt, camera + OOT_CTL_SETTING);
-    if (setting >= sizeof(oot_normal_settings) || !oot_normal_settings[setting])
+    if (!fov_enabled || camera != main_camera(rt) || !normal_setting(rt, camera))
         return;
     uint32_t field = play + OOT_CTL_VIEW + OOT_CTL_VIEW_FOV;
     float native = load_float(rt, field);

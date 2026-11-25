@@ -1,4 +1,5 @@
 function_wrappers = [
+  {section = ".code", vram = 0x800d0db0, size = 0x58, sha256 = "3ecd00a040cc688240de5070161d473e3269331d92c39cec906b82b3dddaca60", handler = "oot_world_perspective"},
   {section = ".code", vram = 0x8009b60c, size = 0x10f4, sha256 = "25fbb556012b3eda23abf0c706234e5fc8501b95e767267c693cc69d8327304a", handler = "oot_play_update_hook"},
   {section = ".code", vram = 0x80048c4c, size = 0x830, sha256 = "0f3b9e8d99bb1beb2989f64054c3d0399d83a716a6e1139c7c2f0f2d55a5419f", handler = "oot_camera_update_hook"},
   {section = ".code", vram = 0x80039054, size = 0xa58, sha256 = "c99773dbaa0f888217eb3e2ca9a0b9562a459ee9b7cb5d9b3fe7ecfb4eb9a5d5", handler = "oot_normal_camera_hook"},
@@ -956,6 +957,8 @@ functions = [
   {name = "View_ApplyPerspective", vram = 0x80092620, size = 0x2f4, sha256 = "1012846c3425e5c9a77e2610c3a257381ee0ef0e4a9450c9f3fb9839dd9ee2f3"},
 ]
 bindings = [
+  {name = "perspective_return", kind = "return", value = 0x80092724, pcs = [0x8009271c, 0x80092720], words = [0x0c03436c, 0x00000000]},
+  {name = "view_norm", kind = "field", value = 0x11c, pcs = [0x800926b8], words = [0x2605011c]},
   {name = "main_field", kind = "field", value = 0x4, pcs = [0x8009b394], words = [0xae290004]},
   {name = "running", kind = "field", value = 0x98, pcs = [0x8009bb38], words = [0xae000098]},
   {name = "play_main", kind = "address", value = 0x8009d1b8, pcs = [0x8009b380, 0x8009b388], words = [0x3c09800a, 0x2529d1b8]},

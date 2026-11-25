@@ -7,6 +7,7 @@
 #include <string.h>
 
 static uint32_t play;
+static uint32_t wide_aspect_bits;
 static bool mouse_enabled;
 static RecompMouseBuffer mouse;
 static RecompFov fov;
@@ -45,7 +46,24 @@ static void adjust_fov(int steps) {
     recomp_fov_adjust(&fov, steps);
 }
 
-void mm_controls_init(RecompRenderer *renderer) {
+static bool update_aspect(void *opaque, float aspect) {
+    Runtime *rt = opaque;
+    wide_aspect_bits = 0;
+    if (!(aspect > 4.0f / 3 && aspect <= 21.0f / 9) || !normal_view || !player_camera(rt, play + 0x220))
+        return false;
+    memcpy(&wide_aspect_bits, &aspect, sizeof(aspect));
+    return true;
+}
+
+void mm_world_perspective(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    // Only the main PlayState view passes its perspective normalizer in a1.
+    if (wide_aspect_bits && (uint32_t)ctx->gpr[31] == MM_CTL_PERSPECTIVE_RETURN &&
+        (uint32_t)ctx->gpr[5] == play + 0xb8 + MM_CTL_VIEW_NORM && normal_view && player_camera(rt, play + 0x220))
+        ctx->gpr[7] = wide_aspect_bits;
+    original(rt, ctx);
+}
+
+void mm_controls_init(Runtime *rt, RecompRenderer *renderer) {
     const char *option = getenv("RECOMP_MM_MOUSE");
     mouse_enabled = !option || strcmp(option, "0");
 #ifdef RECOMP_DEBUG
@@ -60,6 +78,7 @@ void mm_controls_init(RecompRenderer *renderer) {
     }
     recomp_fov_init(&fov, 60.0, 4.0 / 3.0);
     recomp_renderer_set_fov_hook(renderer, adjust_fov);
+    recomp_renderer_set_aspect_hook(renderer, update_aspect, rt);
     recomp_renderer_separate_mouse_actions(renderer, mouse_enabled);
 }
 

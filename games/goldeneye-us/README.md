@@ -107,31 +107,14 @@ when the shooter dies, leaves the shared guard behavior or stays out of sight
 for ten seconds. Mission-owned and invincible actors keep their original AI.
 
 Weapon noise now uses an eight-metre base range plus 2.5 times the original
-weapon radius, scaled by each guard's hearing. This fixes the previous multiplier
-leaving a suppressed PP7 audible at only about two metres. Bullet impacts create
-fourteen-metre alerts and enlarged explosions 135-metre alerts (forty-five metres
-with original explosion settings); the small explosion effects used for impacts
-retain the shorter range. Ordinary guards, including the shared deaf-guard list,
-interrupt idle activity and investigate a saved snapshot
-of the sound's position and navigation tile. Moving Bond afterward does not move
+weapon radius. The base hearing range is fourteen metres for bullet impacts and
+small impact effects and forty-five metres for explosions. Each guard's hearing
+scales these ranges. Ordinary guards, including the shared deaf-guard list,
+interrupt idle activity and investigate the sound's position and navigation tile. Moving Bond afterward does not move
 that destination. On arrival, guards wait at the sound location until they see
 Bond, hear another sound or the ten-second memory expires. The replacement owns
 this investigation instead of letting the original hearing scripts redirect it
 to Bond. Silence generates no alert; footstep sounds remain unchanged.
-
-Random scenery gunfire has been removed. Idle guards with a free hand can still
-lob grenades toward ordinary crates, cardboard boxes or bins. Tagged mission
-props, attached, destroyed, protected and gunfire-immune objects are excluded.
-The first grenade opportunity is after twenty to forty simulation seconds;
-suitable targets are checked every two seconds while ready. The scan
-chooses among all visible allowed objects ahead within two to twelve metres
-and 1.5 metres of the guard's height. This avoids picking a box first and then
-rejecting the throw when another suitable target was available. Successful
-throws have a random delay of 75 to 125 seconds per guard. Both random
-delays are five times their previous values. The original animation, fuse,
-fixed launch speed, collision and explosion behavior
-handle the grenade; its turning tracks the saved scenery position. These throws
-happen during idle scenery activity, after combat and investigation have ended.
 
 Shared pursuit follows the last seen or heard position for up to ten simulation
 seconds, using the game's sprint mode and collision/navigation checks. It keeps
@@ -153,18 +136,10 @@ retain their translated behavior. Menus, cutscenes, watch, tank gameplay and
 multiplayer also retain the original AI. Set `RECOMP_GOLDENEYE_AI=0` before
 launching to use the original AI throughout, including for comparisons.
 
-Explosions use three times the original visual size and blast/damage radius,
-with the original active duration and fade time. Expansion speed is tripled
-so growing explosions reach the intended larger size over the original lifetime.
-Bullet-impact puffs and debris-only effects retain their original definitions.
-This explosion change also applies outside the AI adapter's on-foot mode; set
-`RECOMP_GOLDENEYE_EXPLOSIONS=0` before launching for original explosion settings.
-
 The wrappers cover `ai` (`0x7f035484`), `ailistFindById` (`0x7f035398`), the
 weapon-noise scan (`0x7f022eec`), prop impacts (`0x7f06441c`), explosion creation
 (`0x7f09c250`), the legacy hearing alert (`0x7f029c00`), target resolution
-(`0x7f032c78`), guard firing (`0x7f02d734`), bullet damage (`0x7f02727c`)
-and the throw's facing-angle helper (`0x7f032bd8`).
+(`0x7f032c78`), guard firing (`0x7f02d734`) and bullet damage (`0x7f02727c`).
 The list lookup catches an attack-list transition inside the interpreter,
 preserves its caller's return list and resumes it after the native decision.
 The firing wrapper cancels retaliation bursts whose guard target becomes invalid.
@@ -177,8 +152,7 @@ frames, sound flags and interpolation read from the ROM-checked idle script.
 Its six o32 arguments use a private outgoing stack area. Bullet retaliation is
 attributed only at the checked guard-fire damage call, after actual health damage.
 Guard targets retain their prop, model and character identity so reused slots cannot inherit
-a grudge. The grenade angle wrapper redirects only the checked turning call
-during an owned scenery throw; it does not change Bond's prop or position.
+a grudge.
 Wandering uses the checked nearest-waypoint helper (`0x7f027cd4`), pad distance
 (`0x7f032e48`) and walking helper (`0x7f02abb4`). The connected-neighbour search
 (`0x7f033834`) and tile-waypoint scan (`0x7f027bf4`) bind the graph pointer,
@@ -200,22 +174,12 @@ The scientist body IDs are checked against the native body/model table; the
 shared draw script is checked against global list 16. Doak's Facility identity
 and initial script come from the pinned
 [Facility setup](https://github.com/n64decomp/007/blob/c4356466796c697dfd298010b9bed261f9ed8c6a/assets/obseg/setup/UsetuparkZ.c).
-Explosion definitions, table addressing, field operands and complete creation,
-tick and damage bodies are pinned. Generated value changes accept either the
-native or already adjusted definition, avoiding repeated multiplication across
-explosions and stage transitions.
 
-The preceding noise/scenery revision passed Linux Debug/Release builds and
-temporary ASan/UBSan checks for hearing ranges, register preservation,
-self-noise suppression, protected targets, visibility, weapon restrictions,
-target resolution and burst cancellation. Changed function, field, global,
-script and model-allowlist evidence was rejected by generation. The subsequent
-sound-destination, scientist, explosion, sneeze, friendly-fire, wandering and
-idle-grenade changes have not been tested here. The current sneeze timer,
-wandering, connected-waypoint selection, stuck-route recovery and longer grenade
-delays are awaiting gameplay confirmation. Builds
-and testing are left to the user at their request.
-Broader combat balance and mission progression still require playtesting.
+Earlier sanitizer checks covered hearing ranges, register preservation,
+self-noise suppression, target resolution and burst cancellation. Sound
+investigation, scientist reactions, sneezes, friendly-fire retaliation and
+wandering still need gameplay confirmation, as do combat balance and mission
+progression.
 
 ## Mouse and keyboard
 

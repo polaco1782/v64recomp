@@ -5,6 +5,7 @@
 void oot_controls_init(void (*poll)(Runtime *, void *));
 void oot_fov_init(void);
 void oot_fov_adjust(int steps);
+bool oot_update_aspect(void *opaque, float aspect);
 bool oot_controls_poll(Runtime *, RecompRenderer *, RecompPad *);
 
 #include "torch_lights.h"

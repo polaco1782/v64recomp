@@ -65,6 +65,12 @@ to enable it on a desktop gamepad.
 
 ## Field of view
 
+For widescreen, resize the GLES window to 16:9 and press **F7** while playing.
+Press F7 again for 4:3. The normal 3D gameplay camera shows more of the world
+on the left and right at the same vertical zoom. Window ratios above 4:3
+through 21:9 are supported. File select, pause, dialogue and fixed-background
+cameras use 4:3. The HUD shares the expanded framebuffer and can look wider.
+
 Use keypad `+` / `-` to adjust FOV live, one horizontal degree per keydown;
 holding a key repeats. The minimum is the exact original view (usually 60
 degrees vertically, about 75.2 horizontally at 4:3), and the maximum is 140
@@ -82,9 +88,11 @@ FOV unchanged to avoid compounding zoom. See the
 [investigation guide](../../docs/field-of-view.md#ocarina-of-time-investigation-record)
 for addresses, ABI details and the pinned public reference.
 
-The keypad/140-degree extension has not been rebuilt or tested in game. In-game
-movement, collision, aiming, camera transitions, edge visibility and combined F7
-behavior still require gameplay acceptance.
+Desktop GLES Debug and Release replays toggled between 4:3 and 16:9 in the
+Temple of Time. The doorway and floor aligned in the center of both frames,
+with additional architecture visible on either side in widescreen. Release
+also exercised keypad FOV from 75.2° to 87.2° and back while F7 was active.
+The 140° limit and the full range of camera transitions still need gameplay coverage.
 
 See [build/run options](../../README.md), [debugging](../../docs/debugging.md),
 and [support status](../../docs/status.md).

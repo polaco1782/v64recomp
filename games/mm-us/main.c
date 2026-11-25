@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
                         "Majora's Mask services init failed", 0);
     renderer = recomp_renderer_create_named(&rt, options.data, "The Legend of Zelda: Majora's Mask");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
-    mm_controls_init(renderer);
+    mm_controls_init(&rt, renderer);
     RecompAudioConfig ac = {
         .output_enabled = true, .playback = !options.mute, .prebuffer_ms = 160, .task_profile = &mm_audio_profile};
     audio = recomp_game_audio_create(&rt, &ac);

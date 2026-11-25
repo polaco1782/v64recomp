@@ -1,4 +1,5 @@
 function_wrappers = [
+  {section = ".boot", vram = 0x8008ac80, size = 0x58, sha256 = "35baeaa67637bd63edb17ea47c94465554301ecec8b7d2643eac434332644c65", handler = "mm_world_perspective"},
   {section = ".code", vram = 0x80168f64, size = 0x168, sha256 = "de9c04d20ea66f9ac79de7c8522855293265a532123ff2c1cea00521f644cb95", handler = "mm_play_frame"},
   {section = ".code", vram = 0x800cf3b4, size = 0x14c0, sha256 = "c19c4f5184a2c9bc3e2560bd8b55cb7ef2e939d27bf4a129a7ea4fcf5f632b7d", handler = "mm_normal_camera"},
   {section = ".code", vram = 0x800de9b0, size = 0xae8, sha256 = "530ab984ef901bad0259d7eb02f85e0276645d75bd3cc7e76682e096e3fd3de2", handler = "mm_camera_update"},
@@ -770,6 +771,10 @@ interrupt_global_mask = 0x80097e60
 0x80000318 = 0x800000
 
 [controls]
+# View_ApplyPerspective keeps View* in s0; a1 = View + 0x15c at 0x8013f7d8.
+# The viewport width/height quotient enters a3 at 0x8013f834 before guPerspective.
+perspective_return = 0x8013f840
+view_norm = 0x15c
 # Camera_Update returns Vec3s by hidden pointer. Its handler dispatch returns at 0x800df0c0.
 play_main = 0x80168f64
 dispatch_return = 0x800df0c0

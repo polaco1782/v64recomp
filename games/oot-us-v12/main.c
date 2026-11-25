@@ -136,6 +136,7 @@ int main(int argc, char **argv) {
     renderer = recomp_renderer_create_named(&rt, options.data, "The Legend of Zelda: Ocarina of Time");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
     recomp_renderer_set_fov_hook(renderer, oot_fov_adjust);
+    recomp_renderer_set_aspect_hook(renderer, oot_update_aspect, &rt);
     oot_controls_init(poll_controls);
     recomp_renderer_set_torch_source(renderer, oot_torch_lights);
     RecompAudioConfig ac = {.output_enabled = true,

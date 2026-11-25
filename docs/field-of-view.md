@@ -186,7 +186,21 @@ on GLES2) requests the drawable aspect, never narrower than 4:3. The adapter
 must update the world's projection and matching visibility state; return true
 only for native anamorphic output. GLES2 then displays that output at the
 accepted aspect, keeping stock 4:3 framing for unsupported states, CPU video
-and games without an adapter. GoldenEye and Banjo are current examples.
+and games without an adapter. GoldenEye, Banjo and both Zelda ports use this hook.
+
+In Ocarina of Time US 1.2 and Majora's Mask US, the world view divides viewport
+width by height and passes the result in `a3` to `guPerspective`. The calls are
+at `0x8009271c` and `0x8013f838`, respectively. Each adapter checks the return
+PC and the perspective-normalization pointer in `a1` against the active play
+view (`View + 0x11c` in OoT, `View + 0x15c` in MM). It supplies the drawable
+aspect at that call. The original code copies the resulting matrix into the
+view for CPU projection and submits it to the RSP. Keypad FOV still operates
+on the vertical angle upstream. Both adapters use their gameplay camera gates
+for presentation as well as projection.
+
+The decompilations describe how the matrices are built and consumed.
+See the [OoT view code](https://github.com/zeldaret/oot/blob/14759abf9abb4295de142cdc1452998630ea70fb/src/code/z_view.c)
+and [MM world draw code](https://github.com/zeldaret/mm/blob/b19a78c47dfbb19a3b23447a208b7248527d4276/src/code/z_play.c).
 
 ## 6. Store evidence and integrate the setting
 
