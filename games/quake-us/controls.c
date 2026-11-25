@@ -42,6 +42,9 @@ static uint32_t live_entity(Runtime *rt) {
     float health = read_float(rt, entity + Q_CTL_HEALTH);
     return isfinite(health) && health > 0 ? entity : 0;
 }
+bool quake_single_player_view(Runtime *rt) {
+    return live_entity(rt) != 0;
+}
 void quake_controls_init(void (*poll)(Runtime *, void *)) {
     poll_live_input = poll;
     projection_valid = wide_render = false;

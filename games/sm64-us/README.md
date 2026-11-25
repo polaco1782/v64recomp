@@ -7,10 +7,10 @@ From the project root, import the pinned ROM using
 
 ```sh
 python3 tools/build.py sm64-us --release
-./build/sm64-us-release/bin/sm64-us
+./build/sm64-us-gles-release/bin/sm64-us
 
 python3 tools/build.py sm64-us --debug
-./build/sm64-us-debug/bin/sm64-us --help
+./build/sm64-us-gles-debug/bin/sm64-us --help
 ```
 
 Shared renderer statistics distinguish displayed frames from host presentations;
@@ -53,13 +53,20 @@ frame loop, replay and capture options.
 
 ## Desktop controls
 
-WASD and the arrow keys move. Tab sends Start; Enter sends the N64 A button
-when the mouse is not captured. A gamepad remains available. During a controllable camera, captured mouse motion
-drives the same stepped C-button camera as the original: it is not unrestricted
-mouse-look. Space or left click jumps, and Ctrl or right click crouches while the
-mouse is captured. Escape releases the cursor; F4 captures it again.
-Set `RECOMP_SM64_MOUSE=0` to use the keyboard's original C-button aliases
-(I/K/J/L) and disable mouse capture. Debug replays do not consume live mouse input.
+Move the mouse to orbit Mario horizontally or tilt the view up and down. The
+camera follows Mario as he moves and pulls in when level geometry blocks the
+view. WASD moves relative to the view, and Shift + WASD walks. The arrow keys
+also move. Space jumps, left click punches or kicks, and Ctrl or right click
+crouches. Tab sends Start. In menus, Enter sends A.
+
+Escape releases the mouse and restores the native view. F4 recaptures the
+mouse. For native camera commands while captured, Q/R send C-left/right, E
+sends C-down, and F sends C-up. Cutscenes, pause, C-up look and cannon aiming
+use the game's camera. A gamepad remains available.
+
+`RECOMP_MOUSE_SENSITIVITY` sets degrees per mouse count (default 0.08).
+`RECOMP_SM64_MOUSE=0` disables capture and enables the original I/J/K/L
+C-button aliases. Debug controller replays use the native camera.
 
 Keypad + / − adjusts horizontal field of view from the original up to 140°
 at the 4:3 reference aspect. At minimum the original path is unchanged. The

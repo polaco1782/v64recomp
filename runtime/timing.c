@@ -19,7 +19,7 @@ struct RecompTiming {
 
 static const char *phase_names[RECOMP_TIMING_PHASES] = {"dispatch",      "checkpoint", "context_sync", "guest_run",
                                                         "host_callback", "graphics",   "present",      "audio",
-                                                        "sleep",         "display",    "graphics_cpu"};
+                                                        "sleep",         "display",    "graphics_cpu", "interpolated"};
 
 uint64_t recomp_timing_clock(void) {
     struct timespec now;

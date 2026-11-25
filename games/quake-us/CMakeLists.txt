@@ -1,4 +1,5 @@
 set(RECOMP_ROM "${CMAKE_SOURCE_DIR}/local/quake.us.z64")
 set(RECOMP_SAVE "${CMAKE_SOURCE_DIR}/local/saves/quake-us.mpk")
-set(RECOMP_GAME_SOURCES controls.c)
+set(RECOMP_GAME_SOURCES controls.c reflections.c)
+set_property(SOURCE "${CMAKE_SOURCE_DIR}/runtime/game.c" APPEND PROPERTY COMPILE_DEFINITIONS RECOMP_LEVEL_REFLECTIONS)
 include("${CMAKE_SOURCE_DIR}/cmake/Game.cmake")

@@ -29,6 +29,8 @@ void recomp_gles2_create_surface(RecompRDPGles2 *s, Surface *f, unsigned width, 
 void recomp_gles2_destroy_surface(RecompRDPGles2 *s, Surface *f) {
     if (!f->valid)
         return;
+    if (f->reflection_texture)
+        s->gl.DeleteTextures(1, &f->reflection_texture);
     if (f->scene_depth)
         s->gl.DeleteTextures(1, &f->scene_depth);
     s->gl.DeleteTextures(1, &f->texture);
@@ -85,17 +87,14 @@ DepthSurface *recomp_gles2_depth_surface(RecompRDPGles2 *s, unsigned width, unsi
     s->gl.RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES, (GLsizei)width, (GLsizei)height);
     return available;
 }
-void recomp_gles2_bind_surface(RecompRDPGles2 *s) {
-    s->surface = surface(s, s->color_address);
-    s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
-    if (s->screen_effects && !s->surface->scene_depth && s->color_siz >= 2) {
+void recomp_gles2_bind_scene_depth(RecompRDPGles2 *s, Surface *f) {
+    if (!f->scene_depth) {
         // Pair visible depth with its color image. Games rotate color buffers
         // while sharing one hardware Z image, and draw HUDs without writing Z.
-        GLuint *texture = &s->surface->scene_depth;
+        GLuint *texture = &f->scene_depth;
         s->gl.GenTextures(1, texture);
         s->gl.BindTexture(GL_TEXTURE_2D, *texture);
-        s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->surface->width, s->surface->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         NULL);
+        s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, f->width, f->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -110,6 +109,12 @@ void recomp_gles2_bind_surface(RecompRDPGles2 *s) {
         s->gl.ClearBufferfv(GL_COLOR, 1, empty);
         s->textures_dirty = true;
     }
+}
+void recomp_gles2_bind_surface(RecompRDPGles2 *s) {
+    s->surface = surface(s, s->color_address);
+    s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+    if (s->screen_effects && s->color_siz >= 2)
+        recomp_gles2_bind_scene_depth(s, s->surface);
     DepthSurface *depth = recomp_gles2_depth_surface(s, s->surface->width, s->surface->height);
     if (s->surface->depth != depth->buffer) {
         s->surface->depth = depth->buffer;
@@ -121,10 +126,45 @@ void recomp_gles2_bind_surface(RecompRDPGles2 *s) {
         s->gl.Disable(GL_SCISSOR_TEST);
         s->gl.DepthMask(GL_TRUE);
         s->gl.Clear(GL_DEPTH_BUFFER_BIT);
+        if (s->interpolation) {
+            Surface *mid = &s->midpoints[s->surface - s->surfaces];
+            if (mid->valid) {
+                s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
+                s->gl.Clear(GL_DEPTH_BUFFER_BIT);
+                s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+            }
+        }
         depth->clear = false;
     }
 }
 
+void recomp_rdp_gles2_set_level_reflections(RecompRDPGles2 *s, RecompReflectionSource source) {
+    s->reflection_source = source;
+}
+void recomp_gles2_store_reflection(RecompRDPGles2 *s, Surface *f) {
+    const RecompLevelReflection *image = s->task_reflection;
+    if (!image) {
+        f->reflection_serial = 0;
+        return;
+    }
+    if (f->reflection_serial == image->serial)
+        return;
+    s->gl.ActiveTexture(GL_TEXTURE2);
+    if (!f->reflection_texture) {
+        s->gl.GenTextures(1, &f->reflection_texture);
+        s->gl.BindTexture(GL_TEXTURE_2D, f->reflection_texture);
+        s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        s->gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        s->gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_EXT, RECOMP_REFLECTION_WIDTH, RECOMP_REFLECTION_HEIGHT, 0,
+                         GL_RGBA, GL_FLOAT, image->rgba);
+    } else {
+        s->gl.BindTexture(GL_TEXTURE_2D, f->reflection_texture);
+        s->gl.TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, RECOMP_REFLECTION_WIDTH, RECOMP_REFLECTION_HEIGHT, GL_RGBA,
+                            GL_FLOAT, image->rgba);
+    }
+    f->reflection_serial = image->serial;
+    s->gl.ActiveTexture(GL_TEXTURE1);
+}
 static void blit_texture(RecompRDPGles2 *s, const Surface *source, GLuint framebuffer, int x, int y, int width,
                          int height, bool color_correct) {
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -138,6 +178,10 @@ static void blit_texture(RecompRDPGles2 *s, const Surface *source, GLuint frameb
         bool show = color_correct && source->scene_depth && !s->wireframe;
         s->gl.ActiveTexture(GL_TEXTURE1);
         s->gl.BindTexture(GL_TEXTURE_2D, show ? source->scene_depth : s->white);
+        bool level = show && source->reflection_serial;
+        s->gl.ActiveTexture(GL_TEXTURE2);
+        s->gl.BindTexture(GL_TEXTURE_2D, level ? source->reflection_texture : s->white);
+        s->gl.Uniform1i(s->blit_level_reflections, level);
         s->gl.Uniform1i(s->blit_reflections, show && s->show_reflections);
         unsigned count = show && s->show_torches ? source->lights.count : 0;
         s->gl.Uniform1i(s->blit_count, count);
@@ -289,6 +333,8 @@ void recomp_rdp_gles2_set_framebuffer(RecompRDPGles2 *s, uint32_t address, uint3
     }
 }
 void recomp_rdp_gles2_set_ram_scanout(RecompRDPGles2 *s) {
+    recomp_gles2_destroy_interpolation(s);
+    s->last_display = NULL;
     s->ram_scanout = true;
 }
 void recomp_rdp_gles2_set_framebuffer_sizes(RecompRDPGles2 *s, const RecompFramebufferSize *sizes, size_t count) {
@@ -382,10 +428,20 @@ static void fit_aspect(int width, int height, double aspect, int *w, int *h) {
     else
         *w = (int)(height * aspect + 0.5);
 }
-void recomp_rdp_gles2_present(RecompRDPGles2 *s) {
+bool recomp_rdp_gles2_present(RecompRDPGles2 *s) {
     recomp_gles2_require_owner(s);
     recomp_gles2_flush(s);
     Surface *image = display_image(s);
+    Surface *native = image;
+    if (s->wireframe) {
+        /* Defer clearing the scanned-out target until its next color write.
+         * Repeated VI ticks keep the image and split RDP passes accumulate. */
+        for (unsigned i = 0; i < 8; i++)
+            if (s->surfaces[i].valid && s->surfaces[i].address == s->present_address)
+                s->surfaces[i].clear_before_wireframe = true;
+    } else if (s->interpolation)
+        image = recomp_gles2_interpolated_display(s, native);
+    s->last_display = image;
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
     int width, height, w, h;
     recomp_gles2_drawable_size(s, &width, &height);
@@ -414,15 +470,16 @@ void recomp_rdp_gles2_present(RecompRDPGles2 *s) {
 #endif
     recomp_gles2_bind_surface(s);
     s->textures_dirty = true;
+    return image != native;
 }
 
 bool recomp_rdp_gles2_capture(RecompRDPGles2 *s, const char *path) {
     recomp_gles2_require_owner(s);
     recomp_gles2_flush(s);
-    Surface *f = display_image(s);
+    Surface *f = s->interpolation && s->last_display ? s->last_display : display_image(s);
     unsigned width = f->width, height = f->height;
     if (s->color_gamma != 1.0f || s->antialias ||
-        ((s->show_reflections || s->show_occlusion || s->show_torches) && f->scene_depth)) {
+        ((f->reflection_serial || s->show_reflections || s->show_occlusion || s->show_torches) && f->scene_depth)) {
         if (s->capture.valid && (s->capture.width != width || s->capture.height != height))
             recomp_gles2_destroy_surface(s, &s->capture);
         if (!s->capture.valid)

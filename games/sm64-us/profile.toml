@@ -5,6 +5,12 @@
 # geo_camera_fov: exact US body, render context 1, perspective node fov at 0x1c.
 # It finishes the native camera FOV/shake before projection and object traversal.
 function_wrappers = [
+  # update_graph_node_camera copies Lakitu's eye/focus to the render node (+0x1c/+0x28).
+  {section = ".main", vram = 0x80287cb8, size = 0x78, sha256 = "29f787e987285a2ecb8c422fe281323d15c242ab1e059b9d6b2de3ad106bd363", handler = "sm64_render_camera"},
+  # geo_skybox_main passes the same eye/focus separately to create_skybox_facing_camera.
+  {section = ".main", vram = 0x802cfef4, size = 0x18c, sha256 = "04662c379748a9673dc304aae2740e8163b49c31933e4b3f7ec281b047aa21db", handler = "sm64_skybox_camera"},
+  # update_mario_joystick_inputs adds camera->yaw to stick yaw for nonzero stick magnitude.
+  {section = ".main", vram = 0x8025395c, size = 0x104, sha256 = "05cc6f6ef0347474671de029c8977b2013b505bb03b6ea8ed27bbc203b469971", handler = "sm64_movement_yaw"},
   {section = ".main", vram = 0x8029aa3c, size = 0x158, sha256 = "7f2f57cd39b84641ea569339139e68e22551304a3b0f00dbed4e4d318a03d947", handler = "sm64_camera_fov"},
 ]
 
@@ -278,6 +284,12 @@ gCutsceneObjSpawn = 0x8033cbcc
 gCutsceneTimer = 0x8033ca5c
 gCameraMovementFlags = 0x8033c848
 gCamera = 0x8033cbd0
+gLakituState = 0x8033c698
+sCurrPlayMode = 0x8033b238 # set_play_mode at 0x80249764
+gCurrDemoInput = 0x8032d5f0 # controller demo override at 0x80248498
+# alloc_surface (0x803824f8) indexes the live pool with a 0x30-byte stride.
+sSurfacePool = 0x8038ee9c
+gSurfacesAllocated = 0x80361170
 gMarioStates = 0x8033b170
 gMarioState = 0x8032d93c
 gCurrentArea = 0x8032ddcc

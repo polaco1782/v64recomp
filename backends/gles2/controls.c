@@ -105,7 +105,7 @@ bool recomp_rdp_gles2_poll(RecompRDPGles2 *s) {
                 fprintf(stderr, "GLES screen-space reflections: %s\n", s->show_reflections ? "on" : "off");
             }
             if (key == SDL_SCANCODE_F6) {
-                s->wireframe = !s->wireframe;
+                recomp_gles2_toggle_wireframe(s);
                 fprintf(stderr, "GLES2 render mode: %s\n", s->wireframe ? "RDP mesh wireframe" : "textured");
             }
             if (key == SDL_SCANCODE_F4)

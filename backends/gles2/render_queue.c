@@ -209,6 +209,8 @@ void recomp_rdp_gles2_submit(RecompRDPGles2 *s, const uint32_t *words, size_t co
     recomp_gles2_require_owner(s);
     if ((!words && count) || count > 4 * 1024 * 1024)
         recomp_fail("invalid GLES render submission", 0);
+    if (s->level_reflections && s->reflection_source)
+        s->task_reflection = guest_parked ? NULL : s->reflection_source(s->rt);
     if (s->torch_mode) {
         s->task_lights.count = 0;
         s->task_lights.capsule_count = 0;

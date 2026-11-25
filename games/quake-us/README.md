@@ -25,6 +25,25 @@ at the original FOV; lowering to the minimum restores it exactly. No FOV
 environment variable is read. CPU clip planes expand with the GPU projection;
 native depth and camera transformations remain intact.
 
+## Ray-traced reflections
+
+Launch with `--rt-reflections` and look down at the floor in the first level.
+Floors and upward-facing slopes reflect the static level, including walls and
+ceilings outside the camera view. The CPU traces one bounce per sample at
+128×96 using the game's camera, textures and baked lighting. The GLES renderer
+checks the floor depth before blending the reflection into the final frame.
+
+This mode covers single-player world geometry. Monsters, pickups and moving
+doors are outside the traced scene. The separate `--ssr` option uses visible
+screen color and depth.
+
+On the US ROM the world draw at `0x80025a08` reads the model through
+`0x8008da00`. The adapter walks its BSP nodes at model offset `0x8c` and the
+world submodel face range at `+0x58/+0x5c`. Each face points to its resident
+polygon at `+0x24`, texture mapping at `+0x28` and lightmap at `+0x2c`.
+
+## Port notes
+
 The [controller and camera guide](controller.md) records exact ROM addresses,
 ABI/field evidence, input timing and visibility behavior. ROM discovery and
 translation evidence passed with all originals retained. No standalone tests

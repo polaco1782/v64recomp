@@ -27,6 +27,15 @@ void recomp_renderer_set_ram_scanout(RecompRenderer *);
 void recomp_gles2_configure_game(RecompRenderer *renderer);
 RecompRenderer *recomp_renderer_create_named(Runtime *, const char *data_path, const char *window_title);
 void recomp_renderer_enable_texture_editor(bool enabled);
+// RGB is reflected radiance. Alpha is the receiver depth in 1/(1-window Z) units,
+// zero for uncovered pixels. The returned image stays valid until the next submission.
+enum { RECOMP_REFLECTION_WIDTH = 128, RECOMP_REFLECTION_HEIGHT = 96 };
+typedef struct RecompLevelReflection {
+    uint64_t serial;
+    float rgba[RECOMP_REFLECTION_HEIGHT][RECOMP_REFLECTION_WIDTH][4];
+} RecompLevelReflection;
+typedef const RecompLevelReflection *(*RecompReflectionSource)(Runtime *);
+void recomp_renderer_set_level_reflections(RecompRenderer *, RecompReflectionSource);
 void recomp_renderer_destroy(RecompRenderer *);
 bool recomp_renderer_submit(RecompRenderer *, const RecompTask *);
 /* Bare-metal RDP DMA, without an RSP microcode task. Registers describe the

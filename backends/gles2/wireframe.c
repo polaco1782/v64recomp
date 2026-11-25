@@ -2,6 +2,38 @@
 
 #include <stddef.h>
 
+static void clear_wireframe_background(RecompRDPGles2 *s) {
+    s->gl.Disable(GL_SCISSOR_TEST);
+    s->gl.ClearColor(0, 0, 0, 1);
+    s->gl.Clear(GL_COLOR_BUFFER_BIT);
+}
+
+void recomp_gles2_toggle_wireframe(RecompRDPGles2 *s) {
+    recomp_gles2_flush(s);
+    s->wireframe = !s->wireframe;
+    /* VI may still present an older color image before the next RDP draw. */
+    for (unsigned i = 0; i < 8; i++) {
+        Surface *f = &s->surfaces[i];
+        if (f->valid) {
+            s->gl.BindFramebuffer(GL_FRAMEBUFFER, f->framebuffer);
+            clear_wireframe_background(s);
+            f->has_midpoint = false;
+            f->clear_before_wireframe = false;
+        }
+    }
+    s->last_display = NULL;
+    s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+}
+
+void recomp_gles2_begin_wireframe_draw(RecompRDPGles2 *s) {
+    /* Games can cover the previous frame with opaque geometry instead of a
+     * color clear. Lines alone would leave trails on rotating color images. */
+    if (s->surface->clear_before_wireframe && s->color_siz >= 2) {
+        clear_wireframe_background(s);
+        s->surface->clear_before_wireframe = false;
+    }
+}
+
 /* ES has no polygon mode. Give each RDP mesh triangle three explicit
  * edges, using the same position, viewport, scissor and depth state. */
 static void wireframe_initialize(RecompRDPGles2 *s) {
@@ -61,8 +93,12 @@ void recomp_gles2_draw_wireframe(RecompRDPGles2 *s, const Program *program) {
     s->gl.UseProgram(s->wireframe_program);
     s->gl.Uniform4fv(s->wireframe_color, 1, rgba);
     s->gl.Disable(GL_BLEND);
-    s->gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->wireframe_indices);
-    s->gl.DrawElements(GL_LINES, (GLsizei)(s->batch_count * 2), GL_UNSIGNED_SHORT, NULL);
+    if (s->drawing_rectangle)
+        s->gl.DrawArrays(GL_LINE_LOOP, 0, 4);
+    else {
+        s->gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->wireframe_indices);
+        s->gl.DrawElements(GL_LINES, (GLsizei)(s->batch_count * 2), GL_UNSIGNED_SHORT, NULL);
+    }
     s->gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 

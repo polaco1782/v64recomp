@@ -356,6 +356,18 @@ weapon zoom and physical Deck control acceptance remain to be tested.
 
 ## Performance investigation
 
+On Runway, the exterior exceeded the GLES renderer's former 128-tile cache.
+With HQ2x and `--ssao --ssr --interpolate`, five seconds of outdoor play
+made 44,601 native tile requests. Replaying those exact requests against the
+larger cache reduced misses from 24,146 to 282. Each hit reuses the uploaded
+texture and mipmaps.
+
+In separate desktop Release captures of the exterior, HQ2x and its corner
+calculation fell from 38.7% to 0.9% of CPU samples. The renderer averaged
+26.5 presentations per second before the change and 60.0 after it. These
+windows used different camera paths and include repeated or interpolated
+presentations.
+
 A confirmed 25-second slow-Dam capture on 2026-11-03 measured 45.7% of one
 logical CPU in `n64-main` and 37.8% in the owner, with about 19,000 voluntary
 switches/second on each. GPU busy samples averaged 38.2%, with median 8% and

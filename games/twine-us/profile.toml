@@ -280,3 +280,13 @@ images = [
   {name = "Audio RSP bootstrap", rom_offset = 0xacd10, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
   {name = "Audio RSP program", rom_offset = 0xae170, size = 0xf40, dma_size = 0xf80, sha256 = "afc63003d7e820718ef4ec6e11a84c2eda95a04d154c2df031d5260d65a36b94"},
 ]
+
+[[discovery.observed_transfers]]
+section = ".main"
+pc = 0x80095744
+expected_word = 0x3c0f809
+kind = "call"
+target_section = ".main"
+target = 0x800986cc
+size = 0x10
+sha256 = "3a9d0285d7aa94d68471901617bd4bead97ff235da395ad20d93ad42e0b0ff9b"

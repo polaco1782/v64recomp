@@ -169,6 +169,7 @@ menus render at 1760x1320. The window starts at 1280x960 and can be resized.
 | --- | --- | --- |
 | `--ssao` | F3 | Screen-space ambient occlusion darkens creases and contacts between nearby surfaces. |
 | `--ssr` | F9 | Screen-space reflections trace visible geometry on upward-facing surfaces. |
+| `--rt-reflections` | Launch option | Quake 64 single-player floors reflect static level geometry, including off-screen walls and ceilings. |
 | `--torch-lights` | F2 | Quake and Ocarina of Time flames add localized light to nearby visible surfaces. |
 | `--torch-shadows` | F1 | Start torch lighting with scene and player shadows. F1 toggles both kinds of shadow. |
 
@@ -212,8 +213,7 @@ wrapping for filtering across seams. The shared renderer uses GLSL ES 3.00
 texture gradients computed before wrapping and supports mipmaps for non-power-of-two textures, including replacement images.
 
 RAM framebuffer sizes remain native. Higher-resolution surfaces are downsampled
-before CPU readback, without FXAA or display color correction. The former HLE
-geometry interpolation and its SM64 vertex hooks were removed with the frontend.
+before CPU readback, without FXAA or display color correction.
 Desktop Debug and Release builds with texture support enable the F8 thumbnail
 editor without a pack. See [GLES texture packs](textures.md#gles3-texture-packs-and-editor)
 for formats and limits. F6 toggles mesh wireframe in Debug and Release. F12 opens the shared
@@ -223,6 +223,43 @@ F7 expands the view without stretch only when a native camera/visibility hook
 accepts the new aspect (GoldenEye and Banjo in supported scenes). With no
 hook, use original framing. Once a compiled RSP has clipped geometry, the
 GLES backend cannot recover the missing sides by reshaping the framebuffer.
+
+## Frame interpolation
+
+Pass `--interpolate` or set `RECOMP_GLES2_FPS=60` to enable experimental
+geometry interpolation. The default is native rendering. On a 60 Hz display
+loop, a source frame that lasts two ticks leaves room for one intermediate
+pose. The renderer adds at most one pose per source frame, so a 20 FPS scene
+can supply up to 40 distinct poses per second. Seeing the native endpoint
+takes one extra display tick, about 16.7 ms.
+Repeated ticks, CPU video, and newly visible scenes use native scanout until
+the renderer has a compatible pair.
+
+The compiled RSP supplies projected triangle edges. GLES matches nearby
+draws across successive completed RDP frames by material, projected shape,
+depth and displacement. It redraws matching triangles halfway between poses
+into a separate color and depth buffer. Adjacent triangles share motion at
+coincident corners. Large terrain triangles with the same texture can also share
+motion where their borders overlap slightly and both depth slopes agree with the
+offset between corners. Replaying a first-level Turok camera turn with these
+shared motions closed a 224-pixel sky gap in the captured terrain at 2x scale.
+Unmatched triangles can inherit motion from those corners.
+Isolated unmatched geometry and HUD rectangles use their current positions. A frame needs matches for at least three quarters
+of the triangles in both frames. Lost correspondence, multiple color targets
+and wireframe select the native image. Clipping and visibility changes can
+cause uneven motion or seams. Guest framebuffer reads always use the native
+render. Debug captures show the pose selected for that display tick.
+
+The extra draws cost GPU time. The timing CSV's `interpolated_count` measures
+midpoints actually presented in each window. `display_count` includes every
+presentation, including repeated native images.
+
+A 2,400-tick Quake 64 Debug replay through the menus and first level presented
+225 midpoints at native resolution on Mesa software GLES. Its best one-second
+window contained 60 presentations and 28 midpoints. In a controlled moving
+triangle render, the two native positions were 16 pixels apart and the
+intermediate position was exactly 8 pixels from each. The complete 4 MiB
+guest RAM image matched with interpolation enabled and disabled.
 
 ## Validation and limits
 

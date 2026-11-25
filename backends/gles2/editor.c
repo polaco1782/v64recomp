@@ -20,11 +20,15 @@ enum {
     grid_height = rows * cell_size + margin,
     footer_height = 63
 };
+struct Gles2EditorPreview {
+    unsigned width, height;
+    uint8_t pixels[thumb_side * thumb_side * 4];
+};
 typedef struct Thumbnail {
     uint64_t key;
-    unsigned width, height, preview_width, preview_height;
+    unsigned width, height;
     bool replaced;
-    uint8_t pixels[thumb_side * thumb_side * 4];
+    Gles2EditorPreview preview;
 } Thumbnail;
 struct Gles2TextureEditor {
     char *directory;
@@ -34,15 +38,23 @@ struct Gles2TextureEditor {
 static Thumbnail *recent(Gles2TextureEditor *s, unsigned i) {
     return &s->history[(s->next + history_size - 1 - i) % history_size];
 }
-static void sample(Thumbnail *t, unsigned width, unsigned height, const uint8_t *rgba) {
+static void sample(Gles2EditorPreview *t, unsigned width, unsigned height, const uint8_t *rgba) {
     unsigned longest = SDL_max(width, height);
-    t->preview_width = SDL_max(1u, thumb_side * width / longest);
-    t->preview_height = SDL_max(1u, thumb_side * height / longest);
-    for (unsigned y = 0; y < t->preview_height; ++y)
-        for (unsigned x = 0; x < t->preview_width; ++x) {
-            size_t offset = ((size_t)(y * height / t->preview_height) * width + x * width / t->preview_width) * 4;
-            memcpy(t->pixels + ((size_t)y * t->preview_width + x) * 4, rgba + offset, 4);
+    t->width = SDL_max(1u, thumb_side * width / longest);
+    t->height = SDL_max(1u, thumb_side * height / longest);
+    for (unsigned y = 0; y < t->height; ++y)
+        for (unsigned x = 0; x < t->width; ++x) {
+            size_t offset = ((size_t)(y * height / t->height) * width + x * width / t->width) * 4;
+            memcpy(t->pixels + ((size_t)y * t->width + x) * 4, rgba + offset, 4);
         }
+}
+Gles2EditorPreview *gles2_editor_make_preview(unsigned width, unsigned height, const uint8_t *rgba) {
+    if (!width || !height || width > 4096 || height > 4096 || !rgba)
+        return NULL;
+    Gles2EditorPreview *preview = calloc(1, sizeof(*preview));
+    if (preview)
+        sample(preview, width, height, rgba);
+    return preview;
 }
 static const char *install(const char *source, const char *directory, Thumbnail *t, unsigned limit) {
     SDL_RWops *file = SDL_RWFromFile(source, "rb");
@@ -66,7 +78,7 @@ static const char *install(const char *source, const char *directory, Thumbnail 
              !recomp_create_directories(directory) || !recomp_save_image(target, bytes, n))
         error = "Could not save replacement";
     else {
-        sample(t, image.width, image.height, image.pixels);
+        sample(&t->preview, image.width, image.height, image.pixels);
         t->replaced = true;
     }
     SDL_free(target);
@@ -114,41 +126,43 @@ void gles2_editor_destroy(Gles2TextureEditor *s) {
     }
 }
 
-static void observe(Gles2TextureEditor *editor, uint64_t key, unsigned width, unsigned height, unsigned preview_width,
-                    unsigned preview_height, const uint8_t *rgba, bool replacement) {
-    if (!editor || !rgba || !width || !height || !preview_width || !preview_height || width > 4096 || height > 4096 ||
-        preview_width > 4096 || preview_height > 4096)
-        return;
+static Thumbnail *observe(Gles2TextureEditor *editor, uint64_t key, unsigned width, unsigned height, bool replaced) {
+    if (!editor || !width || !height || width > 4096 || height > 4096)
+        return NULL;
     for (unsigned i = 0; i < editor->count; i++) {
         Thumbnail *old = recent(editor, i);
         if (old->key == key) {
-            if (replacement != old->replaced) {
-                old->replaced = replacement;
-                sample(old, preview_width, preview_height, rgba);
-            }
-            return;
+            if (!old->replaced && !replaced)
+                return NULL;
+            old->replaced = replaced;
+            return old;
         }
     }
     Thumbnail *t = &editor->history[editor->next];
     t->key = key;
     t->width = width;
     t->height = height;
-    t->replaced = replacement;
-    sample(t, preview_width, preview_height, rgba);
+    t->replaced = replaced;
     editor->next = (editor->next + 1) % history_size;
     editor->count = SDL_min(editor->count + 1, history_size);
+    return t;
 }
-
 void gles2_editor_observe(Gles2TextureEditor *editor, uint64_t key, unsigned width, unsigned height,
                           const uint8_t *rgba) {
-    observe(editor, key, width, height, width, height, rgba, false);
+    if (!rgba)
+        return;
+    Thumbnail *t = observe(editor, key, width, height, false);
+    if (t)
+        sample(&t->preview, width, height, rgba);
 }
-
 void gles2_editor_observe_replacement(Gles2TextureEditor *editor, uint64_t key, unsigned width, unsigned height,
-                                      unsigned preview_width, unsigned preview_height, const uint8_t *rgba) {
-    observe(editor, key, width, height, preview_width, preview_height, rgba, true);
+                                      const Gles2EditorPreview *preview) {
+    if (!preview)
+        return;
+    Thumbnail *t = observe(editor, key, width, height, true);
+    if (t)
+        t->preview = *preview;
 }
-
 static void paint(SDL_Renderer *renderer, Gles2TextureEditor *state, const char *message) {
     color(renderer, 25, 27, 31);
     SDL_RenderClear(renderer);
@@ -159,9 +173,9 @@ static void paint(SDL_Renderer *renderer, Gles2TextureEditor *state, const char 
         color(renderer, i == state->selected ? 110 : 57, i == state->selected ? 228 : (t->replaced ? 136 : 60),
               i == state->selected ? 255 : 67);
         SDL_RenderFillRect(renderer, &bounds);
-        const SDL_Rect preview = {bounds.x + (bounds.w - (int)(t->preview_width)) / 2,
-                                  bounds.y + (bounds.h - (int)(t->preview_height)) / 2, (int)(t->preview_width),
-                                  (int)(t->preview_height)};
+        const SDL_Rect preview = {bounds.x + (bounds.w - (int)(t->preview.width)) / 2,
+                                  bounds.y + (bounds.h - (int)(t->preview.height)) / 2, (int)(t->preview.width),
+                                  (int)(t->preview.height)};
         const int checker = 8;
         for (int y = 0; y < preview.h; y += checker)
             for (int x = 0; x < preview.w; x += checker) {
@@ -175,7 +189,7 @@ static void paint(SDL_Renderer *renderer, Gles2TextureEditor *state, const char 
             SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, preview.w, preview.h);
         if (image) {
             SDL_SetTextureBlendMode(image, SDL_BLENDMODE_BLEND);
-            if (SDL_UpdateTexture(image, NULL, t->pixels, preview.w * 4) == 0)
+            if (SDL_UpdateTexture(image, NULL, t->preview.pixels, preview.w * 4) == 0)
                 SDL_RenderCopy(renderer, image, NULL, &preview);
             SDL_DestroyTexture(image);
         }

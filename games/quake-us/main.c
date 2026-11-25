@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "audio.h"
 #include "controls.h"
+#include "reflections.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,6 +69,7 @@ int main(int argc, char **argv) {
                         0);
     renderer = recomp_renderer_create_named(&rt, options.data, "Quake 64");
     recomp_game_require(renderer != NULL, "renderer initialization failed", 0);
+    recomp_renderer_set_level_reflections(renderer, quake_level_reflections);
     quake_controls_init(poll_controls);
     recomp_renderer_set_torch_source(renderer, quake_torch_lights);
     recomp_renderer_set_fov_hook(renderer, quake_fov_adjust);
@@ -104,6 +106,7 @@ int main(int argc, char **argv) {
     }
     recomp_audio_destroy(audio);
     recomp_renderer_destroy(renderer);
+    quake_free_reflections();
     recomp_runtime_destroy(&rt);
     free(rom);
     return 0;

@@ -21,6 +21,7 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *, const char *title);
 #ifdef RECOMP_GLES2_CHEATS
 void recomp_rdp_gles2_enable_cheats(RecompRDPGles2 *, const char *data_path);
 #endif
+void recomp_rdp_gles2_set_level_reflections(RecompRDPGles2 *, RecompReflectionSource);
 void recomp_rdp_gles2_set_torch_source(RecompRDPGles2 *, RecompTorchSource);
 void recomp_rdp_gles2_destroy(RecompRDPGles2 *);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
@@ -38,7 +39,8 @@ void recomp_rdp_gles2_submit(RecompRDPGles2 *, const uint32_t *words, size_t cou
 bool recomp_rdp_gles2_ready(RecompRDPGles2 *, bool wait);
 void recomp_rdp_gles2_collect(RecompRDPGles2 *, uint64_t *elapsed_ns, uint64_t *cpu_ns);
 void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *, uint8_t *rdram, size_t ram_size, const uint32_t *words, size_t count);
-void recomp_rdp_gles2_present(RecompRDPGles2 *);
+/* Returns true when this display tick used an interpolated image. */
+bool recomp_rdp_gles2_present(RecompRDPGles2 *);
 bool recomp_rdp_gles2_capture(RecompRDPGles2 *, const char *path);
 bool recomp_rdp_gles2_input(RecompRDPGles2 *, RecompPad *);
 void recomp_rdp_gles2_set_input_config(RecompRDPGles2 *, const RecompGles2InputConfig *);

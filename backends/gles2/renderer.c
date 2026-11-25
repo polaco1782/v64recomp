@@ -34,6 +34,9 @@ uint64_t recomp_renderer_paused_ns(void) {
     return 0;
 #endif
 }
+void recomp_renderer_set_level_reflections(RecompRenderer *s, RecompReflectionSource source) {
+    recomp_rdp_gles2_set_level_reflections(s->gpu, source);
+}
 void recomp_renderer_set_torch_source(RecompRenderer *s, RecompTorchSource source) {
     recomp_rdp_gles2_set_torch_source(s->gpu, source);
 }
@@ -181,7 +184,8 @@ bool recomp_renderer_present(RecompRenderer *s) {
         if (vi.framebuffer && recomp_vi_registers(s->rt, &registers) && (registers.status & 3) >= 2)
             recomp_rdp_gles2_set_framebuffer(s->gpu, recomp_ram_address(s->rt, vi.framebuffer, 1), registers.status);
     }
-    recomp_rdp_gles2_present(s->gpu);
+    if (recomp_rdp_gles2_present(s->gpu))
+        recomp_timing_add(s->rt, RECOMP_TIMING_INTERPOLATED, 0, 1);
     uint64_t now = recomp_game_monotonic();
     recomp_timing_add(s->rt, RECOMP_TIMING_PRESENT, now - start, 1);
     recomp_timing_add(s->rt, RECOMP_TIMING_DISPLAY, 0, 1);

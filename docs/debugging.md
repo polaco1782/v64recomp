@@ -56,6 +56,7 @@ workers: 1.0 means one logical CPU's worth of work, not 1% machine usage. On a
 | `audio` | Native DSP synthesis. |
 | `sleep` | Sleeps requested by the shared frame-pacing helper. |
 | `display` | Completed swap-chain draws, including interpolation; count only. |
+| `interpolated` | Display ticks that presented a generated midpoint. |
 
 Categories overlap: graphics/audio can be inside host callbacks, and guest-side
 context synchronization can be inside `guest_run`. Do not sum them as exclusive
@@ -162,7 +163,9 @@ EOF
 ./build/quake-us-debug/bin/quake-us --input /tmp/quake-input.txt --frames 900
 ```
 
-F6 toggles RDP mesh wireframe in both Debug and Release. It affects color readback.
+F6 toggles RDP wireframe in both Debug and Release. Triangles draw their edges,
+and textured HUD and background rectangles draw their outlines. Guest color and
+depth clears still run. Color readback includes the wireframe.
 `RECOMP_DUKE_PERFORMANCE=1` and
 `RECOMP_NIGHTMARE_PERFORMANCE=1` retain those games' timing logs.
 

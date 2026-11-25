@@ -25,6 +25,12 @@
     <None Include="$(RecompRoot)games\quake-us\profile.toml">
       <Filter>Configuration</Filter>
     </None>
+    <ClCompile Include="$(RecompRoot)games\quake-us\reflections.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)games\quake-us\reflections.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <None Include="$(RecompRoot)games\quake-us\startup-entries.json">
       <Filter>Configuration</Filter>
     </None>

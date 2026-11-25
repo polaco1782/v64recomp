@@ -10,17 +10,22 @@ repeating texture seams. Larger-than-TMEM tiles (over 8192 texels) use native
 resolution. Texture packs and editor overrides use the resolution of the supplied
 image. Set `RECOMP_GLES2_HQ2X=0` before launch to disable enhancement.
 
+The native tile cache keeps up to 1,024 uploaded textures within a 64 MiB
+budget, including mipmaps. Drawing a resident tile reuses its filtered image.
+The lookup checks the tile contents, format, dimensions, palette state and
+HQ2x edge wrapping. F5 clears the cache when switching texture modes.
+
 Desktop GLES3 loads Rice/GLideN64 PNG ZIPs directly. On the first draw of a
 texture, it checks the original texture and palette loads against the Rice
 filenames in the ZIP. It remembers matches in memory. Exact IDs, CI palette or texture `$` wildcards,
 and split `_rgb` / `_a` images are supported. Palette matching checks both
 the GLideN64 texture-filter palette and the palette bytes transferred by the RDP.
 Local editor overrides take precedence.
-GLES decodes matched PNGs on a background worker. It draws the original until
-the replacement is ready, then uploads it on the render thread. A limit on uploads
-per display list spreads mipmap generation over several draws as a scene loads.
-Uploaded replacements use a separate cache that grows on demand up to 256 MiB,
-including mipmaps. F5 clears the cache and discards outstanding requests.
+GLES decodes and uploads a matched PNG before drawing the tile. A first use
+or a reload after cache eviction can take extra frame time.
+Tiles matched to the same pack image share one upload. Uploaded replacements
+use a separate cache that grows on demand up to 256 MiB,
+including mipmaps. F5 clears the cache.
 Tiles with incomplete source loads or incompatible images keep their original
 appearance.
 

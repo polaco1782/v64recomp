@@ -68,7 +68,8 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     s->show_occlusion = quality_option("RECOMP_GLES2_SSAO", false);
     s->show_torch_shadows = quality_option("RECOMP_GLES2_TORCH_SHADOWS", false);
     s->show_torches = s->torch_mode = quality_option("RECOMP_GLES2_TORCH_LIGHTS", false) || s->show_torch_shadows;
-    s->screen_effects = s->torch_mode || s->show_occlusion || s->show_reflections;
+    s->level_reflections = quality_option("RECOMP_GLES2_RT_REFLECTIONS", false);
+    s->screen_effects = s->level_reflections || s->torch_mode || s->show_occlusion || s->show_reflections;
     s->hq2x = quality_option("RECOMP_GLES2_HQ2X", true);
     s->mipmaps = quality_option("RECOMP_GLES2_MIPMAPS", true);
     const char *scale = getenv("RECOMP_GLES2_SCALE");
@@ -218,6 +219,8 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
     if (s->screen_effects) {
         s->gl.UseProgram(s->blit);
         s->gl.Uniform1i(s->gl.GetUniformLocation(s->blit, "sceneDepth"), 1);
+        s->blit_level_reflections = s->gl.GetUniformLocation(s->blit, "levelReflections");
+        s->gl.Uniform1i(s->gl.GetUniformLocation(s->blit, "levelImage"), 2);
         s->blit_reflections = s->gl.GetUniformLocation(s->blit, "showReflections");
         s->blit_torch_shadows = s->gl.GetUniformLocation(s->blit, "showTorchShadows");
         s->blit_player_min_depth = s->gl.GetUniformLocation(s->blit, "playerMinDepth");
@@ -240,6 +243,13 @@ RecompRDPGles2 *recomp_rdp_gles2_create(Runtime *rt, const char *title) {
 #ifndef __EMSCRIPTEN__
     (void)SDL_GL_SetSwapInterval(0);
 #endif
+    const char *fps = getenv("RECOMP_GLES2_FPS");
+    if (fps && *fps) {
+        if (!strcmp(fps, "60"))
+            recomp_gles2_init_interpolation(s);
+        else if (strcmp(fps, "30") && strcmp(fps, "native"))
+            recomp_fail("RECOMP_GLES2_FPS accepts native, 30 or 60", 0);
+    }
     return s;
 }
 
@@ -262,9 +272,8 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
 #endif
     if (s->context) {
         recomp_gles2_require_owner(s);
-#ifdef RECOMP_GLES2_TEXTURE_PACKS
-        recomp_gles2_clear_replacements(s);
-#endif
+        recomp_gles2_destroy_interpolation(s);
+        recomp_gles2_clear_texture_caches(s);
 #ifdef RECOMP_GLES2_CHEATS
         gles2_cheats_destroy(s->cheats);
 #endif
@@ -282,10 +291,6 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
             s->gl.DeleteProgram(s->blit);
         for (unsigned i = 0; i < s->program_count; i++)
             s->gl.DeleteProgram(s->programs[i].id);
-        for (unsigned i = 0; i < 128; i++) {
-            if (s->textures[i].id)
-                s->gl.DeleteTextures(1, &s->textures[i].id);
-        }
         for (unsigned i = 0; i < 8; i++)
             recomp_gles2_destroy_surface(s, &s->surfaces[i]);
         for (unsigned i = 0; i < 16; i++)

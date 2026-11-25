@@ -42,6 +42,14 @@ On GLES3, **F7** uses the game's native projection when a verified aspect
 hook is available. Other titles keep their original framing rather than
 stretching the picture.
 
+### Smoother motion on a 60 Hz display
+
+Launch a game with `--interpolate` to try experimental frame interpolation.
+For a 30 FPS scene, GLES can draw a halfway pose on the first display tick
+and the original pose on the second. Gameplay and audio use the game's own
+clock. Fast camera turns and scene changes can fall back to native frames.
+[Renderer details](docs/armv8-gles2.md#frame-interpolation).
+
 ### Your favorite textures, in one place
 
 HQ2x smooths edges on native N64 textures by default. Set `RECOMP_GLES2_HQ2X=0`
@@ -78,7 +86,7 @@ fallback.
 | Turok 2 and Turok 3 | WASD and first-person mouse-look in [Turok 2](games/turok2-us/README.md) and [Turok 3](games/turok3-us/README.md) | Original → 140° |
 | Nightmare Creatures | [WASD, mouse steering, dodges and combat](games/nightmare-us/controller.md) | [Original → 140°](games/nightmare-us/README.md#adjustable-field-of-view) |
 | Banjo-Kazooie | [WASD, mouse orbit and first-person look](games/banjo-kazooie-us/README.md#desktop-controls) | [Original → 140°](games/banjo-kazooie-us/README.md#desktop-controls) |
-| Super Mario 64 | [WASD and stepped mouse camera](games/sm64-us/README.md#desktop-controls) | [Original → 140°](games/sm64-us/README.md#desktop-controls) |
+| Super Mario 64 | [WASD and free mouse orbit around Mario](games/sm64-us/README.md#desktop-controls) | [Original → 140°](games/sm64-us/README.md#desktop-controls) |
 | Perfect Dark | [Opt-in WASD and first-person mouse-look](games/perfectdark-us-v11/README.md#desktop-controls-and-field-of-view) | [Original → 140°](games/perfectdark-us-v11/README.md#desktop-controls-and-field-of-view) |
 
 See the [per-ROM coverage and validation matrix](docs/desktop-coverage.md)

@@ -31,10 +31,15 @@ typedef struct Gles2PackTile {
     uint64_t hash;
     unsigned width, height;
 } Gles2PackTile;
-typedef enum Gles2PackStatus { GLES2_PACK_MISS, GLES2_PACK_INCOMPLETE, GLES2_PACK_PENDING } Gles2PackStatus;
-Gles2PackStatus gles2_texture_pack_request(Gles2TexturePack *pack, Gles2PackTile key, const Tile *tile, unsigned tlut,
-                                           const Gles2RiceWord words[512], unsigned limit);
-bool gles2_texture_pack_take(Gles2TexturePack *pack, Gles2PackTile *key, Gles2PackImage *image);
+typedef enum Gles2PackStatus { GLES2_PACK_MISS, GLES2_PACK_INCOMPLETE, GLES2_PACK_FOUND } Gles2PackStatus;
+/* Source indices identify a complete Rice image (including alpha), or a local override, until reload. */
+bool gles2_texture_pack_known(const Gles2TexturePack *pack, uint64_t hash, size_t *source);
+void gles2_texture_pack_remember(Gles2TexturePack *pack, uint64_t hash, size_t source);
+bool gles2_texture_pack_local(const Gles2TexturePack *pack, uint64_t hash, size_t *source);
+Gles2PackStatus gles2_texture_pack_rice(Gles2TexturePack *pack, Gles2PackTile key, const Tile *tile, unsigned tlut,
+                                        const Gles2RiceWord words[512], size_t *source);
+bool gles2_texture_pack_decode(Gles2TexturePack *pack, size_t source, Gles2PackTile key, unsigned limit,
+                               Gles2PackImage *image);
 void gles2_texture_pack_free_image(Gles2PackImage *image);
 bool gles2_texture_decode_png(const uint8_t *bytes, size_t count, unsigned width, unsigned height, unsigned limit,
                               Gles2PackImage *image);

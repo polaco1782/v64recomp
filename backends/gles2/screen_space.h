@@ -2,7 +2,8 @@
 #define GLSL(...) #__VA_ARGS__
 // clang-format off
 static const char screen_space_shader[] = GLSL(
-    uniform highp sampler2D sceneDepth;
+    uniform highp sampler2D sceneDepth, levelImage;
+    uniform bool levelReflections;
     uniform int torchCount, capsuleCount;
     uniform float playerMinDepth;
     uniform vec4 capsuleStart[11], capsuleEnd[11];
@@ -149,13 +150,33 @@ static const char screen_space_shader[] = GLSL(
     }
 
     vec3 shadeScene(vec3 base) {
-        if (!showOcclusion && !showReflections && torchCount == 0) return base;
+        if (!levelReflections && !showOcclusion && !showReflections && torchCount == 0) return base;
         float z = viewDepth(tc);
         if (z == 0.0) return base;
         // RDP triangles arrive after projection. Approximate a 60-degree
         // vertical field of view and reconstruct positions in near-plane units.
         vec2 lens = 0.57735 * vec2(pixel.y / pixel.x, 1.0);
         if (showOcclusion) base *= ambientVisibility((floor(tc / pixel) + 0.5) * pixel, z, lens);
+        // Depth-aware upsampling keeps level reflections behind the weapon, actors and HUD.
+        if (levelReflections) {
+            ivec2 size = textureSize(levelImage, 0);
+            vec2 p = tc * vec2(size) - 0.5;
+            ivec2 cell = ivec2(floor(p));
+            vec2 sub = fract(p);
+            vec3 color = vec3(0);
+            float weight = 0.0;
+            for (int y = 0; y < 2; ++y) {
+                for (int x = 0; x < 2; ++x) {
+                    ivec2 at = clamp(cell + ivec2(x, y), ivec2(0), size - 1);
+                    vec4 reflected = texelFetch(levelImage, at, 0);
+                    float w = (x == 0 ? 1.0 - sub.x : sub.x) * (y == 0 ? 1.0 - sub.y : sub.y);
+                    w *= 1.0 - smoothstep(0.015, 0.065, abs(reflected.a / z - 1.0));
+                    color += reflected.rgb * w;
+                    weight += w;
+                }
+            }
+            base = base * (1.0 - 0.35 * weight) + 0.35 * color;
+        }
         if (!showReflections && torchCount == 0) return base;
         vec3 p = viewPosition(tc, z, lens);
         vec3 tx = tangent(vec2(pixel.x, 0.0), p, lens);

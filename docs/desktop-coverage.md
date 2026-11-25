@@ -25,7 +25,7 @@ establish gameplay, camera quality, audio playback, or hardware compatibility.
 | [Rayman 2 US](../games/rayman2-us/README.md) | WASD, mouse camera | Yes | Prior rendered first scene with character/HUD. |
 | [Resident Evil 2 US 1.1](../games/re2-us-v1/README.md) | WASD and arrows; fixed scene cameras | Not applied to fixed framing | Compiled F3DEX.Rej and S2DEX with RAM scanout for guest-decoded video. |
 | [Shadow Man US](../games/shadowman-us/README.md) | WASD and arrows; mouse camera pending | Pending projection trace | Debug strict ES2 opening cinematic; RT64 Release built. |
-| [Super Mario 64 US](../games/sm64-us/README.md) | WASD and arrows, stepped C-button mouse camera | Yes, new; gameplay check pending | Debug strict ES2 title / Press Start visuals; RT64 Release built. Isolated input/FoV checks passed. Browser layout unchanged. |
+| [Super Mario 64 US](../games/sm64-us/README.md) | View-relative WASD and mouse orbit around Mario | Yes (gameplay FoV check pending) | GLES Debug and Release verified orbit and all four movement directions in Castle Grounds. A 416° sweep, ground clearance, Shift walking, jump, attack, crouch and cursor release were checked in gameplay. |
 | [Turok US 1.2](../games/turok-us-v12/README.md) | WASD, mouse-look | Yes | Prior gameplay, automap and pause replay. |
 | [Turok 2 US](../games/turok2-us/README.md) | WASD, mouse-look | Yes | New Debug GLES2 rendered title/menu and a paused Port of Adia view; longer replay timed out. |
 | [Turok 3 US](../games/turok3-us/README.md) | WASD, mouse-look | Yes | New Debug GLES2 rendered title and opening cinematic; real gameplay input not verified. |

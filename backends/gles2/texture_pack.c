@@ -33,17 +33,8 @@ typedef struct Part {
 } Part;
 typedef struct Match {
     uint64_t hash;
-    ImageFiles files;
+    size_t source;
 } Match;
-typedef struct Request {
-    enum { EMPTY, QUEUED, WORKING, FINISHED } state;
-    Gles2PackTile key;
-    uint64_t sequence;
-    unsigned limit;
-    ImageFiles files;
-    bool local, live, incomplete;
-    Gles2PackImage image;
-} Request;
 struct Gles2TexturePack {
     mz_zip_archive zip;
     RiceEntry *entries;
@@ -54,12 +45,6 @@ struct Gles2TexturePack {
     size_t local_count;
     Match *matches;
     size_t match_count, match_capacity;
-    Request requests[8];
-    SDL_mutex *mutex;
-    SDL_cond *wake;
-    SDL_Thread *thread;
-    uint64_t sequence;
-    bool stopping;
 };
 static bool hex_token(const char *p, size_t n) {
     for (size_t i = 0; i < n; i++)
@@ -286,12 +271,6 @@ Gles2TexturePack *gles2_texture_pack_open(const char *path, const char *override
     Gles2TexturePack *p = calloc(1, sizeof(*p));
     if (!p)
         return NULL;
-    p->mutex = SDL_CreateMutex();
-    p->wake = SDL_CreateCond();
-    if (!p->mutex || !p->wake) {
-        gles2_texture_pack_close(p);
-        return NULL;
-    }
     if (overrides && *overrides)
         index_local(p, overrides);
     if (path && *path) {
@@ -336,95 +315,59 @@ void gles2_texture_pack_free_image(Gles2PackImage *image) {
     stbi_image_free(image->pixels);
     *image = (Gles2PackImage){0};
 }
-static bool decode_entry(mz_zip_archive *zip, unsigned index, const Request *job, Gles2PackImage *image) {
+static bool decode_entry(mz_zip_archive *zip, unsigned index, Gles2PackTile key, unsigned limit,
+                         Gles2PackImage *image) {
     mz_zip_archive_file_stat stat;
     if (index == NO_FILE || !mz_zip_reader_file_stat(zip, index, &stat) || !stat.m_uncomp_size ||
         stat.m_uncomp_size > GLES2_TEXTURE_MAX_PNG_BYTES)
         return false;
     size_t n = 0;
     void *bytes = mz_zip_reader_extract_to_heap(zip, index, &n, 0);
-    bool ok = gles2_texture_decode_png(bytes, n, job->key.width, job->key.height, job->limit, image);
+    bool ok = gles2_texture_decode_png(bytes, n, key.width, key.height, limit, image);
     mz_free(bytes);
     return ok;
 }
-static void decode(Gles2TexturePack *p, Request *r) {
-    if (r->local) {
-        char *path = NULL;
-        if (SDL_asprintf(&path, "%s/%016" PRIx64 ".gles.png", p->overrides, r->key.hash) >= 0) {
-            SDL_RWops *file = SDL_RWFromFile(path, "rb");
-            SDL_free(path);
-            if (file) {
-                Sint64 size = SDL_RWsize(file);
-                size_t n = 0;
-                void *bytes = size > 0 && size <= GLES2_TEXTURE_MAX_PNG_BYTES ? SDL_LoadFile_RW(file, &n, 0) : NULL;
-                bool ok = gles2_texture_decode_png(bytes, n, r->key.width, r->key.height, r->limit, &r->image);
-                SDL_free(bytes);
-                SDL_RWclose(file);
-                if (ok) {
-                    r->live = false;
-                    return;
-                }
-            }
-        }
-    }
-    if (!decode_entry(&p->zip, r->files.png, r, &r->image))
-        return;
+static bool decode_local(Gles2TexturePack *p, Gles2PackTile key, unsigned limit, Gles2PackImage *image) {
+    char *path = NULL;
+    if (SDL_asprintf(&path, "%s/%016" PRIx64 ".gles.png", p->overrides, key.hash) < 0)
+        return false;
+    SDL_RWops *file = SDL_RWFromFile(path, "rb");
+    SDL_free(path);
+    if (!file)
+        return false;
+    Sint64 size = SDL_RWsize(file);
+    size_t n = 0;
+    void *bytes = size > 0 && size <= GLES2_TEXTURE_MAX_PNG_BYTES ? SDL_LoadFile_RW(file, &n, 0) : NULL;
+    SDL_RWclose(file);
+    bool ok = gles2_texture_decode_png(bytes, n, key.width, key.height, limit, image);
+    SDL_free(bytes);
+    return ok;
+}
+static bool decode_rice(Gles2TexturePack *p, ImageFiles files, Gles2PackTile key, unsigned limit,
+                        Gles2PackImage *image) {
+    if (!decode_entry(&p->zip, files.png, key, limit, image))
+        return false;
     Gles2PackImage alpha = {0};
-    if (r->files.alpha != NO_FILE && (!decode_entry(&p->zip, r->files.alpha, r, &alpha) ||
-                                      alpha.width != r->image.width || alpha.height != r->image.height)) {
-        gles2_texture_pack_free_image(&r->image);
+    if (files.alpha != NO_FILE && (!decode_entry(&p->zip, files.alpha, key, limit, &alpha) ||
+                                   alpha.width != image->width || alpha.height != image->height)) {
+        gles2_texture_pack_free_image(image);
         gles2_texture_pack_free_image(&alpha);
-        return;
+        return false;
     }
-    if (r->files.opaque || alpha.pixels)
-        for (size_t i = 0; i < (size_t)r->image.width * r->image.height * 4; i += 4)
-            r->image.pixels[i + 3] = alpha.pixels ? alpha.pixels[i] : 255;
+    if (files.opaque || alpha.pixels)
+        for (size_t i = 0; i < (size_t)image->width * image->height * 4; i += 4)
+            image->pixels[i + 3] = alpha.pixels ? alpha.pixels[i] : 255;
     gles2_texture_pack_free_image(&alpha);
 #ifndef NDEBUG
     char name[4096];
-    mz_zip_reader_get_filename(&p->zip, r->files.png, name, sizeof(name));
-    fprintf(stderr, "GLES Rice loaded: %s (%ux%u)\n", name, r->image.width, r->image.height);
+    mz_zip_reader_get_filename(&p->zip, files.png, name, sizeof(name));
+    fprintf(stderr, "GLES Rice loaded: %s (%ux%u)\n", name, image->width, image->height);
 #endif
-}
-static int SDLCALL worker(void *data) {
-    Gles2TexturePack *p = data;
-    SDL_LockMutex(p->mutex);
-    while (!p->stopping) {
-        Request *next = NULL;
-        for (unsigned i = 0; i < SDL_arraysize(p->requests); ++i) {
-            Request *r = &p->requests[i];
-            if (r->state == QUEUED && (!next || r->sequence < next->sequence))
-                next = r;
-        }
-        if (!next) {
-            SDL_CondWait(p->wake, p->mutex);
-            continue;
-        }
-        next->state = WORKING;
-        SDL_UnlockMutex(p->mutex);
-        decode(p, next);
-        SDL_LockMutex(p->mutex);
-        next->state = FINISHED;
-    }
-    SDL_UnlockMutex(p->mutex);
-    return 0;
+    return true;
 }
 void gles2_texture_pack_close(Gles2TexturePack *p) {
     if (!p)
         return;
-    if (p->thread) {
-        SDL_LockMutex(p->mutex);
-        p->stopping = true;
-        SDL_CondSignal(p->wake);
-        SDL_UnlockMutex(p->mutex);
-        SDL_WaitThread(p->thread, NULL);
-    }
-    if (p->wake)
-        SDL_DestroyCond(p->wake);
-    if (p->mutex)
-        SDL_DestroyMutex(p->mutex);
-    for (unsigned i = 0; i < SDL_arraysize(p->requests); ++i)
-        gles2_texture_pack_free_image(&p->requests[i].image);
     if (p->zip.m_pState)
         mz_zip_reader_end(&p->zip);
     if (p->rice)
@@ -448,10 +391,12 @@ static size_t match_position(const Gles2TexturePack *p, uint64_t hash) {
     }
     return lo;
 }
-static void remember(Gles2TexturePack *p, const Request *r) {
-    size_t i = match_position(p, r->key.hash);
-    if (i < p->match_count && p->matches[i].hash == r->key.hash)
+void gles2_texture_pack_remember(Gles2TexturePack *p, uint64_t hash, size_t source) {
+    size_t i = match_position(p, hash);
+    if (i < p->match_count && p->matches[i].hash == hash) {
+        p->matches[i].source = source;
         return;
+    }
     if (p->match_count == p->match_capacity) {
         size_t cap = p->match_capacity ? p->match_capacity * 2 : 64;
         if (cap > SIZE_MAX / sizeof(Match))
@@ -463,83 +408,44 @@ static void remember(Gles2TexturePack *p, const Request *r) {
         p->match_capacity = cap;
     }
     memmove(p->matches + i + 1, p->matches + i, (p->match_count - i) * sizeof(Match));
-    p->matches[i] = (Match){r->key.hash, r->files};
+    p->matches[i] = (Match){hash, source};
     ++p->match_count;
 }
-bool gles2_texture_pack_take(Gles2TexturePack *p, Gles2PackTile *key, Gles2PackImage *image) {
-    if (!p || !p->thread)
+bool gles2_texture_pack_known(const Gles2TexturePack *p, uint64_t hash, size_t *source) {
+    size_t i = match_position(p, hash);
+    if (i == p->match_count || p->matches[i].hash != hash)
         return false;
-    SDL_LockMutex(p->mutex);
-    Request *next = NULL;
-    for (unsigned i = 0; i < SDL_arraysize(p->requests); ++i) {
-        Request *r = &p->requests[i];
-        if (r->state == FINISHED && r->image.pixels && (!next || r->sequence < next->sequence))
-            next = r;
-    }
-    if (next) {
-        if (next->live)
-            remember(p, next);
-        *key = next->key;
-        *image = next->image;
-        *next = (Request){0};
-    }
-    SDL_UnlockMutex(p->mutex);
-    return next != NULL;
+    *source = p->matches[i].source;
+    return true;
 }
-Gles2PackStatus gles2_texture_pack_request(Gles2TexturePack *p, Gles2PackTile key, const Tile *tile, unsigned tlut,
-                                           const Gles2RiceWord words[512], unsigned limit) {
-    if (!p)
+
+bool gles2_texture_pack_local(const Gles2TexturePack *p, uint64_t hash, size_t *source) {
+    if (!p->overrides)
+        return false;
+    const uint64_t *id = bsearch(&hash, p->local_ids, p->local_count, sizeof(hash), by_id);
+    if (!id)
+        return false;
+    *source = p->count + (size_t)(id - p->local_ids);
+    return true;
+}
+
+Gles2PackStatus gles2_texture_pack_rice(Gles2TexturePack *p, Gles2PackTile key, const Tile *tile, unsigned tlut,
+                                        const Gles2RiceWord words[512], size_t *source) {
+    if (!p->rice)
         return GLES2_PACK_MISS;
-    SDL_LockMutex(p->mutex);
-    Request *slot = NULL;
-    for (unsigned i = 0; i < SDL_arraysize(p->requests); ++i) {
-        Request *r = &p->requests[i];
-        if (r->state != EMPTY && r->key.hash == key.hash) {
-            Gles2PackStatus status = GLES2_PACK_PENDING;
-            if (r->state == FINISHED && !r->image.pixels) {
-                status = r->incomplete ? GLES2_PACK_INCOMPLETE : GLES2_PACK_MISS;
-                *r = (Request){0};
-            }
-            SDL_UnlockMutex(p->mutex);
-            return status;
-        }
-        if (r->state == EMPTY || (!slot && r->state == FINISHED && !r->image.pixels))
-            slot = r;
-    }
-    SDL_UnlockMutex(p->mutex);
-    size_t i = match_position(p, key.hash);
-    bool live = i == p->match_count || p->matches[i].hash != key.hash, missing = false;
-    ImageFiles files = {NO_FILE, NO_FILE, false};
-    if (!live)
-        files = p->matches[i].files;
-    else if (p->rice) {
-        char keys[2][22];
-        missing = !rice_keys(p->rice, tile, tlut, words, key.width, key.height, keys[0], keys[1]);
-        RiceEntry *entry = find_rice(p, keys);
-        if (entry)
-            files = entry->files;
-    }
-    bool local = p->overrides && bsearch(&key.hash, p->local_ids, p->local_count, sizeof(key.hash), by_id);
-    if (!local && files.png == NO_FILE)
-        return missing ? GLES2_PACK_INCOMPLETE : GLES2_PACK_MISS;
-    if (!slot)
-        return GLES2_PACK_PENDING;
-    SDL_LockMutex(p->mutex);
-    if (!p->thread)
-        p->thread = SDL_CreateThread(worker, "Texture decoder", p);
-    if (!p->thread) {
-        SDL_UnlockMutex(p->mutex);
+    char keys[2][22];
+    if (!rice_keys(p->rice, tile, tlut, words, key.width, key.height, keys[0], keys[1]))
+        return GLES2_PACK_INCOMPLETE;
+    RiceEntry *entry = find_rice(p, keys);
+    if (!entry || entry->files.png == NO_FILE)
         return GLES2_PACK_MISS;
-    }
-    *slot = (Request){.state = QUEUED,
-                      .key = key,
-                      .sequence = ++p->sequence,
-                      .limit = limit,
-                      .files = files,
-                      .local = local,
-                      .live = live,
-                      .incomplete = missing};
-    SDL_CondSignal(p->wake);
-    SDL_UnlockMutex(p->mutex);
-    return GLES2_PACK_PENDING;
+    *source = (size_t)(entry - p->entries);
+    return GLES2_PACK_FOUND;
+}
+
+bool gles2_texture_pack_decode(Gles2TexturePack *p, size_t source, Gles2PackTile key, unsigned limit,
+                               Gles2PackImage *image) {
+    if (source >= p->count)
+        return decode_local(p, key, limit, image);
+    return decode_rice(p, p->entries[source].files, key, limit, image);
 }

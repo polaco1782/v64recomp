@@ -11,7 +11,8 @@ def write_config(profile, metadata, output, startup):
         'gControllerPads','gControllerBits','gEepromProbe','gSaveBuffer','gGlobalTimer',
         'gPhysicalFramebuffers','gPhysicalZBuffer','gGfxVblankQueue','gGameVblankQueue',
         'gCurrentArea','sSegmentTable','gGdCtrl','gCurrLevelNum','gCurrSaveFileNum',
-        'sMenuSelectedFile','sLevelScriptCommand','gMarioState','gCamera','gDebugLevelSelect'))
+        'sMenuSelectedFile','sLevelScriptCommand','gMarioState','gCamera','gDebugLevelSelect',
+        'gLakituState','sCurrPlayMode','gCurrDemoInput','sSurfacePool','gSurfacesAllocated'))
 
 
 def write_report(rom, profile, metadata, report, output):

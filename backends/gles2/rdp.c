@@ -13,6 +13,8 @@ static void rgba(uint32_t bits, float *c) {
 static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     if (!s->batch_count)
         return;
+    recomp_gles2_begin_wireframe_draw(s);
+    Surface *mid = s->interpolation ? recomp_gles2_midpoint_target(s) : NULL;
     Program *p = recomp_gles2_combiner(s);
     s->gl.UseProgram(p->id);
     s->gl.Uniform4fv(p->uv_bounds, 1, uv_bounds);
@@ -73,6 +75,11 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     bool force_blend = s->other_low & 0x4000;
     if (s->screen_effects) {
         bool geometry = s->depth_test && !s->drawing_rectangle && s->color_siz >= 2;
+        if (geometry && s->level_reflections) {
+            recomp_gles2_store_reflection(s, s->surface);
+            if (mid)
+                recomp_gles2_store_reflection(s, mid);
+        }
         if (geometry && s->torch_mode && s->surface->light_serial != s->light_serial) {
             s->surface->lights = s->task_lights;
             s->surface->light_serial = s->light_serial;
@@ -110,11 +117,19 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     s->gl.VertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, uv));
     s->gl.VertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, fog));
     s->gl.VertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, reciprocal));
-    if (s->wireframe && !s->drawing_rectangle && p->cycle != 3)
+    if (s->wireframe && (!s->drawing_rectangle || s->texture_enabled))
         recomp_gles2_draw_wireframe(s, p);
     else
         s->gl.DrawArrays(GL_TRIANGLES, 0, (GLsizei)s->batch_count);
 
+    if (mid) {
+        s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
+        if (!s->drawing_rectangle)
+            s->gl.BufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(s->batch_count * sizeof(Vertex)),
+                             recomp_gles2_midpoint_batch(s), GL_STREAM_DRAW);
+        s->gl.DrawArrays(GL_TRIANGLES, 0, (GLsizei)s->batch_count);
+        s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
+    }
     s->color_dirty = true;
     s->batch_count = 0;
 }
@@ -158,7 +173,8 @@ static void rectangle(RecompRDPGles2 *s, float x0, float y0, float x1, float y1,
         q[i].uv[0] = u + (flip ? y[i] - y0 : x[i] - x0) * du;
         q[i].uv[1] = v + (flip ? x[i] - x0 : y[i] - y0) * dv;
     }
-    const unsigned order[] = {0, 1, 2, 0, 2, 3};
+    /* The first four vertices also trace the rectangle's wireframe perimeter. */
+    const unsigned order[] = {0, 1, 2, 3, 0, 2};
     for (unsigned i = 0; i < 6; i++)
         s->batch[s->batch_count++] = q[order[i]];
 
@@ -192,6 +208,13 @@ static void texture_rectangle(RecompRDPGles2 *s, uint32_t w0, uint32_t w1, uint3
     s->texture_enabled = enabled;
     s->texture_tile = tile;
     s->textures_dirty = true;
+}
+static void clear_color(RecompRDPGles2 *s, const Surface *f) {
+    s->gl.Clear(GL_COLOR_BUFFER_BIT);
+    if (f->scene_depth) {
+        const GLfloat empty[4] = {0, 0, 0, 1};
+        s->gl.ClearBufferfv(GL_COLOR, 1, empty);
+    }
 }
 static bool consume_rdp(RecompRDPGles2 *s, uint32_t w0, uint32_t w1) {
     unsigned op = w0 >> 24;
@@ -329,6 +352,8 @@ static bool consume_rdp(RecompRDPGles2 *s, uint32_t w0, uint32_t w1) {
                 return true;
             }
             if (cycle == 3) {
+                recomp_gles2_begin_wireframe_draw(s);
+                Surface *mid = s->interpolation ? recomp_gles2_midpoint_target(s) : NULL;
                 uint8_t p[4];
                 if (s->color_siz == 1) {
                     recomp_gles2_upload_i8(s, x0, y0, x1, y1, true);
@@ -344,13 +369,13 @@ static bool consume_rdp(RecompRDPGles2 *s, uint32_t w0, uint32_t w1) {
                 s->gl.Scissor((GLint)(x0 * s->render_scale), (GLint)(((int)s->height - (int)y1) * (int)s->render_scale),
                               (GLsizei)((x1 - x0) * s->render_scale), (GLsizei)((y1 - y0) * s->render_scale));
                 s->gl.ClearColor((float)p[0] / 255, (float)p[1] / 255, (float)p[2] / 255, (float)p[3] / 255);
-                s->gl.Clear(GL_COLOR_BUFFER_BIT);
-                if (s->surface->scene_depth) {
-                    const GLfloat empty[4] = {0, 0, 0, 1};
-                    s->gl.ClearBufferfv(GL_COLOR, 1, empty);
+                clear_color(s, s->surface);
+                if (mid) {
+                    s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
+                    clear_color(s, mid);
+                    s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
                 }
                 s->color_dirty = true;
-
             } else {
                 bool enabled = s->texture_enabled;
                 s->texture_enabled = false;
@@ -398,6 +423,7 @@ static bool rdp_triangle_mesh(RecompRDPGles2 *s, const uint32_t *words, size_t c
      * coplanar planes stay visible, independent of render scale/GL depth bits.
      * Updating triangles retain their original depth values. */
     float bias = mesh.depth && (mode & 0xc00) == 0xc00 && !(mode & 0x20) ? mesh.depth_delta : 0;
+    unsigned first = s->batch_count;
     for (unsigned i = 0; i < mesh.count; i++) {
         const RecompRdpVertex *source = &mesh.vertices[i];
         Vertex *v = &s->batch[s->batch_count++];
@@ -415,14 +441,12 @@ static bool rdp_triangle_mesh(RecompRDPGles2 *s, const uint32_t *words, size_t c
         memcpy(v->uv, source->uv, sizeof(v->uv));
         v->reciprocal = source->reciprocal;
     }
-
+    if (s->interpolation)
+        recomp_gles2_midpoint_triangle(s, words[0] & 0xffff0000u, first);
     return true;
 }
 
 static void draw_begin(RecompRDPGles2 *s) {
-#ifdef RECOMP_GLES2_TEXTURE_PACKS
-    recomp_gles2_stream_replacements(s);
-#endif
     s->full_sync = false;
     s->started = true;
     recomp_gles2_bind_surface(s);
@@ -441,6 +465,8 @@ void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size,
         recomp_fail("invalid native RSP RDP output", 0);
     s->draw_ram = ram;
     s->rdp_perspective = false;
+    if (s->interpolation)
+        recomp_gles2_begin_interpolation(s);
     draw_begin(s);
     for (size_t offset = 0; offset < count;) {
         size_t length = recomp_gles2_command_words(words[offset], count - offset);
@@ -473,6 +499,8 @@ void recomp_rdp_gles2_draw_rdp(RecompRDPGles2 *s, uint8_t *ram, size_t ram_size,
         else
             s->gl.Finish();
     }
+    if (s->interpolation)
+        recomp_gles2_end_interpolation(s);
     s->draw_ram = s->rt->rdram;
 }
 bool recomp_rdp_gles2_full_sync(RecompRDPGles2 *s) {

@@ -49,6 +49,9 @@
     <ClInclude Include="$(RecompRoot)backends\gles2\internal.h">
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\interpolation.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2\rdp.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>

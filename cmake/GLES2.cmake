@@ -9,6 +9,7 @@ else()
     target_compile_options(recomp_rdp PRIVATE -Wall -Wextra -Werror -g1 -fno-omit-frame-pointer -fno-fast-math -ffp-contract=off)
 endif()
 add_library(recomp_rdp_gles2 STATIC
+    backends/gles2/interpolation.c
     backends/gles2/rdp.c
     backends/gles2/render_queue.c
     backends/gles2/context.c

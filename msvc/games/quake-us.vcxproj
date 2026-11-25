@@ -32,6 +32,8 @@
     <None Include="$(RecompRoot)games\quake-us\generate.py" />
     <ClCompile Include="$(RecompRoot)games\quake-us\main.c" />
     <None Include="$(RecompRoot)games\quake-us\profile.toml" />
+    <ClCompile Include="$(RecompRoot)games\quake-us\reflections.c" />
+    <ClInclude Include="$(RecompRoot)games\quake-us\reflections.h" />
     <None Include="$(RecompRoot)games\quake-us\startup-entries.json" />
     <ClCompile Include="$(RecompBuildDir)\generated\quake-us\cpu-*.c" />
     <ClCompile Include="$(RecompBuildDir)\generated\quake-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\quake-us\functions.c')" />

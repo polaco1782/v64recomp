@@ -147,8 +147,12 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
                    "  --texture-pack ZIP     Load a Rice/GLideN64 PNG archive\n"
                    "  --texture-editor       Enable the F8 texture editor\n"
 #endif
+                   "  --interpolate          Draw intermediate geometry on 60 Hz display ticks (experimental)\n"
                    "  --torch-shadows        Enable torch lighting with scene and player shadows (F1 toggles shadows)\n"
                    "  --torch-lights         Light surfaces near Zelda and Quake torches (F2 toggles the effect)\n"
+#ifdef RECOMP_LEVEL_REFLECTIONS
+                   "  --rt-reflections       Ray trace reflections against the loaded level geometry\n"
+#endif
                    "  --ssao                 Test screen-space ambient occlusion (F3 toggles the effect)\n"
                    "  --ssr                  Test screen-space reflections (F9 toggles the effect)\n"
                    "  --profile DIR          CPU totals, hot functions and call stacks in a new directory\n"
@@ -164,6 +168,10 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
 #endif
             return 1;
         }
+        if (!strcmp(arg, "--interpolate")) {
+            recomp_game_require(!setenv("RECOMP_GLES2_FPS", "60", 1), "cannot enable GLES interpolation", 0);
+            continue;
+        }
         if (!strcmp(arg, "--torch-shadows")) {
             recomp_game_require(!setenv("RECOMP_GLES2_TORCH_SHADOWS", "1", 1), "cannot enable torch shadows", 0);
             continue;
@@ -172,6 +180,12 @@ int recomp_game_options(int argc, char **argv, RecompGameOptions *o) {
             recomp_game_require(!setenv("RECOMP_GLES2_TORCH_LIGHTS", "1", 1), "cannot enable torch lights", 0);
             continue;
         }
+#ifdef RECOMP_LEVEL_REFLECTIONS
+        if (!strcmp(arg, "--rt-reflections")) {
+            recomp_game_require(!setenv("RECOMP_GLES2_RT_REFLECTIONS", "1", 1), "cannot enable level reflections", 0);
+            continue;
+        }
+#endif
         if (!strcmp(arg, "--ssao")) {
             recomp_game_require(!setenv("RECOMP_GLES2_SSAO", "1", 1), "cannot enable GLES occlusion", 0);
             continue;
