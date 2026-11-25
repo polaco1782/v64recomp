@@ -96,7 +96,7 @@ rom_sha1 = "79cd1166c365e5809dec9b62e6d40d6032d5db3a"
 rom_size = 0x1000000
 ram_size = 0x400000
 entry_symbol = "entry_point"
-code_sections = [".kernel", ".bootup", ".bootup_rodata", ".n64proc", ".gui", ".titproc", ".titproc_rodata", ".game", ".game_rodata", ".snoweffects", ".heli", ".heli_rodata", ".mgrproc", ".mgrproc_rodata", ".genproc", ".genproc_rodata"]
+code_sections = [".kernel", ".bootup", ".bootup_rodata", ".n64proc", ".gui", ".titproc", ".titproc_rodata", ".game", ".game_rodata", ".snoweffects", ".heli", ".heli_rodata", ".mgrproc", ".mgrproc_rodata", ".genproc", ".genproc_rodata", ".game_select", ".game_select_rodata", ".snoweffects_select", ".nameent", ".fire"]
 boot_sections = [".kernel"]
 
 [discovery]
@@ -115,7 +115,7 @@ entry_vram = 0x80000400
 entry_inventory = "startup-entries.json"
 regions = [
   {name = ".genproc", vram = 0x803ef230, rom_offset = 0x10b5320, size = 0xe620, overlay_group = "uso-scenes"},
-  {name = ".genproc_rodata", vram = 0x803ff020, rom_offset = 0x10c3940, size = 0x440},
+  {name = ".genproc_rodata", vram = 0x803ff020, rom_offset = 0x10c3940, size = 0x440, overlay_group = "uso-scenes"},
   {name = ".mgrproc", vram = 0x80264a90, rom_offset = 0x10b18e0, size = 0x3420, overlay_group = "uso-scenes"},
   {name = ".mgrproc_rodata", vram = 0x80263d90, rom_offset = 0x10b4d00, size = 0x620, overlay_group = "uso-scenes"},
   {name = ".heli_rodata", vram = 0x802ed560, rom_offset = 0x10b17e0, size = 0x100},
@@ -132,9 +132,15 @@ regions = [
   {name = ".titproc", vram = 0x802686d0, rom_offset = 0x1090b60, size = 0x2a20},
   {name = ".titproc_rodata", vram = 0x80263e00, rom_offset = 0x1093580, size = 0x50, overlay_group = "uso-scenes"},
   {name = ".game", vram = 0x803ecaa0, rom_offset = 0x10935d0, size = 0x11b30, overlay_group = "uso-scenes"},
-  {name = ".game_rodata", vram = 0x803ff920, rom_offset = 0x10a5100, size = 0x280},
-  {name = ".snoweffects", vram = 0x803ca590, rom_offset = 0x10a5380, size = 0xa900},
+  {name = ".game_rodata", vram = 0x803ff920, rom_offset = 0x10a5100, size = 0x280, overlay_group = "uso-scenes"},
+  {name = ".snoweffects", vram = 0x803ca590, rom_offset = 0x10a5380, size = 0xa900, overlay_group = "uso-scenes"},
   {name = ".heli", vram = 0x802dee00, rom_offset = 0x10afc80, size = 0x1b60},
+  # Name-entry scene allocations verified against the guest linker and relocated image.
+  {name = ".game_select", vram = 0x803e5e10, rom_offset = 0x10c3d80, size = 0x11b30, overlay_group = "uso-scenes"},
+  {name = ".game_select_rodata", vram = 0x803f8c90, rom_offset = 0x10d58b0, size = 0x280, overlay_group = "uso-scenes"},
+  {name = ".snoweffects_select", vram = 0x803c3900, rom_offset = 0x10d5b30, size = 0xa900, overlay_group = "uso-scenes"},
+  {name = ".nameent", vram = 0x803fe4d0, rom_offset = 0x10e0430, size = 0x1510, overlay_group = "uso-scenes"},
+  {name = ".fire", vram = 0x802e1fa0, rom_offset = 0x10e1940, size = 0x3b0},
 ]
 uso = {module_rom_offset = 0xd9fe28, text_rom_offset = 0xdd0a6c, text_vram = 0x80095e50, text_size = 0x89910, reloc_rom_offset = 0xe620ec, reloc_count = 15543, symbols = "uso-symbols.json", sha256 = "551aab4e973d0a93f9e16ba0ca176af4c3163fc51e5bd603c825815c520606df"}
 uso_modules = [
@@ -146,6 +152,10 @@ uso_modules = [
   {name = ".heli", module_rom_offset = 0x7e3d9a, text_rom_offset = 0x7f0a82, text_vram = 0x802dee00, text_size = 0x1b60, reloc_rom_offset = 0x7f2d3e, reloc_count = 214, symbols = "heli-symbols.json", sha256 = "31295bacd9903e4110100c1c13e364e165b473eb170ae30c92a2e880115fd1b2", rodata = {name = ".heli_rodata", rom_offset = 0x7e3daa, vram = 0x802ed560, size = 0x100, reloc_rom_offset = 0x7f3dbe, reloc_count = 8, sha256 = "d9d19aa4cbfb05d331a36a1b5a5cf7efb1eee5914d0bb90f1361bd908349e0f7"}},
   {name = ".mgrproc", module_rom_offset = 0x5a0184, text_rom_offset = 0x5a0a56, text_rom_size = 0x1ed2, compression = "yay0", text_vram = 0x80264a90, text_size = 0x3420, reloc_rom_offset = 0x5a336c, reloc_count = 606, symbols = "mgrproc-symbols.json", sha256 = "1eadb133e712cc3d4535ced5fbb4d5255b13366272c95bd298bed90b30c598c2", rodata = {name = ".mgrproc_rodata", rom_offset = 0x5a01a0, vram = 0x80263d90, size = 0x620, reloc_rom_offset = 0x5a5b20, reloc_count = 14, sha256 = "582f4e1088daaa949cc946bcaec965369b8d8e2d75ed1f4de8c29b4852f7d6c6"}},
   {name = ".genproc", module_rom_offset = 0x5bca4e, text_rom_offset = 0x5bd2c2, text_rom_size = 0x75a8, compression = "yay0", text_vram = 0x803ef230, text_size = 0xe620, reloc_rom_offset = 0x5c5932, reloc_count = 2652, symbols = "genproc-symbols.json", sha256 = "173f47856693fbcdca60361a3fb2a542e6fb919b0aaf2eab28142ceaed9c8fb0", rodata = {name = ".genproc_rodata", rom_offset = 0x5bca6a, vram = 0x803ff020, size = 0x440, reloc_rom_offset = 0x5ce902, reloc_count = 76, sha256 = "d4ee74f6e71fff092ac17026a599d12cbdbe47cdebe79c21e94adff18626ccbf"}},
+  {name = ".game_select", module_rom_offset = 0x7cc900, text_rom_offset = 0x7ccf86, text_rom_size = 0x9d70, compression = "yay0", text_vram = 0x803e5e10, text_size = 0x11b30, reloc_rom_offset = 0x7d7d3a, reloc_count = 2038, symbols = "game-select-symbols.json", sha256 = "7bc27419cc10170b29be6518f6b20092bce0b1e734257ef40852368dd771ef58", rodata = {name = ".game_select_rodata", rom_offset = 0x7cc91c, vram = 0x803f8c90, size = 0x280, reloc_rom_offset = 0x7deaae, reloc_count = 42, sha256 = "2fa3b5c75844a9fb2fc04bf62146af4a4a4c66047ae3728398b47daab54ca6b2"}},
+  {name = ".snoweffects_select", module_rom_offset = 0x9023d2, text_rom_offset = 0x909926, text_vram = 0x803c3900, text_size = 0xa900, reloc_rom_offset = 0x914b7a, reloc_count = 562, symbols = "snoweffects-select-symbols.json", sha256 = "995cc626fa6d7c183cc991f51fb6be6318d736813c11ec8fd7d9294b01cd1e9d", header_word = 0x0},
+  {name = ".nameent", module_rom_offset = 0x64c6c2, text_rom_offset = 0x64c89a, text_vram = 0x803fe4d0, text_size = 0x1510, reloc_rom_offset = 0x64e116, reloc_count = 149, symbols = "nameent-symbols.json", sha256 = "eeb503df8e79fa233f5974e68d0d0c6396c17d6e3578a8cb2a66ae834bd7fc34"},
+  {name = ".fire", module_rom_offset = 0x7f3e5e, text_rom_offset = 0x7f621a, text_vram = 0x802e1fa0, text_size = 0x3b0, reloc_rom_offset = 0x7f6912, reloc_count = 47, symbols = "fire-symbols.json", sha256 = "67d076a5c2a7038a4d7ede37d0771e0e059b5340139d5515bf6240cfb07b3564"},
 ]
 uso_rodata = {rom_offset = 0xd9fe44, vram = 0x80065240, size = 0x25a0, reloc_rom_offset = 0xe95950, reloc_count = 922, sha256 = "9dda666006893a12307e02c08293f2d25e73d3c3d67770100c87c5c798537f38"}
 allow_registered_indirect_calls = true
@@ -194,6 +204,15 @@ transfers = [
   {pc = 0x80000430, expected_word = 0x01400008, kind = "tail", targets = [0x80000460]},
 ]
 jump_tables = [
+  # Same bounded switches at the second game.uso allocation; all target words match crash RAM.
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803e6bc8, expected_word = 0x01200008, table_vram = 0x803f8ce0, count = 4, sha256 = "af427e2021ea93c161a2adc65b4fa415a8113081cbf6e27b71e3c9ab34114156"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803f4b20, expected_word = 0x01c00008, table_vram = 0x803f8ea0, count = 5, sha256 = "387217224733a0ac34910fcc920c066322a21552e3050a850eca05af46ce3d97"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803f4c04, expected_word = 0x01c00008, table_vram = 0x803f8eb4, count = 5, sha256 = "e0fb57dddd140e4208353b4411c7193b3f4d25899980d6a7583da9c083b61e11"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803f76e0, expected_word = 0x01c00008, table_vram = 0x803f8ef0, count = 5, sha256 = "c5d837e87d7b15b9117c8f337799a8d8b3b78a068ec8287634337bce1d45e42a"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803ef4b0, expected_word = 0x03200008, table_vram = 0x803f8d90, count = 4, sha256 = "4278eadf580680da61d35d3eb52d1e9c05616010b5ec8a954296482140b6760c"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803e67e8, expected_word = 0x01000008, table_vram = 0x803f8cb0, count = 6, sha256 = "0c472de810f7d445191c382ff37ffcb759dd140cbadcb6548b271497ed5d21cb"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803e6864, expected_word = 0x01600008, table_vram = 0x803f8cc8, count = 6, sha256 = "fd57b76f34ea7d5bea9ca9621aaba22489fd2b242c447513499cc577ca1b2b61"},
+  {section = ".game_select", table_section = ".game_select_rodata", pc = 0x803e677c, expected_word = 0x01e00008, table_vram = 0x803f8c94, count = 7, sha256 = "45f93431764fa087bc8d4fef0035190f093904f0b08d27805a581d716de4428d"},
   # genproc unsigned bound 8 at 0x803f4cac; complete ROD table matches menu RAM.
   {section = ".genproc", table_section = ".genproc_rodata", pc = 0x803f4cc4, expected_word = 0x01000008, table_vram = 0x803ff190, count = 8, sha256 = "74b4e3d13ac2481ef8db09498f7e25e762ae668376f1f91edd00acadee5fe35b"},
   # genproc unsigned bound 11 at 0x803f527c; complete ROD table matches menu RAM.

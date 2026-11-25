@@ -14,10 +14,11 @@ gameplay save/reload remain unvalidated. See `RESUME.md` for exact evidence.
 The November 7 SP-status crash came from an unrecognized `osSpTaskYielded`
 variant at `0x80119f90`, which called `__osSpGetStatus` and read `0xa4040010`.
 Its complete ROM/RAM-verified body now uses the shared native task handler,
-alongside the existing load/start/yield hooks. Both builds pass. Current menu
-replays stop at a separate scene-image mismatch at `0x803f0c2c`; Debug visibly
-reaches Select Rider first. The rare yield timing was not reproduced before
-that stop, so these replays do not establish complete runtime acceptance.
+alongside the existing load/start/yield hooks. Both builds pass. The subsequent crash at
+`0x803f0c2c` came from a second allocation of `game.uso` used with the name-entry
+module. The port now compiles that layout and the accompanying snow-effects and
+name-entry code. The scene manager accepts both verified states of its imports.
+A 2,600-frame desktop Release replay completed and rendered riders on the course.
 
 In browser Debug, the scheduler also called `osSpTaskYielded` with a cleared
 task slot. The verified SDK body only accesses the descriptor if SP status bit
@@ -57,6 +58,11 @@ control and adjustable field of view are not provided while the riding camera
 and its visibility rules are unvalidated.
 
 ## GLES2 status
+
+The title demo draws its mountain panorama with `G_RM_PASS` and zero
+primitive alpha. The shared GLES renderer now copies the panorama color for
+that blender mode. Previously, alpha blending left earlier terrain and rider
+positions visible across the sky.
 
 Build with `python3 tools/build.py 1080-us --release --gles`. An offscreen
 Release run completed 180 host frames. Debug captures showed the publisher
@@ -137,8 +143,8 @@ RECOMP_LIVE_PATCH_DIR=off RECOMP_LIVE_AUTO=off RECOMP_LIVE_AI=off \
   --output build/1080-us-debug/menu-replay --capture-at 48 --timeout 90
 ```
 
-`build/1080-us-debug/uso-symbol-review/report.json` covers the current 2,489
-declared CPU Text entries and reports no unresolved ordinary CPU transfers.
+`build/1080-us-debug/uso-symbol-review/report.json` covers the current 2,793
+declared CPU Text entries across the measured allocations and reports no unresolved ordinary CPU transfers.
 Privileged boundaries remain explicit; this report is not gameplay acceptance.
 
 The earlier successful intro report and 20/27-second captures are retained in

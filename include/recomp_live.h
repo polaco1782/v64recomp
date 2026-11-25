@@ -3,7 +3,7 @@
 
 #include "recomp.h"
 
-#define RECOMP_LIVE_ABI 1u
+#define RECOMP_LIVE_ABI 2u
 
 typedef struct RecompLiveTransfer {
     uint32_t site, target, section;

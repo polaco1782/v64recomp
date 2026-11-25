@@ -289,10 +289,11 @@ def translate(rom: bytes, metadata: dict, profile: dict, output: Path,
     source.extend(['};', 'const size_t recomp_function_count = sizeof(recomp_functions) / sizeof(recomp_functions[0]);',
                    'const bool recomp_boot_sections[] = {' + ', '.join('true' if s['loaded_at_boot'] else 'false' for s in metadata['sections']) + '};',
                    'const size_t recomp_section_count = sizeof(recomp_boot_sections) / sizeof(recomp_boot_sections[0]);'])
-    source.extend(['#ifdef RECOMP_DEBUG', f'const char recomp_trace_layout[] = "{layout_hash}";', 'const RecompTraceSection recomp_trace_sections[] = {',
+    source.extend(['const RecompCodeRegion recomp_code_regions[] = {',
                    *(f'    {{UINT32_C(0x{s["vram"]:08x}), UINT32_C(0x{s["size"]:x})}},' for s in metadata['sections']),
-                   '};', '#endif'])
-    header.extend(['#ifdef RECOMP_DEBUG', 'extern const char recomp_trace_layout[];', 'extern const RecompTraceSection recomp_trace_sections[];', '#endif'])
+                   '};', '#ifdef RECOMP_DEBUG', f'const char recomp_trace_layout[] = "{layout_hash}";', '#endif'])
+    header.extend(['extern const RecompCodeRegion recomp_code_regions[];', '#ifdef RECOMP_DEBUG',
+                   'extern const char recomp_trace_layout[];', '#endif'])
     header.extend(['extern const RecompFunctionEntry recomp_functions[];', 'extern const size_t recomp_function_count;',
                    'extern const bool recomp_boot_sections[];', 'extern const size_t recomp_section_count;', '#endif'])
     for filename,value in (('generated.h','\n'.join(header)+'\n'),('functions.c','\n\n'.join(source)+'\n')):

@@ -379,7 +379,6 @@ void recomp_runtime_destroy(Runtime *rt) {
         rt->destroy_clock(rt);
     recomp_timing_destroy(rt);
     recomp_live_destroy(rt);
-    recomp_interpreter_destroy(rt);
 #ifdef RECOMP_DEBUG
     recomp_debug_close_edges(rt);
 #endif
@@ -428,20 +427,32 @@ static RecompFunction loaded_function(Runtime *rt, uint32_t address, size_t firs
     return result;
 }
 
-/* A context-bearing dispatch may complete an interpreted call here. Pointer lookups always return a callable. */
-static RecompFunction resolve_call(Runtime *rt, uint32_t address, uint32_t site, uint32_t section, MipsContext *ctx) {
-    uint32_t guest_address = address;
+uint32_t recomp_loaded_code_section(const Runtime *rt, uint32_t address) {
+    uint32_t section = UINT32_MAX;
+    if (!rt->code_regions)
+        return section;
+    for (size_t i = 0; i < rt->section_count; i++) {
+        const RecompCodeRegion *region = &rt->code_regions[i];
+        if (!rt->section_loaded[i] || address < region->vram || (uint64_t)(address - region->vram) + 4 > region->size)
+            continue;
+        if (section != UINT32_MAX)
+            return UINT32_MAX;
+        section = (uint32_t)i;
+    }
+    return section;
+}
+
+RecompFunction recomp_lookup_at(Runtime *rt, uint32_t address, uint32_t site, uint32_t section) {
     recomp_record_call(rt, address);
     address = recomp_canonical_function_address(rt, address);
     size_t first = first_function(rt, address);
     RecompFunction result = loaded_function(rt, address, first);
-    if (!result)
-        result = recomp_live_loaded(rt, address);
-    if (!result && ctx && guest_address == address &&
-        recomp_interpret_call(rt, ctx, address, site, section, false, (uint32_t)ctx->gpr[31]))
-        return NULL;
-    if (!result && (first == rt->function_count || recomp_loaded_code_section(rt, address) != UINT32_MAX))
-        result = recomp_live_lookup_at(rt, address, site, section);
+    if (!result) {
+        if (first == rt->function_count || recomp_loaded_code_section(rt, address) != UINT32_MAX)
+            result = recomp_live_lookup_at(rt, address, site, section);
+        else
+            result = recomp_live_loaded(rt, address);
+    }
     if (!result)
         recomp_fail("unregistered or unloaded function", address);
     if (rt->prepare_call)
@@ -453,14 +464,8 @@ RecompFunction recomp_lookup(Runtime *rt, uint32_t address) {
     return recomp_lookup_at(rt, address, 0, 0);
 }
 
-RecompFunction recomp_lookup_at(Runtime *rt, uint32_t address, uint32_t site, uint32_t section) {
-    return resolve_call(rt, address, site, section, NULL);
-}
-
 void recomp_call_at(Runtime *rt, MipsContext *ctx, uint32_t address, uint32_t site, uint32_t section) {
-    RecompFunction fn = resolve_call(rt, address, site, section, ctx);
-    if (fn)
-        fn(rt, ctx);
+    recomp_lookup_at(rt, address, site, section)(rt, ctx);
 }
 
 bool recomp_has_function(Runtime *rt, uint32_t address) {
@@ -468,9 +473,7 @@ bool recomp_has_function(Runtime *rt, uint32_t address) {
     return loaded_function(rt, address, first_function(rt, address)) != NULL;
 }
 
-static uint32_t map_ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write, bool *mapped) {
-    if (mapped)
-        *mapped = true;
+static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write) {
     uint32_t result = address;
     if (recomp_direct_address(address))
         result &= UINT32_C(0x1fffffff);
@@ -485,50 +488,26 @@ static uint32_t map_ram_address(Runtime *rt, uint32_t address, size_t bytes, boo
                 (uint64_t)address >= (uint64_t)m->virtual_base + 2 * m->page_size)
                 continue;
             if (found) {
-                if (mapped)
-                    return UINT32_MAX;
                 recomp_fail("overlapping native page mappings", address);
             }
             found = true;
             unsigned page = (address - m->virtual_base) / m->page_size;
             uint32_t offset = (address - m->virtual_base) % m->page_size;
             if (m->physical[page] == UINT32_MAX) {
-                if (mapped)
-                    return UINT32_MAX;
                 recomp_fail("invalid native page", address);
             }
             result = m->physical[page] + offset;
             size_t span = m->page_size - offset;
-            if (bytes > span &&
-                ((uint64_t)address + span > UINT32_MAX ||
-                 map_ram_address(rt, address + (uint32_t)span, bytes - span, write, mapped) != result + span)) {
-                if (mapped)
-                    return UINT32_MAX;
+            if (bytes > span && ((uint64_t)address + span > UINT32_MAX ||
+                                 ram_address(rt, address + (uint32_t)span, bytes - span, write) != result + span)) {
                 recomp_fail("noncontiguous native page span", address);
             }
         }
-        if (mapped)
-            *mapped = found;
     }
     if (result >= rt->rdram_size || bytes > rt->rdram_size - result) {
-        if (mapped)
-            return UINT32_MAX;
         fail_ram("RAM address out of range", address, bytes);
     }
     return result;
-}
-
-static uint32_t ram_address(Runtime *rt, uint32_t address, size_t bytes, bool write) {
-    return map_ram_address(rt, address, bytes, write, NULL);
-}
-
-// An inaccessible speculative instruction must leave the regular miss handler available.
-bool recomp_probe_instruction(Runtime *rt, uint32_t pc, uint32_t *word, bool *mapped) {
-    uint32_t physical = map_ram_address(rt, pc, 4, false, mapped);
-    if (physical == UINT32_MAX)
-        return false;
-    *word = recomp_ram_load32(rt, physical);
-    return true;
 }
 
 uint32_t recomp_ram_address(Runtime *rt, uint32_t address, size_t bytes) {

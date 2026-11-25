@@ -89,7 +89,7 @@ def main() -> int:
                                       'site': f'0x{args.site:08x}', 'section': args.section, 'target_section': args.target_section, 'kind': args.kind,
                                       'reason': reason, 'build_log': str(log_path)}, indent=2) + '\n')
         print(f'live repair: automatic build stopped: {reason}; review {report}', file=sys.stderr)
-        if args.ai or os.environ.get('RECOMP_LIVE_AI') == '1':
+        if args.ai or os.environ.get('RECOMP_LIVE_AI', '1') == '1':
             return 0 if handoff(args.game, args.address, args.site, args.section, args.kind,
                                 build_dir, patch_dir, reason, report, args.target_section) else 1
         return 1

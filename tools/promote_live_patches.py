@@ -85,11 +85,13 @@ def read_published(patch_dir: Path, current: dict, coverage_path: Path) -> tuple
                     == (current['rom_sha1'], current['rom_size']))
         report = json.loads(snapshot.with_name('coverage.json').read_text())
         selected = [f for f in report['functions'] if f['selected']]
-        if (len(selected) != 1 or selected[0]['vram'] != address or selected[0]['status'] != 'ready'
+        roots = [f for f in selected if f['vram'] == address]
+        if (len(roots) != 1 or not report.get('generated')
+                or any(f['status'] != 'ready' or f['section'] != roots[0]['section'] for f in selected)
                 or report['rom_sha1'] != metadata['rom_sha1']):
             raise RecompError(f'cannot identify selected live function: {control.name}')
         matches = [f for f in metadata['functions'] if f['vram'] == address
-                   and f['section'] == selected[0]['section'] and f['size'] == selected[0]['size']]
+                   and f['section'] == roots[0]['section'] and f['size'] == roots[0]['size']]
         if len(matches) != 1:
             raise RecompError(f'live function is missing or ambiguous: {control.name}')
         function = matches[0]
@@ -113,11 +115,25 @@ def read_published(patch_dir: Path, current: dict, coverage_path: Path) -> tuple
             raise RecompError(f'current function differs from live build: {control.name}')
         if not existing and function.get('origin') != 'profile-root':
             raise RecompError(f'live function needs a checked table or inventory entry: {control.name}')
+        callees = []
+        for entry in selected:
+            if entry['vram'] == address:
+                continue
+            callee = function_at(metadata, entry['vram'], old_section['id'])
+            if not callee or callee['origin'] != 'direct-call' or callee['size'] != entry['size']:
+                raise RecompError(f'invalid bundled live callee: {control.name}')
+            compiled = function_at(current, entry['vram'], section)
+            if compiled and (compiled['size'], compiled['sha256']) != (callee['size'], callee['sha256']):
+                raise RecompError(f'current callee differs from live build: {control.name}')
+            if not same_rom and not compiled:
+                raise RecompError(f'bundled callee still needs its original prepared ROM: {control.name}')
+            callees.append(dict(address=entry['vram'], section=section, size=callee['size'],
+                                sha256=callee['sha256'], registered=compiled is not None))
         published.append({'address': address, 'section': section,
                           'section_name': current_section['name'],
                           'sha256': function['sha256'], 'size': function['size'],
                           'registered': existing is not None, 'control': control, 'module': module,
-                          'snapshot': snapshot.parent})
+                          'snapshot': snapshot.parent, 'callees': callees})
     return published, retained
 
 
@@ -228,7 +244,7 @@ def promote(game: str, build_dir: Path, patch_dir: Path) -> None:
     if retained:
         for control in retained:
             print(f'Already compiled {control.name}; missing live snapshot, preserving repair files')
-        if all(item['registered'] for item in published):
+        if all(item['registered'] and all(c['registered'] for c in item['callees']) for item in published):
             return
     if not published:
         if any(patch_dir.iterdir()):
@@ -253,11 +269,14 @@ def promote(game: str, build_dir: Path, patch_dir: Path) -> None:
         # This checks discovery, ROM-bound function bodies, and translation.
         generate(game, build_dir / 'generated' / game, False)
         updated = json.loads(current_path.read_text())
-        for item in published:
-            function = function_at(updated, item['address'], item['section'])
-            if (function is None or (function['sha256'], function['size'])
-                    != (item['sha256'], item['size'])):
-                raise RecompError(f'promoted function changed: 0x{item["address"]:08x}')
+        coverage = json.loads(current_path.with_name('coverage.json').read_text())
+        ready = {(f['section'], f['vram']) for f in coverage['functions'] if f['selected'] and f['status'] == 'ready'}
+        for module in published:
+            for item in (module, *module['callees']):
+                function = function_at(updated, item['address'], item['section'])
+                if ((item['section'], item['address']) not in ready or function is None
+                        or (function['sha256'], function['size']) != (item['sha256'], item['size'])):
+                    raise RecompError(f'promoted function changed or unavailable: 0x{item["address"]:08x}')
     except Exception:
         if replacement != original:
             write_atomic(profile_path, original)
@@ -273,7 +292,8 @@ def promote(game: str, build_dir: Path, patch_dir: Path) -> None:
         control.unlink()
         module.unlink(missing_ok=True)
         shutil.rmtree(item['snapshot'])
-    print(f'Promoted {len(additions)} function roots; {len(published) - len(additions)} '
+    entries = {(entry['section'], entry['address']) for module in published for entry in (module, *module['callees'])}
+    print(f'Promoted {len(additions)} function roots; {len(entries) - len(additions)} '
           f'resolved through existing entries or discovered calls.')
 
 

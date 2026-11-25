@@ -69,23 +69,8 @@ typedef struct RecompPageMapping {
     bool installed;
 } RecompPageMapping;
 
-typedef struct RecompCodeSpan {
-    uint32_t first, last;
-} RecompCodeSpan;
-
-typedef struct RecompCodeSwitch {
-    uint32_t pc, word;
-    const uint32_t *targets;
-    size_t count;
-} RecompCodeSwitch;
-
 typedef struct RecompCodeRegion {
-    uint32_t vram, size, rom_offset;
-    const uint8_t (*prepared_page_hashes)[32]; /* SHA-256 per 256 bytes when the section is decompressed. */
-    const RecompCodeSpan *excluded;
-    size_t excluded_count;
-    const RecompCodeSwitch *switches;
-    size_t switch_count;
+    uint32_t vram, size;
 } RecompCodeRegion;
 
 struct Runtime {
@@ -116,8 +101,8 @@ struct Runtime {
     const char *live_patch_python, *live_patch_script, *live_patch_game, *live_patch_build_dir;
     void *live_modules; /* Shared repair modules; unloaded after guest threads stop. */
     const RecompCodeRegion *code_regions;
-    const char *observation_dir, *code_layout;
-    void *cpu_observations;
+    struct LiveDiscovery *live_discoveries;
+    bool live_discoveries_incomplete;
     bool platform_initialized;
     RecompTasks *tasks;
     void (*destroy_tasks)(Runtime *);
@@ -160,11 +145,8 @@ struct Runtime {
 bool recomp_runtime_init(Runtime *, size_t, const RecompFunctionEntry *, size_t, const bool *, size_t);
 void recomp_runtime_destroy(Runtime *);
 #ifdef RECOMP_DEBUG
-typedef struct RecompTraceSection {
-    uint32_t vram, size;
-} RecompTraceSection;
 void recomp_debug_open_edges(Runtime *, const char *path, const uint8_t sha1[20], const char *layout,
-                             const RecompTraceSection *, size_t);
+                             const RecompCodeRegion *, size_t);
 void recomp_debug_close_edges(Runtime *);
 extern Runtime *recomp_edge_owner;
 enum RecompEdgeKind {
@@ -219,10 +201,6 @@ static inline RecompFunction recomp_module_lookup_at(Runtime *rt, uint32_t addre
 #endif
 void recomp_call_at(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section);
 uint32_t recomp_loaded_code_section(const Runtime *, uint32_t address);
-bool recomp_interpret_call(Runtime *, MipsContext *, uint32_t target, uint32_t site, uint32_t section, bool jump,
-                           uint32_t return_address);
-void recomp_interpreter_destroy(Runtime *);
-void recomp_note_live_discovery(Runtime *, uint32_t section, uint32_t address, bool jump_target);
 bool recomp_has_function(Runtime *, uint32_t);
 bool recomp_has_section_function(Runtime *, uint32_t address, uint32_t section);
 RecompFunction recomp_live_loaded(Runtime *, uint32_t);
@@ -460,7 +438,6 @@ static inline void recomp_store64(Runtime *rt, uint32_t address, uint64_t value)
 }
 
 void recomp_copy_to_ram(Runtime *, uint32_t, const uint8_t *, size_t);
-bool recomp_probe_instruction(Runtime *, uint32_t pc, uint32_t *word, bool *mapped);
 uint32_t recomp_ram_address(Runtime *, uint32_t, size_t);
 /* Hardware/RSP bus addresses bypass CPU virtual page aliases. */
 uint32_t recomp_physical_address(Runtime *, uint32_t, size_t);

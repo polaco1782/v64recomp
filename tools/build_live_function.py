@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile one newly discovered function for a paused v64recomp process.
+"""Compile a checked guest target for a paused v64recomp process.
 
 Edit the game's checked profile/inventory first. This command verifies the
 original ROM, runs the normal game preparation and discovery hooks, and only
@@ -21,7 +21,7 @@ import uuid
 
 from common import RecompError, load_metadata, load_profile, load_rom, write_json
 from discover import discover
-from emit import FunctionRegistry, cname, decode, decode_function, emit_function, instruction_addresses, resolve_function, target
+from emit import FunctionRegistry, analyze, cname, decode, decode_function, emit_function, instruction_addresses, resolve_function, target
 from generate_game import GAMES, PROJECT
 from translate import translate
 
@@ -97,7 +97,11 @@ def verified_published_direct_caller(rom: bytes, candidate: dict, patch_dir: Pat
         if len(owners) != 1 or offset != owners[0]['rom_offset'] + pc - source:
             continue
         instruction = decode(rom[offset:offset + 4], pc)[0]
-        if instruction.opcode == 'jal' and target(instruction) == candidate['vram']:
+        if (instruction.opcode != 'jal' or target(instruction) != candidate['vram']
+                or any(site['pc'] == pc for site in owners[0].get('registered_direct_calls', []))):
+            continue
+        callee = resolve_function(FunctionRegistry(metadata['functions']), section, candidate['vram'])
+        if callee and callee['section'] == candidate['section']:
             return True
     return False
 
@@ -107,6 +111,34 @@ def cache_value(path: Path, key: str) -> str:
         if line.startswith(key + ':'):
             return line.split('=', 1)[1]
     raise RecompError(f'{key} missing from {path / "CMakeCache.txt"}')
+
+
+def live_call_tree(rom, root, metadata, baseline, registry, fpu_fr):
+    """Follow owned JALs to new guest functions in the root's loaded section."""
+    if metadata['sections'] != baseline['sections']:
+        return [root]
+    sid = root['section']
+    occupied = {pc for f in baseline['functions'] if f['section'] == sid for pc in f['instruction_addresses']}
+    seen = {root['vram']}
+    selected = [root]
+    for caller in selected:
+        if caller.get('relocatable'):
+            continue
+        dynamic = {site['pc'] for site in caller.get('registered_direct_calls', [])}
+        for i in decode_function(rom, caller):
+            if i.opcode != 'jal' or i.pc in dynamic:
+                continue
+            address = target(i)
+            if address in seen:
+                continue
+            seen.add(address)
+            callee = registry.get((sid, address))
+            if (not callee or callee['origin'] != 'direct-call' or callee.get('relocatable') or callee['discovery_errors']
+                    or not occupied.isdisjoint(callee['instruction_addresses'])):
+                continue
+            if not analyze(callee, decode_function(rom, callee), registry, fpu_fr):
+                selected.append(callee)
+    return selected
 
 
 def automatic_candidate(rom: bytes, profile: dict, address: int, build_dir: Path,
@@ -194,6 +226,7 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
     rom, prepared = original_rom, profile
     if hasattr(generator, 'prepare'):
         rom, prepared = generator.prepare(rom, prepared, output)
+    root = None
     if auto_candidate:
         root = automatic_candidate(rom, prepared, address, build_dir, patch_dir, game, section)
         if root:
@@ -232,10 +265,14 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
         raise RecompError('target does not resolve to the selected function from this site')
     if any(item.get('vram') == address for item in [*prepared.get('hooks', []), *prepared.get('boundaries', [])]):
         raise RecompError('live repair target must be translated guest code')
-    report = translate(rom, metadata, prepared, output, names=[function['name']], live_mode=True)
+    functions = [function]
+    if root and site is None:
+        baseline = load_metadata(build_dir / 'generated' / game / 'symbols.json', rom)
+        functions = live_call_tree(rom, function, metadata, baseline, registry, prepared['game'].get('fpu_fr', 0))
+    report = translate(rom, metadata, prepared, output, names=[f['name'] for f in functions], live_mode=True)
     selected = [f for f in report['functions'] if f['selected']]
-    if len(selected) != 1 or selected[0]['status'] != 'ready':
-        raise RecompError('selected function did not pass translation checks')
+    if len(selected) != len(functions) or any(f['status'] != 'ready' for f in selected):
+        raise RecompError('selected live functions did not pass translation checks')
     if resume:
         section_name = next(s['name'] for s in metadata['sections'] if s['id'] == function['section'])
         word_results = {entry['pc']: group['handler'] for group in report.get('word_result_hooks', [])
@@ -245,17 +282,23 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
                                     direct_targets={}, resume_entry=True, word_results=word_results)
         with (output / 'functions.c').open('a') as stream:
             stream.write('\n\n' + resume_code + '\n')
-    calls = sorted({(transfer['pc'], address, f['section'])
-                    for f in metadata['functions'] for transfer in f.get('indirect_transfers', [])
-                    if transfer['kind'] == 'call' and address in transfer['targets']
-                    and resolve_function(registry, f['section'], address) is function})
+    exported = {(f['section'], f['vram']) for f in functions}
+    calls = set()
+    for caller in metadata['functions']:
+        for transfer in caller.get('indirect_transfers', []):
+            if transfer['kind'] != 'call':
+                continue
+            for dest in transfer['targets']:
+                callee = resolve_function(registry, caller['section'], dest)
+                if callee and (callee['section'], dest) in exported:
+                    calls.add((transfer['pc'], dest, caller['section']))
     jumps = [(site, address, owner['section'])] if jump and site is not None else []
     sha = bytes.fromhex(profile['game']['rom_sha1'])
     lines = ['#include "generated.h"', '#include "recomp_live.h"']
     if calls:
         lines += ['static const RecompLiveTransfer allowed_calls[] = {']
         lines += [f'    {{UINT32_C(0x{source:08x}), UINT32_C(0x{target:08x}), {source_section}}},'
-                  for source, target, source_section in calls]
+                  for source, target, source_section in sorted(calls)]
         lines += ['};']
     if jumps:
         lines += ['static const RecompLiveTransfer allowed_jumps[] = {']
@@ -269,7 +312,7 @@ def build(game: str, address: int, build_dir: Path, patch_dir: Path,
               '    .runtime_size = sizeof(Runtime), .context_size = sizeof(MipsContext),',
               '    .entry_size = sizeof(RecompFunctionEntry),',
               '    .rom_sha1 = {' + ', '.join(f'0x{byte:02x}' for byte in sha) + '},',
-              '    .functions = recomp_functions, .function_count = 1,',
+              f'    .functions = recomp_functions, .function_count = {len(functions)},',
               f'    .calls = {"allowed_calls" if calls else "NULL"}, .call_count = {len(calls)},',
               f'    .jumps = {"allowed_jumps" if jumps else "NULL"}, .jump_count = {len(jumps)},',
               f'    .resume = {cname(function) + "_live_resume" if resume else "NULL"},', '};']

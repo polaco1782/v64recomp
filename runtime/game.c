@@ -1,12 +1,7 @@
 #define _GNU_SOURCE
 #include "game.h"
 #include "game_defaults.h"
-#ifndef __EMSCRIPTEN__
-#include "cpu_regions.h"
-#endif
-#ifdef RECOMP_DEBUG
 #include "generated.h"
-#endif
 #ifdef RECOMP_EMBED_ROM
 #include "embedded_rom.h"
 #endif
@@ -531,7 +526,7 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
 #ifdef RECOMP_DEBUG
     recomp_debug_trace_calls = o->trace_calls;
     if (o->edge_trace)
-        recomp_debug_open_edges(rt, o->edge_trace, sha1, recomp_trace_layout, recomp_trace_sections,
+        recomp_debug_open_edges(rt, o->edge_trace, sha1, recomp_trace_layout, recomp_code_regions,
                                 recomp_section_count);
 #endif
     /* Callers may supply options directly; keep a default crash destination. */
@@ -540,15 +535,8 @@ uint8_t *recomp_game_rom(Runtime *rt, const RecompGameOptions *o, size_t bytes, 
     if (!crash_dir)
         crash_dir = RECOMP_DEFAULT_CRASH;
     directory(crash_dir);
-#ifndef __EMSCRIPTEN__
-    const char *fallback = getenv("RECOMP_CPU_FALLBACK");
-    if (sizeof(cpu_regions) / sizeof(*cpu_regions) == rt->section_count) {
-        rt->code_regions = cpu_regions;
-        rt->code_layout = CPU_LAYOUT;
-        if (!fallback || strcmp(fallback, "0"))
-            rt->observation_dir = RECOMP_DEFAULT_OBSERVATIONS;
-    }
-#endif
+    if (rt->section_count == recomp_section_count)
+        rt->code_regions = recomp_code_regions;
     rt->live_patch_dir = RECOMP_DEFAULT_LIVE_PATCH_DIR;
     rt->live_patch_python = RECOMP_DEFAULT_LIVE_PYTHON;
     rt->live_patch_script = RECOMP_DEFAULT_LIVE_SCRIPT;

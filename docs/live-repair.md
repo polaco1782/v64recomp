@@ -3,7 +3,7 @@
 Live repair is a Debug or Release diagnostic workflow for a **running**
 game. A missing function, unsupported-function boundary, or indirect transfer
 can pause the guest before it aborts. Edit the game's checked profile or entry
-inventory, compile a one-function shared module, and let the paused process
+inventory, compile a native shared module, and let the paused process
 continue without restarting. The process keeps its guest RAM, native thread
 stacks and pending OS/device state in memory; it does not save a restartable
 state file or modify the ROM.
@@ -20,20 +20,26 @@ build/<game>-debug/bin/<game> --rom local/<rom>.z64
 The executable must have been built with the live repair hooks. On a missing
 function, it launches `tools/auto_live_function.py`. The helper checks the
 pinned ROM and candidate report, compiles a closed function when the evidence
-is clear, and publishes a one-function module. Closed leaf functions without
+is clear, and publishes the module. For an automatically recovered root, the
+builder also follows direct `jal` instructions to new functions in the same
+section. It includes callees whose bodies pass translation and do not overlap
+instructions owned by the original build. Calls to resident code and other
+overlays continue through runtime dispatch. Closed leaf functions without
 a stack frame, including two or three instruction return stubs, can qualify
 when an owned caller and exact ROM table slot both confirm the callback target.
 Candidates with nested indirect calls can qualify when the game profile
 explicitly enables registered-target calls; a missing nested target pauses the
 game again. A closed nested function can also qualify when an already
-published module contains an exact ROM-verified direct call to it. The helper does not edit the game
-profile; review the candidate and make a permanent checked change before
-rebuilding. The helper writes `auto-<address>.log` in the repair directory and
+published module contains an exact ROM-verified direct call to it in the resolved
+section. The builder adds automatic roots to a temporary copy of the profile.
+The next desktop build validates published repairs for promotion to the game
+profile. The helper writes `auto-<address>.log` in the repair directory and
 leaves the game paused if the target is ambiguous or compilation fails.
 
-Set `RECOMP_LIVE_AI=1` to let the helper ask the local Codex CLI to investigate
-an ambiguous target. That run uses the workspace-write sandbox and may update
-the checked profile or entry inventory before publishing a module. Its
+When the automatic build stops, the helper asks the local Codex CLI to investigate
+by default. Set `RECOMP_LIVE_AI=0` to disable this fallback. The Codex run uses
+the workspace-write sandbox and may update the checked profile or entry
+inventory before publishing a module. Its
 transcript is written to `ai-<address>.log`. Set `RECOMP_LIVE_AUTO=off` to
 pause for manual repair without launching the helper.
 
@@ -143,7 +149,7 @@ source site when overlays share addresses.
 Use `--patch-dir` when the running game has `RECOMP_LIVE_PATCH_DIR` set to a
 different directory. The helper uses the game's normal `prepare`, discovery, metadata and
 translation checks against the pinned original ROM. It compiles only the
-selected function, publishes a uniquely named module, then atomically replaces
+selected code, publishes a uniquely named module, then atomically replaces
 `function-XXXXXXXX.path` in the repair directory. The paused process checks
 the module ABI, build mode, ROM SHA-1 and active section before running it.
 Failed builds leave the old control file in place and the game paused; edit
@@ -171,8 +177,8 @@ published `function-XXXXXXXX.path` files,
 adds the roots needed to discover the remaining guest functions to
 `games/<game>/profile.toml`, and checks them with normal ROM preparation,
 discovery, and translation. Direct callees of those roots and addresses already
-registered by a checked table or transfer need no new root. Only after all
-published functions match the generated code does the task clear
+registered by a checked table or transfer need no new root. Promotion checks
+the size, fingerprint and translation status of every bundled callee before clearing
 `local/live-patches/<game>/`. If a check fails, it restores the original profile
 and leaves the live patch files for review. Rebuild the game executable before
 the next run.

@@ -113,7 +113,7 @@ Only the exact ROM revisions pinned by the game profiles are covered.
 | Banjo-Kazooie US / F3DEX 1.21 | Nintendo logo and animated waterfall intro. |
 | Rayman 2 US / F3DEX.NoN 1.23 | CPU intro, resolution transitions and rendered first scene with character/HUD. |
 | SM64 US / Fast3D 2.0D | Native bootstrap/full program pinned; regression results below. |
-| 1080 JU revision 0 / F3DEX 1.23 | Native bootstrap/full program pinned; a separate CPU scene mismatch limits later progression. |
+| 1080 JU revision 0 / F3DEX 1.23 | Title panorama and a 2,600-frame desktop Release replay with riders and race HUD. |
 | Conker US / F3DEXBG.NoN | 1,200-presentation Debug and Release startup runs, including the 64×64 CI8 intro target. |
 | Resident Evil 2 US v1.1 / F3DEX.Rej and S2DEX | Opening logos, movie and title menu with RAM scanout. |
 | Ocarina of Time US v1.2 / F3DZEX2 and S2DEX2 | First-slot Temple of Time exterior, including prerendered background strips. |

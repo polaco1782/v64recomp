@@ -1,6 +1,29 @@
 # 1080 Snowboarding continuation notes
 
-## SP-status crash repair and current blocker (2026-11-07)
+## Scene dispatch at `0x803f0c2c` (2026-11-25)
+
+The linker table at `0x803e4dc0` in `crash-840928-182226788973945.json.rdram.bin`
+places `game.uso` Text at `0x803e5e10` and ROD at `0x803f8c90`. The failing
+object constructor is Text offset `0xae1c`, the same body as `0x803f78bc` in
+the title layout. Applying all 2,038 Text and 42 ROD relocations from the
+cartridge reproduces both captured sections byte for byte, including all eight
+switch tables. The same dump identifies the second snow-effects allocation and
+the name-entry module in the table below.
+
+Loading name entry binds three manager imports. Two JAL instructions resolve to
+`0x803fe4e8` and `0x803febe8`. A HI16/LO16 pair resolves the data pointer
+`0x803ffa80`. The generator applies these bindings to ROM relocations and
+checks the complete linked Text digest. Generated code reads all four patched
+instructions from guest RAM. The original manager image remains valid before
+the imports bind.
+
+With the original crash RAM restored, Debug dispatch resolves `0x803f0c2c`,
+`0x803cd788`, `0x803fe4e8`, and `0x80265894` to their respective compiled
+bodies. Changing one byte of `game.uso` Text causes dispatch to reject it.
+A 2,600-frame desktop Release replay exited 0 and rendered the riders and race
+HUD. The reported transition also passed an interactive retest.
+
+## SP-status crash repair (2026-11-07)
 
 `local/crashes/1080-us/crash-2290557-475547973434220.json` fails reading
 `SP_STATUS` at `0xa4040010`, guest PC `0x8011ed18`. The call chain is the task
@@ -25,7 +48,7 @@ scheduler's generated call invokes `recomp_os_sp_task_yielded` directly.
 The SDK scanner confirms that the status getter's only caller is now replaced
 natively. Catalog normalization, formatting and project regeneration pass.
 
-The current 3,000-presentation menu replays are **incomplete**, with exit `-6`
+The November 7 3,000-presentation menu replays were **incomplete**, with exit `-6`
 and no timeout. Debug reaches Select Rider (48-second capture), then fails at
 68.3 seconds; Release fails at 33.1 seconds. Both report
 `1080 loaded scene differs from compiled USO` at `0x803f0c2c`. No SP-status fault
@@ -39,12 +62,6 @@ separate stop. Keep these artifacts for the next scene investigation:
   Debug scene failure.
 - `local/crashes/1080-us/crash-2296435-476058149026584.json` and matching RAM:
   Release scene failure.
-
-At the new target, neither configured genproc nor game Text matches RAM (14,675
-of 14,728 and 18,043 of 18,124 words differ, respectively), and no compiled entry
-exists at that address. Identify the loaded USO and its actual allocation from
-the loader and crash RAM before adding mappings or roots. Preserve the image
-check. This is separate from the missing SDK fingerprint.
 
 ## Earlier verified state (2026-11-02)
 
@@ -82,8 +99,8 @@ and data symbols are not function declarations. Checked profile ranges exclude
 before the tool installs an inventory. It never launches a game or guesses
 roots from pointer scans.
 
-The current `uso-entries.json` contains 2,489 CPU entries. Discovery registers
-2,785 functions: 2,716 ready, 57 SDK hooks and 12 explicit privileged boundaries.
+The current `uso-entries.json` contains 2,793 CPU entries. Discovery registers
+3,106 functions: 3,037 ready, 57 SDK hooks and 12 explicit privileged boundaries.
 These counts cover mapped modules, not the whole cartridge. Reports are generated
 under `build/1080-us-debug/uso-symbol-review/`.
 
@@ -110,6 +127,9 @@ value `0x17d7` at `0x80000310`; the profile preserves this security-check input.
 | titproc | `0x595408` | `0x599ccc` | `0x802686d0` | `0x2a20` |
 | game | `0x7cc900` | `0x7ccf86` | `0x803ecaa0` | `0x11b30` |
 | snoweffects | `0x9023d2` | `0x909926` | `0x803ca590` | `0xa900` |
+| game (name-entry layout) | `0x7cc900` | `0x7ccf86` | `0x803e5e10` | `0x11b30` |
+| snoweffects (name-entry layout) | `0x9023d2` | `0x909926` | `0x803c3900` | `0xa900` |
+| nameent | `0x64c6c2` | `0x64c89a` | `0x803fe4d0` | `0x1510` |
 | heli | `0x7e3d9a` | `0x7f0a82` | `0x802dee00` | `0x1b60` |
 | mgrproc | `0x5a0184` | `0x5a0a56` | `0x80264a90` | `0x3420` |
 | genproc | `0x5bca4e` | `0x5bd2c2` | `0x803ef230` | `0xe620` |

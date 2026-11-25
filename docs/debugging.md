@@ -274,10 +274,12 @@ Gameplay observations leave the static classification intact.
 
 ### Recovering a missing CPU target during play
 
-Desktop builds try a MIPS interpreter when a generated call or computed jump reaches an unregistered target. It verifies the caller, delay slot and destination instructions against live RDRAM. When a guest TLB mapping is absent, the interpreter can use a loaded direct-mapped section that the profile binds to the same cartridge bytes. Only function boundaries in the loaded overlay apply when several overlays share an address. For decompressed sections it verifies the loaded bytes against page fingerprints from the prepared ROM. It checks both paths of conditional branches before changing guest state. The original caller has already executed its delay slot. Execution resumes at the destination with the current guest registers.
+Desktop games pause at a missing function or an unlisted checked transfer. Live repair
+receives the caller PC and the loaded destination section when available. It compiles
+verified guest code into a native module and resumes the paused call or jump. See
+[Live code repair](live-repair.md).
 
-The interpreter grows its instruction plan on demand up to 16,384 words from the entry. It handles common integer and floating-point instructions, branches, local jumps, and calls back into normal dispatch. For a recognized switch, discovery follows the index guard and reads the case addresses from the verified ROM table. The interpreter checks every case before execution and checks the selected register value at the jump. If it cannot establish the loaded section, verify the code, or execute the complete graph, it reports the reason and lets live repair take over. Live repair receives the loaded destination section when available. A failure after guest writes have begun uses the runtime crash reporter because restarting the callback could repeat those writes. Set `RECOMP_CPU_FALLBACK=0` to compare behavior using the existing dispatcher alone.
-
-After a successful return, the runtime saves the caller, target, cartridge and section-layout identities, and target byte fingerprint under `local/cpu-observations/<game>/`. Close the game and run the usual desktop build, for example `tools/build.py turok3-us --release`. The prepare step tries the observations in an isolated generation and checks that the previously compiled functions still translate. It writes accepted edges to `[[discovery.observed_transfers]]` in the game profile. Calls become function entries and local jumps become destinations in the original caller. Rebuilding compiles these paths into the executable. The build keeps conflicting observations for review and prints their filenames.
-
-On normal game exit, the CPU discovery summary shows the number of functions in the build and the distinct functions recovered during that run. It counts functions that returned through the interpreter by direct call (`JAL`) or indirect call (`JALR`), and new function entries provided by loaded live-repair modules. A function can appear in more than one group and counts once toward the total. The same address in two overlays counts as two functions. Computed jump destinations (`JR`) have their own count because a jump can land inside a function. The saved-observation count includes each caller-to-target pair written during the run.
+The exit summary counts distinct new functions supplied by live modules and computed
+jump destinations by section and address. To trace transfers during play, use
+`--trace-edges` in Debug. Existing records under `local/cpu-observations/<game>/`
+from earlier builds can still be validated and promoted by the normal desktop build.

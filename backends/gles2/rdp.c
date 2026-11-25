@@ -73,6 +73,11 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     s->gl.DepthFunc(compare_depth ? GL_LEQUAL : GL_ALWAYS);
     s->gl.DepthMask(write_depth ? GL_TRUE : GL_FALSE);
     bool force_blend = s->other_low & 0x4000;
+    /* The final blender cycle packs P, A, M, B in alternating bit pairs.
+     * G_RM_PASS weights the incoming color by zero and one. Its RGB write
+     * is independent of combiner alpha, even when FORCE_BL is set. */
+    unsigned blender = (s->other_low >> (p->cycle == 1 ? 16 : 18)) & 0x3333;
+    bool alpha_blend = force_blend && !(p->cycle < 2 && blender == 0x0302);
     if (s->screen_effects) {
         bool geometry = s->depth_test && !s->drawing_rectangle && s->color_siz >= 2;
         if (geometry && s->level_reflections) {
@@ -85,15 +90,14 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
             s->surface->light_serial = s->light_serial;
         }
         s->gl.Uniform1i(p->record_depth, geometry);
-        s->gl.Uniform1i(p->blended, force_blend);
+        s->gl.Uniform1i(p->blended, alpha_blend);
     }
-    unsigned blender_p = (s->other_low >> (p->cycle == 1 ? 28 : 30)) & 3;
     /* Without forced blending, the final blender cycle outputs P. When P
      * selects framebuffer memory, keep the old color but still update Z. */
-    if (p->cycle < 2 && !force_blend && blender_p == 1) {
+    if (p->cycle < 2 && !force_blend && (blender >> 12) == 1) {
         s->gl.Enable(GL_BLEND);
         s->gl.BlendFunc(GL_ZERO, GL_ONE);
-    } else if (force_blend) {
+    } else if (alpha_blend) {
         s->gl.Enable(GL_BLEND);
         s->gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     } else

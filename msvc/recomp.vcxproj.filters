@@ -226,9 +226,6 @@
     <ClCompile Include="$(RecompRoot)runtime\host.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="$(RecompRoot)runtime\interpreter.c">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
     <ClCompile Include="$(RecompRoot)runtime\io.c">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>

@@ -76,10 +76,10 @@ Runtime *recomp_edge_owner;
 static FILE *edge_file;
 static TraceEdge **edge_buckets;
 enum { EDGE_BUCKETS = 4096 };
-static const RecompTraceSection *edge_sections;
+static const RecompCodeRegion *edge_sections;
 
 void recomp_debug_open_edges(Runtime *rt, const char *path, const uint8_t sha1[20], const char *layout,
-                             const RecompTraceSection *sections, size_t count) {
+                             const RecompCodeRegion *sections, size_t count) {
     if (recomp_edge_owner || count != rt->section_count)
         recomp_fail("invalid transfer trace session", 0);
     edge_file = fopen(path, "wx");

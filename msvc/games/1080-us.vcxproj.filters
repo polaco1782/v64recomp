@@ -10,6 +10,12 @@
     <None Include="$(RecompRoot)games\1080-us\discover_symbols.py">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="$(RecompRoot)games\1080-us\fire-symbols.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\1080-us\game-select-symbols.json">
+      <Filter>Configuration</Filter>
+    </None>
     <None Include="$(RecompRoot)games\1080-us\game-symbols.json">
       <Filter>Configuration</Filter>
     </None>
@@ -34,7 +40,13 @@
     <None Include="$(RecompRoot)games\1080-us\n64proc-symbols.json">
       <Filter>Configuration</Filter>
     </None>
+    <None Include="$(RecompRoot)games\1080-us\nameent-symbols.json">
+      <Filter>Configuration</Filter>
+    </None>
     <None Include="$(RecompRoot)games\1080-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\1080-us\snoweffects-select-symbols.json">
       <Filter>Configuration</Filter>
     </None>
     <None Include="$(RecompRoot)games\1080-us\snoweffects-symbols.json">

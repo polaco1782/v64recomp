@@ -24,7 +24,7 @@ static uint32_t activate_module(Runtime *rt, uint32_t address) {
                                 "1080 USO import is not bound to compiled target", uso_import_calls[n].pc);
     }
     /* Recheck complete scene modules at every entry, including after a guest
-     * unload/reload. Only the measured initial allocation is compiled. */
+     * unload/reload. Each measured allocation has its own compiled addresses. */
     bool candidate = false, matched = false;
     for (size_t n = 0; n < sizeof(uso_modules) / sizeof(uso_modules[0]); n++) {
         if (address < uso_modules[n].address || address - uso_modules[n].address >= uso_modules[n].size)
@@ -32,8 +32,12 @@ static uint32_t activate_module(Runtime *rt, uint32_t address) {
         candidate = true;
         uint8_t digest[32];
         uint32_t physical = recomp_ram_address(rt, uso_modules[n].address, uso_modules[n].size);
-        rt->section_loaded[uso_modules[n].section] = recomp_sha256(rt->rdram + physical, uso_modules[n].size, digest) &&
-                                                     !memcmp(digest, uso_modules[n].storage_sha256, sizeof(digest));
+        recomp_game_require(recomp_sha256(rt->rdram + physical, uso_modules[n].size, digest),
+                            "1080 scene Text hash failed", address);
+        bool verified = false;
+        for (unsigned i = 0; i < uso_modules[n].hash_count; i++)
+            verified |= !memcmp(digest, uso_modules[n].hashes[i], sizeof(digest));
+        rt->section_loaded[uso_modules[n].section] = verified;
         matched |= rt->section_loaded[uso_modules[n].section];
     }
     /* Process modules reuse earlier Text allocations. Reject stale images,

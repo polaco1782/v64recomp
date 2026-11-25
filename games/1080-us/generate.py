@@ -9,7 +9,7 @@ from uso import sections_at, section_bytes
 from uso_symbols import symbol_inventory, merge_entries
 
 
-def prepare_text(rom: bytes, uso: dict) -> tuple[bytearray, list[int], dict, dict]:
+def prepare_text(rom: bytes, uso: dict, linked: dict | None = None) -> tuple[bytearray, list[int], dict, dict]:
     inventory = json.loads(Path(__file__).with_name(uso['symbols']).read_text())
     module = uso['module_rom_offset']
     text_rom = uso['text_rom_offset']
@@ -46,6 +46,9 @@ def prepare_text(rom: bytes, uso: dict) -> tuple[bytearray, list[int], dict, dic
     if not values or any(not 0 <= value <= 0xffffffff for value in values.values()):
         raise RecompError('1080 USO symbol inventory malformed')
 
+    bindings = {int(k): v for k, v in linked['symbol_values'].items()} if linked else {}
+    if not bindings.keys() <= values.keys():
+        raise RecompError('1080 linked USO image references an unknown symbol')
     image = bytearray(raw_text)
     sites = []
     pending_hi = None
@@ -56,7 +59,7 @@ def prepare_text(rom: bytes, uso: dict) -> tuple[bytearray, list[int], dict, dic
             raise RecompError('1080 invalid USO relocation record')
         if symbol not in values:
             raise RecompError('1080 unresolved USO symbol')
-        value = values[symbol]
+        value = bindings.get(symbol, values[symbol])
         word = struct.unpack_from('>I', raw_text, offset)[0]
         if kind == 1:
             patched = (word & 0xfc000000) | (((word & 0x03ffffff) + (value >> 2)) & 0x03ffffff)
@@ -78,9 +81,12 @@ def prepare_text(rom: bytes, uso: dict) -> tuple[bytearray, list[int], dict, dic
                 pending_hi = None
         # Unbound J26 imports must read the instruction written by the guest
         # linker at call time. Resolved calls retain their checked static target.
-        if kind in (2, 3) or (kind == 1 and word >> 26 == 3 and value & 0x0fffffff == 0):
+        dynamic = kind in (2, 3) or (kind == 1 and word >> 26 == 3 and values[symbol] & 0x0fffffff == 0)
+        if symbol in bindings and not dynamic:
+            raise RecompError('1080 late binding would change a statically compiled transfer')
+        if dynamic:
             sites.append(uso['text_vram'] + offset)
-    if pending_hi is not None or hashlib.sha256(image).hexdigest() != uso['sha256']:
+    if pending_hi is not None or hashlib.sha256(image).hexdigest() != (linked or uso)['sha256']:
         raise RecompError('1080 prepared USO fingerprint mismatch')
     return image, sites, sections, values
 
@@ -238,15 +244,25 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
         target = 0x80000000 | ((word & 0x03ffffff) << 2)
         lines.append(f'    {{0x{uso["text_vram"] + offset:x}, 0x{target:x}, 0x{word:x}}},')
     lines.append('};')
-    lines.append('static const struct { uint32_t address, size, section; uint8_t storage_sha256[32]; } uso_modules[] = {')
+    module_rows = []
     for module in profile['discovery'].get('uso_modules', []):
         section = next(s['id'] for s in metadata['sections'] if s['name'] == module['name'])
-        image, _, _, _ = prepare_text(rom, module)
-        # RDRAM stores each aligned guest word in reversed byte order.
-        # Pin that same full image so entry checks can hash RAM without copying.
-        storage = b''.join(image[n:n + 4][::-1] for n in range(0, len(image), 4))
-        digest = ','.join(f'0x{b:02x}' for b in hashlib.sha256(storage).digest())
-        lines.append(f"    {{0x{module['text_vram']:x}, 0x{module['text_size']:x}, {section}, {{{digest}}}}},")
+        inventory = json.loads(Path(__file__).with_name(module['symbols']).read_text())
+        hashes = f'uso_hashes_{section}'
+        lines.append(f'static const uint8_t {hashes}[][32] = {{')
+        variants = [None, *inventory.get('linked_text', [])]
+        for linked in variants:
+            image, _, _, _ = prepare_text(rom, module, linked)
+            # Hash the same full, word-swapped storage that the runtime reads.
+            storage = b''.join(image[n:n + 4][::-1] for n in range(0, len(image), 4))
+            digest = ','.join(f'0x{b:02x}' for b in hashlib.sha256(storage).digest())
+            lines.append(f'    {{{digest}}},')
+        lines.append('};')
+        module_rows.append(f"    {{0x{module['text_vram']:x}, 0x{module['text_size']:x}, {section}, "
+                           f"{len(variants)}, {hashes}}},")
+    lines.append('static const struct { uint32_t address, size, section, hash_count; '
+                 'const uint8_t (*hashes)[32]; } uso_modules[] = {')
+    lines.extend(module_rows)
     lines.append('};')
     lines.append('static const uint32_t boot_parameters[][2] = {')
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},' for address, value in boot['parameters'].items())

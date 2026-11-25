@@ -1,13 +1,33 @@
 #define _POSIX_C_SOURCE 200809L
 #include "runtime.h"
 #include "recomp_live.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct LiveDiscovery {
+    struct LiveDiscovery *next;
+    uint32_t section, address;
+    bool jump;
+} LiveDiscovery;
+
+static void note_live_discovery(Runtime *rt, uint32_t section, uint32_t address, bool jump) {
+    if (!jump && recomp_has_section_function(rt, address, section))
+        return;
+    for (LiveDiscovery *d = rt->live_discoveries; d; d = d->next)
+        if (d->section == section && d->address == address && d->jump == jump)
+            return;
+    LiveDiscovery *d = malloc(sizeof(*d));
+    if (d) {
+        *d = (LiveDiscovery){rt->live_discoveries, section, address, jump};
+        rt->live_discoveries = d;
+    } else
+        rt->live_discoveries_incomplete = true;
+}
 
 #ifndef __EMSCRIPTEN__
 #include <dlfcn.h>
 #include <errno.h>
 #include <spawn.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -123,7 +143,7 @@ static bool load_module(Runtime *rt, const char *path) {
     if (!manifest->resume) {
         for (size_t i = 0; i < manifest->function_count; i++) {
             const RecompFunctionEntry *entry = &manifest->functions[i];
-            recomp_note_live_discovery(rt, entry->section, entry->address, false);
+            note_live_discovery(rt, entry->section, entry->address, false);
         }
     }
     fprintf(stderr, "live repair: loaded %s (%zu functions)\n", path, manifest->function_count);
@@ -303,12 +323,8 @@ RecompFunction recomp_live_lookup_at(Runtime *rt, uint32_t address, uint32_t sit
 }
 
 void recomp_live_checked_call(Runtime *rt, MipsContext *ctx, uint32_t target, uint32_t site, uint32_t section) {
-    uint32_t guest_target = target;
     target = recomp_canonical_function_address(rt, target);
     const RecompFunctionEntry *entry = find_entry(rt, target, site, section, true);
-    if (!entry && target == guest_target && !recomp_has_function(rt, target) &&
-        recomp_interpret_call(rt, ctx, target, site, section, false, (uint32_t)ctx->gpr[31]))
-        return;
     if (!entry && wait_for_repair(rt, target, site, section, true, false))
         entry = find_entry(rt, target, site, section, true);
     if (!entry)
@@ -321,25 +337,21 @@ void recomp_live_checked_call(Runtime *rt, MipsContext *ctx, uint32_t target, ui
 
 void recomp_live_checked_jump(Runtime *rt, MipsContext *ctx, uint32_t target, uint32_t site, uint32_t section,
                               uint32_t return_address, uint32_t entry_stack_pointer) {
-    uint32_t guest_target = target;
     target = recomp_canonical_function_address(rt, target);
     LiveModule *module = find_jump(rt, target, site, section);
-    if (!module && target == guest_target && !recomp_has_function(rt, target) &&
-        recomp_interpret_call(rt, ctx, target, site, section, true, return_address))
-        return;
     if (!module && wait_for_repair(rt, target, site, section, false, true))
         module = find_jump(rt, target, site, section);
     if (!module)
         recomp_fail("unlisted indirect jump target", target);
     if (module->manifest->resume) {
-        recomp_note_live_discovery(rt, section, target, true);
+        note_live_discovery(rt, section, target, true);
         module->manifest->resume(rt, ctx, target, return_address, entry_stack_pointer);
         return;
     }
     for (size_t i = 0; i < module->manifest->function_count; i++) {
         const RecompFunctionEntry *entry = &module->manifest->functions[i];
         if (entry->address == target && entry->section < rt->section_count && rt->section_loaded[entry->section]) {
-            recomp_note_live_discovery(rt, entry->section, target, true);
+            note_live_discovery(rt, entry->section, target, true);
             recomp_record_call(rt, target);
             if (rt->prepare_call)
                 rt->prepare_call(rt, target);
@@ -380,4 +392,20 @@ void recomp_live_destroy(Runtime *rt) {
     }
 #endif
     rt->live_modules = NULL;
+    size_t functions = 0, jumps = 0;
+    while (rt->live_discoveries) {
+        LiveDiscovery *d = rt->live_discoveries;
+        rt->live_discoveries = d->next;
+        if (d->jump)
+            jumps++;
+        else
+            functions++;
+        free(d);
+    }
+    if (rt->live_patch_game)
+        fprintf(stderr,
+                "CPU discovery for %s%s\n  Functions in this build: %zu\n"
+                "  Provided by live repair: %zu\n  Computed jump destinations (JR): %zu\n",
+                rt->live_patch_game, rt->live_discoveries_incomplete ? " (partial count)" : "", rt->function_count,
+                functions, jumps);
 }

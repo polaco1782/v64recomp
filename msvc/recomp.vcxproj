@@ -99,7 +99,6 @@
     <ClCompile Include="$(RecompRoot)runtime\game.c" />
     <ClCompile Include="$(RecompRoot)runtime\hash.c" />
     <ClCompile Include="$(RecompRoot)runtime\host.c" />
-    <ClCompile Include="$(RecompRoot)runtime\interpreter.c" />
     <ClCompile Include="$(RecompRoot)runtime\io.c" />
     <ClCompile Include="$(RecompRoot)runtime\live_patch.c" />
     <ClCompile Include="$(RecompRoot)runtime\memory.c" />

@@ -24898,6 +24898,3116 @@
         184
       ],
       "vram": 2151667712
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "82c514577d40b6792495297f4a15327f75792f762fd273675e89d67929eb0a73",
+      "symbol_indices": [
+        51
+      ],
+      "vram": 2151570960
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dced934a9ee3e63b40e6b6c232e4c449262e7e4f29609302d65e60db6f935db5",
+      "symbol_indices": [
+        52
+      ],
+      "vram": 2151571120
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "c7e5e31ca7533f85842a095b8a7413a7f89628f7be2f2f0fd0c5d9ef4fb3d356",
+      "symbol_indices": [
+        53
+      ],
+      "vram": 2151571184
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "285842766349662a9052f0e5d89d8be08a1e31f3c4fa34d036769b829702f716",
+      "symbol_indices": [
+        56
+      ],
+      "vram": 2151571972
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d4a2faab991df60164008a0db1595a3e7d3a513cf10d5fcaea9b17131d8d6507",
+      "symbol_indices": [
+        58
+      ],
+      "vram": 2151572284
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "e684c43010acf0cdb0b368a532276ae396aa29c66daa69ae4db9c51eaca93e52",
+      "symbol_indices": [
+        59
+      ],
+      "vram": 2151572424
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ed5f6924fe53090319da891d1a5643aa281ae9ccef38b956d754aa3136c6c64c",
+      "symbol_indices": [
+        60
+      ],
+      "vram": 2151572504
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b1d4f3fd05edc225b5564ea4afe358d3a7ae87d9bdbfef5a9c7dafd75865bc62",
+      "symbol_indices": [
+        61
+      ],
+      "vram": 2151572548
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "12e9ae894e1ac8c5f33e0b0ad32c8f292b68fea47b45310e386046b509f15ef3",
+      "symbol_indices": [
+        62
+      ],
+      "vram": 2151572612
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d855a9fe1f7cc3d20abaacc03a489ba60ff6a7bc6fae22012cc2079c002b048c",
+      "symbol_indices": [
+        63
+      ],
+      "vram": 2151572788
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "8a4ad598a9877492fea560196a6737d8f4288521bf50187f51ca03f74b043896",
+      "symbol_indices": [
+        64
+      ],
+      "vram": 2151572976
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "850a6f2509d45bde3911ec8fbd9c6685c7618806e155d1507bf31c41d3dadda2",
+      "symbol_indices": [
+        65
+      ],
+      "vram": 2151572988
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "010a1950fe79ce160104a06c7356ea0abc850cad4967f7cc1bb8045060b70383",
+      "symbol_indices": [
+        66
+      ],
+      "vram": 2151573096
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "55cd7fcbb8082c02c4ffd260836b5464b6c24c3818c43d16fdee742034227222",
+      "symbol_indices": [
+        69
+      ],
+      "vram": 2151573260
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "52944289218fe20d5acd287e74f0c8734e949d2500260f3ffdbc3209283b69b6",
+      "symbol_indices": [
+        72
+      ],
+      "vram": 2151573328
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bb863b37c086f163fa0a30bf5053cf1260bbee9061345ac9db1d6bef089288ba",
+      "symbol_indices": [
+        74
+      ],
+      "vram": 2151573756
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "94e80d7efcd459eaeeb5172484f697f1ac0aab0961d0504c06e66a7dcb60f3d6",
+      "symbol_indices": [
+        39
+      ],
+      "vram": 2151573796
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b3d48447a8458827553241c44f3553379debb65f9249f2cd96336ff0e40a2566",
+      "symbol_indices": [
+        75
+      ],
+      "vram": 2151573836
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "850a6f2509d45bde3911ec8fbd9c6685c7618806e155d1507bf31c41d3dadda2",
+      "symbol_indices": [
+        41
+      ],
+      "vram": 2151576660
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "160f34b698c49acdde83390fc1ccb5c9781eb21feb4bd9ce578a4ba3b932abaf",
+      "symbol_indices": [
+        40
+      ],
+      "vram": 2151576868
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "adcfbac4a4e093c1ce6624f5363a7c01c3abe6b81ab4c4495ec8a1990dac7c6d",
+      "symbol_indices": [
+        42
+      ],
+      "vram": 2151576924
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "8b08bc64d0fd2594e551ef6d179e3be8ff12038a40a79a77dee2746707cd5ea7",
+      "symbol_indices": [
+        80
+      ],
+      "vram": 2151577356
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "73bb53230ab1b5df7fc36de233178e5760718deba18511bb5f8a0fa9ea6040b5",
+      "symbol_indices": [
+        82
+      ],
+      "vram": 2151578432
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bc6bdf5858eeb6b164903dde746ad1bb1aca5b20d0ee33ea6431361906f5549c",
+      "symbol_indices": [
+        71
+      ],
+      "vram": 2151578580
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "582da41a6e6773ffa3a06214359fb99fad095d7666d33de76bf443c948581e77",
+      "symbol_indices": [
+        45
+      ],
+      "vram": 2151578604
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2f8a4f22e992d2f23f8d9c2ad053d88789af48149f4b5061101a2f4316393b35",
+      "symbol_indices": [
+        79
+      ],
+      "vram": 2151580132
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "253ac50385fdfcc2a30cbc982d4e9c1c3ba8f0c15a5cf2cdc20b080b21393dee",
+      "symbol_indices": [
+        46
+      ],
+      "vram": 2151580332
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "88aa733a1a8a7c85ccb4e67eadc31c7f338a143a6e845de6f1b5fab42de3291a",
+      "symbol_indices": [
+        88
+      ],
+      "vram": 2151580364
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d3856299f2b101a37aed5993bd28e91cf34598394eb76fb9c05740ee8e68c8ef",
+      "symbol_indices": [
+        77
+      ],
+      "vram": 2151580964
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "542d3c100bbaca098aa657659a110aca2a6784731269a719f191b82c265ad082",
+      "symbol_indices": [
+        89
+      ],
+      "vram": 2151581012
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "73bb53230ab1b5df7fc36de233178e5760718deba18511bb5f8a0fa9ea6040b5",
+      "symbol_indices": [
+        90
+      ],
+      "vram": 2151581220
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bc6bdf5858eeb6b164903dde746ad1bb1aca5b20d0ee33ea6431361906f5549c",
+      "symbol_indices": [
+        70
+      ],
+      "vram": 2151581368
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "fdedc3bfe31bf8e521396e5e98a447e57fe94d14b1c11a1b228819baa0deb2e5",
+      "symbol_indices": [
+        47
+      ],
+      "vram": 2151581392
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "253ac50385fdfcc2a30cbc982d4e9c1c3ba8f0c15a5cf2cdc20b080b21393dee",
+      "symbol_indices": [
+        48
+      ],
+      "vram": 2151582392
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a520b883c1fc460605efd18acf8eb3db36e7995f518aadc00a38e1717f1cbfc1",
+      "symbol_indices": [
+        91
+      ],
+      "vram": 2151582424
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d3856299f2b101a37aed5993bd28e91cf34598394eb76fb9c05740ee8e68c8ef",
+      "symbol_indices": [
+        78
+      ],
+      "vram": 2151583192
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "69a55391550424bc4155c2699397a32e6a1022ce35a50db14c83e85da70fcb31",
+      "symbol_indices": [
+        30
+      ],
+      "vram": 2151583240
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "08483a2d71cc1aafe72ec87a43e90ec4e8870d5622e6280df820e0ca14c7b1b9",
+      "symbol_indices": [
+        92
+      ],
+      "vram": 2151583272
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "73bb53230ab1b5df7fc36de233178e5760718deba18511bb5f8a0fa9ea6040b5",
+      "symbol_indices": [
+        93
+      ],
+      "vram": 2151584436
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a399063716d949e3d6ba72413d9c6583ae048a75757065a9c65fcaa85bb032ed",
+      "symbol_indices": [
+        49
+      ],
+      "vram": 2151584616
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "8d8d15a17e4f521e5aed35b5bb37b5c628bdd6d0d68a6bfab717138fabdc5e38",
+      "symbol_indices": [
+        50
+      ],
+      "vram": 2151585624
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dfb43cfe6899343e29c60821c8c6c13ee49a158dd3131c8f0914f124e6664e0e",
+      "symbol_indices": [
+        7
+      ],
+      "vram": 2151585656
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dfb43cfe6899343e29c60821c8c6c13ee49a158dd3131c8f0914f124e6664e0e",
+      "symbol_indices": [
+        8
+      ],
+      "vram": 2151585704
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dfb43cfe6899343e29c60821c8c6c13ee49a158dd3131c8f0914f124e6664e0e",
+      "symbol_indices": [
+        9
+      ],
+      "vram": 2151585752
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dfb43cfe6899343e29c60821c8c6c13ee49a158dd3131c8f0914f124e6664e0e",
+      "symbol_indices": [
+        10
+      ],
+      "vram": 2151585800
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d6b68a74c97a51044d4c6c209239bffaef3909320a9cca2174281f6ea98ff986",
+      "symbol_indices": [
+        21
+      ],
+      "vram": 2151585848
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "47a3cf924a50de60377d5604d2436bdb38ba25e4adb4f86ed08f9887465d0c3a",
+      "symbol_indices": [
+        109
+      ],
+      "vram": 2151586000
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b8f78dbdddfb5dfef1156da93e9ff983ccffcc8f40d2b4e51f5baac9d09fdbf4",
+      "symbol_indices": [
+        112
+      ],
+      "vram": 2151587044
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a20b83e5cff179f804680c1835cdba128030bee94dac21df5ee394f51c3dbe77",
+      "symbol_indices": [
+        114
+      ],
+      "vram": 2151587260
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bb3e45258bbdb154f785d5b1e773570daf9ba54fbfc0d579bdf548de82911be0",
+      "symbol_indices": [
+        103
+      ],
+      "vram": 2151587792
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ee8b570840abf98cd4c12228cbaaff3d1be15e89f584e1d0701ac53e11b92f07",
+      "symbol_indices": [
+        116
+      ],
+      "vram": 2151588328
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "5175440113d42889b884a3034861a21ce7d0b019c9c8b689a3082aa7381a3a0e",
+      "symbol_indices": [
+        106
+      ],
+      "vram": 2151588568
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "84d297c10c771e5166389ee6348d75d3bfd269add1e17f5f2664a788d719eb98",
+      "symbol_indices": [
+        118
+      ],
+      "vram": 2151588612
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "cb65bbf5491e2c2d78aceaca8c5cc5e154d9c4f8ff27282dc184f8d18b6712da",
+      "symbol_indices": [
+        119
+      ],
+      "vram": 2151593272
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2444db6b1e426217690b74ae4507c6993d4e6ebf94f3a199d08a357de8a6f9ab",
+      "symbol_indices": [
+        120
+      ],
+      "vram": 2151593360
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ef7acca8bf204026dad3ec49d65e40a7929a22c88901da6760c7cf898c447718",
+      "symbol_indices": [
+        108
+      ],
+      "vram": 2151593416
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "fb57930b50e441b8cbced461624c573eb823d89781bedf6d45902750b04baf5f",
+      "symbol_indices": [
+        107
+      ],
+      "vram": 2151593448
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f0d15ce504dc4e3ded56b35dccd71e811235df660094b994e179f99a38e5a54b",
+      "symbol_indices": [
+        122
+      ],
+      "vram": 2151593772
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "37f7dc6abc59bf2509c1064a6881338b3dbef551fb3ab68fdc4fb1bd1417e002",
+      "symbol_indices": [
+        123
+      ],
+      "vram": 2151598144
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d20dad075b7a4cda6f5ea16dc6519fe1351c2a326d1e639c2558bd4727866def",
+      "symbol_indices": [
+        124
+      ],
+      "vram": 2151598848
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ae3e470ef131ce90f64d56be242967662e61a4f044084a98b13892ac201872bf",
+      "symbol_indices": [
+        147
+      ],
+      "vram": 2151599256
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "e2730b7bceb2408ada4b1e769106ba10fc031a5114f3397f0d358ddbf12a8c2f",
+      "symbol_indices": [
+        149
+      ],
+      "vram": 2151599324
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "39f271ffaa817f6c7b9d9c9111d3fa29b8652454c0f373138b74474f39b01c8d",
+      "symbol_indices": [
+        150
+      ],
+      "vram": 2151599416
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bcfbe4392ee90bae2f00336608f97517b8fa68d9b635b005a35e3223cc6bc49f",
+      "symbol_indices": [
+        148
+      ],
+      "vram": 2151599432
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b2b9cb10473cdf9e10cfc6181e1f2de8639bdfa0415e2297281dc8a50b61a357",
+      "symbol_indices": [
+        143
+      ],
+      "vram": 2151599544
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "66371c2f9679f1da616c77b80860304cf20d0d20caf89556dcfc3e5c913d395a",
+      "symbol_indices": [
+        142
+      ],
+      "vram": 2151600052
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "5f4d5548c1efee712c03dbe2a0b2106afe2df2a155bc21606f95b382771137dc",
+      "symbol_indices": [
+        125
+      ],
+      "vram": 2151600112
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f26580648485a34d3448d1614db090d8dd8c24bf6210a6b3f3bd86f3632be0ca",
+      "symbol_indices": [
+        137
+      ],
+      "vram": 2151600692
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b8b639b0b410714835a68c955a20f7408f880b847f8cae274676b93568bff462",
+      "symbol_indices": [
+        136
+      ],
+      "vram": 2151600728
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d8951f63e9478b62d1348e592ed0615fe3e12d58f2c5bfc1a10b00af0009cdb6",
+      "symbol_indices": [
+        134
+      ],
+      "vram": 2151600872
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f9e0a0971335a8ae45c8a7210d78db4cb8d2a3fd1dc94189a5dd18796f1e528c",
+      "symbol_indices": [
+        135
+      ],
+      "vram": 2151600940
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dea7259148b94e4c815cd3c9c26fd5bd3b7bd4e81da5c6e9f7ddc4f11657a395",
+      "symbol_indices": [
+        144
+      ],
+      "vram": 2151600968
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d3a858bcf6441d8753b6a0577ea397ca630e1092c254355bafa84c1d84267989",
+      "symbol_indices": [
+        131
+      ],
+      "vram": 2151602344
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "9b363286950ef5f585757650a536fabf227a4adfafa61abad1cd8ccfdb6de8d6",
+      "symbol_indices": [
+        130
+      ],
+      "vram": 2151602396
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "6da9c7416296ac1f959ea03b0bf936fda2659b9105a5d019d53b3dacc0f904f6",
+      "symbol_indices": [
+        132
+      ],
+      "vram": 2151602732
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "5e778388b53f6188b64eaba05b408414ca2269cdc1d934d5a843aaa2416f3afb",
+      "symbol_indices": [
+        133
+      ],
+      "vram": 2151607016
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "15680bd32977c0bc6b7677feca64b58667d94e730c7df7ae074d74ae13bd0c35",
+      "symbol_indices": [
+        153
+      ],
+      "vram": 2151609852
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b83c7b3c080d6fd079cc0dc9d97336b61bcc9770abd6c7313c2fd6069c881652",
+      "symbol_indices": [
+        138
+      ],
+      "vram": 2151610776
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "d02e8670707c29a71e42498dda7688280a691ce5b658d9ade557995f810e7974",
+      "symbol_indices": [
+        140
+      ],
+      "vram": 2151612152
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "79a2fcabd21120089ac06b03e7190c51da6911adc7cf473cf5a37dbbb21d1524",
+      "symbol_indices": [
+        151
+      ],
+      "vram": 2151612804
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f5a47a91f3bc08b6a580bda2c8e9e192627cd4e9e16e7aa355d60e1edd48b7a5",
+      "symbol_indices": [
+        127
+      ],
+      "vram": 2151612884
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "134204a60910ef16b450a8844608948d07c1869cba7606bf51174976cbbd7ce7",
+      "symbol_indices": [
+        128
+      ],
+      "vram": 2151613460
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "cf23177f54b625fb63f7a908fd2f593ba8022e812ab600ae94d16b12d60b0be7",
+      "symbol_indices": [
+        139
+      ],
+      "vram": 2151613928
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "7b1e56fa72c76fd677bbe3cee47c3452ee61a852946399d6470c88664041f89f",
+      "symbol_indices": [
+        129
+      ],
+      "vram": 2151613960
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "56d1a35ced988be26a182256991819a825341e304c9920eab622b4aa9437f53b",
+      "symbol_indices": [
+        141
+      ],
+      "vram": 2151614888
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "28f159f74eee7856686cfbfa82b5a00249002fed3df9f44ce540f6d558ffcc90",
+      "symbol_indices": [
+        180
+      ],
+      "vram": 2151615532
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2542cb50e519ef587ae374b54069250511eee1f8fa588ea2e8b67496625a1bac",
+      "symbol_indices": [
+        174
+      ],
+      "vram": 2151616644
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "02ea4f8cad28ec89c90ddaaaa732128622e21965c8315ee5fa15ad322cff2ce6",
+      "symbol_indices": [
+        175
+      ],
+      "vram": 2151617072
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "fad960508d551c24653823d3b3da17483d1c911361a9a30eeead3b2df593402f",
+      "symbol_indices": [
+        177
+      ],
+      "vram": 2151617192
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "79d447c086e97743ac78637bb803f811b5b6a1356598675cd798b010dd4e0e41",
+      "symbol_indices": [
+        160
+      ],
+      "vram": 2151617224
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "48b6a5bd1f66e1e5f162ae2a9816dc71307af6421427dabc6adfebb4629ed126",
+      "symbol_indices": [
+        191
+      ],
+      "vram": 2151617824
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "7da4fcc98a96b3199af9b8d92cede9c9a92df9680013db46aafca59fe7edacfb",
+      "symbol_indices": [
+        192
+      ],
+      "vram": 2151617888
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "9ef72a5cf52dd48cdaee99901cc45ec6fc70a65420ccceec4dc390f217460a08",
+      "symbol_indices": [
+        193
+      ],
+      "vram": 2151618196
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "3be458d9805b426144532d058b746f0a2950c999546870d65198769051e3df92",
+      "symbol_indices": [
+        194
+      ],
+      "vram": 2151618276
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "fe9b2412257d167f2ea38a6de98d1a0f8a6289714a2b9ac5bb5a38eccafb813a",
+      "symbol_indices": [
+        178
+      ],
+      "vram": 2151618972
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "850a6f2509d45bde3911ec8fbd9c6685c7618806e155d1507bf31c41d3dadda2",
+      "symbol_indices": [
+        179
+      ],
+      "vram": 2151619980
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "0c1fe7b412b8753427a3618747c38b120b394eaf2e3f2bc4ea79b42807514a4a",
+      "symbol_indices": [
+        172
+      ],
+      "vram": 2151620076
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "4c17584cd575d9dfee04805126fc5b9a1b6ea0b953b857f21d93f02cd95d8073",
+      "symbol_indices": [
+        161
+      ],
+      "vram": 2151620252
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "e7a7a586d3de78138cfbc21ec9046ff3d5441dbe39484b6ec71676f0f9775085",
+      "symbol_indices": [
+        267
+      ],
+      "vram": 2151620836
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01eaa740b207af58bb5031d544d114c87c4ff64d8c6edfa56fe1d674505c12c0",
+      "symbol_indices": [
+        268
+      ],
+      "vram": 2151620948
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01eaa740b207af58bb5031d544d114c87c4ff64d8c6edfa56fe1d674505c12c0",
+      "symbol_indices": [
+        269
+      ],
+      "vram": 2151620972
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01eaa740b207af58bb5031d544d114c87c4ff64d8c6edfa56fe1d674505c12c0",
+      "symbol_indices": [
+        270
+      ],
+      "vram": 2151621000
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01eaa740b207af58bb5031d544d114c87c4ff64d8c6edfa56fe1d674505c12c0",
+      "symbol_indices": [
+        271
+      ],
+      "vram": 2151621028
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01eaa740b207af58bb5031d544d114c87c4ff64d8c6edfa56fe1d674505c12c0",
+      "symbol_indices": [
+        272
+      ],
+      "vram": 2151621056
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01eaa740b207af58bb5031d544d114c87c4ff64d8c6edfa56fe1d674505c12c0",
+      "symbol_indices": [
+        273
+      ],
+      "vram": 2151621084
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "13b9375a4ec035945554f6bbacb26ac5a0459422595cb0eb6a1549298752ebf6",
+      "symbol_indices": [
+        274
+      ],
+      "vram": 2151621112
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "eeabb7a45c1bd9bb9a83d74ce787ec67242e626ca0d63991f3583f2cc6ba2154",
+      "symbol_indices": [
+        260
+      ],
+      "vram": 2151621128
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "5282b22a4398e287a1d18fc63b5099d76ca7c4f20cd294e96cc3570bf16bdc09",
+      "symbol_indices": [
+        275
+      ],
+      "vram": 2151621276
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "1e9eb9e176301c948943757c93ca5b77dbae2660b32183690b87f16addba1bbd",
+      "symbol_indices": [
+        262
+      ],
+      "vram": 2151624724
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2e8fee61ede4da2c6e34889bb069503c2716cf5c7127fa51700a7c8b61a734f4",
+      "symbol_indices": [
+        264
+      ],
+      "vram": 2151625256
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "45643a0b61079630c503e6541c9d0ebbf6dec6f64e22afbe8ec51360eb65b02d",
+      "symbol_indices": [
+        265
+      ],
+      "vram": 2151625288
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2017390b017cb1d16e2e463fc950a03ae589eef39be21b7a5c5e368e934789a5",
+      "symbol_indices": [
+        277
+      ],
+      "vram": 2151625320
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a69b919e659bfdeaec99faef94ed4e767ebd52c87731b180553e7d419d2ec148",
+      "symbol_indices": [
+        287
+      ],
+      "vram": 2151625676
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "85004a72c9e5221921e36aebbb4bb270d0a5aceb118b58ef3e27d3dea26e2883",
+      "symbol_indices": [
+        290
+      ],
+      "vram": 2151625708
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "9a3e7edc2f580ad47c63f95466e4d98529a9987f003fc35f724b0a989ef36bdc",
+      "symbol_indices": [
+        291
+      ],
+      "vram": 2151625736
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "cf67ae5154aebdf3b22e85bc55787526a5daa8d5f476fc9d46c90d73f1edbc79",
+      "symbol_indices": [
+        261
+      ],
+      "vram": 2151625796
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "c3da381f1096602e36b033dd4f2ffa82c9de4ad71f22eb123288674eba1a9406",
+      "symbol_indices": [
+        292
+      ],
+      "vram": 2151625804
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "83ceff499549e48acafc9fc43a2d6e834474ed1731a64a1ac894cd169f5f6a43",
+      "symbol_indices": [
+        295
+      ],
+      "vram": 2151625972
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "0e7433e20b607ec416ada56b8e485a4b772b2fa39742548e20ff512044170942",
+      "symbol_indices": [
+        297
+      ],
+      "vram": 2151626076
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "990500d9d673d9204d6d0b788b628785ade6442a62881afbe3d1f9526b245cbb",
+      "symbol_indices": [
+        302
+      ],
+      "vram": 2151626244
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "3cafdf6c462493ebf835a99d8f40d5360d78d9e215b79f0e2f1bb1cb13aa784c",
+      "symbol_indices": [
+        303
+      ],
+      "vram": 2151626424
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f2aa30b7ecf9eb74c49311c696f631d357ac52ae5d671c8265a122a261d9437d",
+      "symbol_indices": [
+        304
+      ],
+      "vram": 2151626492
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f054008f7f19c459017b58c32f1c581991bb05ea03476adc76a64ac90e8f5203",
+      "symbol_indices": [
+        279
+      ],
+      "vram": 2151626716
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "581b0f5874f0c25945807fcb7b21ce8abeffa0471b8eabc7b6374e6f887fb1ea",
+      "symbol_indices": [
+        308
+      ],
+      "vram": 2151628812
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "db466027c8dc37f3c563f4e569ef3155e577cf4e45c7eb4ba57ba56eae0f96f5",
+      "symbol_indices": [
+        309
+      ],
+      "vram": 2151629024
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "4ed23c4806717eb6d8d6fc22ee1c234796d672a20a675d3d9035e3ed78fb9b27",
+      "symbol_indices": [
+        310
+      ],
+      "vram": 2151629164
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ca65bf44f36d5cf3627362a96858efcba6b2637909ec199dd7b1c95c8cfab087",
+      "symbol_indices": [
+        313
+      ],
+      "vram": 2151629684
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "e3775ff03bb3c92d1439c8d9fb324ae34fc85411ca5b1fc077cc64a4ebbfed7e",
+      "symbol_indices": [
+        316
+      ],
+      "vram": 2151629784
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "6f1279144b618741c91e0cb0cdd39860eab8f91fe4da13019446a8fe567036c5",
+      "symbol_indices": [
+        318
+      ],
+      "vram": 2151630636
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "7f8fbd5d1bb83c5db1dad238deb75bb5cd0ac823c01e5d8e6e2dfae01fbdac7b",
+      "symbol_indices": [
+        317
+      ],
+      "vram": 2151631108
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b29edab83c6c980f8f606732ac80ff88796e98e7b1d9456bf00fb29c85f735ad",
+      "symbol_indices": [
+        280
+      ],
+      "vram": 2151631608
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "0db2a949a90573e821fc02a886b3bd5aad3000f927a5cecf4b018fd907ffaa82",
+      "symbol_indices": [
+        298
+      ],
+      "vram": 2151631836
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "3d8df4e158ee49af201f12d73834a0d74900e4b2ba1d7fa4f853f5f1364c880e",
+      "symbol_indices": [
+        299
+      ],
+      "vram": 2151631844
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "3c194d21f5c2e62811ef023f98c3838ce19ce0ad5b2c4cedf1bb5e75e01c3455",
+      "symbol_indices": [
+        311
+      ],
+      "vram": 2151631936
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a35f053b7c4f4a50894494934eb9a95391d86a27f8a6f885260c9129889eed52",
+      "symbol_indices": [
+        209
+      ],
+      "vram": 2151632004
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "06519e2e9e63c17b7442b74b6e4fee17e005b807113955a3c90009f31b9abfea",
+      "symbol_indices": [
+        236
+      ],
+      "vram": 2151632020
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "7574a75905e9dd5b3a1886a983a4425f885b2ba2864a84b6ab1f157e2d32ab14",
+      "symbol_indices": [
+        246
+      ],
+      "vram": 2151632176
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "8da5fb2a40ef8dbb367d01df608d5739be0d96fa479d65d83d2c9d6e2bf1b9ce",
+      "symbol_indices": [
+        235
+      ],
+      "vram": 2151632256
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "4afeae2a1b9825d838f352ee71c9f00718c5604467e466d62c71a369768a9d4d",
+      "symbol_indices": [
+        239
+      ],
+      "vram": 2151632496
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "21a569eb92c7a7700b9bf8ae975195d68349561cc61474b307a48634dbb55fb4",
+      "symbol_indices": [
+        238
+      ],
+      "vram": 2151632716
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "8fdacbeef0a530888d1401601db5bd96b90f50f9d0586ef0701ae7f2664021c3",
+      "symbol_indices": [
+        237
+      ],
+      "vram": 2151633044
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ce297ef8ccc9d5173268b27503478da82fed3cd270d41aef4543c971ebf4f69b",
+      "symbol_indices": [
+        305
+      ],
+      "vram": 2151633264
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "c298278605fe4e36ec820a5c9816af7f1e3102b3515bcfa20314b3db68dbe99f",
+      "symbol_indices": [
+        242
+      ],
+      "vram": 2151633460
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "330dd37e5f17f2d5f410dcdc3b85e7be9c3c9ad8ffabec08d169bc575d4da253",
+      "symbol_indices": [
+        245
+      ],
+      "vram": 2151633580
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "571531768ff5b4f80d62c67e0a3383cbb1f35f03b906c7cfd86af9f438f94e74",
+      "symbol_indices": [
+        240
+      ],
+      "vram": 2151633700
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "031bd6595aebc03da7fdae99e765f61b892b42a47b09e72dd5da8234a581c88b",
+      "symbol_indices": [
+        241
+      ],
+      "vram": 2151633848
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "4644062e2073cff9fe24651608322f4dd52b30f068d5db1db12aa365b54ea37d",
+      "symbol_indices": [
+        243
+      ],
+      "vram": 2151634036
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f22ca2b22cd15902b184870895308fc99401cad1bba8df170ead06a19ca36a0a",
+      "symbol_indices": [
+        244
+      ],
+      "vram": 2151634148
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "efbae97921ed0783b9019ad0d2b0770e8a9e309b719f6a046b4d7ff05453eea6",
+      "symbol_indices": [
+        229
+      ],
+      "vram": 2151634680
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2729e64a20dc88b80da5fdeb391e0851e4a5b837f2fe3084eaf632f1a1d41b34",
+      "symbol_indices": [
+        226
+      ],
+      "vram": 2151634776
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "e177822316ddb3e097f2d53788331e36b8d6a30679d3e4a25b8b3005e975df15",
+      "symbol_indices": [
+        227
+      ],
+      "vram": 2151635044
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "fc5845d58375a77b953dc6f50705be04545f3fe114abad93fd722a99a01ad9f3",
+      "symbol_indices": [
+        234
+      ],
+      "vram": 2151635148
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f66aae6242aac6895c6cbc6e4a29589cf0674b63bcdbcf9d78d62edc3f58a650",
+      "symbol_indices": [
+        233
+      ],
+      "vram": 2151635220
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "1b28541728ce951da5d9601137e4b323ee698133c440ec3986bb0c3e0fd0db3e",
+      "symbol_indices": [
+        328
+      ],
+      "vram": 2151635340
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2c10a3afd36dcceaa083fafc0721b9397c03f025a5b3926f4bbcce6a60352ac1",
+      "symbol_indices": [
+        329
+      ],
+      "vram": 2151635464
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "1653b53233e887755a7cf64d6f0253d43d7be2f3d899c5e282e399e2af283897",
+      "symbol_indices": [
+        330
+      ],
+      "vram": 2151635524
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ccf76f3adcafb6826a45bf7c40afac4524d96096014d59584c011619fdf1389f",
+      "symbol_indices": [
+        220
+      ],
+      "vram": 2151635732
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "990500d9d673d9204d6d0b788b628785ade6442a62881afbe3d1f9526b245cbb",
+      "symbol_indices": [
+        219
+      ],
+      "vram": 2151635932
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "1899aedb717690b6bb0941a5d325ecefae844a2838f6ab98a283737a69df3f9f",
+      "symbol_indices": [
+        222
+      ],
+      "vram": 2151636184
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "01ffd672e8ff9b27d5e147e00a9c626baf32fe11d1a4dc4ef471c093f063c123",
+      "symbol_indices": [
+        221
+      ],
+      "vram": 2151636312
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bab024020c92f78e5d4cd7df5ea501ccd567ce583d58db6e559695e1940f9772",
+      "symbol_indices": [
+        223
+      ],
+      "vram": 2151636424
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "b6dac689e9b825109518803f38f1a833e8010ab0867ca3d6a4b7ec640f46279a",
+      "symbol_indices": [
+        306
+      ],
+      "vram": 2151636524
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f0f2d6e127df733940be7a1a2b3bb64fa3e1b794ce5b5cc33c6ff89f8d3d5826",
+      "symbol_indices": [
+        210
+      ],
+      "vram": 2151636600
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "cb5b2a363156605fa3260eb8ff1a39156a0a891abb4aec4491327bab0da6d58d",
+      "symbol_indices": [
+        211
+      ],
+      "vram": 2151636792
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "17c5548cefb730eb6fb30287161209f2694cdadc7b7ae57827416146198f2525",
+      "symbol_indices": [
+        214
+      ],
+      "vram": 2151637212
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f0f2d6e127df733940be7a1a2b3bb64fa3e1b794ce5b5cc33c6ff89f8d3d5826",
+      "symbol_indices": [
+        213
+      ],
+      "vram": 2151637528
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bb7ea316c8537a038da3c0fbabf3b096f58ea8184239bea9362f37f891f00eb9",
+      "symbol_indices": [
+        215
+      ],
+      "vram": 2151637684
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "053e26140568af0ff6967cc9fa508ea5e542eb0c911a45eaeeb1f26972bbe7ab",
+      "symbol_indices": [
+        212
+      ],
+      "vram": 2151637884
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "120b1a19fab826b9f7030b1930c41ad894e23fee79d2d39fe63eeb3813a2e585",
+      "symbol_indices": [
+        217
+      ],
+      "vram": 2151637996
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2470e9b26c4121d4bd8f3a8810a7af07c358e81c9d0439ab511a4bfececa5ed4",
+      "symbol_indices": [
+        216
+      ],
+      "vram": 2151638104
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a0ce3fbd97452d05337be23f19ed569574ab2844eed06664007854907649377a",
+      "symbol_indices": [
+        224
+      ],
+      "vram": 2151638180
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "cb5b2a363156605fa3260eb8ff1a39156a0a891abb4aec4491327bab0da6d58d",
+      "symbol_indices": [
+        228
+      ],
+      "vram": 2151638608
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f0f2d6e127df733940be7a1a2b3bb64fa3e1b794ce5b5cc33c6ff89f8d3d5826",
+      "symbol_indices": [
+        232
+      ],
+      "vram": 2151638876
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "f0f2d6e127df733940be7a1a2b3bb64fa3e1b794ce5b5cc33c6ff89f8d3d5826",
+      "symbol_indices": [
+        231
+      ],
+      "vram": 2151639068
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dd18f6a2f2d639ae7d50c0377608595094777752f3ffc028849da1a21d58187f",
+      "symbol_indices": [
+        218
+      ],
+      "vram": 2151639256
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "dd18f6a2f2d639ae7d50c0377608595094777752f3ffc028849da1a21d58187f",
+      "symbol_indices": [
+        225
+      ],
+      "vram": 2151639368
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2c10a3afd36dcceaa083fafc0721b9397c03f025a5b3926f4bbcce6a60352ac1",
+      "symbol_indices": [
+        332
+      ],
+      "vram": 2151639484
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "7f87c925f04a8447b89dfbc87230559dc6aa4a2961a53681da5c6a23975c5799",
+      "symbol_indices": [
+        333
+      ],
+      "vram": 2151639644
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "21a569eb92c7a7700b9bf8ae975195d68349561cc61474b307a48634dbb55fb4",
+      "symbol_indices": [
+        230
+      ],
+      "vram": 2151639808
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "e177822316ddb3e097f2d53788331e36b8d6a30679d3e4a25b8b3005e975df15",
+      "symbol_indices": [
+        334
+      ],
+      "vram": 2151640024
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "0ee8b7a2b7725dbe1a211ab98de3d4d688843305d42ab0bd5765deaa9a4532f5",
+      "symbol_indices": [
+        335
+      ],
+      "vram": 2151640124
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        253
+      ],
+      "vram": 2151640220
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        254
+      ],
+      "vram": 2151640280
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        255
+      ],
+      "vram": 2151640340
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        256
+      ],
+      "vram": 2151640400
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        258
+      ],
+      "vram": 2151640460
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "0ee8b7a2b7725dbe1a211ab98de3d4d688843305d42ab0bd5765deaa9a4532f5",
+      "symbol_indices": [
+        259
+      ],
+      "vram": 2151640520
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "4088bdbb5372660714863bab9333907b3a9e3258a94ea2d9b5ba92d73d035737",
+      "symbol_indices": [
+        146
+      ],
+      "vram": 2151640628
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "270f456ffefae2bfebff6d42443f6c6084b8dcb1be0cb9196a84863cdb2ffc38",
+      "symbol_indices": [
+        145
+      ],
+      "vram": 2151640756
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "528858261a869f937d29425aaf1b5ab2d2d7be8c2aeae9702f4a0d80df833633",
+      "symbol_indices": [
+        257
+      ],
+      "vram": 2151640884
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "528858261a869f937d29425aaf1b5ab2d2d7be8c2aeae9702f4a0d80df833633",
+      "symbol_indices": [
+        252
+      ],
+      "vram": 2151640952
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        336
+      ],
+      "vram": 2151641192
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "259fdec6a57a128b6afce24b2acdc9c38f1b2bf1375c98df0a7c2efdf2fe6ac1",
+      "symbol_indices": [
+        337
+      ],
+      "vram": 2151641328
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ce1e1ec503f0fad6610192a1b04660655c385fd5eedf3de763119d79efca09aa",
+      "symbol_indices": [
+        251
+      ],
+      "vram": 2151641464
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ce1e1ec503f0fad6610192a1b04660655c385fd5eedf3de763119d79efca09aa",
+      "symbol_indices": [
+        249
+      ],
+      "vram": 2151641560
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ce1e1ec503f0fad6610192a1b04660655c385fd5eedf3de763119d79efca09aa",
+      "symbol_indices": [
+        250
+      ],
+      "vram": 2151641656
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "2f9661f2ec965106679c36c11218fe23f6808770eb45bb08aac722c19f11815a",
+      "symbol_indices": [
+        207
+      ],
+      "vram": 2151641712
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ce1e1ec503f0fad6610192a1b04660655c385fd5eedf3de763119d79efca09aa",
+      "symbol_indices": [
+        247
+      ],
+      "vram": 2151641868
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ebd6757f9e8332718459d607827ce5adc0c8ee8f259a95a6fa79f93e8b1fe331",
+      "symbol_indices": [
+        208
+      ],
+      "vram": 2151641964
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "a35f053b7c4f4a50894494934eb9a95391d86a27f8a6f885260c9129889eed52",
+      "symbol_indices": [
+        248
+      ],
+      "vram": 2151642092
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "84cbbe0fc662d43ab8f4bd094e750de2ac9a3e27fb9e5e9676b1d2bb90b834e0",
+      "symbol_indices": [
+        301
+      ],
+      "vram": 2151642108
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bb7ea316c8537a038da3c0fbabf3b096f58ea8184239bea9362f37f891f00eb9",
+      "symbol_indices": [
+        338
+      ],
+      "vram": 2151642164
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "bb7ea316c8537a038da3c0fbabf3b096f58ea8184239bea9362f37f891f00eb9",
+      "symbol_indices": [
+        339
+      ],
+      "vram": 2151642340
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "ccf76f3adcafb6826a45bf7c40afac4524d96096014d59584c011619fdf1389f",
+      "symbol_indices": [
+        331
+      ],
+      "vram": 2151642464
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "4d4eedc1c7e4b0233daad22ef2ba8b8212f035cc46d987f0c642e759fc09a7e1",
+      "symbol_indices": [
+        321
+      ],
+      "vram": 2151642744
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "927f6054d5667b63fd51341190c0f5db33a178e8672278d1ebfa07229da60c8c",
+      "symbol_indices": [
+        323
+      ],
+      "vram": 2151642776
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".game_select",
+      "sha256": "7c8e63133f235be9e4ef729a6cfe66169194ea78ee9cd6eccc892cf9feb4aad6",
+      "symbol_indices": [
+        300
+      ],
+      "vram": 2151642796
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "dced934a9ee3e63b40e6b6c232e4c449262e7e4f29609302d65e60db6f935db5",
+      "symbol_indices": [
+        29
+      ],
+      "vram": 2151430400
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "8d567d441d98a6e7217a4d2f15042baaa5fc68990d1807fa5fb6a31ccb8d941a",
+      "symbol_indices": [
+        30
+      ],
+      "vram": 2151430448
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "f32871ab9bf19e0758ec3f1fd02d7859d51bb994d1120ceed7f71a46e5c86c0c",
+      "symbol_indices": [
+        31
+      ],
+      "vram": 2151430500
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "dced934a9ee3e63b40e6b6c232e4c449262e7e4f29609302d65e60db6f935db5",
+      "symbol_indices": [
+        32
+      ],
+      "vram": 2151430552
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "767e6c1db5d1e9745b0584bc1a69560834e4944e2ad5599122a354a75a788ccf",
+      "symbol_indices": [
+        20
+      ],
+      "vram": 2151430924
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "abe80dabab8c1411a68965788e3131e4a3a32307974e931a94d7dc38687baac3",
+      "symbol_indices": [
+        21
+      ],
+      "vram": 2151431024
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "b5b28bfe16dae8f75119eeb60fbdddbccac84102b34b15fbaa87a5e73a5f559b",
+      "symbol_indices": [
+        39
+      ],
+      "vram": 2151432064
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "17a06f584ce548034b374f38c0b10c48c6d9a41e3ef13eaaf35eba6fda60f331",
+      "symbol_indices": [
+        40
+      ],
+      "vram": 2151432144
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "2cfb77ed4a0d494654517297fd543c5dc5b6c7e69a813faacaf8858117af0cb9",
+      "symbol_indices": [
+        41
+      ],
+      "vram": 2151432216
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "46dda8d560b9c6b3f5c4d952d9d246ac5415d4492f594b729e17ed7e3b8f15a3",
+      "symbol_indices": [
+        42
+      ],
+      "vram": 2151432828
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "8888dbe9af7f4d83cd23a186c29d6274b4b2456e2c06f83f98503994b29d5da9",
+      "symbol_indices": [
+        44
+      ],
+      "vram": 2151433084
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "1e383764662f4d0054b4b1941181ac7802b55d0867ff681666a8b14c7324e260",
+      "symbol_indices": [
+        13
+      ],
+      "vram": 2151433284
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "93e95308773e655bafd7bde91cb166e0976b68a6354688a18ef6e09ee3bc9336",
+      "symbol_indices": [
+        12
+      ],
+      "vram": 2151433616
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "abe80dabab8c1411a68965788e3131e4a3a32307974e931a94d7dc38687baac3",
+      "symbol_indices": [
+        26
+      ],
+      "vram": 2151435984
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "abe80dabab8c1411a68965788e3131e4a3a32307974e931a94d7dc38687baac3",
+      "symbol_indices": [
+        27
+      ],
+      "vram": 2151437080
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "abe80dabab8c1411a68965788e3131e4a3a32307974e931a94d7dc38687baac3",
+      "symbol_indices": [
+        28
+      ],
+      "vram": 2151438176
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "35d2864e61b999c463962fe34d472ae4b5ccdebc0b44fe76c73b3daa8eaad5af",
+      "symbol_indices": [
+        24
+      ],
+      "vram": 2151439376
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "12789d3cba20941c5be1744da89c9ec0038bd6bd37dfdd8a71c45edeafb1e048",
+      "symbol_indices": [
+        23
+      ],
+      "vram": 2151440552
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "65840ea5609d86aa7176b9bae56bdf950943d9f326fe038365c927f8dda87b8f",
+      "symbol_indices": [
+        22
+      ],
+      "vram": 2151440864
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "7bbfdfd679c11b0b3b0a327b916b6c13b9cea77c0a3dd58f0744d5df5de75db9",
+      "symbol_indices": [
+        53
+      ],
+      "vram": 2151444036
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "7b1fb60ed1567ff8b285e83de75a58f2be750ea4cefc4b58b6d35cba72961c71",
+      "symbol_indices": [
+        54
+      ],
+      "vram": 2151444144
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "1b2323d78977ad456f190bc6a9e348b30bfcc55df4e51894f913ca70ddda5e2a",
+      "symbol_indices": [
+        55
+      ],
+      "vram": 2151444256
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "e363aff6b8ee61a1a7d3d11b180a68dbee35679828ad9ab665a9e64d9a5d85b1",
+      "symbol_indices": [
+        51
+      ],
+      "vram": 2151444556
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "71b4f5cb014f6be9824c88677d1229de33a51237fc2c65353b33ac317d13a27d",
+      "symbol_indices": [
+        52
+      ],
+      "vram": 2151445188
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "3acec30062275b8db2bf2ae6b43962f58b12178cd8360b5575e46dcc5aaf1bc1",
+      "symbol_indices": [
+        7
+      ],
+      "vram": 2151445924
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "3acec30062275b8db2bf2ae6b43962f58b12178cd8360b5575e46dcc5aaf1bc1",
+      "symbol_indices": [
+        8
+      ],
+      "vram": 2151445972
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "3acec30062275b8db2bf2ae6b43962f58b12178cd8360b5575e46dcc5aaf1bc1",
+      "symbol_indices": [
+        9
+      ],
+      "vram": 2151446020
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "3acec30062275b8db2bf2ae6b43962f58b12178cd8360b5575e46dcc5aaf1bc1",
+      "symbol_indices": [
+        25
+      ],
+      "vram": 2151446068
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "3e6722049f5d4b4e0a97412b66fbcb19add574b2ee092837649e5e1c3df7c423",
+      "symbol_indices": [
+        93
+      ],
+      "vram": 2151446448
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "91d1c7550fc3e3c686886aa23ee91e3873eb507541facdd41bb89a368ef1b2b9",
+      "symbol_indices": [
+        94
+      ],
+      "vram": 2151446500
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "0a87a3345b0ecf4c4734916f05ef23eda7e66de31f9e7ec4b4fae3bfcc961b86",
+      "symbol_indices": [
+        78
+      ],
+      "vram": 2151446964
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "dbdfce818d5302c8c4e4bb41d9916f4c155217118deda7e7ec25327e2680a733",
+      "symbol_indices": [
+        96
+      ],
+      "vram": 2151447176
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "5da24b0e4ae7ad93350ebf2ff69f304cc41bb6633c61853468fd67958776cdbe",
+      "symbol_indices": [
+        99
+      ],
+      "vram": 2151447668
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "e754325dea7a20f3da48ab149425951dae7c467323bb60822d66d60befc669ad",
+      "symbol_indices": [
+        102
+      ],
+      "vram": 2151448508
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "a901735aaa90166ab0f076214dbb121c5146b80aaa1336618af91f9c03d1da9d",
+      "symbol_indices": [
+        104
+      ],
+      "vram": 2151448596
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "1aa97633e5ac68aecdbdc978a2eaa7856e4285eadfea28557300baf61b385599",
+      "symbol_indices": [
+        79
+      ],
+      "vram": 2151448788
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "a17ef5c5cc749fe9972b6d2839f7d748495746e613939d07fd376e582af0e95c",
+      "symbol_indices": [
+        84
+      ],
+      "vram": 2151450444
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "13038a9cec392353b0c6adefbcddecb24cb35d34ebccfb0e0873d8b0e808fa95",
+      "symbol_indices": [
+        81
+      ],
+      "vram": 2151450460
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "0dcc0bd799b648edfc36d221b6de29a385662d8863a9cde835baf342b51e4d80",
+      "symbol_indices": [
+        85
+      ],
+      "vram": 2151451596
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "01d68e8e8625f4cdc297972e616c83e6e662f09d1c1a37f848c25f41ca852d10",
+      "symbol_indices": [
+        108
+      ],
+      "vram": 2151451604
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "147c6dbc285a0a4384c063823d9a871527f7e4a6405a9ee0bf202743ac5083c9",
+      "symbol_indices": [
+        103
+      ],
+      "vram": 2151451740
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "2b8db8d6cd65a5f23d71ca6b7fa77e6fa058cfba7cc4a490f903a9395f2559c7",
+      "symbol_indices": [
+        111
+      ],
+      "vram": 2151451880
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "67282916bf7a5de8502deaf428202d770fe63c871ed1de150cf70c03682064a4",
+      "symbol_indices": [
+        83
+      ],
+      "vram": 2151451968
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "a4b4e8b369eada74bd35b8727b6022e4fcefd0369dde6e2a12c291fe53314b0d",
+      "symbol_indices": [
+        76
+      ],
+      "vram": 2151451980
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "d0981f5fd78122d4f28202740d1fb45e1ed82e506dad60de44fc2af2efb1833f",
+      "symbol_indices": [
+        75
+      ],
+      "vram": 2151452316
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "f3330b9b87aefb23fda5cbbc4b8bba3ec99314934aef827c45d6b0672c33af81",
+      "symbol_indices": [
+        77
+      ],
+      "vram": 2151454932
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "26023bc9f03d353048f7215411d53d0c5d5eb8f54553d512552a3336622c93ac",
+      "symbol_indices": [
+        120
+      ],
+      "vram": 2151455300
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "26023bc9f03d353048f7215411d53d0c5d5eb8f54553d512552a3336622c93ac",
+      "symbol_indices": [
+        122
+      ],
+      "vram": 2151455560
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "cb396d6528ae5117c10338ce754ed23a7e25287657cf70494d0d58e71f12313a",
+      "symbol_indices": [
+        82
+      ],
+      "vram": 2151455820
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "97d00c4792a6b2ecff75597996ac0d0152bcfcdba52a27db2eb430434b9a4ae3",
+      "symbol_indices": [
+        80
+      ],
+      "vram": 2151455924
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "eb0948a0bb996782e086f513aa646e1fb74cbbd4a2c6778f79d1d43e82cc524d",
+      "symbol_indices": [
+        121
+      ],
+      "vram": 2151456032
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "a4e30149cfd96d4d1de6c7b42d4125639019527613137d118a8218de0bf71b5c",
+      "symbol_indices": [
+        124
+      ],
+      "vram": 2151456184
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "22b264bc3aba0765cb33851e319510b433c47b8f7208ae683574757276d2567d",
+      "symbol_indices": [
+        117
+      ],
+      "vram": 2151457800
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "91177c8d6a70f6dd699db3034a9a7b7bf9c900940040819cb93360e7bf67fd84",
+      "symbol_indices": [
+        125
+      ],
+      "vram": 2151457832
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "5d00bac1ccf40ad2e4f0b99672b909a17cd8a17bda7e28b872a6b46ca089db88",
+      "symbol_indices": [
+        123
+      ],
+      "vram": 2151459264
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "a72340d59d48c2dc18337a951ac77be043946cef598f04ff5ee68981e510be74",
+      "symbol_indices": [
+        126
+      ],
+      "vram": 2151459468
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "143bc7abb10bff7e3b63d9b96c0d52c3636f3eea69e02acbe6d8a94514fdfb0a",
+      "symbol_indices": [
+        91
+      ],
+      "vram": 2151461352
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "211c1d911ccafa59a98c32450883c4069ca97c47971abcf2ab59e47342727197",
+      "symbol_indices": [
+        92
+      ],
+      "vram": 2151461472
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "d6b68a74c97a51044d4c6c209239bffaef3909320a9cca2174281f6ea98ff986",
+      "symbol_indices": [
+        69
+      ],
+      "vram": 2151462540
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "143bc7abb10bff7e3b63d9b96c0d52c3636f3eea69e02acbe6d8a94514fdfb0a",
+      "symbol_indices": [
+        132
+      ],
+      "vram": 2151463008
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "cdf7ac5944a858f87339fb8909bfbb00248393013af73be566bb0b4064216acf",
+      "symbol_indices": [
+        134
+      ],
+      "vram": 2151463136
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "0a87a3345b0ecf4c4734916f05ef23eda7e66de31f9e7ec4b4fae3bfcc961b86",
+      "symbol_indices": [
+        133
+      ],
+      "vram": 2151466336
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "2f8b5a827d38e8eb70880887b558acbc087f9dd5ab8021bf9caef8dd9113114b",
+      "symbol_indices": [
+        135
+      ],
+      "vram": 2151466608
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "eca5398e7d738254471341cf0dfc8242a3e9674015c52bf91f26ee67ded65338",
+      "symbol_indices": [
+        137
+      ],
+      "vram": 2151467280
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "67282916bf7a5de8502deaf428202d770fe63c871ed1de150cf70c03682064a4",
+      "symbol_indices": [
+        136
+      ],
+      "vram": 2151467504
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "1c419a9cb1335c9383175edfbfdd864d56742a933c84d8a545cfdbec1fbce871",
+      "symbol_indices": [
+        161
+      ],
+      "vram": 2151468064
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "8b08bc64d0fd2594e551ef6d179e3be8ff12038a40a79a77dee2746707cd5ea7",
+      "symbol_indices": [
+        163
+      ],
+      "vram": 2151468072
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "fc463ccb119100966868871f3e521d27bc6914ef752fd8d93573bc525442a324",
+      "symbol_indices": [
+        155
+      ],
+      "vram": 2151469060
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "a320f956df4bee8d6ec661da1e369248d2001b919f469e81ab4fa44da95d4ed8",
+      "symbol_indices": [
+        158
+      ],
+      "vram": 2151469116
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "36f08badf9c76ad9b711220bcae2feef24afb04b6aafdb69063a6db9d7950ada",
+      "symbol_indices": [
+        170
+      ],
+      "vram": 2151469160
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "3807fb67485849a82bce1a16995e6a4a2035dc63e75aa2e0c1dac81dd4276c11",
+      "symbol_indices": [
+        171
+      ],
+      "vram": 2151469444
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "5294f56bb99044c76b3e75de7f2eb3156db100da479f1ac30a4b90d00e9e7020",
+      "symbol_indices": [
+        177
+      ],
+      "vram": 2151470312
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "53993524ba4199efe3c457ea4319fae30c9a3da3c8f5d18ad6fbbadc9a1a910d",
+      "symbol_indices": [
+        178
+      ],
+      "vram": 2151470408
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "24f8520d12417dfa726a723bdb3e345400647316ebbadb5e2b0c7f6ae1fe796a",
+      "symbol_indices": [
+        148
+      ],
+      "vram": 2151470864
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "cbec522f17fdf7a7bd06cdce39f55090f7c28eeed3910f5352df30212ea70aeb",
+      "symbol_indices": [
+        179
+      ],
+      "vram": 2151470984
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "123a34b4b024379126fbc4932cead32212dd1cd6bc68370b995064e167e45e75",
+      "symbol_indices": [
+        180
+      ],
+      "vram": 2151471172
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "e18db1aa0d9f4437b547a0ae9f84d9630435a61e1cfba07ed25660d86424f069",
+      "symbol_indices": [
+        181
+      ],
+      "vram": 2151471336
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "32f7422b70b1be88bb8e3c1d925bfc05976ca25ad7b17e17a158cc94d0e62665",
+      "symbol_indices": [
+        160
+      ],
+      "vram": 2151471628
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".snoweffects_select",
+      "sha256": "2e3c21d446b8a33ebf85d7eacabdd3a36a2c7ce4fcf2c1ba99ec2e137f741d1f",
+      "symbol_indices": [
+        159
+      ],
+      "vram": 2151473248
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "f09701d44ec8e8f80603f4aedfaea3d8ff00959d52ab624a4354fdfdd2f03003",
+      "symbol_indices": [
+        30
+      ],
+      "vram": 2151671016
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "6a753aa950a77fac68f69a9cb002975069ab883a5c2bfd33e7aeb8050badb2b7",
+      "symbol_indices": [
+        35
+      ],
+      "vram": 2151671192
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "f26d23615a8e587ba94c795ea900cb8e4358a9cdc36a2d9b817af0bcc7adc233",
+      "symbol_indices": [
+        18
+      ],
+      "vram": 2151671328
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "1d548165805b439019fbf7b7201f6f0dcf78998b7ef96a242651582045914289",
+      "symbol_indices": [
+        19
+      ],
+      "vram": 2151671508
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "47946b852029107e3251563b71b60752dbb559bd9a7a2689ba6a10d5be8aafe7",
+      "symbol_indices": [
+        41
+      ],
+      "vram": 2151671748
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "c8629acabce46118ca1b4d6ef7f5e7c138a8b6d4ee321e56a1e0f44fa0e31afb",
+      "symbol_indices": [
+        42
+      ],
+      "vram": 2151672104
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "a225ef2c7e05aafa24dcf3ec372ae5ba14f93739ac812d31fa75b9acb51a557a",
+      "symbol_indices": [
+        20
+      ],
+      "vram": 2151672216
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "0cdea1ed6366656503f40c785e69536c76ad06646f71d450af8049c61c0d4756",
+      "symbol_indices": [
+        21
+      ],
+      "vram": 2151672224
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "9fcb51c98cb84f488ac3966ecb39df3dc92749ddfb5633a96076f554b2d5d005",
+      "symbol_indices": [
+        22
+      ],
+      "vram": 2151672444
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "063bb4ab4c883370f0e5c8958dd056cb20fd669ac1d1ad77c2cd00ad1d1d5933",
+      "symbol_indices": [
+        40
+      ],
+      "vram": 2151672452
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "2e4ce3a04b5b1de895f015bb554a303c02e653cd58e3cb6692085623f334a937",
+      "symbol_indices": [
+        23
+      ],
+      "vram": 2151672800
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "cd8592f70c1afdab2a76e354a779fc9a81b0c22a804f51a5ce9f76d55123e2bc",
+      "symbol_indices": [
+        24
+      ],
+      "vram": 2151672808
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "880f213b21e56b254e773bff9a0ac0804e23ddfdd80d1670ce9832d2e31bbcc4",
+      "symbol_indices": [
+        25
+      ],
+      "vram": 2151672856
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "880f213b21e56b254e773bff9a0ac0804e23ddfdd80d1670ce9832d2e31bbcc4",
+      "symbol_indices": [
+        26
+      ],
+      "vram": 2151672864
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "c8a1939a3f219ac3723167209fb9d92c916b5fa26a8f05e840de44a8a3201e22",
+      "symbol_indices": [
+        27
+      ],
+      "vram": 2151672872
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "cbec522f17fdf7a7bd06cdce39f55090f7c28eeed3910f5352df30212ea70aeb",
+      "symbol_indices": [
+        31
+      ],
+      "vram": 2151672880
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "60ccde8a146e2cca48393667cb54f59c71f1c6aa8c4593cb7d724b9fbc7cfab0",
+      "symbol_indices": [
+        6
+      ],
+      "vram": 2151673484
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".nameent",
+      "sha256": "ba22ae70c39e0c62cea753124079bbadae7ea42a20e54f64512654caed7971ee",
+      "symbol_indices": [
+        7
+      ],
+      "vram": 2151674644
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "f4ec21d20cf5a2af8715aeb8e215679dbf1900e9091d6e2099a78ffbfe2f5a8c",
+      "symbol_indices": [
+        47
+      ],
+      "vram": 2150506400
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "436faf64ae57b73b0c2ea606f8d2059c6a2e321dbd9fe1eae045f9b697efaedb",
+      "symbol_indices": [
+        36
+      ],
+      "vram": 2150506728
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "0fa9289816fc0ba6273ef04d3d671fa928174b23098bd80b68ec42a3ae80c650",
+      "symbol_indices": [
+        26
+      ],
+      "vram": 2150506884
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "fc463ccb119100966868871f3e521d27bc6914ef752fd8d93573bc525442a324",
+      "symbol_indices": [
+        28
+      ],
+      "vram": 2150506948
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "e7a7a586d3de78138cfbc21ec9046ff3d5441dbe39484b6ec71676f0f9775085",
+      "symbol_indices": [
+        53
+      ],
+      "vram": 2150507024
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "f1cb0e0896816d03e974a94f4b416cc7d0a791c8e8a62c8a22bc05514f3fe14b",
+      "symbol_indices": [
+        43
+      ],
+      "vram": 2150507144
+    },
+    {
+      "evidence": "USO symbol flags 0x52: defined Text offset; loader resolution checked at 0x800025d4..0x80002624. Normal discovery must validate the body and its transfers.",
+      "origin": "checked-root",
+      "section": ".fire",
+      "sha256": "a300347e5d27b2e595f3da7f82e5cd67d7512e9612cf46bde2e5df9d931ac43b",
+      "symbol_indices": [
+        42
+      ],
+      "vram": 2150507224
     }
   ],
   "excluded_symbols": [
@@ -25122,6 +28232,38 @@
       "symbols_rom_offset": 6047862,
       "symbols_sha256": "fd67395ff7e72153dc923a99c4ed46ff05868b6919659c6368f0d2122573aba1",
       "symbols_size": 4272
+    },
+    {
+      "defined_text_symbols": 207,
+      "module_rom_offset": 8177920,
+      "section": ".game_select",
+      "symbols_rom_offset": 8219906,
+      "symbols_sha256": "8e7d37f48db6a5b3c558e57f937122d792115a524a40ea8239466a97a4deade8",
+      "symbols_size": 4140
+    },
+    {
+      "defined_text_symbols": 79,
+      "module_rom_offset": 9446354,
+      "section": ".snoweffects_select",
+      "symbols_rom_offset": 9519666,
+      "symbols_sha256": "ddde4141cfb305742f0d03acd0282b8bd0b29f6f65adf707035903b5101d9ab5",
+      "symbols_size": 2364
+    },
+    {
+      "defined_text_symbols": 18,
+      "module_rom_offset": 6604482,
+      "section": ".nameent",
+      "symbols_rom_offset": 6610358,
+      "symbols_sha256": "a5fb5600db5f8037180a46484ac587a1ec45fcd1fc1510f4841b36ca79fa75d2",
+      "symbols_size": 852
+    },
+    {
+      "defined_text_symbols": 7,
+      "module_rom_offset": 8339038,
+      "section": ".fire",
+      "symbols_rom_offset": 8349142,
+      "symbols_sha256": "72ba44e7194d7d3e2ebb3c7ad2124b0829ee394b7b616df712dc426d86747366",
+      "symbols_size": 816
     }
   ],
   "rom_sha1": "79cd1166c365e5809dec9b62e6d40d6032d5db3a"

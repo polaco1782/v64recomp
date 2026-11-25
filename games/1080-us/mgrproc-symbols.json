@@ -155,5 +155,15 @@
     "216": 2147862240
   },
   "text_rom_size": 7890,
-  "stored_text_sha256": "21889217ca875f3abfc69aad8f67fee2d06afcb11abd0fde63600b2e4a32af79"
+  "stored_text_sha256": "21889217ca875f3abfc69aad8f67fee2d06afcb11abd0fde63600b2e4a32af79",
+  "linked_text": [
+    {
+      "symbol_values": {
+        "161": 2151671016,
+        "184": 2151676544,
+        "186": 2151672808
+      },
+      "sha256": "a4148b01002fe5c49e1a3e07f91336b9f17bdc7617846fff24b606e6eae17cee"
+    }
+  ]
 }

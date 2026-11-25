@@ -27,6 +27,8 @@
     <None Include="$(RecompRoot)games\1080-us\CMakeLists.txt" />
     <ClInclude Include="$(RecompRoot)games\1080-us\audio.h" />
     <None Include="$(RecompRoot)games\1080-us\discover_symbols.py" />
+    <None Include="$(RecompRoot)games\1080-us\fire-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\game-select-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\game-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\generate.py" />
     <None Include="$(RecompRoot)games\1080-us\genproc-symbols.json" />
@@ -35,7 +37,9 @@
     <ClCompile Include="$(RecompRoot)games\1080-us\main.c" />
     <None Include="$(RecompRoot)games\1080-us\mgrproc-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\n64proc-symbols.json" />
+    <None Include="$(RecompRoot)games\1080-us\nameent-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\profile.toml" />
+    <None Include="$(RecompRoot)games\1080-us\snoweffects-select-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\snoweffects-symbols.json" />
     <None Include="$(RecompRoot)games\1080-us\startup-entries.json" />
     <None Include="$(RecompRoot)games\1080-us\titproc-symbols.json" />
