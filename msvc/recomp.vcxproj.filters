@@ -37,6 +37,12 @@
     <ClInclude Include="$(RecompRoot)backends\gles2\editor.h">
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
+    <ClCompile Include="$(RecompRoot)backends\gles2\editor_ai.cpp">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompRoot)backends\gles2\editor_ai.h">
+      <Filter>Header Files\backends\gles2</Filter>
+    </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\gles2\framebuffer.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
@@ -50,6 +56,9 @@
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
     <ClCompile Include="$(RecompRoot)backends\gles2\interpolation.c">
+      <Filter>Source Files\backends\gles2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompRoot)backends\gles2\picker.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClCompile Include="$(RecompRoot)backends\gles2\rdp.c">

@@ -63,33 +63,48 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
     p->mux0 = s->mux0;
     p->mux1 = s->mux1;
     p->cycle = cycle;
-    const char *vs = "#version 300 es\nin vec4 position;in vec4 color;in vec2 uv;in float fogv;in float reciprocal;"
-                     "out vec4 shade;out vec2 texcoord;out float fogfactor;out float invw;"
-                     "void main(){gl_Position=position;shade=color;texcoord=uv;fogfactor=fogv;invw=reciprocal;}";
+    const char *pick_vertex = "", *pick_position = "", *pick_fragment = "", *pick_output = "";
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->editor) {
+        pick_vertex = "in highp float pickOffset;uniform highp int pickBase;flat out highp int triangle;";
+        pick_position = "triangle=pickBase+int(pickOffset);";
+        pick_fragment = "flat in highp int triangle;layout(location=2) out highp vec4 pickColor;";
+        /* Binary coverage for the ID attachment. With blending enabled a fully
+         * transparent fragment preserves the previous triangle under it. */
+        pick_output = "pickColor=vec4(vec3(ivec3(triangle,triangle>>8,triangle>>16)&255)/255.0,"
+                      "combined.a>0.0 ? 1.0 : 0.0);";
+    }
+#endif
+    const char *vs[] = {"#version 300 es\n", pick_vertex,
+                        "in vec4 position;in vec4 color;in vec2 uv;in float fogv;in float reciprocal;"
+                        "out vec4 shade;out vec2 texcoord;out float fogfactor;out float invw;"
+                        "void main(){gl_Position=position;shade=color;texcoord=uv;fogfactor=fogv;invw=reciprocal;",
+                        pick_position, "}"};
     char fs[8192];
-    int pos =
-        snprintf(fs, sizeof(fs),
-                 "#version 300 es\nprecision highp float;layout(location=0) out vec4 outputColor;%s"
-                 "in vec4 shade;in vec2 texcoord;in float fogfactor;in float invw;uniform vec4 "
-                 "prim,env,fogc;uniform "
-                 "float lod,alphatest,coverageAlpha,fogen,rdpPerspective;"
-                 "uniform sampler2D tex0,tex1;uniform vec4 dim0,dim1,origin0,origin1,wrap0,wrap1,uvBounds;"
-                 "vec2 coord(vec2 uv,vec4 d,vec4 o,vec4 w){vec2 p=uv*d.zw-o.xy;"
-                 "if(o.z<0.5){if(w.x>0.0){p.x=mod(p.x,w.x*(w.z>0.0?2.0:1.0));"
-                 "if(w.z>0.0)p.x=min(p.x,w.x*2.0-1.0-p.x);}p.x=clamp(p.x,0.0,d.x-1.0);}"
-                 "if(o.w<0.5){if(w.y>0.0){p.y=mod(p.y,w.y*(w.w>0.0?2.0:1.0));"
-                 "if(w.w>0.0)p.y=min(p.y,w.y*2.0-1.0-p.y);}p.y=clamp(p.y,0.0,d.y-1.0);}"
-                 "return (p+vec2(0.5))/d.xy;}"
-                 "void main(){vec2 sourceUV=texcoord;"
-                 "if(rdpPerspective>0.5){sourceUV=invw<=0.0?vec2(1023.96875):"
-                 "clamp(texcoord/invw*16384.0,vec2(-1024.0),vec2(1023.96875));}"
-                 "vec2 dx=dFdx(sourceUV),dy=dFdy(sourceUV);"
-                 /* At higher render scales, keep edge fragments within the native rectangle samples. */
-                 "sourceUV=clamp(sourceUV,uvBounds.xy,uvBounds.zw);"
-                 "vec4 t0=textureGrad(tex0,coord(sourceUV,dim0,origin0,wrap0),dx*dim0.zw/dim0.xy,dy*dim0.zw/dim0.xy);"
-                 "vec4 t1=textureGrad(tex1,coord(sourceUV,dim1,origin1,wrap1),dx*dim1.zw/dim1.xy,dy*dim1.zw/dim1.xy);"
-                 "float noise=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5);vec4 combined=vec4(0.0);",
-                 s->screen_effects ? "layout(location=1) out vec4 sceneDepth;uniform bool recordDepth,blended;" : "");
+    int pos = snprintf(
+        fs, sizeof(fs),
+        "#version 300 es\nprecision highp float;precision highp int;layout(location=0) out vec4 outputColor;%s%s"
+        "in vec4 shade;in vec2 texcoord;in float fogfactor;in float invw;uniform vec4 "
+        "prim,env,fogc;uniform "
+        "float lod,alphatest,coverageAlpha,fogen,rdpPerspective;"
+        "uniform sampler2D tex0,tex1;uniform vec4 dim0,dim1,origin0,origin1,wrap0,wrap1,uvBounds;"
+        "vec2 coord(vec2 uv,vec4 d,vec4 o,vec4 w){vec2 p=uv*d.zw-o.xy;"
+        "if(o.z<0.5){if(w.x>0.0){p.x=mod(p.x,w.x*(w.z>0.0?2.0:1.0));"
+        "if(w.z>0.0)p.x=min(p.x,w.x*2.0-1.0-p.x);}p.x=clamp(p.x,0.0,d.x-1.0);}"
+        "if(o.w<0.5){if(w.y>0.0){p.y=mod(p.y,w.y*(w.w>0.0?2.0:1.0));"
+        "if(w.w>0.0)p.y=min(p.y,w.y*2.0-1.0-p.y);}p.y=clamp(p.y,0.0,d.y-1.0);}"
+        "return (p+vec2(0.5))/d.xy;}"
+        "void main(){vec2 sourceUV=texcoord;"
+        "if(rdpPerspective>0.5){sourceUV=invw<=0.0?vec2(1023.96875):"
+        "clamp(texcoord/invw*16384.0,vec2(-1024.0),vec2(1023.96875));}"
+        "vec2 dx=dFdx(sourceUV),dy=dFdy(sourceUV);"
+        /* At higher render scales, keep edge fragments within the native rectangle samples. */
+        "sourceUV=clamp(sourceUV,uvBounds.xy,uvBounds.zw);"
+        "vec4 t0=textureGrad(tex0,coord(sourceUV,dim0,origin0,wrap0),dx*dim0.zw/dim0.xy,dy*dim0.zw/dim0.xy);"
+        "vec4 t1=textureGrad(tex1,coord(sourceUV,dim1,origin1,wrap1),dx*dim1.zw/dim1.xy,dy*dim1.zw/dim1.xy);"
+        "float noise=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5);vec4 combined=vec4(0.0);",
+        pick_fragment,
+        s->screen_effects ? "layout(location=1) out vec4 sceneDepth;uniform bool recordDepth,blended;" : "");
     if (cycle == 2) {
         pos += snprintf(fs + pos, sizeof(fs) - (size_t)pos, "combined=t0;");
         p->texture[0] = true;
@@ -122,20 +137,25 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
     }
     snprintf(fs + pos, sizeof(fs) - (size_t)pos,
              "if(%s<alphatest||combined.a<coverageAlpha)discard;"
-             "combined.rgb=mix(combined.rgb,fogc.rgb,clamp(fogfactor*fogen,0.0,1.0));outputColor=combined;%s}",
-             cycle == 1 ? "compareAlpha" : "combined.a",
+             "combined.rgb=mix(combined.rgb,fogc.rgb,clamp(fogfactor*fogen,0.0,1.0));outputColor=combined;%s%s}",
+             cycle == 1 ? "compareAlpha" : "combined.a", pick_output,
              s->screen_effects ? "float z=recordDepth ? 1.0+round(gl_FragCoord.z*16777214.0) : 0.0;"
                                  "vec3 bytes=vec3(floor(z/65536.0),mod(floor(z/256.0),256.0),mod(z,256.0));"
                                  "float replace=(!blended || combined.a>=(recordDepth ? 0.95 : 0.05)) ? 1.0 : 0.0;"
                                  "sceneDepth=vec4(bytes/255.0,replace);"
                                : "");
-    GLuint v = recomp_gles2_shader(s, GL_VERTEX_SHADER, vs), f = recomp_gles2_shader(s, GL_FRAGMENT_SHADER, fs);
+    GLuint v = recomp_gles2_shader_parts(s, GL_VERTEX_SHADER, vs, sizeof(vs) / sizeof(*vs)),
+           f = recomp_gles2_shader(s, GL_FRAGMENT_SHADER, fs);
     p->id = s->gl.CreateProgram();
     s->gl.AttachShader(p->id, v);
     s->gl.AttachShader(p->id, f);
     const char *attrs[] = {"position", "color", "uv", "fogv", "reciprocal"};
     for (unsigned i = 0; i < 5; i++)
         s->gl.BindAttribLocation(p->id, i, attrs[i]);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->editor)
+        s->gl.BindAttribLocation(p->id, 5, "pickOffset");
+#endif
     s->gl.LinkProgram(p->id);
     s->gl.DeleteShader(v);
     s->gl.DeleteShader(f);
@@ -151,6 +171,10 @@ Program *recomp_gles2_combiner(RecompRDPGles2 *s) {
         p->record_depth = s->gl.GetUniformLocation(p->id, "recordDepth");
         p->blended = s->gl.GetUniformLocation(p->id, "blended");
     }
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->editor)
+        p->pick_base = s->gl.GetUniformLocation(p->id, "pickBase");
+#endif
     p->prim = s->gl.GetUniformLocation(p->id, "prim");
     p->env = s->gl.GetUniformLocation(p->id, "env");
     p->fog = s->gl.GetUniformLocation(p->id, "fogc");

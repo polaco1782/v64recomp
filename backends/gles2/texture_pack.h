@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,8 +19,11 @@ typedef struct Gles2PackImage {
     uint8_t *pixels;
     unsigned width, height;
 } Gles2PackImage;
-enum { GLES2_TEXTURE_MAX_PNG_BYTES = 16 * 1024 * 1024 };
+enum { GLES2_TEXTURE_MAX_SIDE = 2048, GLES2_TEXTURE_MAX_PNG_BYTES = 16 * 1024 * 1024 };
 
+#define GLES2_AI_PREFIX "v64recomp/ai/"
+#define GLES2_AI_ENTRY GLES2_AI_PREFIX "%016" PRIx64 ".gles.png"
+bool gles2_texture_pack_ai(Gles2TexturePack *pack, uint64_t hash, size_t *source);
 Gles2TexturePack *gles2_texture_pack_open(const char *zip, const char *overrides, const char *rom_title);
 void gles2_texture_pack_close(Gles2TexturePack *pack);
 bool gles2_texture_pack_enabled(const Gles2TexturePack *pack);
@@ -32,7 +36,7 @@ typedef struct Gles2PackTile {
     unsigned width, height;
 } Gles2PackTile;
 typedef enum Gles2PackStatus { GLES2_PACK_MISS, GLES2_PACK_INCOMPLETE, GLES2_PACK_FOUND } Gles2PackStatus;
-/* Source indices identify a complete Rice image (including alpha), or a local override, until reload. */
+/* Source indices identify Rice images, loose overrides and AI entries until reload. */
 bool gles2_texture_pack_known(const Gles2TexturePack *pack, uint64_t hash, size_t *source);
 void gles2_texture_pack_remember(Gles2TexturePack *pack, uint64_t hash, size_t source);
 bool gles2_texture_pack_local(const Gles2TexturePack *pack, uint64_t hash, size_t *source);

@@ -99,12 +99,18 @@ enum { RECOMP_GLES2_BATCH_VERTICES = 1536 };
 
 typedef struct Vertex {
     float position[4], color[4], uv[2], fog, reciprocal;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    float pick_offset;
+#endif
 } Vertex;
 typedef struct Program {
     uint32_t mux0, mux1, cycle;
     GLuint id;
     GLint prim, env, fog, lod, alpha, coverage_alpha, fogen, perspective, uv_bounds;
     GLint tile[2][3], record_depth, blended;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    GLint pick_base;
+#endif
     bool texture[2];
 } Program;
 enum { GLES2_TEXTURE_SLOTS = 1024, GLES2_NATIVE_WAYS = 16, GLES2_REPLACEMENT_WAYS = 4 };
@@ -128,6 +134,9 @@ typedef struct Surface {
     uint32_t address;
     unsigned width, height;
     GLuint framebuffer, texture, depth, scene_depth, reflection_texture;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    GLuint pick_texture;
+#endif
     uint64_t reflection_serial;
     RecompTorchLights lights;
     uint64_t light_serial;
@@ -193,7 +202,9 @@ struct RecompRDPGles2 {
     Gles2RiceWord rice_words[512];
     bool rice_active;
     Gles2TextureEditor *editor;
-    char *texture_overrides;
+    struct Gles2Picker *picker;
+    uint64_t active_tile_key[2];
+    char *texture_overrides, *texture_zip;
     unsigned max_texture_size;
     bool original_textures;
 #endif
@@ -264,6 +275,14 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *, Tile *, unsigned unit);
 void recomp_gles2_load_tile(RecompRDPGles2 *, Tile *, uint32_t w0, uint32_t w1, bool block, bool palette);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
 void recomp_gles2_reload_textures(RecompRDPGles2 *);
+void recomp_gles2_pick_attach(RecompRDPGles2 *, Surface *);
+void recomp_gles2_pick_clear(RecompRDPGles2 *, const Surface *);
+void recomp_gles2_pick_batch(RecompRDPGles2 *, const Program *);
+void recomp_gles2_pick_destroy(RecompRDPGles2 *);
+void recomp_gles2_pick_outline(RecompRDPGles2 *, const Surface *, unsigned hovered);
+void recomp_gles2_editor_display(RecompRDPGles2 *, bool outlines, unsigned hovered);
+unsigned recomp_gles2_editor_hit(RecompRDPGles2 *, int x, int y);
+bool recomp_gles2_pick_key(RecompRDPGles2 *, unsigned id, bool secondary, uint64_t *key);
 #endif
 
 TextureTransfer recomp_gles2_texture_transfer(unsigned image_width, unsigned image_siz, unsigned tile_siz, uint32_t w0,

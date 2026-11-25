@@ -10,10 +10,19 @@ uint64_t recomp_rdp_gles2_editor_paused_ns(void) {
 
 void recomp_rdp_gles2_enable_texture_editor(RecompRDPGles2 *s) {
     recomp_gles2_require_owner(s);
-    if (!s->editor)
-        s->editor = gles2_editor_create(s->texture_overrides);
-    if (!s->editor)
+    if (s->editor)
+        return;
+    s->editor = gles2_editor_create(s->texture_overrides);
+    if (!s->editor) {
         fprintf(stderr, "GLES2 texture editor unavailable: no texture override directory\n");
+        return;
+    }
+    /* Programs built before enabling the editor have no triangle ID output. */
+    for (unsigned i = 0; i < s->program_count; ++i)
+        s->gl.DeleteProgram(s->programs[i].id);
+    memset(s->programs, 0, s->program_count * sizeof(*s->programs));
+    s->program_count = 0;
+    s->textures_dirty = true;
 }
 
 static bool run_texture_editor(RecompRDPGles2 *s) {
@@ -22,7 +31,7 @@ static bool run_texture_editor(RecompRDPGles2 *s) {
     SDL_SetRelativeMouseMode(SDL_FALSE);
     s->mouse_captured = false;
     s->mouse_frame = (RecompMouseFrame){0};
-    Gles2EditorResult result = gles2_editor_run(s->editor, s->window, s->max_texture_size);
+    Gles2EditorResult result = gles2_editor_run(s);
     if (SDL_GL_GetCurrentContext() != s->context && SDL_GL_MakeCurrent(s->window, s->context) != 0)
         recomp_fail("cannot restore GLES2 context after texture editor", 0);
     if (result & GLES2_EDITOR_CHANGED) {

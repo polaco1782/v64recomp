@@ -122,20 +122,33 @@ Surface *recomp_gles2_midpoint_target(RecompRDPGles2 *s) {
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, mid->framebuffer);
     if (f->scene_depth)
         recomp_gles2_bind_scene_depth(s, mid);
+    GLenum targets[3] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE};
+    unsigned target_count = 1;
+    if (f->scene_depth) {
+        targets[1] = GL_COLOR_ATTACHMENT1_EXT;
+        target_count = 2;
+    }
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (f->pick_texture) {
+        recomp_gles2_pick_attach(s, mid);
+        targets[2] = GL_COLOR_ATTACHMENT2_EXT;
+        target_count = 3;
+    }
+#endif
     s->gl.BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, f->framebuffer);
     s->gl.Disable(GL_SCISSOR_TEST);
-    s->gl.BlitFramebuffer(0, 0, f->width, f->height, 0, 0, mid->width, mid->height,
-                          GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    if (f->scene_depth) {
-        const GLenum only_depth[] = {GL_NONE, GL_COLOR_ATTACHMENT1_EXT};
-        s->gl.DrawBuffers(2, only_depth);
-        s->gl.ReadBuffer(GL_COLOR_ATTACHMENT1_EXT);
-        s->gl.BlitFramebuffer(0, 0, f->width, f->height, 0, 0, mid->width, mid->height, GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
-        s->gl.ReadBuffer(GL_COLOR_ATTACHMENT0);
-        const GLenum both[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1_EXT};
-        s->gl.DrawBuffers(2, both);
+    for (unsigned k = 0; k < target_count; ++k) {
+        if (targets[k] == GL_NONE)
+            continue;
+        GLenum only[3] = {GL_NONE, GL_NONE, GL_NONE};
+        only[k] = targets[k];
+        s->gl.DrawBuffers((GLsizei)target_count, only);
+        s->gl.ReadBuffer(targets[k]);
+        s->gl.BlitFramebuffer(0, 0, f->width, f->height, 0, 0, mid->width, mid->height,
+                              GL_COLOR_BUFFER_BIT | (k == 0 ? GL_DEPTH_BUFFER_BIT : 0), GL_NEAREST);
     }
+    s->gl.ReadBuffer(GL_COLOR_ATTACHMENT0);
+    s->gl.DrawBuffers((GLsizei)target_count, targets);
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, f->framebuffer);
     mid->serial = i->serial;
     return mid;

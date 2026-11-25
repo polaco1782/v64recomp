@@ -29,6 +29,12 @@ void recomp_gles2_create_surface(RecompRDPGles2 *s, Surface *f, unsigned width, 
 void recomp_gles2_destroy_surface(RecompRDPGles2 *s, Surface *f) {
     if (!f->valid)
         return;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (f->pick_texture)
+        s->gl.DeleteTextures(1, &f->pick_texture);
+#endif
+    if (s->last_display == f)
+        s->last_display = NULL;
     if (f->reflection_texture)
         s->gl.DeleteTextures(1, &f->reflection_texture);
     if (f->scene_depth)
@@ -115,6 +121,10 @@ void recomp_gles2_bind_surface(RecompRDPGles2 *s) {
     s->gl.BindFramebuffer(GL_FRAMEBUFFER, s->surface->framebuffer);
     if (s->screen_effects && s->color_siz >= 2)
         recomp_gles2_bind_scene_depth(s, s->surface);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->editor && s->color_siz >= 2)
+        recomp_gles2_pick_attach(s, s->surface);
+#endif
     DepthSurface *depth = recomp_gles2_depth_surface(s, s->surface->width, s->surface->height);
     if (s->surface->depth != depth->buffer) {
         s->surface->depth = depth->buffer;
@@ -260,12 +270,20 @@ void recomp_gles2_upload_i8(RecompRDPGles2 *s, unsigned x0, unsigned y0, unsigne
         for (unsigned i = 1; i < scale; ++i)
             memcpy(row + i * stride, row, stride);
     }
-    if (s->surface->scene_depth) {
+    if (s->surface->scene_depth
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        || s->surface->pick_texture
+#endif
+    ) {
         /* A color address can also be reused for a CPU-backed intensity image. */
         s->gl.Enable(GL_SCISSOR_TEST);
         s->gl.Scissor((GLint)(x0 * scale), (GLint)((s->height - y1) * scale), (GLsizei)width, (GLsizei)height);
         const GLfloat empty[4] = {0, 0, 0, 1};
-        s->gl.ClearBufferfv(GL_COLOR, 1, empty);
+        if (s->surface->scene_depth)
+            s->gl.ClearBufferfv(GL_COLOR, 1, empty);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        recomp_gles2_pick_clear(s, s->surface);
+#endif
     }
     s->gl.BindTexture(GL_TEXTURE_2D, s->surface->texture);
     s->gl.TexSubImage2D(GL_TEXTURE_2D, 0, (GLint)(x0 * scale), (GLint)((s->height - y1) * scale), (GLsizei)width,
@@ -428,9 +446,75 @@ static void fit_aspect(int width, int height, double aspect, int *w, int *h) {
     else
         *w = (int)(height * aspect + 0.5);
 }
+/* GL viewport and mouse picking use the same letterbox and drawable size. */
+static SDL_Rect display_rect(RecompRDPGles2 *s, const Surface *image, int width, int height) {
+    const double aspect =
+        image != &s->cpu_image && s->presentation_aspect > 4.0f / 3 ? s->presentation_aspect : 4.0 / 3;
+    int w, h;
+    fit_aspect(width, height, aspect, &w, &h);
+    return (SDL_Rect){(width - w) / 2, (height - h) / 2, w, h};
+}
+
+static void draw_display(RecompRDPGles2 *s, Surface *image) {
+    s->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
+    s->gl.Disable(GL_SCISSOR_TEST);
+    s->gl.ClearColor(0, 0, 0, 1);
+    s->gl.Clear(GL_COLOR_BUFFER_BIT);
+    int width, height;
+    recomp_gles2_drawable_size(s, &width, &height);
+    SDL_Rect r = display_rect(s, image, width, height);
+    if (image && r.w > 0 && r.h > 0)
+        blit_texture(s, image, 0, r.x, r.y, r.w, r.h, true);
+}
+
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+static void editor_context(RecompRDPGles2 *s) {
+    if ((SDL_GL_GetCurrentContext() != s->context || SDL_GL_GetCurrentWindow() != s->window) &&
+        SDL_GL_MakeCurrent(s->window, s->context))
+        recomp_fail("cannot activate GLES texture picking context", 0);
+}
+
+void recomp_gles2_editor_display(RecompRDPGles2 *s, bool outlines, unsigned hovered) {
+    editor_context(s);
+    draw_display(s, s->last_display);
+    if (outlines && s->last_display)
+        recomp_gles2_pick_outline(s, s->last_display, hovered);
+    SDL_GL_SwapWindow(s->window);
+    recomp_gles2_bind_surface(s);
+    s->textures_dirty = true;
+}
+
+unsigned recomp_gles2_editor_hit(RecompRDPGles2 *s, int x, int y) {
+    Surface *f = s->last_display;
+    if (!f || !f->pick_texture || s->wireframe)
+        return 0;
+    editor_context(s);
+    int width, height, logical_w, logical_h;
+    recomp_gles2_drawable_size(s, &width, &height);
+    SDL_GetWindowSize(s->window, &logical_w, &logical_h);
+    if (logical_w <= 0 || logical_h <= 0 || x < 0 || y < 0 || x >= logical_w || y >= logical_h)
+        return 0;
+    SDL_Rect r = display_rect(s, f, width, height);
+    SDL_Point pos = {(int)((x + 0.5) * width / logical_w), height - 1 - (int)((y + 0.5) * height / logical_h)};
+    if (!SDL_PointInRect(&pos, &r))
+        return 0;
+    int sx = (int)((pos.x - r.x + 0.5) * f->width / r.w), sy = (int)((pos.y - r.y + 0.5) * f->height / r.h);
+    uint8_t rgba[4] = {0};
+    s->gl.BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, f->framebuffer);
+    s->gl.ReadBuffer(GL_COLOR_ATTACHMENT2_EXT);
+    s->gl.ReadPixels(sx, sy, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    s->gl.ReadBuffer(GL_COLOR_ATTACHMENT0);
+    s->gl.BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, s->surface->framebuffer);
+    return rgba[0] | ((unsigned)rgba[1] << 8) | ((unsigned)rgba[2] << 16);
+}
+#endif
+
 bool recomp_rdp_gles2_present(RecompRDPGles2 *s) {
     recomp_gles2_require_owner(s);
     recomp_gles2_flush(s);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    gles2_editor_presented(s->editor);
+#endif
     Surface *image = display_image(s);
     Surface *native = image;
     if (s->wireframe) {
@@ -442,22 +526,7 @@ bool recomp_rdp_gles2_present(RecompRDPGles2 *s) {
     } else if (s->interpolation)
         image = recomp_gles2_interpolated_display(s, native);
     s->last_display = image;
-    s->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-    int width, height, w, h;
-    recomp_gles2_drawable_size(s, &width, &height);
-    s->gl.Disable(GL_SCISSOR_TEST);
-    s->gl.ClearColor(0, 0, 0, 1);
-    s->gl.Clear(GL_COLOR_BUFFER_BIT);
-    /* Keep the aspect accepted by the guest camera, not the latest window
-     * size: the window can resize after input but before drawing. CPU-only
-     * frames never used that projection and must keep their native framing. */
-    const double aspect =
-        image != &s->cpu_image && s->presentation_aspect > 4.0f / 3 ? s->presentation_aspect : 4.0 / 3;
-    if (width > 0 && height > 0) {
-        fit_aspect(width, height, aspect, &w, &h);
-        if (w > 0 && h > 0)
-            blit_texture(s, image, 0, (width - w) / 2, (height - h) / 2, w, h, true);
-    }
+    draw_display(s, image);
 #ifdef RECOMP_GLES2_CHEATS
     if (s->cheats)
         gles2_cheats_draw(s->cheats);

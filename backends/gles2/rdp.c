@@ -62,6 +62,10 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
         s->gl.Uniform4fv(p->tile[i][2], 1, wrap);
     }
     s->textures_dirty = false;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->surface->pick_texture && !s->wireframe)
+        recomp_gles2_pick_batch(s, p);
+#endif
     bool compare_depth = s->depth_test && (s->other_low & 0x10);
     bool write_depth = s->depth_test && (s->other_low & 0x20);
     /* RDP comparison and update are independent. Disabling the GL test also
@@ -121,6 +125,12 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     s->gl.VertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, uv));
     s->gl.VertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, fog));
     s->gl.VertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, reciprocal));
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    if (s->editor) {
+        s->gl.EnableVertexAttribArray(5);
+        s->gl.VertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, pick_offset));
+    }
+#endif
     if (s->wireframe && (!s->drawing_rectangle || s->texture_enabled))
         recomp_gles2_draw_wireframe(s, p);
     else
@@ -182,6 +192,10 @@ static void rectangle(RecompRDPGles2 *s, float x0, float y0, float x1, float y1,
     for (unsigned i = 0; i < 6; i++)
         s->batch[s->batch_count++] = q[order[i]];
 
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    for (unsigned i = 3; i < 6; i++)
+        s->batch[i].pick_offset = 1;
+#endif
     s->drawing_rectangle = true;
     flush(s, uv_bounds);
     s->drawing_rectangle = false;
@@ -215,6 +229,9 @@ static void texture_rectangle(RecompRDPGles2 *s, uint32_t w0, uint32_t w1, uint3
 }
 static void clear_color(RecompRDPGles2 *s, const Surface *f) {
     s->gl.Clear(GL_COLOR_BUFFER_BIT);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+    recomp_gles2_pick_clear(s, f);
+#endif
     if (f->scene_depth) {
         const GLfloat empty[4] = {0, 0, 0, 1};
         s->gl.ClearBufferfv(GL_COLOR, 1, empty);
@@ -444,6 +461,10 @@ static bool rdp_triangle_mesh(RecompRDPGles2 *s, const uint32_t *words, size_t c
         v->fog = fog_source == 1 ? s->fog_color[3] : source->color[3];
         memcpy(v->uv, source->uv, sizeof(v->uv));
         v->reciprocal = source->reciprocal;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        /* Both scanline bands of an RDP triangle belong to the same pick. */
+        v->pick_offset = (float)(first / 3);
+#endif
     }
     if (s->interpolation)
         recomp_gles2_midpoint_triangle(s, words[0] & 0xffff0000u, first);

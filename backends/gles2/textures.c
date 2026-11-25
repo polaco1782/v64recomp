@@ -96,8 +96,48 @@ static Texture *texture_slot(TextureCache *cache, unsigned ways, uint64_t hash, 
     return oldest;
 }
 
+static void decode_tile(RecompRDPGles2 *s, const Tile *t, unsigned width, unsigned height, bool indexed, unsigned mask,
+                        unsigned sample_size, unsigned tlut, uint8_t *pixels) {
+    for (unsigned y = 0; y < height; y++)
+        for (unsigned x = 0; x < width; x++) {
+            unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << sample_size) >> 1);
+            o ^= (y & 1) ? 4 : 0;
+            unsigned b0 = byte(s, o & mask), b1 = !indexed && t->siz >= 2 ? byte(s, (o + 1) & mask) : 0,
+                     nibble = (b0 >> ((sample_size == 0 && (x & 1)) ? 0 : 4)) & 15;
+            uint8_t *p = pixels + ((size_t)y * width + x) * 4;
+            if (indexed) {
+                unsigned index = t->siz == 0 ? t->palette * 16 + nibble : b0;
+                unsigned k = 2048 + index * 8;
+                pixel16(byte(s, k) * 256 + byte(s, k + 1), p, tlut == 3);
+            } else if (t->siz == 0) {
+                unsigned i = nibble * 17, a = i;
+                if (t->fmt == 3) {
+                    i = ((nibble >> 1) * 255) / 7;
+                    a = (nibble & 1) ? 255 : 0;
+                }
+                p[0] = p[1] = p[2] = (uint8_t)i;
+                p[3] = (uint8_t)a;
+            } else if (t->siz == 1) {
+                unsigned i = b0, a = b0;
+                if (t->fmt == 3) {
+                    i = (b0 >> 4) * 17;
+                    a = (b0 & 15) * 17;
+                }
+                p[0] = p[1] = p[2] = (uint8_t)i;
+                p[3] = (uint8_t)a;
+            } else if (t->siz == 2)
+                pixel16(b0 * 256 + b1, p, t->fmt == 3);
+            else {
+                p[0] = (uint8_t)b0;
+                p[1] = (uint8_t)b1;
+                p[2] = (uint8_t)byte(s, (o & 2047) | 2048);
+                p[3] = (uint8_t)byte(s, ((o + 1) & 2047) | 2048);
+            }
+        }
+}
+
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
-static GLuint replacement_texture(RecompRDPGles2 *s, Gles2PackTile key, size_t source, bool known) {
+static GLuint replacement_texture(RecompRDPGles2 *s, Gles2PackTile key, size_t source, bool known, uint8_t **original) {
     Texture *entry = texture_slot(&s->replacements, GLES2_REPLACEMENT_WAYS, source, 0);
     bool resident = entry->id && entry->hash == source;
     if (resident) {
@@ -124,27 +164,33 @@ static GLuint replacement_texture(RecompRDPGles2 *s, Gles2PackTile key, size_t s
     }
     if (!known)
         gles2_texture_pack_remember(s->texture_pack, key.hash, source);
-    if ((!known || !resident) && entry->preview)
-        gles2_editor_observe_replacement(s->editor, key.hash, key.width, key.height, entry->preview);
+    if (entry->preview && (!known || !resident || !gles2_editor_touch(s->editor, key.hash, true)))
+        *original = gles2_editor_observe_replacement(s->editor, key.hash, key.width, key.height, entry->preview);
     entry->used = ++s->texture_clock;
     return entry->id;
 }
 
-static GLuint find_replacement(RecompRDPGles2 *s, Gles2PackTile key, const Tile *tile, unsigned tlut,
-                               bool *incomplete) {
+static GLuint find_replacement(RecompRDPGles2 *s, Gles2PackTile key, const Tile *tile, unsigned tlut, bool *incomplete,
+                               uint8_t **original) {
     size_t source, known = SIZE_MAX;
     if (gles2_texture_pack_known(s->texture_pack, key.hash, &known)) {
-        GLuint texture = replacement_texture(s, key, known, true);
+        GLuint texture = replacement_texture(s, key, known, true, original);
         if (texture)
             return texture;
-    } else if (gles2_texture_pack_local(s->texture_pack, key.hash, &source)) {
-        GLuint local = replacement_texture(s, key, source, false);
+    }
+    if (gles2_texture_pack_ai(s->texture_pack, key.hash, &source) && source != known) {
+        GLuint ai = replacement_texture(s, key, source, false, original);
+        if (ai)
+            return ai;
+    }
+    if (gles2_texture_pack_local(s->texture_pack, key.hash, &source) && source != known) {
+        GLuint local = replacement_texture(s, key, source, false, original);
         if (local)
             return local;
     }
     Gles2PackStatus status = gles2_texture_pack_rice(s->texture_pack, key, tile, tlut, s->rice_words, &source);
     *incomplete = status == GLES2_PACK_INCOMPLETE;
-    return status == GLES2_PACK_FOUND && source != known ? replacement_texture(s, key, source, false) : 0;
+    return status == GLES2_PACK_FOUND && source != known ? replacement_texture(s, key, source, false, original) : 0;
 }
 #endif
 GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
@@ -190,6 +236,7 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
         hash *= UINT64_C(1099511628211);
     }
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
+    s->active_tile_key[unit] = hash;
     bool replace = !s->original_textures && gles2_texture_pack_enabled(s->texture_pack);
     const uint64_t rice_texels = s->rice_active ? s->rice_words[t->tmem].load : 0;
     const uint64_t rice_palette =
@@ -213,8 +260,11 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     bool incomplete = false;
     if (replace && (!cached || retry)) {
         Gles2PackTile key = {hash, *width, *height};
-        GLuint texture = find_replacement(s, key, t, tlut, &incomplete);
+        uint8_t *original = NULL;
+        GLuint texture = find_replacement(s, key, t, tlut, &incomplete, &original);
         if (texture) {
+            if (original)
+                decode_tile(s, t, *width, *height, indexed, mask, sample_size, tlut, original);
             if (cached)
                 discard_texture(s, &s->textures, entry);
             return texture;
@@ -235,51 +285,23 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
 #endif
     if (cached) {
         entry->used = ++s->texture_clock;
-        return entry->id;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        if (!s->editor || gles2_editor_touch(s->editor, hash, false))
+#endif
+            return entry->id;
     }
     size_t size = (size_t)*width * *height * 4;
     uint8_t *pixels = malloc(size);
     if (!pixels)
         recomp_fail("GLES2 texture allocation failed", 0);
-    for (unsigned y = 0; y < *height; y++)
-        for (unsigned x = 0; x < *width; x++) {
-            unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << sample_size) >> 1);
-            o ^= (y & 1) ? 4 : 0;
-            unsigned b0 = byte(s, o & mask), b1 = !indexed && t->siz >= 2 ? byte(s, (o + 1) & mask) : 0,
-                     nibble = (b0 >> ((sample_size == 0 && (x & 1)) ? 0 : 4)) & 15;
-            uint8_t *p = pixels + ((size_t)y * *width + x) * 4;
-            if (indexed) {
-                unsigned index = t->siz == 0 ? t->palette * 16 + nibble : b0;
-                unsigned k = 2048 + index * 8;
-                pixel16(byte(s, k) * 256 + byte(s, k + 1), p, tlut == 3);
-            } else if (t->siz == 0) {
-                unsigned i = nibble * 17, a = i;
-                if (t->fmt == 3) {
-                    i = ((nibble >> 1) * 255) / 7;
-                    a = (nibble & 1) ? 255 : 0;
-                }
-                p[0] = p[1] = p[2] = (uint8_t)i;
-                p[3] = (uint8_t)a;
-            } else if (t->siz == 1) {
-                unsigned i = b0, a = b0;
-                if (t->fmt == 3) {
-                    i = (b0 >> 4) * 17;
-                    a = (b0 & 15) * 17;
-                }
-                p[0] = p[1] = p[2] = (uint8_t)i;
-                p[3] = (uint8_t)a;
-            } else if (t->siz == 2)
-                pixel16(b0 * 256 + b1, p, t->fmt == 3);
-            else {
-                p[0] = (uint8_t)b0;
-                p[1] = (uint8_t)b1;
-                p[2] = (uint8_t)byte(s, (o & 2047) | 2048);
-                p[3] = (uint8_t)byte(s, ((o + 1) & 2047) | 2048);
-            }
-        }
+    decode_tile(s, t, *width, *height, indexed, mask, sample_size, tlut, pixels);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     if (s->editor)
         gles2_editor_observe(s->editor, hash, *width, *height, pixels);
+    if (cached) {
+        free(pixels);
+        return entry->id;
+    }
 #endif
     if (!entry->id)
         s->gl.GenTextures(1, &entry->id);
@@ -448,7 +470,7 @@ void recomp_gles2_reload_textures(RecompRDPGles2 *s) {
             title[end - 1] = 0;
     }
     gles2_texture_pack_close(s->texture_pack);
-    s->texture_pack = gles2_texture_pack_open(getenv("RECOMP_TEXTURE_PACK"), s->texture_overrides, title);
+    s->texture_pack = gles2_texture_pack_open(s->texture_zip, s->texture_overrides, title);
     s->rice_active = !s->original_textures && gles2_texture_pack_has_rice(s->texture_pack);
     s->rice_load = 0;
     memset(s->rice_words, 0, sizeof(s->rice_words));
@@ -466,6 +488,13 @@ void recomp_rdp_gles2_set_texture_path(RecompRDPGles2 *s, const char *data_path)
     }
     free(s->texture_overrides);
     s->texture_overrides = path;
+    SDL_free(s->texture_zip);
+    s->texture_zip = NULL;
+    const char *pack = getenv("RECOMP_TEXTURE_PACK");
+    if (pack && *pack)
+        s->texture_zip = SDL_strdup(pack);
+    else if (path)
+        SDL_asprintf(&s->texture_zip, "%s/textures.zip", path);
     recomp_gles2_reload_textures(s);
 }
 #endif

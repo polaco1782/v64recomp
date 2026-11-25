@@ -1,12 +1,16 @@
 #include "texture_pack.h"
 #include "rice.h"
 #include <SDL.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
+#include "host.h"
 #include <windows.h>
+#include <fcntl.h>
+#include <io.h>
 #else
 #include <dirent.h>
 #endif
@@ -37,6 +41,10 @@ typedef struct Match {
 } Match;
 struct Gles2TexturePack {
     mz_zip_archive zip;
+    bool has_ai;
+#ifdef _WIN32
+    FILE *zip_file;
+#endif
     RiceEntry *entries;
     size_t count;
     RiceState *rice;
@@ -138,7 +146,9 @@ static bool index_zip(Gles2TexturePack *p, const char *title) {
         for (char *c = path; *c; ++c)
             if (*c == '\\')
                 *c = '/';
-        if (parse_part(path, title, &parts[count]))
+        if (!strncmp(path, GLES2_AI_PREFIX, sizeof(GLES2_AI_PREFIX) - 1))
+            p->has_ai = true;
+        else if (parse_part(path, title, &parts[count]))
             parts[count++].index = i;
     }
     qsort(parts, count, sizeof(*parts), by_stem);
@@ -265,6 +275,34 @@ static void index_local(Gles2TexturePack *p, const char *dir) {
         qsort(p->local_ids, p->local_count, sizeof(*p->local_ids), by_id);
     }
 }
+static bool open_archive(Gles2TexturePack *p, const char *path) {
+#ifdef _WIN32
+    /* Permit the editor to atomically replace the archive while this reader still uses its snapshot. */
+    wchar_t *wide = recomp_wide_path(path);
+    HANDLE handle = wide ? CreateFileW(wide, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+                         : INVALID_HANDLE_VALUE;
+    free(wide);
+    if (handle == INVALID_HANDLE_VALUE) {
+        DWORD error = GetLastError();
+        errno = error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND ? ENOENT : EACCES;
+        return false;
+    }
+    int fd = _open_osfhandle((intptr_t)handle, _O_RDONLY | _O_BINARY);
+    if (fd < 0) {
+        CloseHandle(handle);
+        return false;
+    }
+    p->zip_file = _fdopen(fd, "rb");
+    if (!p->zip_file) {
+        _close(fd);
+        return false;
+    }
+    return mz_zip_reader_init_cfile(&p->zip, p->zip_file, 0, 0);
+#else
+    return mz_zip_reader_init_file(&p->zip, path, 0);
+#endif
+}
 Gles2TexturePack *gles2_texture_pack_open(const char *path, const char *overrides, const char *title) {
     if ((!path || !*path) && (!overrides || !*overrides))
         return NULL;
@@ -274,17 +312,17 @@ Gles2TexturePack *gles2_texture_pack_open(const char *path, const char *override
     if (overrides && *overrides)
         index_local(p, overrides);
     if (path && *path) {
-        if (mz_zip_reader_init_file(&p->zip, path, 0)) {
+        if (open_archive(p, path)) {
             if (index_zip(p, title ? title : ""))
                 p->rice = calloc(1, sizeof(*p->rice));
             fprintf(stderr, "GLES texture ZIP: %zu Rice IDs\n", p->count);
-        } else
+        } else if (getenv("RECOMP_TEXTURE_PACK") || errno != ENOENT)
             fprintf(stderr, "GLES could not open texture ZIP: %s\n", path);
     }
     return p;
 }
 bool gles2_texture_pack_enabled(const Gles2TexturePack *p) {
-    return p && (p->rice || p->overrides);
+    return p && (p->rice || p->overrides || p->has_ai);
 }
 bool gles2_texture_pack_has_rice(const Gles2TexturePack *p) {
     return p && p->rice;
@@ -299,7 +337,7 @@ bool gles2_texture_decode_png(const uint8_t *bytes, size_t n, unsigned width, un
     const uint8_t png[] = {137, 80, 78, 71, 13, 10, 26, 10};
     int w, h, channels;
     *image = (Gles2PackImage){0};
-    limit = SDL_min(limit, 2048u);
+    limit = SDL_min(limit, (unsigned)GLES2_TEXTURE_MAX_SIDE);
     if (!width || !height || !bytes || n < sizeof(png) || n > GLES2_TEXTURE_MAX_PNG_BYTES ||
         memcmp(png, bytes, sizeof(png)) || !stbi_info_from_memory(bytes, (int)n, &w, &h, &channels) || w <= 0 ||
         h <= 0 || (unsigned)w > limit || (unsigned)h > limit || (uint64_t)w * height != (uint64_t)h * width)
@@ -370,6 +408,10 @@ void gles2_texture_pack_close(Gles2TexturePack *p) {
         return;
     if (p->zip.m_pState)
         mz_zip_reader_end(&p->zip);
+#ifdef _WIN32
+    if (p->zip_file)
+        fclose(p->zip_file);
+#endif
     if (p->rice)
         for (unsigned i = 0; i < 512; ++i)
             free(p->rice->loads[i].bytes);
@@ -419,6 +461,24 @@ bool gles2_texture_pack_known(const Gles2TexturePack *p, uint64_t hash, size_t *
     return true;
 }
 
+bool gles2_texture_pack_ai(Gles2TexturePack *p, uint64_t hash, size_t *source) {
+    if (!p || !p->has_ai)
+        return false;
+    char name[64];
+    snprintf(name, sizeof(name), GLES2_AI_ENTRY, hash);
+    /* Flags zero uses miniz's sorted central directory. Check exact case on the hit. */
+    int index = mz_zip_reader_locate_file(&p->zip, name, NULL, 0);
+    char entry[sizeof(name)];
+    if (index < 0)
+        return false;
+    if (!mz_zip_reader_get_filename(&p->zip, (unsigned)index, entry, sizeof(entry)) || strcmp(entry, name)) {
+        index = mz_zip_reader_locate_file(&p->zip, name, NULL, MZ_ZIP_FLAG_CASE_SENSITIVE);
+        if (index < 0)
+            return false;
+    }
+    *source = p->count + p->local_count + (size_t)index;
+    return true;
+}
 bool gles2_texture_pack_local(const Gles2TexturePack *p, uint64_t hash, size_t *source) {
     if (!p->overrides)
         return false;
@@ -445,6 +505,8 @@ Gles2PackStatus gles2_texture_pack_rice(Gles2TexturePack *p, Gles2PackTile key, 
 
 bool gles2_texture_pack_decode(Gles2TexturePack *p, size_t source, Gles2PackTile key, unsigned limit,
                                Gles2PackImage *image) {
+    if (source >= p->count + p->local_count)
+        return decode_entry(&p->zip, (unsigned)(source - p->count - p->local_count), key, limit, image);
     if (source >= p->count)
         return decode_local(p, key, limit, image);
     return decode_rice(p, p->entries[source].files, key, limit, image);

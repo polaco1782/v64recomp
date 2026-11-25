@@ -36,11 +36,14 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\controls.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\editor.c" />
     <ClInclude Include="$(RecompRoot)backends\gles2\editor.h" />
+    <ClCompile Include="$(RecompRoot)backends\gles2\editor_ai.cpp" />
+    <ClInclude Include="$(RecompRoot)backends\gles2\editor_ai.h" />
     <ClCompile Include="$(RecompRoot)backends\gles2\framebuffer.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\hq2x.c" />
     <ClInclude Include="$(RecompRoot)backends\gles2\hq2x.h" />
     <ClInclude Include="$(RecompRoot)backends\gles2\internal.h" />
     <ClCompile Include="$(RecompRoot)backends\gles2\interpolation.c" />
+    <ClCompile Include="$(RecompRoot)backends\gles2\picker.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\rdp.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\render_queue.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\renderer.c" />

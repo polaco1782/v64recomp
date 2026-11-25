@@ -269,6 +269,7 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
     gles2_editor_destroy(s->editor);
     gles2_texture_pack_close(s->texture_pack);
     free(s->texture_overrides);
+    SDL_free(s->texture_zip);
 #endif
     if (s->context) {
         recomp_gles2_require_owner(s);
@@ -287,6 +288,9 @@ void recomp_rdp_gles2_destroy(RecompRDPGles2 *s) {
         if (s->white)
             s->gl.DeleteTextures(1, &s->white);
         recomp_gles2_destroy_wireframe(s);
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+        recomp_gles2_pick_destroy(s);
+#endif
         if (s->blit)
             s->gl.DeleteProgram(s->blit);
         for (unsigned i = 0; i < s->program_count; i++)

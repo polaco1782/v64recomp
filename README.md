@@ -14,7 +14,7 @@ that uses WebGL 2 and loads the matching ROM on page open.
 | Make it yours | What you can do |
 | --- | --- |
 | **[Widescreen and ultrawide](#a-little-more-room-to-see)** | Expand the view to fit your window with **F7**, or keep the original proportions. |
-| **[Texture packs, built right in](#your-favorite-textures-in-one-place)** | Load Rice/GLideN64 PNG ZIPs directly and edit individual textures during play. |
+| **[Texture packs and AI upscaling](#your-favorite-textures-in-one-place)** | Load Rice/GLideN64 PNG ZIPs, pick a texture in the scene, and generate an 8× replacement. |
 | **[Adjustable field of view](#controls-that-feel-familiar)** | Find a comfortable view with **keypad + / −**, from the original angle up to **140°** in supported games. |
 | **[WASD and mouse](#controls-that-feel-familiar)** | Move, look and aim with familiar PC controls in supported games, including mouse menu navigation in GoldenEye. |
 | **[Steam Deck and preset controls](#take-it-to-your-steam-deck)** | Play through a native Linux package with the included **v64recomp - N64** Steam Input layout. |
@@ -61,8 +61,29 @@ Pass a Rice/GLideN64 PNG ZIP directly to the desktop game. For GoldenEye 007:
 ./build/goldeneye-us-gles-release/bin/goldeneye-us --texture-pack ~/Downloads/ge007-hd-v2025.12.30-gliden64-png-hd.zip
 ```
 
-**F5** switches between original and replacement textures. **F8** opens the thumbnail
-editor, where you can drop a PNG to override a texture. [Texture guide](docs/textures.md).
+**F5** switches between original and replacement textures. Press **F8** to pause
+and open the texture editor. Visible triangles are outlined in cyan. Hover over
+a triangle to turn its outline gold, then click to select its texture in the
+gallery. If the triangle uses two textures, **Shift-click** picks the second.
+You can also select a thumbnail directly and drop your own PNG onto it.
+
+![GoldenEye’s Dam with one rock-face triangle outlined in gold and its matching texture selected in the gallery](docs/screenshots/goldeneye-dam-triangle-picker.png)
+
+#### Replace a texture with AI
+
+Click **Improve with AI** to send the selected native tile to your signed-in
+Codex CLI. The CLI must be on your `PATH` with image generation available.
+The editor requests a PNG at **8× the original width and height** and asks
+Codex to remove pixelation while preserving the pattern, palette, lettering,
+tiling edges, and transparency. Each attempt starts from the native tile.
+
+![GoldenEye’s red 4 badge at the same display size, showing the native 32×32 tile, an earlier 4× edit, and the current 8× edit at 256×256](docs/screenshots/goldeneye-badge-native-4x-8x.png)
+
+Keep the editor open until the replacement is saved, then press **F8** or
+**Esc** to see it in-game. The editor writes the result into the ZIP passed
+with `--texture-pack`, or creates `<data>/texture-overrides/textures.zip` if
+you started without a pack. To undo an edit, select its tile and click
+**Remove AI version** to restore the underlying texture. [Texture guide](docs/textures.md).
 
 ### Controls that feel familiar
 
