@@ -6,12 +6,28 @@
 
 static const double radians = 3.14159265358979323846 / 180.0;
 static RecompFov fov;
-static int32_t selected_scale = 65536, world_scale = 65536;
+static int32_t selected_scale = 65536, world_scale = 65536, visibility_scale = 65536;
+static double mouse_pitch, pitch_limit = 35;
+static int32_t world_pitch;
+static double sky_scale = 1;
+
+void doom64_adjust_pitch(double degrees) {
+    mouse_pitch = fmax(-pitch_limit, fmin(pitch_limit, mouse_pitch + degrees));
+}
+
+void doom64_reset_pitch(void) {
+    mouse_pitch = 0;
+}
 
 static void adjust(int steps) {
-    if (recomp_fov_adjust(&fov, steps))
+    if (recomp_fov_adjust(&fov, steps)) {
         selected_scale =
             recomp_fov_enabled(&fov) ? (int32_t)lround(65536.0 / tan(fov.horizontal * radians / 2)) : 65536;
+        // Keep even the steepest corner in front of the horizontal BSP near plane,
+        // allowing headroom for the native weapon kick.
+        pitch_limit = fmin(35.0, 80.0 - atan(0.75 * 65536 / selected_scale) / radians);
+        doom64_adjust_pitch(0);
+    }
 }
 
 void doom64_fov_init(RecompRenderer *renderer) {
@@ -21,19 +37,74 @@ void doom64_fov_init(RecompRenderer *renderer) {
 }
 
 void doom64_world_view(Runtime *rt, MipsContext *ctx, RecompFunction original) {
-    if (selected_scale != 65536 && (uint32_t)ctx->gpr[31] == DOOM_FOV_WORLD_RETURN &&
+    if ((mouse_pitch || selected_scale != 65536) && (uint32_t)ctx->gpr[31] == DOOM_FOV_WORLD_RETURN &&
         !recomp_load32(rt, DOOM_FOV_DEMO_PLAYBACK) &&
         recomp_load32(rt, DOOM_FOV_CAMERA) == recomp_load32(rt, DOOM_FOV_PLAYER)) {
-        world_scale = selected_scale;
+        world_scale = visibility_scale = selected_scale;
+        world_pitch = (int32_t)lround(mouse_pitch * (8192.0 / 360.0));
     }
     original(rt, ctx);
-    world_scale = 65536;
+    world_scale = visibility_scale = 65536;
+    world_pitch = 0;
+    sky_scale = 1;
+}
+
+int32_t doom64_view_pitch(int32_t recoil) {
+    if (!world_pitch)
+        return recoil;
+    int32_t pitch = (uint32_t)(world_pitch + recoil) & 8191;
+    // The nearest horizontal depth of a tilted frustum corner, relative to
+    // eye-space depth, is cos(p) - tan(vertical FOV / 2) * abs(sin(p)).
+    // Apply this to Doom's column tests only. The GPU uses the real rotation.
+    double angle = pitch * (360.0 / 8192) * radians;
+    visibility_scale = (int32_t)fmax(1, floor(world_scale * cos(angle) - (0.75 * 65536) * fabs(sin(angle))));
+    // The backdrop is drawn before the world rotation. Its original horizon
+    // is row 120, with a vertical focal length of 160 at the stock FOV.
+    sky_scale = 1 + (160.0 / 120) * (world_scale / 65536.0) * tan(angle);
+    return pitch;
+}
+
+void doom64_sky_quad(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    original(rt, ctx);
+    if (sky_scale == 1)
+        return;
+    // Cloud and fire each emit four frame-owned vertices under the stock
+    // frustum. Scale their projected rows about the top of the viewport.
+    uint32_t end = recomp_load32(rt, DOOM_FOV_VERTEX_CURSOR);
+    for (uint32_t v = end - 4 * 16; v < end; v += 16) {
+        int16_t y = (int16_t)recomp_load16(rt, v + 2);
+        int16_t z = (int16_t)recomp_load16(rt, v + 4);
+        double top = -0.75 * z;
+        recomp_store16(rt, v + 2, (int16_t)lround(top + (y - top) * sky_scale));
+    }
+}
+
+void doom64_sky_picture(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    uint32_t start = recomp_load32(rt, DOOM_FOV_GFX_CURSOR);
+    original(rt, ctx);
+    if (sky_scale == 1)
+        return;
+    // Space and mountains are texture rectangles assembled from horizontal
+    // strips. Scale their shared edges and compensate the texture step.
+    uint32_t end = recomp_load32(rt, DOOM_FOV_GFX_CURSOR);
+    for (uint32_t gfx = start; gfx + 24 <= end; gfx += 8) {
+        uint32_t rect = recomp_load32(rt, gfx);
+        if ((rect >> 24) != 0xe4)
+            continue;
+        uint32_t origin = recomp_load32(rt, gfx + 4);
+        uint32_t bottom = (uint32_t)lround((rect & 0xfff) * sky_scale);
+        uint32_t top = (uint32_t)lround((origin & 0xfff) * sky_scale);
+        recomp_store32(rt, gfx, (rect & ~0xfffu) | (bottom > 960 ? 960 : bottom));
+        recomp_store32(rt, gfx + 4, (origin & ~0xfffu) | (top > 960 ? 960 : top));
+        recomp_store16(rt, gfx + 22, (uint16_t)lround(1024 / sky_scale));
+        gfx += 16;
+    }
 }
 
 int32_t doom64_fov_lateral(int32_t x) {
     // BSP extents, cached wall endpoints and actor side tests keep their native
     // depth. This maps a wider view onto Doom's same 320 occlusion columns.
-    return world_scale == 65536 ? x : (int32_t)((int64_t)x * world_scale / 65536);
+    return visibility_scale == 65536 ? x : (int32_t)((int64_t)x * visibility_scale / 65536);
 }
 
 void doom64_world_geometry(Runtime *rt, MipsContext *ctx, RecompFunction original) {

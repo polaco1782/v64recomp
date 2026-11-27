@@ -66,6 +66,14 @@ Depth storage follows the physical N64 Z image across color-buffer swaps and
 RSP task boundaries. Native GLES3 and WebGL 2 both use 24-bit depth. S/T/W are
 interpolated in screen space and divided in the fragment shader, with bounded
 coordinates for zero/negative W. Rectangles have zero shade coefficients.
+Opaque, depth-writing triangles with RDP antialiasing receive a small edge
+extension in native pixel units. This covers narrow gaps where independently
+projected surfaces meet, such as the snow and cabin steps on GoldenEye's
+Surface mission. Depth and texture coordinates follow the original triangle
+plane through the extended edge.
+Textured-edge draws that replace the framebuffer color without depth testing
+also receive a bounded extension. This covers the moving slivers at Doom 64's
+Watch Your Step doorway while retaining the texture alpha test.
 Read-only decals use a per-triangle depth bias derived from the RDP's normalized
 integer Z gradients, replacing the fixed GL polygon offset. This keeps coplanar
 overlays such as SM64's castle doorway trim visible across camera angles and
@@ -244,6 +252,9 @@ motion where their borders overlap slightly and both depth slopes agree with the
 offset between corners. Replaying a first-level Turok camera turn with these
 shared motions closed a 224-pixel sky gap in the captured terrain at 2x scale.
 Unmatched triangles can inherit motion from those corners.
+When a visible decal and its supporting surface move differently, the renderer
+checks their overlapping triangles at the intermediate pose. If the wall would
+hide the decal, it displays the native frame for that tick.
 Isolated unmatched geometry and HUD rectangles use their current positions. A frame needs matches for at least three quarters
 of the triangles in both frames. Lost correspondence, multiple color targets
 and wireframe select the native image. Clipping and visibility changes can

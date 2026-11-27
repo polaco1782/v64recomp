@@ -47,6 +47,7 @@ def evidence_key(game: str) -> dict:
     scanner = hashlib.sha256()
     for source in ('discover.py', 'analysis/inspect_function_candidates.py', 'metadata_candidates.py',
                    'sdk_signatures.py', 'symbol_database.py', 'symbols.json',
+                   'generate_game.py', 'analysis/export_analysis_rom.py',
                    'analysis/probe_function_roots.py', 'analysis/review_candidates.py',
                    'analysis/review_discovery.py'):
         scanner.update((PROJECT / 'tools' / source).read_bytes())

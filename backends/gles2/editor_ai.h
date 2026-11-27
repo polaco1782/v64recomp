@@ -14,6 +14,10 @@ Gles2AiJob *gles2_ai_start(const uint8_t *rgba, unsigned width, unsigned height,
 bool gles2_ai_poll(Gles2AiJob *, const char *zip, uint64_t key, Gles2PackImage *image, const char **error);
 void gles2_ai_destroy(Gles2AiJob *);
 const char *gles2_editor_remove_loose(const char *dir, uint64_t key);
+typedef struct Gles2TileMapping {
+    uint64_t stored, key;
+} Gles2TileMapping;
+const char *gles2_archive_store_mappings(const char *zip, const Gles2TileMapping *mappings, size_t count);
 const char *gles2_ai_remove(const char *zip, uint64_t key);
 
 #ifdef __cplusplus

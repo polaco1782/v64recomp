@@ -6,6 +6,7 @@
 # This is an initial discovery profile, not a complete CPU inventory yet.
 # Common OS and library calls are recognized by tools/native_hooks.toml.
 function_wrappers = [
+  {section = ".game", vram = 0x7f0cfe18, size = 0x10c, sha256 = "926f274e01158d387acc819ba335677ad776cf02e8f23b3fa29ea322b42c1fd6", handler = "goldeneye_gfx_submit_hook"},
   {section = ".game", vram = 0x7f02727c, size = 0x588, sha256 = "16380499e3fb5ef7b13cb5a51516ad9d0e3943b4ec2d70677f3b40471cd40d90", handler = "goldeneye_ai_hit_hook"},
   {section = ".game", vram = 0x7f029c00, size = 0x5c, sha256 = "e4b1d4374389babbc281c278270770c0d1ffa8ee5a12e7eb75181628cd23881a", handler = "goldeneye_ai_alert_hook"},
   {section = ".game", vram = 0x7f02d734, size = 0xb38, sha256 = "ec668e47336a9e5fca08a9501fdd79c8959416dc7a20a663766f53a509b0145d", handler = "goldeneye_ai_fire_hook"},
@@ -30,6 +31,7 @@ function_wrappers = [
   {section = ".game", vram = 0x7f084648, size = 0x2348, sha256 = "432577fae515642bf6e7d62916b73e9a0e08ae0554a04d27e3af5b66d8ff3509", handler = "goldeneye_input_move_hook"},
 ]
 hooks = [
+  {symbol = "osRecvMesg", vram = 0x7000ddd0, kind = "replace_function", handler = "goldeneye_recv_mesg", expected_words = [0x27bdffd8, 0xafbf001c, 0xafa40028, 0xafa5002c]},
   {symbol = "boot_tlb_install", vram = 0x80000450, kind = "replace_function", handler = "recomp_ge_boot_tlb", expected_words = [0x24020001, 0x24030000, 0x24040000]},
   {symbol = "jump_decompressfile", vram = 0x700004f8, kind = "replace_function", handler = "recomp_ge_enter_inflate", expected_words = [0x3c077020, 0x24e7141c, 0xe00008]},
   {symbol = "initTLBPrepareContext", vram = 0x70001bb0, kind = "replace_function", handler = "recomp_ge_prepare_context", expected_words = [0x24080002, 0x40883000, 0x24080000]},
@@ -255,6 +257,18 @@ idle_words = [0xafa40000, 0x1000ffff, 0x0]
 0x80000310 = 0x17d6
 0x80000314 = 0x1
 0x80000318 = 0x400000
+
+[graphics_scheduler]
+# The thread and retrace bodies establish the queue offsets, available-unit mask,
+# scratch arguments and normal receipt paths used by the early graphics wake.
+functions = [
+  {name = "thread", vram = 0x70000d00, size = 0x178, sha256 = "efc5e874b45b6b0f23ef0da6a57f2ef82bb77e9fb5f0f803103d7d2c5bb66ed2"},
+  {name = "retrace", vram = 0x70000eb4, size = 0x160, sha256 = "6e0b7b0aea2fe7118aec41a9e1d9288b6d99cd168f1de6f20fac952552b734af"},
+  {name = "append", vram = 0x700013d8, size = 0x68, sha256 = "286f1dcc92e9db9a78ddc7164162c4756be4dd2064125083802c8a123b141502"},
+  {name = "schedule", vram = 0x7000159c, size = 0x1e4, sha256 = "b6821ff9209ddc4888e762be0ac7354b5de4e6faca2a92fb1faa3551c9b9a30f"},
+  {name = "execute", vram = 0x70001440, size = 0x120, sha256 = "3e4aa70a3f22c5e3acc308162673841e1d82ebbb246cd5b0175c1c280099d539"},
+  {name = "recv", vram = 0x7000ddd0, size = 0x138, sha256 = "165ed8087b0c056686f3cf4ed18d9bf672eede11ae02feecaebc0fd155718335"},
+]
 
 [runtime]
 # Batch ordinary backedges; explicit polling loops and priority preemption

@@ -1,0 +1,456 @@
+{
+  "format_version": 1,
+  "rom_sha1": "dc7495093fb9a668b0c851b87c037a4cdf2ddc65",
+  "complete": false,
+  "entries": [
+    {
+      "name": "game_main",
+      "vram": 2147573168,
+      "origin": "checked-root",
+      "sha256": "e98be69a13796c2e1c84c2dd890b493af2f6e4324efc3a726970ed4228705a28",
+      "materialized_sources": [
+        2147573144
+      ]
+    },
+    {
+      "name": "game_thread_8",
+      "vram": 2147591844,
+      "origin": "checked-root",
+      "sha256": "daaab4534839e6047815eb59b2f4a54e1b4a1fd73ca6709802212baa07ecec0b",
+      "materialized_sources": [
+        2147592872
+      ]
+    },
+    {
+      "vram": 2147856848,
+      "origin": "checked-root",
+      "sha256": "1cdc909230645d0a854bd093552d5a61bbea275a1a002510e9537a54b46545e6",
+      "pointer_sources": [
+        2148131968
+      ],
+      "call_sites": [
+        2148050612
+      ]
+    },
+    {
+      "vram": 2147856952,
+      "origin": "checked-root",
+      "sha256": "5087ce5d3f6b9c438e481eae42405bb85e916ef1bf4b81eb476b937d80ccb618",
+      "pointer_sources": [
+        2148131972
+      ],
+      "call_sites": [
+        2148050632
+      ]
+    },
+    {
+      "vram": 2147857048,
+      "origin": "checked-root",
+      "sha256": "f36bef0b729dc0220617d3589725c10e2277c52eea4f9d1b2654fa41468bea65",
+      "pointer_sources": [
+        2148131976
+      ],
+      "call_sites": [
+        2148050836
+      ]
+    },
+    {
+      "vram": 2147913256,
+      "origin": "checked-root",
+      "sha256": "33be0c2eb6224663a70069abad5a43b27df4eff06e8764ab4e8507acb9e4de9a",
+      "materialized_sources": [
+        2147913948
+      ]
+    },
+    {
+      "vram": 2147935588,
+      "origin": "checked-root",
+      "sha256": "660c4b34d992f240bf04e68721c8667c11c561c92d553e866cccb8910df17adb",
+      "pointer_sources": [
+        2148141776,
+        2148141864,
+        2148141976,
+        2148142056,
+        2148142372,
+        2148142648,
+        2148142692,
+        2148142860,
+        2148142904,
+        2148142948,
+        2148143004,
+        2148143060,
+        2148143116,
+        2148143476,
+        2148143532,
+        2148143588,
+        2148143700,
+        2148143744,
+        2148143816,
+        2148143896
+      ],
+      "call_sites": [
+        2147934080
+      ]
+    },
+    {
+      "vram": 2147935660,
+      "origin": "checked-root",
+      "sha256": "91da56705eec6308c70879eb74d0a1dbd94a95d16081e81047ebbaf4fbfb9719",
+      "pointer_sources": [
+        2148142496,
+        2148143248,
+        2148143284,
+        2148143320
+      ],
+      "call_sites": [
+        2147933964
+      ]
+    },
+    {
+      "vram": 2147935696,
+      "origin": "checked-root",
+      "sha256": "8b8f461f7152efc91bce90a8eb6c17f8c77763033bba67de2a20536b147d562d",
+      "pointer_sources": [
+        2148142424,
+        2148142556
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147935708,
+      "origin": "checked-root",
+      "sha256": "31c0bc9a8a1f2f95c6676a2009b69c9c630a0acbeccfe48f8670d27dd0642426",
+      "pointer_sources": [
+        2148142348
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147935768,
+      "origin": "checked-root",
+      "sha256": "24a2fd68d9decd863c5148123c37ff5a954540d7a99df1c2b71715080b1110ab",
+      "pointer_sources": [
+        2148142316
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147935780,
+      "origin": "checked-root",
+      "sha256": "4bef5b4f97b4e3b449494f03f4108927af52f5aedd432ee2befd6265645c80ff",
+      "pointer_sources": [
+        2148142844,
+        2148142888,
+        2148142932,
+        2148142988,
+        2148143044,
+        2148143100,
+        2148143232,
+        2148143268,
+        2148143304,
+        2148143376,
+        2148143412,
+        2148143460,
+        2148143516,
+        2148143572
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147935836,
+      "origin": "checked-root",
+      "sha256": "4e9b32176e3913719e4f94a2c9b6f5e7398047a0d43af74621686f830974fe48",
+      "pointer_sources": [
+        2148143392,
+        2148143428
+      ],
+      "call_sites": [
+        2147933964
+      ]
+    },
+    {
+      "vram": 2147935872,
+      "origin": "checked-root",
+      "sha256": "d1678cd2e3f2272270ed9b9be15db708fca74d1c05838f33bb4bd32fc8ac34c8",
+      "pointer_sources": [
+        2148142736,
+        2148142756,
+        2148142776,
+        2148142796,
+        2148142816,
+        2148143160,
+        2148143180,
+        2148143608,
+        2148143628,
+        2148143648
+      ],
+      "call_sites": [
+        2147934020
+      ]
+    },
+    {
+      "vram": 2147936304,
+      "origin": "checked-root",
+      "sha256": "3f09b985672279b5129756e704d7908366e85a8ba8d94be6d7afd2f33b5a40f6",
+      "pointer_sources": [
+        2148141820,
+        2148141916,
+        2148143208
+      ],
+      "call_sites": [
+        2147933864
+      ]
+    },
+    {
+      "vram": 2147936528,
+      "origin": "checked-root",
+      "sha256": "021f5abd1d2f9f833b02c1065debabff6d78717d06786a9d91bc34905049c203",
+      "pointer_sources": [
+        2148142516
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147936588,
+      "origin": "checked-root",
+      "sha256": "ee407908a691871a186b37f6b8db0ccb3cf77857c742485a0a183d93a16c9c6b",
+      "pointer_sources": [
+        2148143332
+      ],
+      "call_sites": [
+        2147933864
+      ]
+    },
+    {
+      "vram": 2147936760,
+      "origin": "checked-root",
+      "sha256": "ee407908a691871a186b37f6b8db0ccb3cf77857c742485a0a183d93a16c9c6b",
+      "pointer_sources": [
+        2148142092,
+        2148143932,
+        2148144116
+      ],
+      "call_sites": [
+        2147933864
+      ]
+    },
+    {
+      "vram": 2147936840,
+      "origin": "checked-root",
+      "sha256": "ee407908a691871a186b37f6b8db0ccb3cf77857c742485a0a183d93a16c9c6b",
+      "pointer_sources": [
+        2148142280,
+        2148144092,
+        2148144276
+      ],
+      "call_sites": [
+        2147933864
+      ]
+    },
+    {
+      "vram": 2147936920,
+      "origin": "checked-root",
+      "sha256": "718b8d05d9ccc94cebe54922e688b1f086fd23c1b8220fbf39f8258076baa68d",
+      "pointer_sources": [
+        2148143136,
+        2148143340
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147948172,
+      "origin": "checked-root",
+      "sha256": "6d2ccc36ed62d8ed946bab75223788a754d7e1e80adadcb4148cb5ab6c9f4bab",
+      "pointer_sources": [
+        2148143852
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147948340,
+      "origin": "checked-root",
+      "sha256": "24d71af9474807ad45290024fffd529ca183ad4df88bc3751c90e3df2dd44097",
+      "pointer_sources": [
+        2148143940,
+        2148144068,
+        2148144124,
+        2148144252
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147952504,
+      "origin": "checked-root",
+      "sha256": "40d551596fd6348a40cc2ccc9001a82c9c64525f03d9afe490bf6ec46c4df1b5",
+      "pointer_sources": [
+        2148142012
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147953028,
+      "origin": "checked-root",
+      "sha256": "c18e7e952ce2d8f03af37d72a9f168ac8b7a0574a553da2139108a415a5bbee4",
+      "pointer_sources": [
+        2148142100
+      ],
+      "call_sites": [
+        2147933864
+      ]
+    },
+    {
+      "vram": 2147960364,
+      "origin": "checked-root",
+      "sha256": "595d0b0e1143e0b7358502f095dea4efd73575193a6b89ecf6e79ab99dec8e3d",
+      "pointer_sources": [
+        2148141840
+      ],
+      "call_sites": [
+        2147933912
+      ]
+    },
+    {
+      "vram": 2147970424,
+      "origin": "checked-root",
+      "sha256": "ddc69f1a4345b292b48d4244f60e3e2deb54c08aca69a52a4ed096796a3393fc",
+      "pointer_sources": [
+        2148142400
+      ],
+      "call_sites": [
+        2147933864
+      ]
+    },
+    {
+      "vram": 2148014492,
+      "origin": "checked-root",
+      "sha256": "a93b0a82d198389efcd125e3c8d946e76e0e1f5073541807128c1387b2735131",
+      "materialized_sources": [
+        2148010448
+      ]
+    },
+    {
+      "vram": 2148025472,
+      "origin": "checked-root",
+      "sha256": "8ade0bb2188abb47bf647b7c0ac15299eafa90bc4b67176c860c5aa030c9e2a7",
+      "materialized_sources": [
+        2148027728
+      ]
+    },
+    {
+      "vram": 2148028032,
+      "origin": "checked-root",
+      "sha256": "9610a009b899dcbe87f96e2b113f12c4098af8c0e5967052279b26eb09b42aa0",
+      "materialized_sources": [
+        2148027220
+      ]
+    },
+    {
+      "vram": 2148031744,
+      "origin": "checked-root",
+      "sha256": "008e6bde1905e87bcb9ed46078c1ed53272fa2ea205f187447b5d718bdb8ffdf",
+      "materialized_sources": [
+        2148027412
+      ]
+    },
+    {
+      "vram": 2148032836,
+      "origin": "checked-root",
+      "sha256": "0f7a14db1a7e3b9cfb965976beb4d09b8a0d92362b99170edd52c3f3d764f703",
+      "materialized_sources": [
+        2148034028
+      ]
+    },
+    {
+      "vram": 2148034816,
+      "origin": "checked-root",
+      "sha256": "48217327a7d7258a5dcc44d9297005edfe3975fd50a212a328a629998b52eed4",
+      "materialized_sources": [
+        2148027820
+      ]
+    },
+    {
+      "vram": 2148035200,
+      "origin": "checked-root",
+      "sha256": "352a1c53a16567325fb87b2141556b651ea9862514fa8b9edfc89a203ec95ee5",
+      "materialized_sources": [
+        2148027580
+      ]
+    },
+    {
+      "vram": 2148035968,
+      "origin": "checked-root",
+      "sha256": "919ae5dc1fcde8d21a08d255df1ea97cef027a53b8e5f5ea355bb1fbcfbc93b7",
+      "materialized_sources": [
+        2148040700
+      ]
+    },
+    {
+      "vram": 2148036932,
+      "origin": "checked-root",
+      "sha256": "06d528b9a8cbb78e3ac0ff463742723ec7be6844c0714f1b9dcd5fb6675b75f0",
+      "materialized_sources": [
+        2148040712
+      ]
+    },
+    {
+      "vram": 2148039040,
+      "origin": "checked-root",
+      "sha256": "c3542703176fae6cd35e0ab04ac23faefe4a6eaa9d2e3136510374643b8fb184",
+      "materialized_sources": [
+        2148027896
+      ]
+    },
+    {
+      "vram": 2148052444,
+      "origin": "checked-root",
+      "sha256": "f52283396fa8b51df3e51e8da5bcf8481f838262d9397f6af99f8c0503a32d10",
+      "materialized_sources": [
+        2148052184
+      ]
+    },
+    {
+      "vram": 2148052460,
+      "origin": "checked-root",
+      "sha256": "3e9d80cd0a8bdd31a06fa466250ae9e4cb58fb8d7c7dc83155187c947a94cb37",
+      "materialized_sources": [
+        2148052448
+      ]
+    },
+    {
+      "name": "startup_thread",
+      "vram": 2148060776,
+      "origin": "checked-root",
+      "sha256": "7babb3c67922be757e307381c4d198b1fa36bd690644b2821cff629c3175ec2c",
+      "materialized_sources": [
+        2148060024
+      ]
+    },
+    {
+      "name": "worker_thread",
+      "vram": 2148062208,
+      "origin": "checked-root",
+      "sha256": "89fbb3a04beedc517cddcc3be251a03a62de76195be4ab0850616d2dd34880d5",
+      "materialized_sources": [
+        2148060980
+      ]
+    }
+  ]
+}

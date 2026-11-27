@@ -92,9 +92,11 @@ static void poll_ai(Runtime *rt) {
 }
 
 static bool rom_range(Runtime *rt, uint32_t *offset, uint32_t bytes) {
-    if (*offset >= UINT32_C(0xb0000000) && *offset < UINT32_C(0xc0000000))
-        *offset -= UINT32_C(0xb0000000);
-    else if (*offset >= UINT32_C(0x10000000) && *offset < UINT32_C(0x20000000))
+    /* libultra ORs the device offset with osRomBase and writes its physical
+     * address to PI_CART_ADDR. Some linkers tag ROM offsets with KSEG0. */
+    if (recomp_direct_address(*offset))
+        *offset &= UINT32_C(0x1fffffff);
+    if (*offset >= UINT32_C(0x10000000) && *offset < UINT32_C(0x20000000))
         *offset -= UINT32_C(0x10000000);
     return rt->rom && *offset <= rt->rom_size && bytes <= rt->rom_size - *offset;
 }

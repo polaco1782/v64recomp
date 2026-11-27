@@ -8,7 +8,7 @@ a few comforts that weren't around in the cartridge days.
 
 Graphics tasks run the game's own recompiled Reality Signal Processor (RSP)
 microcode. The **OpenGL ES 3.0 (GLES3)** backend draws the resulting commands
-on desktop. All 24 targets also have a [browser build](docs/webassembly.md)
+on desktop. The project also includes a [browser build](docs/webassembly.md)
 that uses WebGL 2 and loads the matching ROM on page open.
 
 | Make it yours | What you can do |
@@ -64,15 +64,17 @@ Pass a Rice/GLideN64 PNG ZIP directly to the desktop game. For GoldenEye 007:
 **F5** switches between original and replacement textures. Press **F8** to pause
 and open the texture editor. Visible triangles are outlined in cyan. Hover over
 a triangle to turn its outline gold, then click to select its texture in the
-gallery. If the triangle uses two textures, **Shift-click** picks the second.
-You can also select a thumbnail directly and drop your own PNG onto it.
+gallery. If the triangle uses two distinct textures, **Shift-click** adds the
+second to your selection. In the gallery, **Shift-click** thumbnails to add or
+remove individual tiles, even across pages. Select a single tile to drop your
+own PNG onto it.
 
 ![GoldenEye’s Dam with one rock-face triangle outlined in gold and its matching texture selected in the gallery](docs/screenshots/goldeneye-dam-triangle-picker.png)
 
 #### Replace a texture with AI
 
-Click **Improve with AI** to send the selected native tile to your signed-in
-Codex CLI. The CLI must be on your `PATH` with image generation available.
+Click **Improve with AI** to send the selected native tiles to your signed-in
+Codex CLI, one at a time. The CLI must be on your `PATH` with image generation available.
 The editor requests a PNG at **8× the original width and height** and asks
 Codex to remove pixelation while preserving the pattern, palette, lettering,
 tiling edges, and transparency. Each attempt starts from the native tile.
@@ -95,7 +97,7 @@ fallback.
 | Game | Keyboard and mouse | Adjustable FOV |
 | --- | --- | --- |
 | GoldenEye 007 | [WASD, mouse-look, aiming and menu cursor](games/goldeneye-us/README.md#mouse-and-keyboard) | [Original → 140°](games/goldeneye-us/README.md#field-of-view) |
-| Doom 64 | [WASD, mouse turning and combat](games/doom64-us/README.md#playing) | [90° → 140°](games/doom64-us/README.md#playing) |
+| Doom 64 | [WASD, mouse look and combat](games/doom64-us/README.md#playing) | [90° → 140°](games/doom64-us/README.md#playing) |
 | Quake 64 | [WASD, mouse-look and weapon cycling](games/quake-us/controller.md) | [90° → 140°](games/quake-us/README.md) |
 | Quake II | [WASD, mouse-look and weapon cycling](games/quake2-us/controller.md) | [90° → 140°](games/quake2-us/README.md#adjustable-field-of-view) |
 | Duke Nukem 64 | [WASD, mouse-look and combat controls](games/duke-us/controller.md) | [Original → 140°](games/duke-us/README.md#field-of-view) |
@@ -278,7 +280,9 @@ keeps the detailed validation history and known gaps.
 | [1080 Snowboarding JU revision 0](games/1080-us/README.md) | `1080-us` | Intro, title and Select Rider; riding unvalidated. |
 | [Banjo-Kazooie US revision 0](games/banjo-kazooie-us/README.md) | `banjo-kazooie-us` | Experimental; original startup and callback bring-up in progress. |
 | [Resident Evil 2 US revision 1](games/re2-us-v1/README.md) | `re2-us-v1` | Experimental; opening movie and title menu. |
+| [Disney's Donald Duck: Goin' Quackers US revision 0](games/donald-duck-us/README.md) | `donald-duck-us` | Desktop GLES reaches Forest Edge with movement, jumping, stereo audio and Controller Pak saves. |
 | [Rayman 2](games/rayman2-us/README.md) | `rayman2-us` | Experimental; title and language selection. |
+| [Carmageddon 64 US revision 0](games/carmageddon64-us/README.md) | `carmageddon64-us` | Quick Start city race with acceleration, steering and stereo audio on desktop GLES. |
 | [Conker's Bad Fur Day](games/conker-us/README.md) | `conker-us` | Experimental; logo intro and audio. |
 | [Duke Nukem: Zero Hour](games/duke-zero-hour-us/README.md) | `duke-zero-hour-us` | Copyright/logo screens; gameplay bring-up in progress. |
 | [007: The World Is Not Enough](games/twine-us/README.md) | `twine-us` | Experimental; startup and audio bring-up in progress. |
@@ -293,9 +297,11 @@ Import is the easiest way to check your ROM: it verifies size and SHA-1 against
 | --- | --- |
 | `1080.ju.z64` | `fa27089c425dbab99f19245c5c997613` |
 | `banjo-kazooie.us.z64` | `b29599651a13f681c9923d69354bf4a3` |
+| `donald-duck.us.z64` | `0e0e920ab13ef13508f5a98cc4cd2ff8` |
 | `doom64.us.z64` | `b67748b64a2cc7efd2f3ad4504561e0e` |
 | `duke-zero-hour.us.z64` | `026789d47db5fe202a76f89797b33ac7` |
 | `duke.us.z64` | `c7f1a43764a26da2e43f2a36a5f76e4c` |
+| `carmageddon64.us.z64` | `31bb57c1fad0d47dc2353c1950b11886` |
 | `conker.us.z64` | `00e2920665f2329b95797a7eaabc2390` |
 | `goldeneye.us.z64` | `22ff6c18eb028792ef350554b1e1fa68` |
 | `hexen.us.z64` | `eb98f1b8c6898af7417f6882946da9b3` |

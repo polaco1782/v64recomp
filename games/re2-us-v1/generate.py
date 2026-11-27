@@ -25,7 +25,7 @@ def rsp_images(rom: bytes, profile: dict) -> dict[str, bytes]:
     return {'.main': data}
 
 
-def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
+def prepare_analysis(rom: bytes, profile: dict) -> tuple[bytes, dict]:
     profile = deepcopy(profile)
     image = bytearray(rom)
     decoded = {}
@@ -61,6 +61,10 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
             raise RecompError('RE2 prepared offset mismatch')
         image.extend(data)
     return bytes(image), profile
+
+
+def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
+    return prepare_analysis(rom, profile)
 
 
 def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> None:

@@ -25,7 +25,7 @@ configure_file(licenses/minicoro.txt "${CMAKE_BINARY_DIR}/bin/licenses/minicoro.
 
 # One native game per build tree. Use a separate directory for each mode.
 set(RECOMP_GAME "sm64-us" CACHE STRING "Game to build, or none for shared libraries")
-set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us doom64-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us rayman2-us quake2-us re2-us-v1 turok-us-v12 turok2-us turok3-us mm-us 1080-us banjo-kazooie-us twine-us)
+set(RECOMP_GAMES sm64-us goldeneye-us shadowman-us quake-us doom64-us duke-us nightmare-us oot-us-v12 perfectdark-us-v11 conker-us duke-zero-hour-us hexen-us rayman2-us quake2-us re2-us-v1 turok-us-v12 turok2-us turok3-us mm-us 1080-us banjo-kazooie-us twine-us carmageddon64-us donald-duck-us)
 list(APPEND RECOMP_GAMES bad-apple media-player)
 set_property(CACHE RECOMP_GAME PROPERTY STRINGS none ${RECOMP_GAMES})
 if(NOT RECOMP_GAME STREQUAL "none" AND NOT RECOMP_GAME IN_LIST RECOMP_GAMES)

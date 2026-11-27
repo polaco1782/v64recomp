@@ -59,6 +59,9 @@ void recomp_renderer_mouse_mode(RecompRenderer *, bool enabled, bool gameplay);
 /* A game handling captured keyboard/mouse actions itself can omit their N64
  * button aliases. Start and physical controller input still reach the pad. */
 void recomp_renderer_separate_mouse_actions(RecompRenderer *, bool enabled);
+/* Bind Enter and captured left click to a native menu's confirm buttons,
+ * WASD/arrows to navigation, and Tab/right click to Start. Zero ends menu mode. */
+void recomp_renderer_menu_confirm(RecompRenderer *, uint16_t buttons);
 /* Opt into arrow keys as C-buttons and WASD as the analog stick. This mapping
  * remains available when mouse capture ends, including dialog/instrument modes. */
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *, bool enabled);

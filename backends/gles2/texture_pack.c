@@ -1,5 +1,8 @@
 #include "texture_pack.h"
+#include "editor_ai.h"
 #include "rice.h"
+#include "runtime.h"
+#include "host.h"
 #include <SDL.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -7,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-#include "host.h"
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>
@@ -39,18 +41,22 @@ typedef struct Match {
     uint64_t hash;
     size_t source;
 } Match;
+typedef struct Override {
+    uint64_t id, key;
+    unsigned zip_index; /* NO_FILE for a loose PNG. */
+    bool identified, save_mapping;
+} Override;
 struct Gles2TexturePack {
     mz_zip_archive zip;
-    bool has_ai;
 #ifdef _WIN32
     FILE *zip_file;
 #endif
     RiceEntry *entries;
     size_t count;
     RiceState *rice;
-    char *overrides;
-    uint64_t *local_ids;
-    size_t local_count;
+    char *overrides, *zip_path;
+    Override *files, **by_key;
+    size_t file_count, file_capacity, unidentified;
     Match *matches;
     size_t match_count, match_capacity;
 };
@@ -129,6 +135,22 @@ static int by_stem(const void *a, const void *b) {
 static int by_key(const void *a, const void *b) {
     return strcmp(((const RiceEntry *)a)->key, ((const RiceEntry *)b)->key);
 }
+static void add_override(Gles2TexturePack *p, const char *name, unsigned zip_index) {
+    if (strlen(name) != 25 || strcmp(name + 16, ".gles.png") || !hex_token(name, 16))
+        return;
+    if (zip_index != NO_FILE && strspn(name, "0123456789abcdef") != 16)
+        return;
+    if (p->file_count == p->file_capacity) {
+        size_t cap = p->file_capacity ? p->file_capacity * 2 : 16;
+        Override *files = realloc(p->files, cap * sizeof(*files));
+        if (!files)
+            return;
+        p->files = files;
+        p->file_capacity = cap;
+    }
+    uint64_t id = strtoull(name, NULL, 16);
+    p->files[p->file_count++] = (Override){.id = id, .key = id, .zip_index = zip_index};
+}
 static bool index_zip(Gles2TexturePack *p, const char *title) {
     unsigned total = mz_zip_reader_get_num_files(&p->zip);
     if (!total || total > 250000)
@@ -143,12 +165,14 @@ static bool index_zip(Gles2TexturePack *p, const char *title) {
         if (n < 2 || n > sizeof(path) || !mz_zip_reader_get_filename(&p->zip, i, path, sizeof(path)) ||
             strlen(path) != n - 1)
             continue;
+        if (!strncmp(path, GLES2_AI_PREFIX, sizeof(GLES2_AI_PREFIX) - 1)) {
+            add_override(p, path + sizeof(GLES2_AI_PREFIX) - 1, i);
+            continue;
+        }
         for (char *c = path; *c; ++c)
             if (*c == '\\')
                 *c = '/';
-        if (!strncmp(path, GLES2_AI_PREFIX, sizeof(GLES2_AI_PREFIX) - 1))
-            p->has_ai = true;
-        else if (parse_part(path, title, &parts[count]))
+        if (parse_part(path, title, &parts[count]))
             parts[count++].index = i;
     }
     qsort(parts, count, sizeof(*parts), by_stem);
@@ -227,20 +251,6 @@ static RiceEntry *find_rice(Gles2TexturePack *p, char keys[2][22]) {
     }
     return NULL;
 }
-static int by_id(const void *a, const void *b) {
-    uint64_t x = *(const uint64_t *)a, y = *(const uint64_t *)b;
-    return (x > y) - (x < y);
-}
-static void add_local(Gles2TexturePack *p, const char *name) {
-    if (strlen(name) != 25 || strcmp(name + 16, ".gles.png") || !hex_token(name, 16))
-        return;
-    uint64_t id = strtoull(name, NULL, 16);
-    uint64_t *ids = realloc(p->local_ids, (p->local_count + 1) * sizeof(*ids));
-    if (ids) {
-        p->local_ids = ids;
-        ids[p->local_count++] = id;
-    }
-}
 static void index_local(Gles2TexturePack *p, const char *dir) {
 #ifdef _WIN32
     char *pattern = NULL;
@@ -258,7 +268,7 @@ static void index_local(Gles2TexturePack *p, const char *dir) {
     do {
         char name[32];
         if (WideCharToMultiByte(CP_UTF8, 0, entry.cFileName, -1, name, sizeof(name), NULL, NULL))
-            add_local(p, name);
+            add_override(p, name, NO_FILE);
     } while (FindNextFileW(it, &entry));
     FindClose(it);
 #else
@@ -267,13 +277,85 @@ static void index_local(Gles2TexturePack *p, const char *dir) {
         return;
     struct dirent *entry;
     while ((entry = readdir(it)))
-        add_local(p, entry->d_name);
+        add_override(p, entry->d_name, NO_FILE);
     closedir(it);
 #endif
-    if (p->local_count) {
-        p->overrides = SDL_strdup(dir);
-        qsort(p->local_ids, p->local_count, sizeof(*p->local_ids), by_id);
+}
+
+static int by_stored_id(const void *a, const void *b) {
+    const Override *x = a, *y = b;
+    return (x->id > y->id) - (x->id < y->id);
+}
+static int by_tile_key(const void *a, const void *b) {
+    const Override *x = *(Override *const *)a, *y = *(Override *const *)b;
+    if (x->key != y->key)
+        return (x->key > y->key) - (x->key < y->key);
+    bool loose_x = x->zip_index == NO_FILE, loose_y = y->zip_index == NO_FILE;
+    if (loose_x != loose_y)
+        return loose_x ? 1 : -1;
+    /* Prefer the canonical filename, then the last AI edit in archive order.
+     * Loose files have no archive order, so break ties by stored ID. */
+    if ((x->id == x->key) != (y->id == y->key))
+        return x->id == x->key ? -1 : 1;
+    if (x->zip_index != y->zip_index)
+        return x->zip_index > y->zip_index ? -1 : 1;
+    return by_stored_id(y, x);
+}
+static char *alias_path(const Gles2TexturePack *p, uint64_t id) {
+    char *path = NULL;
+    if (p->overrides)
+        SDL_asprintf(&path, "%s/%016" PRIx64 ".tile-id", p->overrides, id);
+    return path;
+}
+static bool parse_mapping(const char *text, uint64_t *key) {
+    if (text[16] != '\n' || !hex_token(text, 16))
+        return false;
+    *key = strtoull(text, NULL, 16);
+    return true;
+}
+static bool read_zip_mapping(Gles2TexturePack *p, Override *file) {
+    if (!p->zip.m_pState)
+        return false;
+    char name[64], text[18] = {0};
+    snprintf(name, sizeof(name), GLES2_TILE_ID_ENTRY, file->id);
+    int index = mz_zip_reader_locate_file(&p->zip, name, NULL, 0);
+    mz_zip_archive_file_stat stat;
+    return index >= 0 && mz_zip_reader_file_stat(&p->zip, (unsigned)index, &stat) && stat.m_uncomp_size == 17 &&
+           mz_zip_reader_extract_to_mem(&p->zip, (unsigned)index, text, 17, 0) && parse_mapping(text, &file->key);
+}
+static void index_overrides(Gles2TexturePack *p) {
+    if (!p->file_count)
+        return;
+    p->by_key = malloc(p->file_count * sizeof(*p->by_key));
+    if (!p->by_key) {
+        p->file_count = 0;
+        return;
     }
+    qsort(p->files, p->file_count, sizeof(*p->files), by_stored_id);
+    for (size_t i = 0; i < p->file_count; ++i) {
+        Override *file = &p->files[i];
+        if (i && file[-1].id == file->id) {
+            file->key = file[-1].key;
+            file->identified = file[-1].identified;
+        } else if (read_zip_mapping(p, file)) {
+            file->identified = true;
+        } else {
+            char *path = alias_path(p, file->id);
+            SDL_RWops *input = path ? SDL_RWFromFile(path, "rb") : NULL;
+            SDL_free(path);
+            if (input) {
+                char text[18] = {0};
+                if (SDL_RWread(input, text, 1, sizeof(text)) == 17 && parse_mapping(text, &file->key)) {
+                    file->save_mapping = true;
+                    file->identified = true;
+                }
+                SDL_RWclose(input);
+            }
+        }
+        p->unidentified += !file->identified;
+        p->by_key[i] = file;
+    }
+    qsort(p->by_key, p->file_count, sizeof(*p->by_key), by_tile_key);
 }
 static bool open_archive(Gles2TexturePack *p, const char *path) {
 #ifdef _WIN32
@@ -309,9 +391,13 @@ Gles2TexturePack *gles2_texture_pack_open(const char *path, const char *override
     Gles2TexturePack *p = calloc(1, sizeof(*p));
     if (!p)
         return NULL;
-    if (overrides && *overrides)
-        index_local(p, overrides);
+    if (overrides && *overrides) {
+        p->overrides = SDL_strdup(overrides);
+        if (p->overrides)
+            index_local(p, overrides);
+    }
     if (path && *path) {
+        p->zip_path = SDL_strdup(path);
         if (open_archive(p, path)) {
             if (index_zip(p, title ? title : ""))
                 p->rice = calloc(1, sizeof(*p->rice));
@@ -319,10 +405,11 @@ Gles2TexturePack *gles2_texture_pack_open(const char *path, const char *override
         } else if (getenv("RECOMP_TEXTURE_PACK") || errno != ENOENT)
             fprintf(stderr, "GLES could not open texture ZIP: %s\n", path);
     }
+    index_overrides(p);
     return p;
 }
 bool gles2_texture_pack_enabled(const Gles2TexturePack *p) {
-    return p && (p->rice || p->overrides || p->has_ai);
+    return p && (p->rice || p->file_count);
 }
 bool gles2_texture_pack_has_rice(const Gles2TexturePack *p) {
     return p && p->rice;
@@ -403,6 +490,44 @@ static bool decode_rice(Gles2TexturePack *p, ImageFiles files, Gles2PackTile key
 #endif
     return true;
 }
+/* Batch discoveries outside the draw path. The ZIP writer locks and reopens the latest
+ * archive, including any PNGs the editor saved while this pack snapshot was open. */
+void gles2_texture_pack_flush_mappings(Gles2TexturePack *p) {
+    if (!p)
+        return;
+    size_t count = 0;
+    for (size_t i = 0; i < p->file_count; ++i)
+        count += p->files[i].save_mapping;
+    if (!count)
+        return;
+    Gles2TileMapping *mappings = malloc(count * sizeof(*mappings));
+    const char *error = mappings ? "No texture archive path" : "Could not allocate texture mappings";
+    if (p->zip_path && mappings) {
+        size_t n = 0;
+        for (size_t i = 0; i < p->file_count; ++i)
+            if (p->files[i].save_mapping)
+                mappings[n++] = (Gles2TileMapping){p->files[i].id, p->files[i].key};
+        error = gles2_archive_store_mappings(p->zip_path, mappings, count);
+    }
+    free(mappings);
+    if (!error) {
+        for (size_t i = 0; i < p->file_count; ++i)
+            p->files[i].save_mapping = false;
+        return;
+    }
+    SDL_Log("Could not save texture IDs in ZIP: %s. Trying the local overrides directory", error);
+    for (size_t i = 0; i < p->file_count; ++i) {
+        const Override *file = &p->files[i];
+        if (!file->save_mapping)
+            continue;
+        char *path = alias_path(p, file->id);
+        char text[18];
+        snprintf(text, sizeof(text), "%016" PRIx64 "\n", file->key);
+        if (!path || !recomp_create_directories(p->overrides) || !recomp_save_image(path, (const uint8_t *)text, 17))
+            SDL_Log("Could not persist GLES texture ID for %016" PRIx64, file->id);
+        SDL_free(path);
+    }
+}
 void gles2_texture_pack_close(Gles2TexturePack *p) {
     if (!p)
         return;
@@ -415,9 +540,12 @@ void gles2_texture_pack_close(Gles2TexturePack *p) {
     if (p->rice)
         for (unsigned i = 0; i < 512; ++i)
             free(p->rice->loads[i].bytes);
+    gles2_texture_pack_flush_mappings(p);
+    SDL_free(p->zip_path);
     free(p->rice);
     free(p->entries);
-    free(p->local_ids);
+    free(p->files);
+    free(p->by_key);
     free(p->matches);
     SDL_free(p->overrides);
     free(p);
@@ -461,34 +589,64 @@ bool gles2_texture_pack_known(const Gles2TexturePack *p, uint64_t hash, size_t *
     return true;
 }
 
-bool gles2_texture_pack_ai(Gles2TexturePack *p, uint64_t hash, size_t *source) {
-    if (!p || !p->has_ai)
-        return false;
-    char name[64];
-    snprintf(name, sizeof(name), GLES2_AI_ENTRY, hash);
-    /* Flags zero uses miniz's sorted central directory. Check exact case on the hit. */
-    int index = mz_zip_reader_locate_file(&p->zip, name, NULL, 0);
-    char entry[sizeof(name)];
-    if (index < 0)
-        return false;
-    if (!mz_zip_reader_get_filename(&p->zip, (unsigned)index, entry, sizeof(entry)) || strcmp(entry, name)) {
-        index = mz_zip_reader_locate_file(&p->zip, name, NULL, MZ_ZIP_FLAG_CASE_SENSITIVE);
-        if (index < 0)
-            return false;
+size_t gles2_texture_pack_unidentified(const Gles2TexturePack *p) {
+    return p ? p->unidentified : 0;
+}
+void gles2_texture_pack_identify(Gles2TexturePack *p, uint64_t stored, uint64_t key) {
+    if (!p || !p->unidentified)
+        return;
+    Override probe = {.id = stored};
+    Override *file = bsearch(&probe, p->files, p->file_count, sizeof(probe), by_stored_id);
+    if (!file || file->identified)
+        return;
+    while (file > p->files && file[-1].id == stored)
+        --file;
+    file->save_mapping = key != stored;
+    do {
+        file->key = key;
+        file->identified = true;
+        --p->unidentified;
+        ++file;
+    } while (file != p->files + p->file_count && file->id == stored);
+    if (key == stored)
+        return;
+    qsort(p->by_key, p->file_count, sizeof(*p->by_key), by_tile_key);
+    /* A native or Rice match may already be resident when an old override is first recognized. */
+    size_t i = match_position(p, key);
+    if (i < p->match_count && p->matches[i].hash == key) {
+        --p->match_count;
+        memmove(p->matches + i, p->matches + i + 1, (p->match_count - i) * sizeof(Match));
     }
-    *source = p->count + p->local_count + (size_t)index;
+}
+static bool find_override(const Gles2TexturePack *p, uint64_t key, bool loose, size_t *source) {
+    if (!p)
+        return false;
+    size_t lo = 0, hi = p->file_count;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        const Override *f = p->by_key[mid];
+        if (f->key < key || (f->key == key && loose && f->zip_index != NO_FILE))
+            lo = mid + 1;
+        else
+            hi = mid;
+    }
+    if (lo == p->file_count)
+        return false;
+    const Override *f = p->by_key[lo];
+    if (f->key != key || (f->zip_index == NO_FILE) != loose)
+        return false;
+    *source = p->count + (size_t)(f - p->files);
     return true;
+}
+uint64_t gles2_texture_pack_stored_id(const Gles2TexturePack *p, size_t source) {
+    return p->files[source - p->count].id;
+}
+bool gles2_texture_pack_ai(Gles2TexturePack *p, uint64_t hash, size_t *source) {
+    return find_override(p, hash, false, source);
 }
 bool gles2_texture_pack_local(const Gles2TexturePack *p, uint64_t hash, size_t *source) {
-    if (!p->overrides)
-        return false;
-    const uint64_t *id = bsearch(&hash, p->local_ids, p->local_count, sizeof(hash), by_id);
-    if (!id)
-        return false;
-    *source = p->count + (size_t)(id - p->local_ids);
-    return true;
+    return find_override(p, hash, true, source);
 }
-
 Gles2PackStatus gles2_texture_pack_rice(Gles2TexturePack *p, Gles2PackTile key, const Tile *tile, unsigned tlut,
                                         const Gles2RiceWord words[512], size_t *source) {
     if (!p->rice)
@@ -505,9 +663,11 @@ Gles2PackStatus gles2_texture_pack_rice(Gles2TexturePack *p, Gles2PackTile key, 
 
 bool gles2_texture_pack_decode(Gles2TexturePack *p, size_t source, Gles2PackTile key, unsigned limit,
                                Gles2PackImage *image) {
-    if (source >= p->count + p->local_count)
-        return decode_entry(&p->zip, (unsigned)(source - p->count - p->local_count), key, limit, image);
-    if (source >= p->count)
-        return decode_local(p, key, limit, image);
-    return decode_rice(p, p->entries[source].files, key, limit, image);
+    if (source < p->count)
+        return decode_rice(p, p->entries[source].files, key, limit, image);
+    const Override *file = &p->files[source - p->count];
+    if (file->zip_index != NO_FILE)
+        return decode_entry(&p->zip, file->zip_index, key, limit, image);
+    key.hash = file->id;
+    return decode_local(p, key, limit, image);
 }

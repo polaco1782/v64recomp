@@ -76,7 +76,8 @@ void recomp_gles2_pick_batch(RecompRDPGles2 *s, const Program *program) {
     Gles2Picker *p = s->picker;
     PickMaterial m = {0};
     for (unsigned unit = 0; unit < 2; ++unit)
-        if (s->texture_enabled && program->texture[unit] && s->active_texture[unit] != s->white)
+        if (s->texture_enabled && program->texture[unit] && s->active_texture[unit] != s->white &&
+            (!m.count || m.key[0] != s->active_tile_key[unit]))
             m.key[m.count++] = s->active_tile_key[unit];
     uint64_t hash = m.key[0] ^ (m.key[1] << 1 | m.key[1] >> 63);
     PickCursor *c = &p->cursor[(hash ^ (hash >> 32)) % cursors];
@@ -105,15 +106,13 @@ void recomp_gles2_pick_batch(RecompRDPGles2 *s, const Program *program) {
     c->next += triangles;
 }
 
-bool recomp_gles2_pick_key(RecompRDPGles2 *s, unsigned id, bool secondary, uint64_t *key) {
+unsigned recomp_gles2_pick_keys(RecompRDPGles2 *s, unsigned id, uint64_t keys[2]) {
     unsigned page = id / page_size;
     if (!page || !s->picker || page >= s->picker->count)
-        return false;
+        return 0;
     const PickMaterial *m = &s->picker->pages[page];
-    if (!m->count)
-        return false;
-    *key = m->key[secondary && m->count == 2];
-    return true;
+    memcpy(keys, m->key, sizeof(m->key));
+    return m->count;
 }
 
 static void init_outline(RecompRDPGles2 *s) {

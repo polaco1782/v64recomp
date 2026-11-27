@@ -3636,7 +3636,7 @@ static mz_bool mz_zip_reader_locate_header_sig(mz_zip_archive *pZip, mz_uint32 r
         if ((!cur_file_ofs) || ((pZip->m_archive_size - cur_file_ofs) >= (MZ_UINT16_MAX + record_size)))
             return MZ_FALSE;
 
-        cur_file_ofs = MZ_MAX(cur_file_ofs - (sizeof(buf_u32) - 3), 0);
+        cur_file_ofs = MZ_MAX(cur_file_ofs - ((mz_int64)sizeof(buf_u32) - 3), 0);
     }
 
     *pOfs = cur_file_ofs;

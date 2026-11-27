@@ -17,7 +17,7 @@ from translate import translate
 from symbol_database import DATABASE
 
 PROJECT = Path(__file__).resolve().parents[1]
-GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','doom64-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1','turok-us-v12','turok2-us','turok3-us','mm-us','1080-us','banjo-kazooie-us','twine-us','bad-apple','media-player')
+GAMES = ('sm64-us','goldeneye-us','shadowman-us','quake-us','doom64-us','duke-us','nightmare-us','oot-us-v12','perfectdark-us-v11','conker-us','duke-zero-hour-us','hexen-us','rayman2-us','quake2-us','re2-us-v1','turok-us-v12','turok2-us','turok3-us','mm-us','1080-us','banjo-kazooie-us','twine-us','carmageddon64-us','donald-duck-us','bad-apple','media-player')
 
 
 class GenerationProgress:

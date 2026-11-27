@@ -1,6 +1,10 @@
 # P_RefreshBrightness is also called by the slider and lighting effects.
 function_wrappers = [
+  {section = ".main", vram = 0x80002998, size = 0x260, sha256 = "d0896b289b40bb16baf07499b24a6a9e399c5473c3eea4f2b280d4b0005caab3", handler = "doom64_input_loop"},
   {section = ".main", vram = 0x80023448, size = 0x724, sha256 = "61a371468e3bb3fb23af4c6df6520bbf44ca6146a57529a7eb6cb43d2839f1c0", handler = "doom64_world_view"},
+  {section = ".main", vram = 0x80025878, size = 0x364, sha256 = "0e102470f7ee0e0dbba5c42b9fec3e4097e43c02475d66ba4b4bbed2168317fa", handler = "doom64_sky_quad"},
+  {section = ".main", vram = 0x80025f68, size = 0x4b0, sha256 = "77e96ea82f7d19ee3d6ce52631041549e62ae89de43b4a3d64c6347a3ae4fd61", handler = "doom64_sky_quad"},
+  {section = ".main", vram = 0x80025bdc, size = 0x38c, sha256 = "94ece138a0839ab248272a4f371dfbb289ec640a8daf877a06f3c9db6b378b20", handler = "doom64_sky_picture"},
   {section = ".main", vram = 0x80026590, size = 0xa8, sha256 = "dc643d7f229234e7e340a5cace244aba39a2ed870143fbdb52db204058c777fb", handler = "doom64_world_geometry"},
   {section = ".main", vram = 0x80021a00, size = 0xb8, sha256 = "a5dc22e6dc1687886927acab392909b87aa6b112510e139f513956cbff8ee6c0", handler = "doom64_player_tick"},
   {section = ".main", vram = 0x8002282c, size = 0xe8, sha256 = "8ecc32b40fcd9d1f8994c74014be2839e786d0509936f0f8d1de9e078da6beac", handler = "doom64_move_player"},
@@ -10,6 +14,9 @@ function_wrappers = [
 
 # The five lateral coordinates feed the original 320-column occluder or sprite side test.
 word_result_hooks = [
+  # Player recoil angle >> 19 is the 8192-entry sine/cosine index used by
+  # the first world modelview matrix. Scripted cameras take the other branch.
+  {section = ".main", vram = 0x80023448, size = 0x724, sha256 = "61a371468e3bb3fb23af4c6df6520bbf44ca6146a57529a7eb6cb43d2839f1c0", handler = "doom64_view_pitch", sites = [{pc = 0x80023490, expected_word = 0x001974c2, register = 14}]},
   {section = ".main", vram = 0x80024170, size = 0x3ac, sha256 = "0b6e700b9dd493ac6b038211761c9558176796daf7b200a07cdf70d7ef4f7ad6", handler = "doom64_fov_lateral", sites = [{pc = 0x80024284, expected_word = 0x02026823, register = 13}, {pc = 0x80024308, expected_word = 0x02023823, register = 7}]},
   {section = ".main", vram = 0x80024604, size = 0x494, sha256 = "152982647ab0c3777e0a456bd45d3bad3d70de9478a72fc869e548106df4764f", handler = "doom64_fov_lateral", sites = [{pc = 0x8002468c, expected_word = 0x00c23823, register = 7}, {pc = 0x80024768, expected_word = 0x00c23823, register = 7}]},
   {section = ".main", vram = 0x80024a98, size = 0x3cc, sha256 = "1024e5386370ed36f23e10102605bf54718b1a6ac000fa37892754c8589b7f5a", handler = "doom64_fov_lateral", sites = [{pc = 0x80024bac, expected_word = 0x014b3023, register = 6}]},
@@ -142,6 +149,16 @@ boot_stack = 0x803fd000
 0x80000318 = 0x400000
 
 [controls]
+# MiniLoop saves the ticker (a2) and drawer (a3) at 0x800029f0..0x800029f4.
+# The Pak tickers compare the entire button word with 0x00030000 at
+# 0x8000aa68 and 0x8000b1a8. The Features menu installs its drawer at 0x8000898c.
+save_ticker = 0x8000a804
+load_ticker = 0x8000afe4
+intermission_ticker = 0x80004e24
+player_ticker = 0x80021a00
+menu_drawer = 0x80007c48
+menu_call = 0x800a5584
+features_drawer = 0x800091c0
 # P_Start stores 1 to DrawerStatus and clears gamepaused. MiniLoop checks
 # recording/playback at 0x80002a6c..0x80002a94 before selecting tick input.
 drawer = 0x8005a470
@@ -202,6 +219,7 @@ bindings = [
   {name = "camera", kind = "address", pcs = [0x80023464, 0x80023468], words = [0x3c02800a, 0x8c425d70], value = 0x800a5d70},
   {name = "player", kind = "address", pcs = [0x8002344c, 0x80023454], words = [0x3c0e8006, 0x25ce3240], value = 0x80063240},
   {name = "projection", kind = "address", pcs = [0x80023410, 0x80023418], words = [0x3c04800a, 0x248468b8], value = 0x800a68b8},
+  {name = "vertex_cursor", kind = "address", pcs = [0x800063ec, 0x800063f4], words = [0x3c01800a, 0xac394a08], value = 0x800a4a08},
   {name = "matrix_pool", kind = "address", pcs = [0x800063f0, 0x800063f8], words = [0x3c0f8008, 0x25ef93e0], value = 0x800793e0},
   {name = "matrix_cursor", kind = "address", pcs = [0x80006410, 0x80006420], words = [0x3c01800a, 0xac384a10], value = 0x800a4a10},
   {name = "gfx_cursor", kind = "address", pcs = [0x800063b4, 0x800063bc], words = [0x3c03800a, 0x24634a00], value = 0x800a4a00},

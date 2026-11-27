@@ -317,15 +317,33 @@ def preflight(game: str, build_dir: Path) -> None:
     print(f'Preflight: {output / "summary.json"}')
 
 
-def ask_codex(game: str, group: dict, metadata_path: Path, output: Path) -> dict:
+def run_codex_review(schema: Path, tag: str, description: str, prompt: str) -> dict:
     codex = shutil.which('codex')
     if not codex:
         raise RecompError('Codex CLI is unavailable')
+    model = 'gpt-6.1-sol'
+    effort = 'xhigh'
+    answer = schema.with_name(f'{tag}.json')
+    transcript = schema.with_name(f'{tag}.log')
+    with transcript.open('w') as log:
+        print(f'Calling Codex ({model}, {effort}) to review {description} '
+              f'(log at {transcript})', flush=True)
+        process = subprocess.run(
+            [codex, 'exec', '--model', model, '-c', f'model_reasoning_effort="{effort}"',
+             '-c', 'agents.enabled=false', '--sandbox', 'read-only', '--ephemeral',
+             '-C', str(PROJECT), '--output-schema', str(schema),
+             '--output-last-message', str(answer), '-'],
+            input=prompt, text=True, stdout=log, stderr=subprocess.STDOUT, check=False)
+    if process.returncode:
+        raise RecompError(f'Codex review failed for {description} using {model}; see {transcript}')
+    return json.loads(answer.read_text())
+
+
+def ask_codex(game: str, group: dict, metadata_path: Path, output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     tag = f'{group["table_section"]}-{group["table_vram"]:08x}'
     schema = output / 'proposal-schema.json'
     schema.write_text(json.dumps(SCHEMA, indent=2) + '\n')
-    answer, transcript = output / f'{tag}.json', output / f'{tag}.log'
     prompt = (
         f'Follow AGENTS.md in {PROJECT}. Review one unregistered function-table group '
         f'for {game}, using the pinned original ROM and prepared metadata at {metadata_path}. '
@@ -346,28 +364,17 @@ def ask_codex(game: str, group: dict, metadata_path: Path, output: Path) -> dict
         f'Return verified only for justified tables or roots; omit uncertain targets. '
         f'Use decimal JSON integers. An empty indices list means all slots from zero '
         f'through count-1. If nothing is verified, return unresolved with empty arrays. '
-        f'Do not edit files, run the game, or invoke another agent.'
+        f'Do not edit files, run the game, or delegate the review.'
     )
-    with transcript.open('w') as log:
-        process = subprocess.run([codex, 'exec', '--sandbox', 'read-only', '--ephemeral',
-                                  '-C', str(PROJECT), '--output-schema', str(schema),
-                                  '--output-last-message', str(answer), '-'],
-                                 input=prompt, text=True, stdout=log,
-                                 stderr=subprocess.STDOUT, check=False)
-    if process.returncode:
-        raise RecompError(f'Codex review failed for {tag}; see {transcript}')
-    return json.loads(answer.read_text())
+    description = f'the {game} function table at 0x{group["table_vram"]:08x}'
+    return run_codex_review(schema, tag, description, prompt)
 
 
 def ask_codex_root(game: str, group: dict, metadata_path: Path, output: Path,
                    evidence: dict) -> dict:
-    codex = shutil.which('codex')
-    if not codex:
-        raise RecompError('Codex CLI is unavailable')
     tag = f'root-{group["section"]}-{group["vram"]:08x}'
     schema = output / 'root-proposal-schema.json'
     schema.write_text(json.dumps(ROOT_SCHEMA, indent=2) + '\n')
-    answer, transcript = output / f'{tag}.json', output / f'{tag}.log'
     prompt = (
         f'Follow AGENTS.md in {PROJECT}. Review one missing function entry for {game} '
         f'at 0x{group["vram"]:08x}, section {group["section"]}, using the pinned ROM and '
@@ -380,17 +387,10 @@ def ask_codex_root(game: str, group: dict, metadata_path: Path, output: Path,
         f'a real runtime entry. Return verified only when the entry evidence is '
         f'sufficient to make it a permanent checked root. Set address to the exact '
         f'decimal entry address, or zero if unresolved. Do not edit files, run the game, '
-        f'or invoke another agent.'
+        f'or delegate the review.'
     )
-    with transcript.open('w') as log:
-        process = subprocess.run([codex, 'exec', '--sandbox', 'read-only', '--ephemeral',
-                                  '-C', str(PROJECT), '--output-schema', str(schema),
-                                  '--output-last-message', str(answer), '-'],
-                                 input=prompt, text=True, stdout=log,
-                                 stderr=subprocess.STDOUT, check=False)
-    if process.returncode:
-        raise RecompError(f'Codex root review failed for {tag}; see {transcript}')
-    return json.loads(answer.read_text())
+    description = f'the {game} function root at 0x{group["vram"]:08x}'
+    return run_codex_review(schema, tag, description, prompt)
 
 
 def checked_table_lines(rom: bytes, metadata: dict, report: dict, group: dict, proposal: dict,

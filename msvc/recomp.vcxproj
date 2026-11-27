@@ -36,7 +36,7 @@
     <ClCompile Include="$(RecompRoot)backends\gles2\controls.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\editor.c" />
     <ClInclude Include="$(RecompRoot)backends\gles2\editor.h" />
-    <ClCompile Include="$(RecompRoot)backends\gles2\editor_ai.cpp" />
+    <ClCompile Include="$(RecompRoot)backends\gles2\editor_ai.c" />
     <ClInclude Include="$(RecompRoot)backends\gles2\editor_ai.h" />
     <ClCompile Include="$(RecompRoot)backends\gles2\framebuffer.c" />
     <ClCompile Include="$(RecompRoot)backends\gles2\hq2x.c" />

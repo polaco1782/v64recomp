@@ -1,0 +1,3665 @@
+{
+  "format_version": 1,
+  "rom_sha1": "e31a7567d408c890065029ba537f830765b17d94",
+  "complete": false,
+  "entries": [
+    {
+      "name": "mainproc",
+      "vram": 2147484864,
+      "origin": "checked-root",
+      "sha256": "d41b43d395d9bb158ef701f0197786cbd118e6b7bd5bd28d7fc3017760d82808",
+      "materialized_sources": [
+        2147484820
+      ]
+    },
+    {
+      "name": "prenmi_thread",
+      "vram": 2147485700,
+      "origin": "checked-root",
+      "sha256": "19a6ed6974c4eddefa99ffdf58c1472cc572ac06d6fcc3e738d37d714dfd83b5",
+      "materialized_sources": [
+        2147485236
+      ]
+    },
+    {
+      "name": "game_thread",
+      "vram": 2147485804,
+      "origin": "checked-root",
+      "sha256": "68c1541a9299923577e39c9c38b3fb24792166e6b5afc2ebff6a27ce99916982",
+      "materialized_sources": [
+        2147485296
+      ]
+    },
+    {
+      "vram": 2147504244,
+      "origin": "checked-root",
+      "sha256": "c85ebbe6d1b26a57074a4ea74e9e47e834884a4e283594a39bcad8dd29e64c7d",
+      "materialized_sources": [
+        2147504200
+      ]
+    },
+    {
+      "vram": 2147540768,
+      "origin": "checked-root",
+      "sha256": "008e6bde1905e87bcb9ed46078c1ed53272fa2ea205f187447b5d718bdb8ffdf",
+      "materialized_sources": [
+        2147540228
+      ]
+    },
+    {
+      "vram": 2147541860,
+      "origin": "checked-root",
+      "sha256": "0f7a14db1a7e3b9cfb965976beb4d09b8a0d92362b99170edd52c3f3d764f703",
+      "materialized_sources": [
+        2147543052
+      ]
+    },
+    {
+      "vram": 2147543600,
+      "origin": "checked-root",
+      "sha256": "8ade0bb2188abb47bf647b7c0ac15299eafa90bc4b67176c860c5aa030c9e2a7",
+      "materialized_sources": [
+        2147540544
+      ]
+    },
+    {
+      "vram": 2147543872,
+      "origin": "checked-root",
+      "sha256": "9610a009b899dcbe87f96e2b113f12c4098af8c0e5967052279b26eb09b42aa0",
+      "materialized_sources": [
+        2147540036
+      ]
+    },
+    {
+      "vram": 2147548128,
+      "origin": "checked-root",
+      "sha256": "48217327a7d7258a5dcc44d9297005edfe3975fd50a212a328a629998b52eed4",
+      "materialized_sources": [
+        2147540636
+      ]
+    },
+    {
+      "vram": 2147548496,
+      "origin": "checked-root",
+      "sha256": "352a1c53a16567325fb87b2141556b651ea9862514fa8b9edfc89a203ec95ee5",
+      "materialized_sources": [
+        2147540396
+      ]
+    },
+    {
+      "vram": 2147549184,
+      "origin": "checked-root",
+      "sha256": "919ae5dc1fcde8d21a08d255df1ea97cef027a53b8e5f5ea355bb1fbcfbc93b7",
+      "materialized_sources": [
+        2147538916
+      ]
+    },
+    {
+      "vram": 2147550148,
+      "origin": "checked-root",
+      "sha256": "06d528b9a8cbb78e3ac0ff463742723ec7be6844c0714f1b9dcd5fb6675b75f0",
+      "materialized_sources": [
+        2147538928
+      ]
+    },
+    {
+      "vram": 2147552224,
+      "origin": "checked-root",
+      "sha256": "c3542703176fae6cd35e0ab04ac23faefe4a6eaa9d2e3136510374643b8fb184",
+      "materialized_sources": [
+        2147540712
+      ]
+    },
+    {
+      "vram": 2147645808,
+      "origin": "checked-root",
+      "sha256": "87d01ae6b8fd7bfa820335d9e3a3e5a902684515ce8e73132b1945d1f2821c92",
+      "data_offsets": [
+        746900,
+        746904,
+        746908
+      ]
+    },
+    {
+      "vram": 2147650904,
+      "origin": "checked-root",
+      "sha256": "426e44737c38975327ac8269cceb7d6c2e96efa8a1fd0ad98e8b24d2e014c3e9",
+      "materialized_sources": [
+        2147647076,
+        2147647164
+      ]
+    },
+    {
+      "vram": 2147652144,
+      "origin": "checked-root",
+      "sha256": "dedd6883cf234d811575063c68bbe05078749e86e96c2312b4980eb93f4adde1",
+      "materialized_sources": [
+        2147647092,
+        2147647180
+      ]
+    },
+    {
+      "vram": 2147658152,
+      "origin": "checked-root",
+      "sha256": "48a8f834dd583a9ae697e8161d2b57a58f31700d887ac56d1e7088c8d1355748",
+      "data_offsets": [
+        746896
+      ]
+    },
+    {
+      "vram": 2147658624,
+      "origin": "checked-root",
+      "sha256": "3279cfdb03528a0e58c7c2828f2faba3623b6dfbd71361aae38655d6cae667c7",
+      "materialized_sources": [
+        2147660120
+      ]
+    },
+    {
+      "vram": 2147658684,
+      "origin": "checked-root",
+      "sha256": "3279cfdb03528a0e58c7c2828f2faba3623b6dfbd71361aae38655d6cae667c7",
+      "materialized_sources": [
+        2147660132
+      ]
+    },
+    {
+      "vram": 2147658744,
+      "origin": "checked-root",
+      "sha256": "3279cfdb03528a0e58c7c2828f2faba3623b6dfbd71361aae38655d6cae667c7",
+      "materialized_sources": [
+        2147660144
+      ]
+    },
+    {
+      "vram": 2147658804,
+      "origin": "checked-root",
+      "sha256": "669793de2f7da0c62157e14637b16f1d689d49c0d753af0d2a7c440cc68a3de0",
+      "materialized_sources": [
+        2147660156
+      ]
+    },
+    {
+      "vram": 2147658908,
+      "origin": "checked-root",
+      "sha256": "669793de2f7da0c62157e14637b16f1d689d49c0d753af0d2a7c440cc68a3de0",
+      "materialized_sources": [
+        2147660168
+      ]
+    },
+    {
+      "vram": 2147659012,
+      "origin": "checked-root",
+      "sha256": "669793de2f7da0c62157e14637b16f1d689d49c0d753af0d2a7c440cc68a3de0",
+      "materialized_sources": [
+        2147660180
+      ]
+    },
+    {
+      "vram": 2147659116,
+      "origin": "checked-root",
+      "sha256": "db003a26e52f32ed7034a016b8ebc62672540bd7a356fef84da11d978fe13059",
+      "materialized_sources": [
+        2147660192
+      ]
+    },
+    {
+      "vram": 2147659124,
+      "origin": "checked-root",
+      "sha256": "93c951d37eeb722f6019d4817da0765d7bb1cbc14a17d080515b82c9fa3ac3ea",
+      "materialized_sources": [
+        2147660204
+      ]
+    },
+    {
+      "vram": 2147659484,
+      "origin": "checked-root",
+      "sha256": "5d0bebea3798842579300f1b7338f48b272f37b7b94de97ab360f5d847f6530f",
+      "materialized_sources": [
+        2147660216
+      ]
+    },
+    {
+      "vram": 2147659688,
+      "origin": "checked-root",
+      "sha256": "81be618d14f901787a225776474436a050fa4aaa2442db25a2277de6918407f6",
+      "materialized_sources": [
+        2147660228
+      ]
+    },
+    {
+      "vram": 2147659884,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "materialized_sources": [
+        2147660288
+      ]
+    },
+    {
+      "vram": 2147659892,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "materialized_sources": [
+        2147660296
+      ]
+    },
+    {
+      "vram": 2147659900,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "materialized_sources": [
+        2147660304
+      ]
+    },
+    {
+      "vram": 2147659908,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "materialized_sources": [
+        2147660312
+      ]
+    },
+    {
+      "vram": 2147659916,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "materialized_sources": [
+        2147660320
+      ]
+    },
+    {
+      "vram": 2147659924,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "materialized_sources": [
+        2147660328
+      ]
+    },
+    {
+      "vram": 2147659932,
+      "origin": "checked-root",
+      "sha256": "3b2887751ae07c04719e4a8826f66001a6e4393b70b90e90042b7d8982a9bf46",
+      "materialized_sources": [
+        2147660336
+      ]
+    },
+    {
+      "vram": 2147659940,
+      "origin": "checked-root",
+      "sha256": "7af21134f61e72ae2a9f38829fff2991104bf9179837b9cfe9e057e21c96b6bd",
+      "materialized_sources": [
+        2147660344
+      ]
+    },
+    {
+      "vram": 2147660040,
+      "origin": "checked-root",
+      "sha256": "c9d09e2eb525c045650f341c95d79a687ba0be86999b2f93aba7ff74e9007b85",
+      "materialized_sources": [
+        2147660352
+      ]
+    },
+    {
+      "vram": 2147660048,
+      "origin": "checked-root",
+      "sha256": "cc1b0cd7eeabcacd25a835b78e88944743b045f032a2342e6eeebf2750ef313d",
+      "materialized_sources": [
+        2147660360
+      ]
+    },
+    {
+      "vram": 2147694064,
+      "origin": "checked-root",
+      "sha256": "0152f9179ddbc3ec6d4d20b9f3d17e6669b3e1d0c61edba9e578f5ee306fe271",
+      "materialized_sources": [
+        2147660528
+      ]
+    },
+    {
+      "vram": 2147697080,
+      "origin": "checked-root",
+      "sha256": "7f43def48b17dff3b67c8fb0be0adb6303ce67150ab65f65882ff130f9bd4683",
+      "materialized_sources": [
+        2147699628
+      ]
+    },
+    {
+      "vram": 2147697156,
+      "origin": "checked-root",
+      "sha256": "7f43def48b17dff3b67c8fb0be0adb6303ce67150ab65f65882ff130f9bd4683",
+      "materialized_sources": [
+        2147699640
+      ]
+    },
+    {
+      "vram": 2147697232,
+      "origin": "checked-root",
+      "sha256": "7f43def48b17dff3b67c8fb0be0adb6303ce67150ab65f65882ff130f9bd4683",
+      "materialized_sources": [
+        2147699652
+      ]
+    },
+    {
+      "vram": 2147697308,
+      "origin": "checked-root",
+      "sha256": "d50c308fe50dc9839bc95e4707704f92331b6a7437cda6558b7445fe4c14da78",
+      "materialized_sources": [
+        2147699664
+      ]
+    },
+    {
+      "vram": 2147697568,
+      "origin": "checked-root",
+      "sha256": "d50c308fe50dc9839bc95e4707704f92331b6a7437cda6558b7445fe4c14da78",
+      "materialized_sources": [
+        2147699676
+      ]
+    },
+    {
+      "vram": 2147697828,
+      "origin": "checked-root",
+      "sha256": "d50c308fe50dc9839bc95e4707704f92331b6a7437cda6558b7445fe4c14da78",
+      "materialized_sources": [
+        2147699688
+      ]
+    },
+    {
+      "vram": 2147698088,
+      "origin": "checked-root",
+      "sha256": "53e82d09b2d3a2c8b47cc8b50095f5b2696e3299ee5a4da029e7d86a22729a1a",
+      "materialized_sources": [
+        2147699700
+      ]
+    },
+    {
+      "vram": 2147698252,
+      "origin": "checked-root",
+      "sha256": "53e82d09b2d3a2c8b47cc8b50095f5b2696e3299ee5a4da029e7d86a22729a1a",
+      "materialized_sources": [
+        2147699712
+      ]
+    },
+    {
+      "vram": 2147698416,
+      "origin": "checked-root",
+      "sha256": "53e82d09b2d3a2c8b47cc8b50095f5b2696e3299ee5a4da029e7d86a22729a1a",
+      "materialized_sources": [
+        2147699724
+      ]
+    },
+    {
+      "vram": 2147698580,
+      "origin": "checked-root",
+      "sha256": "53e82d09b2d3a2c8b47cc8b50095f5b2696e3299ee5a4da029e7d86a22729a1a",
+      "materialized_sources": [
+        2147699736
+      ]
+    },
+    {
+      "vram": 2147698744,
+      "origin": "checked-root",
+      "sha256": "53e82d09b2d3a2c8b47cc8b50095f5b2696e3299ee5a4da029e7d86a22729a1a",
+      "materialized_sources": [
+        2147699748
+      ]
+    },
+    {
+      "vram": 2147698908,
+      "origin": "checked-root",
+      "sha256": "53e82d09b2d3a2c8b47cc8b50095f5b2696e3299ee5a4da029e7d86a22729a1a",
+      "materialized_sources": [
+        2147699760
+      ]
+    },
+    {
+      "vram": 2147699072,
+      "origin": "checked-root",
+      "sha256": "a79cd9ae6ab7b3f825e20da2fe6402a4f657cb44f03694b15f577e64ca83f004",
+      "materialized_sources": [
+        2147699772
+      ]
+    },
+    {
+      "vram": 2147757836,
+      "origin": "checked-root",
+      "sha256": "4bb8a65757761e9142da8f5b049df898a1fec54648acfd2390388ae684f8aa8a",
+      "data_offsets": [
+        750920
+      ]
+    },
+    {
+      "vram": 2147757860,
+      "origin": "checked-root",
+      "sha256": "675851bcddaa58c1c808bdc83a25ee820c4bdf7abcec107512b3905c50c28d3f",
+      "data_offsets": [
+        750944
+      ]
+    },
+    {
+      "vram": 2147757912,
+      "origin": "checked-root",
+      "sha256": "c3ca61f611adead92ece7fbf5a18cb419b24566a765e15d5ca6e52199c00bde5",
+      "data_offsets": [
+        750968
+      ]
+    },
+    {
+      "vram": 2147757952,
+      "origin": "checked-root",
+      "sha256": "aaffa308b492c4bc333cd99b2b36397e191e0431d684f4b4e708258113156ca1",
+      "data_offsets": [
+        751028
+      ]
+    },
+    {
+      "vram": 2147757976,
+      "origin": "checked-root",
+      "sha256": "7e60a12fde26c40c3cbe751c1606bf00f0d703d195953d68da56735f8e12c02d",
+      "data_offsets": [
+        751040
+      ]
+    },
+    {
+      "vram": 2147758000,
+      "origin": "checked-root",
+      "sha256": "e517f492f0acc86de4bac25961d56703ac92396ac6c5636b9accc967507cd394",
+      "data_offsets": [
+        750932
+      ]
+    },
+    {
+      "vram": 2147758024,
+      "origin": "checked-root",
+      "sha256": "1f07f39852752c42cc7fe60f7a86539d5062ed279ccc01313ff0a389afe08a6e",
+      "data_offsets": [
+        750992
+      ]
+    },
+    {
+      "vram": 2147758048,
+      "origin": "checked-root",
+      "sha256": "3960e7c726e439f6bd94e8ac97236f5ba6fc09aa0ddb10302e2761396469ad8a",
+      "data_offsets": [
+        750980
+      ]
+    },
+    {
+      "vram": 2147758072,
+      "origin": "checked-root",
+      "sha256": "5c282d72f7ddeac924abb6610cea574e7b207ae4d49aacc6c3ec54917d3affa5",
+      "data_offsets": [
+        751004
+      ]
+    },
+    {
+      "vram": 2147758100,
+      "origin": "checked-root",
+      "sha256": "5244f42d6ea9b14fa3b117afb44da8634a0d57254a9ae45aa5b79c4bc99c9131",
+      "data_offsets": [
+        750956
+      ]
+    },
+    {
+      "vram": 2147758120,
+      "origin": "checked-root",
+      "sha256": "b729dc879c5500373226a39fa0e58c57651ad080322dc59da56fc052aaea23d6",
+      "data_offsets": [
+        750836
+      ]
+    },
+    {
+      "vram": 2147758144,
+      "origin": "checked-root",
+      "sha256": "b729dc879c5500373226a39fa0e58c57651ad080322dc59da56fc052aaea23d6",
+      "data_offsets": [
+        750848
+      ]
+    },
+    {
+      "vram": 2147758168,
+      "origin": "checked-root",
+      "sha256": "5dc677cd1542c1291ff8a28ba84611ec6f0961a82a681307f25754e688aa85aa",
+      "data_offsets": [
+        750860
+      ]
+    },
+    {
+      "vram": 2147758192,
+      "origin": "checked-root",
+      "sha256": "ae687eab89911a605b7ea69ea868649c610e7896c54643947f52dbe50f6f7184",
+      "data_offsets": [
+        750872
+      ]
+    },
+    {
+      "vram": 2147758216,
+      "origin": "checked-root",
+      "sha256": "3e7a9759f1f8b2c79ab847a0b343544374e5ae39e3106f291eb23c938fbd0bad",
+      "data_offsets": [
+        750884
+      ]
+    },
+    {
+      "vram": 2147758240,
+      "origin": "checked-root",
+      "sha256": "205d603b4db718a976fa520fd062f262aa7805f9c4ced62192d559591d526c45",
+      "data_offsets": [
+        750896
+      ]
+    },
+    {
+      "vram": 2147758264,
+      "origin": "checked-root",
+      "sha256": "205d603b4db718a976fa520fd062f262aa7805f9c4ced62192d559591d526c45",
+      "data_offsets": [
+        750908
+      ]
+    },
+    {
+      "vram": 2147758288,
+      "origin": "checked-root",
+      "sha256": "1bfb29e2409c2e19a1f8ffbe47cd12bdc72bd1cdc065ab641bdcf4d7f9593645",
+      "data_offsets": [
+        751016
+      ]
+    },
+    {
+      "vram": 2147758332,
+      "origin": "checked-root",
+      "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
+      "data_offsets": [
+        751052,
+        751064,
+        751076,
+        751088,
+        751100,
+        751112
+      ]
+    },
+    {
+      "vram": 2147758620,
+      "origin": "checked-root",
+      "sha256": "15320cdf0c363a3be98ab84d39c0e2ad4460bc3b8b9798a2ec66deaf2db539fc",
+      "data_offsets": [
+        750924
+      ]
+    },
+    {
+      "vram": 2147758668,
+      "origin": "checked-root",
+      "sha256": "6395a75a39d6d4ae7c0c3a12cb3b1c7a5547dab739d20bd09040cbdfa36ce917",
+      "data_offsets": [
+        750948
+      ]
+    },
+    {
+      "vram": 2147758736,
+      "origin": "checked-root",
+      "sha256": "a48d60714029e0c1042156e05ca79ac9e13957fafa784057b6d1351f5c80766c",
+      "data_offsets": [
+        750996
+      ]
+    },
+    {
+      "vram": 2147758752,
+      "origin": "checked-root",
+      "sha256": "4948e24c2a9bc7f522ada276c251a6d6eb98b29ef6e854cb6ed7eb255163aca0",
+      "data_offsets": [
+        750984
+      ]
+    },
+    {
+      "vram": 2147758768,
+      "origin": "checked-root",
+      "sha256": "5f996153ae40672b6f7b60bbe5afc8896fccf3f3669308b630024f77a2834843",
+      "data_offsets": [
+        750972
+      ]
+    },
+    {
+      "vram": 2147758800,
+      "origin": "checked-root",
+      "sha256": "a48d60714029e0c1042156e05ca79ac9e13957fafa784057b6d1351f5c80766c",
+      "data_offsets": [
+        751008
+      ]
+    },
+    {
+      "vram": 2147758816,
+      "origin": "checked-root",
+      "sha256": "a48d60714029e0c1042156e05ca79ac9e13957fafa784057b6d1351f5c80766c",
+      "data_offsets": [
+        751032
+      ]
+    },
+    {
+      "vram": 2147758832,
+      "origin": "checked-root",
+      "sha256": "a48d60714029e0c1042156e05ca79ac9e13957fafa784057b6d1351f5c80766c",
+      "data_offsets": [
+        751044
+      ]
+    },
+    {
+      "vram": 2147758848,
+      "origin": "checked-root",
+      "sha256": "a48d60714029e0c1042156e05ca79ac9e13957fafa784057b6d1351f5c80766c",
+      "data_offsets": [
+        750936
+      ]
+    },
+    {
+      "vram": 2147758864,
+      "origin": "checked-root",
+      "sha256": "1b41bf26d36add82aa7d1c5bc90c64acb76305b10c0488973b75672fcb436e4a",
+      "data_offsets": [
+        750960
+      ]
+    },
+    {
+      "vram": 2147758932,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750840
+      ]
+    },
+    {
+      "vram": 2147758996,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750852
+      ]
+    },
+    {
+      "vram": 2147759060,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750864
+      ]
+    },
+    {
+      "vram": 2147759124,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750876
+      ]
+    },
+    {
+      "vram": 2147759188,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750888
+      ]
+    },
+    {
+      "vram": 2147759252,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750900
+      ]
+    },
+    {
+      "vram": 2147759316,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        750912
+      ]
+    },
+    {
+      "vram": 2147759380,
+      "origin": "checked-root",
+      "sha256": "4948e24c2a9bc7f522ada276c251a6d6eb98b29ef6e854cb6ed7eb255163aca0",
+      "data_offsets": [
+        751020
+      ]
+    },
+    {
+      "vram": 2147759396,
+      "origin": "checked-root",
+      "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
+      "data_offsets": [
+        751056,
+        751068,
+        751080,
+        751092,
+        751104,
+        751116
+      ]
+    },
+    {
+      "vram": 2147759680,
+      "origin": "checked-root",
+      "sha256": "30c3aed2c38c5e534ecd674c9d0c0aa0bd5791409ef133ad43eb7db77b0e197a",
+      "data_offsets": [
+        748180
+      ]
+    },
+    {
+      "vram": 2147760140,
+      "origin": "checked-root",
+      "sha256": "5df0f1ccc7b32f6952d67c640370d4b4d53517f6b5ab44440fe7c172dfbed77b",
+      "data_offsets": [
+        748160
+      ]
+    },
+    {
+      "vram": 2147760164,
+      "origin": "checked-root",
+      "sha256": "5f9d2b3e321fc5e5101d6cd91913a4f99eedfb7d21aed898b72ef76c2caa409f",
+      "data_offsets": [
+        748164
+      ]
+    },
+    {
+      "vram": 2147760188,
+      "origin": "checked-root",
+      "sha256": "0b68e35f04872491d28322791100ee76b55372ccb01d585dd3b61f8002728e5d",
+      "data_offsets": [
+        748060
+      ]
+    },
+    {
+      "vram": 2147760264,
+      "origin": "checked-root",
+      "sha256": "8efe540f35b1bb60005e5837cfb37f291e0d8fef240ea2f9e3e25569a5b4dbec",
+      "data_offsets": [
+        748064,
+        748068
+      ]
+    },
+    {
+      "vram": 2147760328,
+      "origin": "checked-root",
+      "sha256": "3ae734f3e4d1408942cd26a029fe82d1fa4680719a09301b04204ca20e86d091",
+      "data_offsets": [
+        748072
+      ]
+    },
+    {
+      "vram": 2147760352,
+      "origin": "checked-root",
+      "sha256": "7dfaa67ff73f70f3850205d46e6f8de8bc7d61ee04e5c699adafc5f9d5045378",
+      "data_offsets": [
+        748080
+      ]
+    },
+    {
+      "vram": 2147760376,
+      "origin": "checked-root",
+      "sha256": "4664085b4ec58b98dd824669358549a0968f0637b825febf00bec999149af5a4",
+      "data_offsets": [
+        748124
+      ]
+    },
+    {
+      "vram": 2147760400,
+      "origin": "checked-root",
+      "sha256": "08b4f461ef8d3b623a9ccf4922d0a8db64e9a6a93e4a2e2ca01e91201f9e09ab",
+      "data_offsets": [
+        748148
+      ]
+    },
+    {
+      "vram": 2147760424,
+      "origin": "checked-root",
+      "sha256": "0bd018a5eae324846f0d305922efaeb2c872a0f9abe2bd7caa21bd71b915e17c",
+      "data_offsets": [
+        748116
+      ]
+    },
+    {
+      "vram": 2147760448,
+      "origin": "checked-root",
+      "sha256": "e354af830d22b3da9601f83e61dc8641689fb5f8912ccfa2b371ab931f3cd3b2",
+      "data_offsets": [
+        748120
+      ]
+    },
+    {
+      "vram": 2147760472,
+      "origin": "checked-root",
+      "sha256": "cafcc1b160990224e7a78a9ba218438c9570f3d642236d9d6c6da3891a6c16d2",
+      "data_offsets": [
+        748076
+      ]
+    },
+    {
+      "vram": 2147760496,
+      "origin": "checked-root",
+      "sha256": "8264b6890ff1858955103216712727d5d0d78b7fa7fc92a63ed2143447dc4d1f",
+      "data_offsets": [
+        748088
+      ]
+    },
+    {
+      "vram": 2147760720,
+      "origin": "checked-root",
+      "sha256": "673d4d7dd5e558086d51f855faa9a6a4dd303f6c60da0e0ac03db287093ff9de",
+      "data_offsets": [
+        748084
+      ]
+    },
+    {
+      "vram": 2147760772,
+      "origin": "checked-root",
+      "sha256": "3cc67ea25acbb058da090b8e001a641bb2804fe5caccd05cff8bea2307865875",
+      "data_offsets": [
+        748128
+      ]
+    },
+    {
+      "vram": 2147760796,
+      "origin": "checked-root",
+      "sha256": "9806e5a2b9ab0c9b54d050decf0b34071253fb4bf0f31626e8e342383743eb57",
+      "data_offsets": [
+        748096,
+        748140
+      ]
+    },
+    {
+      "vram": 2147760820,
+      "origin": "checked-root",
+      "sha256": "41697921e0e1c1f936edb1f6239c61b8b1aea4c7e9e0fe746ea2596a0d57f2e0",
+      "data_offsets": [
+        748100
+      ]
+    },
+    {
+      "vram": 2147760844,
+      "origin": "checked-root",
+      "sha256": "8bf919a52b701c480094c214965ba5b03cd81c84685b0d0956f3d34f7816ede2",
+      "data_offsets": [
+        748092
+      ]
+    },
+    {
+      "vram": 2147760868,
+      "origin": "checked-root",
+      "sha256": "4ac666b3d5d79aa12ce1cc22e72482e443addb167eee395259d9e6a727cbeac0",
+      "data_offsets": [
+        748104
+      ]
+    },
+    {
+      "vram": 2147760892,
+      "origin": "checked-root",
+      "sha256": "dbd9e5a7b92b4880601535eea39143d7bc1ef62b9e61b359702ebca4ca4b2cee",
+      "data_offsets": [
+        748108
+      ]
+    },
+    {
+      "vram": 2147760916,
+      "origin": "checked-root",
+      "sha256": "cda0bccd6426178a2a6f5a5504f36cd0eb58994be9081ee6dfbbb055e093553f",
+      "data_offsets": [
+        748144
+      ]
+    },
+    {
+      "vram": 2147760940,
+      "origin": "checked-root",
+      "sha256": "127306cec5c6181a767df4bea76f18c322d16bcaa0aa0a996b1f772ddff2a1a9",
+      "data_offsets": [
+        748112
+      ]
+    },
+    {
+      "vram": 2147760964,
+      "origin": "checked-root",
+      "sha256": "f67108307e2842163b0ea4afb88236b9cf6c2d305e35dd086134b1672b30b282",
+      "data_offsets": [
+        748056
+      ]
+    },
+    {
+      "vram": 2147760988,
+      "origin": "checked-root",
+      "sha256": "a3c98dc9309137577e4c840b5b6bd5b74298868ae3123bcedc9253f050981449",
+      "data_offsets": [
+        748048
+      ]
+    },
+    {
+      "vram": 2147761008,
+      "origin": "checked-root",
+      "sha256": "a3c98dc9309137577e4c840b5b6bd5b74298868ae3123bcedc9253f050981449",
+      "data_offsets": [
+        748052
+      ]
+    },
+    {
+      "vram": 2147761028,
+      "origin": "checked-root",
+      "sha256": "af426f7e06fff11d95507c14510abc39c1870686e5ed86c624867cd0aebdcd83",
+      "data_offsets": [
+        748136
+      ]
+    },
+    {
+      "vram": 2147761052,
+      "origin": "checked-root",
+      "sha256": "1525d7744e6f6b85eb65d63638279396441e5ac0862fef50facd3370421d1c1c",
+      "data_offsets": [
+        748132
+      ]
+    },
+    {
+      "vram": 2147761076,
+      "origin": "checked-root",
+      "sha256": "2bad4a41b95c9c57e03833d41b872bfe80cccdefb35c76e9035966f9431da837",
+      "data_offsets": [
+        748156
+      ]
+    },
+    {
+      "vram": 2147761100,
+      "origin": "checked-root",
+      "sha256": "6c0c3072e00874d66b8306c089acb2226443a786b3b4054fe1655cff85d969e6",
+      "data_offsets": [
+        748152
+      ]
+    },
+    {
+      "vram": 2147761124,
+      "origin": "checked-root",
+      "sha256": "5a1424dc2c1ca15132045867d765c3069356214ade93c5f6bde921da3444d417",
+      "data_offsets": [
+        748168
+      ]
+    },
+    {
+      "vram": 2147761148,
+      "origin": "checked-root",
+      "sha256": "5ea3c9f22a6340b36f893266e03a58cea94c53aa5b3aecacfe62a4a466870db0",
+      "data_offsets": [
+        748172
+      ]
+    },
+    {
+      "vram": 2147761172,
+      "origin": "checked-root",
+      "sha256": "ef87b29c2211330395ecbb7f2cdd460c3739c94578e8e3f5b8ec97ad9e4dcb18",
+      "data_offsets": [
+        748176
+      ]
+    },
+    {
+      "vram": 2147761196,
+      "origin": "checked-root",
+      "sha256": "bd79dbd15889ccc749b0d37553bd1131648f51e84b5c42e8fc058ae4c6279fc3",
+      "data_offsets": [
+        748184
+      ]
+    },
+    {
+      "vram": 2147761204,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "data_offsets": [
+        748024
+      ]
+    },
+    {
+      "vram": 2147761288,
+      "origin": "checked-root",
+      "sha256": "46426748d6617316276102de5218a8630d2669887915bfa43974d4631f7ed1fa",
+      "data_offsets": [
+        748028
+      ]
+    },
+    {
+      "vram": 2147761396,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "data_offsets": [
+        748036
+      ]
+    },
+    {
+      "vram": 2147761480,
+      "origin": "checked-root",
+      "sha256": "edd4572e1ad370bdb204fb9c386cdc50a130841595ceebdf7ee23aecdbfd3d72",
+      "data_offsets": [
+        748032
+      ]
+    },
+    {
+      "vram": 2147761588,
+      "origin": "checked-root",
+      "sha256": "174aa31fcb881505648915ee5abaca608777753e56175a59cc70f28825a41cad",
+      "data_offsets": [
+        748040
+      ]
+    },
+    {
+      "vram": 2147762112,
+      "origin": "checked-root",
+      "sha256": "218cbf644ff96f0eca73873899f3bc19b281fb707d41577c1d97973a414e249f",
+      "data_offsets": [
+        748044
+      ]
+    },
+    {
+      "vram": 2147769440,
+      "origin": "checked-root",
+      "sha256": "26a7a898f0d6ed898f7f0991078551c01c67227df9e9fc74be8b890c10c1557b",
+      "data_offsets": [
+        750536
+      ]
+    },
+    {
+      "vram": 2147770556,
+      "origin": "checked-root",
+      "sha256": "0237775632268c7899d759973540bd5fc5712f531de6a58d4f5fd012ceb35464",
+      "data_offsets": [
+        750544
+      ]
+    },
+    {
+      "vram": 2147770780,
+      "origin": "checked-root",
+      "sha256": "31b06386652f9bc349dce9c3f3c81044e75a4bb3eea3734f289e536826ad4eef",
+      "data_offsets": [
+        750552,
+        750560,
+        750568,
+        750576,
+        750584,
+        750592,
+        750600
+      ]
+    },
+    {
+      "vram": 2147771324,
+      "origin": "checked-root",
+      "sha256": "e7f32bef796184998fd2f3ee9c7add8acb655b86e83fd2d99d21439ddce2fef3",
+      "data_offsets": [
+        750608
+      ]
+    },
+    {
+      "vram": 2147771648,
+      "origin": "checked-root",
+      "sha256": "3ed161973c2c9f429a75c359372086dacda9e2ac3b7e7d1310e7e0a1fbecb86f",
+      "data_offsets": [
+        750616,
+        750624
+      ]
+    },
+    {
+      "vram": 2147771932,
+      "origin": "checked-root",
+      "sha256": "086fedb9bf51ead2a74059470bd9696bbc77e807df53550839d792adca4208c6",
+      "data_offsets": [
+        750632,
+        750640,
+        750648,
+        750656,
+        750664,
+        750672,
+        750680,
+        750688
+      ]
+    },
+    {
+      "vram": 2147772396,
+      "origin": "checked-root",
+      "sha256": "8499889ada9a890e8d8555bd05853e38fdaac396d044f940edb1a53af41b637b",
+      "data_offsets": [
+        750696
+      ]
+    },
+    {
+      "vram": 2147772876,
+      "origin": "checked-root",
+      "sha256": "52c5b430f956fe26f2ee14dd2f95fcb41976b4be93d844d77fe8c465ebf4844c",
+      "data_offsets": [
+        750704,
+        750712,
+        750720
+      ]
+    },
+    {
+      "vram": 2147791776,
+      "origin": "checked-root",
+      "sha256": "94e363addce7f9aa60a241dae1a9809c1e9aa594e7c13ceb4ee693cfa8462563",
+      "data_offsets": [
+        748952,
+        748960
+      ]
+    },
+    {
+      "vram": 2147793252,
+      "origin": "checked-root",
+      "sha256": "785f9eeb57e2961b2f61bd6555a2a8b790a5c6fbc6acf5606f2484b4fa8e88ae",
+      "data_offsets": [
+        748984,
+        748992
+      ]
+    },
+    {
+      "vram": 2147793592,
+      "origin": "checked-root",
+      "sha256": "fd0530a4e6557857554af012d6b46cc90cc977018915970365cc4fabd5218bdd",
+      "data_offsets": [
+        749000,
+        749008,
+        749016,
+        749024,
+        749032,
+        749040
+      ]
+    },
+    {
+      "vram": 2147794012,
+      "origin": "checked-root",
+      "sha256": "f78e5bdb7ddefd898d8a2fc64187e9bd33e36054aa24fe814949069f74fc84b9",
+      "data_offsets": [
+        748968,
+        748976
+      ]
+    },
+    {
+      "vram": 2147794824,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "data_offsets": [
+        749048
+      ]
+    },
+    {
+      "vram": 2147794972,
+      "origin": "checked-root",
+      "sha256": "a52d09671f2bbcdecd222cade956425e2484bee3e2bc073add46c2ae16a34193",
+      "data_offsets": [
+        749056,
+        749064
+      ]
+    },
+    {
+      "vram": 2147795156,
+      "origin": "checked-root",
+      "sha256": "3cb2f5e433252e35acfb29fde2448f80d38e41c0aa6dc5293b6ffc0b848ba93a",
+      "data_offsets": [
+        749080,
+        749088
+      ]
+    },
+    {
+      "vram": 2147795744,
+      "origin": "checked-root",
+      "sha256": "f579346cfe8c0db896e4eeefb6e2746a1f54d726ba5a46a6656cbf8b3b0d0dde",
+      "data_offsets": [
+        749072
+      ]
+    },
+    {
+      "vram": 2147795888,
+      "origin": "checked-root",
+      "sha256": "30c95569b1f36f0d694730afa8b9629cce3deb69e67afc03fc99edaab01252f6",
+      "data_offsets": [
+        748896
+      ]
+    },
+    {
+      "vram": 2147795952,
+      "origin": "checked-root",
+      "sha256": "5979a65ab4f07fc5576a0a582e2e8148015e70e8632bf3772c33ba37d0caf8bb",
+      "data_offsets": [
+        749152
+      ]
+    },
+    {
+      "vram": 2147796280,
+      "origin": "checked-root",
+      "sha256": "a8b88835d19f7e6ef43dabfd4db9c0a4454de9d2cfa49868df5bf9416243b0a1",
+      "data_offsets": [
+        749184
+      ]
+    },
+    {
+      "vram": 2147796432,
+      "origin": "checked-root",
+      "sha256": "7710fa36ac50fe3c7feac0305a28bf6fdb3246a44833cfed79cbcdcb5abcee34",
+      "data_offsets": [
+        749096
+      ]
+    },
+    {
+      "vram": 2147796596,
+      "origin": "checked-root",
+      "sha256": "9028de4c14eac13a168be027864ed339c9b88abf6057cda1c566262de3b6ac42",
+      "data_offsets": [
+        749104,
+        749112,
+        749192,
+        749200
+      ]
+    },
+    {
+      "vram": 2147797280,
+      "origin": "checked-root",
+      "sha256": "e8a0c88758fd21e7a5f23133efb3224cc8834cacac192eca5b1ae61eb196a32c",
+      "data_offsets": [
+        749208,
+        749216,
+        749224
+      ]
+    },
+    {
+      "vram": 2147798112,
+      "origin": "checked-root",
+      "sha256": "49064a68d61e8911f4c175a1d5155e7b47705c327b9aa2e889e253fcb84a084c",
+      "data_offsets": [
+        749160,
+        749168
+      ]
+    },
+    {
+      "vram": 2147798640,
+      "origin": "checked-root",
+      "sha256": "124fee823bd2cb434f57fc9701982b531df206916c0b0dbd58b9e7fd53ba98a8",
+      "data_offsets": [
+        749176
+      ]
+    },
+    {
+      "vram": 2147799264,
+      "origin": "checked-root",
+      "sha256": "d83c734ca8d7d2a5765628eb057b48e7542bf5e7faa07827b84b7d9bc65d7d17",
+      "data_offsets": [
+        749144
+      ]
+    },
+    {
+      "vram": 2147800444,
+      "origin": "checked-root",
+      "sha256": "56fb505850cfdb1be6d61c1eacc3e68a625862c70f507121f455d2a835a422cf",
+      "data_offsets": [
+        749240
+      ]
+    },
+    {
+      "vram": 2147800652,
+      "origin": "checked-root",
+      "sha256": "ad73448562c7f5680387ed53aebd182eb68e2af9f056190a11e4dc543fbc3d77",
+      "data_offsets": [
+        749232
+      ]
+    },
+    {
+      "vram": 2147801484,
+      "origin": "checked-root",
+      "sha256": "927beb0ef72b18328b4d94562d77ebdc495578538c530ac00a247288e53c61b4",
+      "data_offsets": [
+        749248,
+        749256
+      ]
+    },
+    {
+      "vram": 2147802004,
+      "origin": "checked-root",
+      "sha256": "bc5c3884dab78025c44706d5d576ea26c658beb7eefdab24b9ec82a081b89c0e",
+      "data_offsets": [
+        749264
+      ]
+    },
+    {
+      "vram": 2147802032,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "data_offsets": [
+        749272,
+        749280
+      ]
+    },
+    {
+      "vram": 2147802228,
+      "origin": "checked-root",
+      "sha256": "80983965b8b368578da6318eb64d02ce9ef373ca1c45ce5fa1415f1fc2a620d5",
+      "data_offsets": [
+        749288
+      ]
+    },
+    {
+      "vram": 2147802304,
+      "origin": "checked-root",
+      "sha256": "f1a4a6192cdd5804eb05a14aa38ec9c16bec5878a8624de7d72564aa3a8deda0",
+      "data_offsets": [
+        749296
+      ]
+    },
+    {
+      "vram": 2147802352,
+      "origin": "checked-root",
+      "sha256": "851cfaf50095b14280d98883c13f27e60511d615eba8562be235086ca2baa258",
+      "data_offsets": [
+        749304
+      ]
+    },
+    {
+      "vram": 2147802420,
+      "origin": "checked-root",
+      "sha256": "26f7cbfb4b1802c26f20a3d5e00660c9d5b510506120cc486bc208a3016aea6f",
+      "data_offsets": [
+        749312
+      ]
+    },
+    {
+      "vram": 2147802488,
+      "origin": "checked-root",
+      "sha256": "95bdc0ec03bb52f6e8e3df8b62fa55a241709fe23a28c2d1769fa6be88db0049",
+      "data_offsets": [
+        748672
+      ]
+    },
+    {
+      "vram": 2147803152,
+      "origin": "checked-root",
+      "sha256": "a88b4d03330eef8bb16ee2cf2a5081df5e872fe0f45e1265584f0803e2b9b6a3",
+      "data_offsets": [
+        748632
+      ]
+    },
+    {
+      "vram": 2147803440,
+      "origin": "checked-root",
+      "sha256": "8f2620e1d43fe9f6a537513de6329d4a4953cfe5a9fc42b62c52c99998711b54",
+      "data_offsets": [
+        748624
+      ]
+    },
+    {
+      "vram": 2147803576,
+      "origin": "checked-root",
+      "sha256": "26f7cbfb4b1802c26f20a3d5e00660c9d5b510506120cc486bc208a3016aea6f",
+      "data_offsets": [
+        748720
+      ]
+    },
+    {
+      "vram": 2147803728,
+      "origin": "checked-root",
+      "sha256": "ac3910fdb10ef68b96da1c31c9ab407eb4bfe7d078f5866a3bb6e827a70fe2da",
+      "data_offsets": [
+        748640,
+        748648,
+        748656,
+        748664,
+        748680,
+        748688,
+        748696,
+        748704,
+        748712
+      ]
+    },
+    {
+      "vram": 2147804092,
+      "origin": "checked-root",
+      "sha256": "f699f600ef0249ad036ba25699b491c6c287617254ed4787481801727264484f",
+      "data_offsets": [
+        748824,
+        748832,
+        748840,
+        748848
+      ]
+    },
+    {
+      "vram": 2147804520,
+      "origin": "checked-root",
+      "sha256": "30c3aed2c38c5e534ecd674c9d0c0aa0bd5791409ef133ad43eb7db77b0e197a",
+      "data_offsets": [
+        748728,
+        748736
+      ]
+    },
+    {
+      "vram": 2147804752,
+      "origin": "checked-root",
+      "sha256": "9fc71cd33fe3eef7f230f609060bde38c77a2dd183bf45a8d6bde7354fbbbbce",
+      "data_offsets": [
+        748792
+      ]
+    },
+    {
+      "vram": 2147804872,
+      "origin": "checked-root",
+      "sha256": "0d34e6ccc9e5c286bbe7d1653daac4f4cd89b6260dc4b4863c276fac777a1981",
+      "data_offsets": [
+        748744,
+        748752,
+        748760,
+        748768,
+        748776,
+        748784,
+        748800,
+        748808,
+        748816
+      ]
+    },
+    {
+      "vram": 2147805764,
+      "origin": "checked-root",
+      "sha256": "0a8ee458ca5a284ec9ffe0fbe8642f6d8b9c80e060aa46ff89c052e458e64b96",
+      "data_offsets": [
+        748864
+      ]
+    },
+    {
+      "vram": 2147805992,
+      "origin": "checked-root",
+      "sha256": "756dc65472f2f7d025807db94a20ca5714cadfc49a772f607616ac55a4a44287",
+      "data_offsets": [
+        748872
+      ]
+    },
+    {
+      "vram": 2147806324,
+      "origin": "checked-root",
+      "sha256": "d925a8ac1d1bdb62d984a7c442ad979aa01d386850956829db0755d109f7e597",
+      "data_offsets": [
+        749120,
+        749128,
+        749136,
+        749320,
+        749328
+      ]
+    },
+    {
+      "vram": 2147807572,
+      "origin": "checked-root",
+      "sha256": "5cb75fa7f6b926c553ece48f6e4fa40066c74f699b5e47be92125ab60bd22364",
+      "data_offsets": [
+        748856
+      ]
+    },
+    {
+      "vram": 2147808016,
+      "origin": "checked-root",
+      "sha256": "96f03b0b9cd8be5369abc100bf8f2b8b010fb4e3579fa013daf7afdb59beb7fe",
+      "data_offsets": [
+        748880,
+        748888
+      ]
+    },
+    {
+      "vram": 2147808136,
+      "origin": "checked-root",
+      "sha256": "26f7cbfb4b1802c26f20a3d5e00660c9d5b510506120cc486bc208a3016aea6f",
+      "data_offsets": [
+        748904
+      ]
+    },
+    {
+      "vram": 2147808208,
+      "origin": "checked-root",
+      "sha256": "f3395cf8dfa31b3a07adb0abc91a57f2f09b20f19e4fd71ccb421f823d08a270",
+      "data_offsets": [
+        748912
+      ]
+    },
+    {
+      "vram": 2147808460,
+      "origin": "checked-root",
+      "sha256": "c1bf15a00ab1e66050c5e66a8a7b39391aabe848d9eb8f979bdbb9058a1dec70",
+      "data_offsets": [
+        748944
+      ]
+    },
+    {
+      "vram": 2147808832,
+      "origin": "checked-root",
+      "sha256": "5979a65ab4f07fc5576a0a582e2e8148015e70e8632bf3772c33ba37d0caf8bb",
+      "data_offsets": [
+        748920,
+        748928,
+        748936
+      ]
+    },
+    {
+      "vram": 2147809232,
+      "origin": "checked-root",
+      "sha256": "aa37cf7167fb7f8d045a34870bcab1c9a008704258cd28c3efdb2e4f711aa5f5",
+      "data_offsets": [
+        749380
+      ]
+    },
+    {
+      "vram": 2147809272,
+      "origin": "checked-root",
+      "sha256": "788ee6eb86c28197b9f14e278d84b0009d1fe9b83732f52ca6fcb46d846e919f",
+      "data_offsets": [
+        749384
+      ]
+    },
+    {
+      "vram": 2147809388,
+      "origin": "checked-root",
+      "sha256": "f1781090a8170f7228af01670c62574e07ba46dfd8f2fd408ad20f2d1f6e9c44",
+      "data_offsets": [
+        749388
+      ]
+    },
+    {
+      "vram": 2147809408,
+      "origin": "checked-root",
+      "sha256": "d0050e2f8dc561e9d2f4cbe34e5072ec56177d4cbaf4da4b8f3f412c21e777d8",
+      "data_offsets": [
+        749392
+      ]
+    },
+    {
+      "vram": 2147809508,
+      "origin": "checked-root",
+      "sha256": "e38a6d608d6f23ad9c50c1030fc65bcf5cf0b2122d322b217718f2fb422a4701",
+      "data_offsets": [
+        749372
+      ]
+    },
+    {
+      "vram": 2147809536,
+      "origin": "checked-root",
+      "sha256": "dd835107601dde9318ad1a8d5f5ebb9a53451f88eb40cae8b3fc54513efc960e",
+      "data_offsets": [
+        749376
+      ]
+    },
+    {
+      "vram": 2147809568,
+      "origin": "checked-root",
+      "sha256": "045f55b0f633bef371998075d8fbd256cb98a1107cf8b53601e84de15fb21c59",
+      "data_offsets": [
+        749368
+      ]
+    },
+    {
+      "vram": 2147809656,
+      "origin": "checked-root",
+      "sha256": "eb0362f9079df1009f37582ddaf245a01ae615496f46078622060adfa768eacc",
+      "data_offsets": [
+        749344,
+        749348,
+        749352,
+        749356,
+        749360,
+        749364
+      ]
+    },
+    {
+      "vram": 2147809984,
+      "origin": "checked-root",
+      "sha256": "88a15d116419a5704443f76d3a43db7e6d43c63567f28ba6f9e10d7be6c0b156",
+      "data_offsets": [
+        749408,
+        749412,
+        749416,
+        749420,
+        749424
+      ]
+    },
+    {
+      "vram": 2147810688,
+      "origin": "checked-root",
+      "sha256": "82dbec7a8f5a8b5f7ac1cd66931836d7b96ddcbdc12a08e91ea6740b1ddfd6d2",
+      "data_offsets": [
+        749472,
+        749476,
+        749480,
+        749484,
+        749488
+      ]
+    },
+    {
+      "vram": 2147811536,
+      "origin": "checked-root",
+      "sha256": "243c2432681d7489b807c2219d5a10a6289739b700c64a4989050a1a906d2172",
+      "data_offsets": [
+        749512
+      ]
+    },
+    {
+      "vram": 2147811672,
+      "origin": "checked-root",
+      "sha256": "5fb14c6ed03ef40741e3706ede56ad80b6beb5114f7e03a4f4cb25e2abdc74b1",
+      "data_offsets": [
+        749456
+      ]
+    },
+    {
+      "vram": 2147811868,
+      "origin": "checked-root",
+      "sha256": "6d4e0a0aa671d117824e073222f306f896596a55f2da61cc3cd4f31c5e254508",
+      "data_offsets": [
+        749460,
+        749464,
+        749468
+      ]
+    },
+    {
+      "vram": 2147812348,
+      "origin": "checked-root",
+      "sha256": "1e58e6fb9d35a2cf0de0babdc115eaa1e02b4ac14c5a481aab33d3e91678a7c5",
+      "data_offsets": [
+        749428,
+        749432,
+        749436,
+        749440,
+        749444,
+        749448,
+        749452,
+        749492,
+        749496,
+        749500
+      ]
+    },
+    {
+      "vram": 2147814476,
+      "origin": "checked-root",
+      "sha256": "743ed7772817bd8c5180151cce6a766a0c4e6ac00c4c377c4685e08694cfb1db",
+      "data_offsets": [
+        749504
+      ]
+    },
+    {
+      "vram": 2147814568,
+      "origin": "checked-root",
+      "sha256": "243c2432681d7489b807c2219d5a10a6289739b700c64a4989050a1a906d2172",
+      "data_offsets": [
+        749508
+      ]
+    },
+    {
+      "vram": 2147814808,
+      "origin": "checked-root",
+      "sha256": "61eae894558448cfac9e2966798e070d1fb549d9a294304c50ff9ae0f30866d4",
+      "data_offsets": [
+        749760,
+        750128
+      ]
+    },
+    {
+      "vram": 2147815028,
+      "origin": "checked-root",
+      "sha256": "ea286a2d91700e609d4e283e45ce9f34d449bfe96ca17c7773fce03467cac22c",
+      "data_offsets": [
+        749704,
+        749712
+      ]
+    },
+    {
+      "vram": 2147815184,
+      "origin": "checked-root",
+      "sha256": "b572f3c5c49aafd0db7e5761b7a058b87b4df80fac2b8b1c1eaf7f15df444b4c",
+      "data_offsets": [
+        749856
+      ]
+    },
+    {
+      "vram": 2147815328,
+      "origin": "checked-root",
+      "sha256": "be984c912badba066cf1a1c674631d7f8512bba1139d80265ad73319d3406784",
+      "data_offsets": [
+        749720,
+        749728,
+        749736,
+        749744,
+        749752,
+        750240,
+        750768
+      ]
+    },
+    {
+      "vram": 2147815724,
+      "origin": "checked-root",
+      "sha256": "79458130a6d616660f54b18e2f05dd2dc26d69ae7ca8ac701fef835d31bf0ba9",
+      "data_offsets": [
+        749768
+      ]
+    },
+    {
+      "vram": 2147815896,
+      "origin": "checked-root",
+      "sha256": "73dc2341816d50ba43a0404d2d74c462a1b00a20d44f2c47491a2c1fd14ea4ea",
+      "data_offsets": [
+        749520
+      ]
+    },
+    {
+      "vram": 2147815972,
+      "origin": "checked-root",
+      "sha256": "5f93d07774317d19582a7690e891ad1d1e735e017219c295d65aaa61399fd5fa",
+      "data_offsets": [
+        749776
+      ]
+    },
+    {
+      "vram": 2147816060,
+      "origin": "checked-root",
+      "sha256": "cb557ebb1d6837075bf7f5fa9dc0aebbdccdd7a7fa498d4d0765a5bade38a88d",
+      "data_offsets": [
+        749784,
+        749792
+      ]
+    },
+    {
+      "vram": 2147816192,
+      "origin": "checked-root",
+      "sha256": "fb45157857d9d8c6a062921622aa982e1891fe598255f65433acc0f1064bf28a",
+      "data_offsets": [
+        749800,
+        749808
+      ]
+    },
+    {
+      "vram": 2147816352,
+      "origin": "checked-root",
+      "sha256": "351dd5bf2ec0d4a47b1b36169bb193a7c40b0ec312b73c270ee99ac940eb3626",
+      "data_offsets": [
+        749816,
+        749824,
+        749832
+      ]
+    },
+    {
+      "vram": 2147816580,
+      "origin": "checked-root",
+      "sha256": "fdd088802348664d7b4d8cf33dec6518aaad46ca70bca0354c4e8ef3a4e869bc",
+      "data_offsets": [
+        749600,
+        749608
+      ]
+    },
+    {
+      "vram": 2147816696,
+      "origin": "checked-root",
+      "sha256": "318b8f8dd75846c5c5f49949072ea3a51e1cbc1661a4b92131587eb5ce40e0cc",
+      "data_offsets": [
+        749616
+      ]
+    },
+    {
+      "vram": 2147816788,
+      "origin": "checked-root",
+      "sha256": "bcb3a477de001d654c12693675dc0bdabc7a1d2625d9a60b0980d81d3231f134",
+      "data_offsets": [
+        749624
+      ]
+    },
+    {
+      "vram": 2147816944,
+      "origin": "checked-root",
+      "sha256": "bcb3a477de001d654c12693675dc0bdabc7a1d2625d9a60b0980d81d3231f134",
+      "data_offsets": [
+        749632
+      ]
+    },
+    {
+      "vram": 2147817100,
+      "origin": "checked-root",
+      "sha256": "192d659210dc13ba59e08f287dbab1edd855f0d875d598b56c1446b25042f9b5",
+      "data_offsets": [
+        749640
+      ]
+    },
+    {
+      "vram": 2147817176,
+      "origin": "checked-root",
+      "sha256": "192d659210dc13ba59e08f287dbab1edd855f0d875d598b56c1446b25042f9b5",
+      "data_offsets": [
+        749648
+      ]
+    },
+    {
+      "vram": 2147817248,
+      "origin": "checked-root",
+      "sha256": "f22d80721c9ae4d467b67ba8ca07ca6ca58dfc54608099ecdc13bc774843f71f",
+      "data_offsets": [
+        749656
+      ]
+    },
+    {
+      "vram": 2147817384,
+      "origin": "checked-root",
+      "sha256": "89402eb00505310aea86c4a1fca56df5bc4feb83bc9d50c8e76e42213ce6ff5c",
+      "data_offsets": [
+        749968
+      ]
+    },
+    {
+      "vram": 2147817596,
+      "origin": "checked-root",
+      "sha256": "d13822e114e80a80a56dbe57ef70c8ccfb8051933991724179254c9b6f605162",
+      "data_offsets": [
+        750136
+      ]
+    },
+    {
+      "vram": 2147817716,
+      "origin": "checked-root",
+      "sha256": "2756e4e32ace9fdd77f15ba53aa9011b8c111679e3bb18d41563c42563911bd3",
+      "data_offsets": [
+        750104,
+        750112
+      ]
+    },
+    {
+      "vram": 2147818152,
+      "origin": "checked-root",
+      "sha256": "cd9f42b38c643a981d76adf74460bc5a9b1232a279be17afcd9913abedf7bce3",
+      "data_offsets": [
+        749952,
+        750096
+      ]
+    },
+    {
+      "vram": 2147821724,
+      "origin": "checked-root",
+      "sha256": "da7ff53f3765a501f71eac1137e464c27e4a036471c7cd100965cf574c3a329f",
+      "data_offsets": [
+        750520
+      ]
+    },
+    {
+      "vram": 2147822496,
+      "origin": "checked-root",
+      "sha256": "b344dc5bfa8aa158cce6681c141a400b9dc79e08e31b8d33852c04a18a243922",
+      "data_offsets": [
+        749888,
+        749896,
+        749904,
+        749912,
+        749920,
+        749928,
+        749936,
+        749944,
+        749960,
+        750080,
+        750088
+      ]
+    },
+    {
+      "vram": 2147826300,
+      "origin": "checked-root",
+      "sha256": "c1f2839181416dc343cca3e24fab8ceff8bb03f482879b6c412e1155e973f811",
+      "data_offsets": [
+        750296,
+        750304
+      ]
+    },
+    {
+      "vram": 2147826656,
+      "origin": "checked-root",
+      "sha256": "fdd088802348664d7b4d8cf33dec6518aaad46ca70bca0354c4e8ef3a4e869bc",
+      "data_offsets": [
+        749872,
+        749880
+      ]
+    },
+    {
+      "vram": 2147826772,
+      "origin": "checked-root",
+      "sha256": "4b8d216de30798f9fca24445f8707d5dbf0bfec6f0a1caeb0f2ea5f19ae58dd7",
+      "data_offsets": [
+        750256
+      ]
+    },
+    {
+      "vram": 2147827036,
+      "origin": "checked-root",
+      "sha256": "f7d0b27b7e91bc9dbe8f482660ad683e33699a1eb9a1a25be3f455e14d4b2b46",
+      "data_offsets": [
+        750064
+      ]
+    },
+    {
+      "vram": 2147827252,
+      "origin": "checked-root",
+      "sha256": "b1e3816d928bf105bb2c6753020553b128911a15cd258ab136d975ac71b8f05f",
+      "data_offsets": [
+        750144,
+        750152,
+        750160,
+        750168,
+        750176,
+        750184
+      ]
+    },
+    {
+      "vram": 2147827684,
+      "origin": "checked-root",
+      "sha256": "01aa7d9ab4b889062be1c43d6b7d411cd66c20d20868a0b766e2dfb76fa57ef1",
+      "data_offsets": [
+        750192
+      ]
+    },
+    {
+      "vram": 2147827840,
+      "origin": "checked-root",
+      "sha256": "b82890bd9053d98eb1eec546c9b49f668f6e337ffe84de8730ac6f7a994f7de5",
+      "data_offsets": [
+        750200
+      ]
+    },
+    {
+      "vram": 2147828060,
+      "origin": "checked-root",
+      "sha256": "b1e3816d928bf105bb2c6753020553b128911a15cd258ab136d975ac71b8f05f",
+      "data_offsets": [
+        749976,
+        750008,
+        750032,
+        750040,
+        750072
+      ]
+    },
+    {
+      "vram": 2147828468,
+      "origin": "checked-root",
+      "sha256": "b51db0f39731a4d6d9107e3c285cab05bf2e23f32982914b13a2864ac11a5c16",
+      "data_offsets": [
+        749984,
+        749992,
+        750000,
+        750016,
+        750024,
+        750048,
+        750056,
+        750208
+      ]
+    },
+    {
+      "vram": 2147829176,
+      "origin": "checked-root",
+      "sha256": "8499889ada9a890e8d8555bd05853e38fdaac396d044f940edb1a53af41b637b",
+      "data_offsets": [
+        750248
+      ]
+    },
+    {
+      "vram": 2147829336,
+      "origin": "checked-root",
+      "sha256": "ac3910fdb10ef68b96da1c31c9ab407eb4bfe7d078f5866a3bb6e827a70fe2da",
+      "data_offsets": [
+        750224,
+        750232
+      ]
+    },
+    {
+      "vram": 2147829728,
+      "origin": "checked-root",
+      "sha256": "cde1ac01baf8901924d1a1a5fd1a07ca9f63b17783a07ecbbff2da27dedc0ada",
+      "data_offsets": [
+        750120
+      ]
+    },
+    {
+      "vram": 2147829852,
+      "origin": "checked-root",
+      "sha256": "b51db0f39731a4d6d9107e3c285cab05bf2e23f32982914b13a2864ac11a5c16",
+      "data_offsets": [
+        750216
+      ]
+    },
+    {
+      "vram": 2147830096,
+      "origin": "checked-root",
+      "sha256": "fb45157857d9d8c6a062921622aa982e1891fe598255f65433acc0f1064bf28a",
+      "data_offsets": [
+        750264
+      ]
+    },
+    {
+      "vram": 2147830360,
+      "origin": "checked-root",
+      "sha256": "b1e3816d928bf105bb2c6753020553b128911a15cd258ab136d975ac71b8f05f",
+      "data_offsets": [
+        750280
+      ]
+    },
+    {
+      "vram": 2147830516,
+      "origin": "checked-root",
+      "sha256": "b1e3816d928bf105bb2c6753020553b128911a15cd258ab136d975ac71b8f05f",
+      "data_offsets": [
+        750288
+      ]
+    },
+    {
+      "vram": 2147830668,
+      "origin": "checked-root",
+      "sha256": "8499889ada9a890e8d8555bd05853e38fdaac396d044f940edb1a53af41b637b",
+      "data_offsets": [
+        750272
+      ]
+    },
+    {
+      "vram": 2147830808,
+      "origin": "checked-root",
+      "sha256": "41415fe0f99ea92abd182167bab2ef88f2fa3cf9be5464af46ced17927854f7f",
+      "data_offsets": [
+        750312
+      ]
+    },
+    {
+      "vram": 2147836344,
+      "origin": "checked-root",
+      "sha256": "faa2799abff8e193623fcee3ebc531d45786bf3a8951344049cbc133d1bad4a0",
+      "data_offsets": [
+        750320,
+        750328
+      ]
+    },
+    {
+      "vram": 2147837240,
+      "origin": "checked-root",
+      "sha256": "6a67df599eff120fd00aea969a4d7b8d63acff2fb0eca78a9a19e8e2deac3041",
+      "data_offsets": [
+        750336
+      ]
+    },
+    {
+      "vram": 2147837576,
+      "origin": "checked-root",
+      "sha256": "cbcb13dcd5b245160be2fe5b1dae8fcd8395c96d4ceaf15346474f2691e9b370",
+      "data_offsets": [
+        750360
+      ]
+    },
+    {
+      "vram": 2147837664,
+      "origin": "checked-root",
+      "sha256": "cbcb13dcd5b245160be2fe5b1dae8fcd8395c96d4ceaf15346474f2691e9b370",
+      "data_offsets": [
+        750368
+      ]
+    },
+    {
+      "vram": 2147837716,
+      "origin": "checked-root",
+      "sha256": "b1e3816d928bf105bb2c6753020553b128911a15cd258ab136d975ac71b8f05f",
+      "data_offsets": [
+        750376,
+        750384
+      ]
+    },
+    {
+      "vram": 2147837944,
+      "origin": "checked-root",
+      "sha256": "cbcb13dcd5b245160be2fe5b1dae8fcd8395c96d4ceaf15346474f2691e9b370",
+      "data_offsets": [
+        750344
+      ]
+    },
+    {
+      "vram": 2147838048,
+      "origin": "checked-root",
+      "sha256": "e752d52e17b7b344190a5ca228aebff50b72053d168b849c5fed3aab793ac6bf",
+      "data_offsets": [
+        750352
+      ]
+    },
+    {
+      "vram": 2147838088,
+      "origin": "checked-root",
+      "sha256": "ea5ba8984a20ab7fa22f8b9367094d46aebe737acd2eea3c53317c830ae97a6c",
+      "data_offsets": [
+        750504
+      ]
+    },
+    {
+      "vram": 2147838664,
+      "origin": "checked-root",
+      "sha256": "ad4004721c60c0a505abc26ceb69e31be7b87403cd72bd4dadaddc38c7b59a52",
+      "data_offsets": [
+        750512
+      ]
+    },
+    {
+      "vram": 2147838892,
+      "origin": "checked-root",
+      "sha256": "bb7310681ec5d8289a7c97a0a0dd2ae05c17d0dc5006bed4caf3db331500aa31",
+      "data_offsets": [
+        750496
+      ]
+    },
+    {
+      "vram": 2147839192,
+      "origin": "checked-root",
+      "sha256": "fb45157857d9d8c6a062921622aa982e1891fe598255f65433acc0f1064bf28a",
+      "data_offsets": [
+        750416
+      ]
+    },
+    {
+      "vram": 2147839352,
+      "origin": "checked-root",
+      "sha256": "b4417d09718e6c0b78f75d6cb1db3d97c5d1610d2c1ae2f6510c76cc127b2c1a",
+      "data_offsets": [
+        750432,
+        750440,
+        750448,
+        750456
+      ]
+    },
+    {
+      "vram": 2147840128,
+      "origin": "checked-root",
+      "sha256": "cde1ac01baf8901924d1a1a5fd1a07ca9f63b17783a07ecbbff2da27dedc0ada",
+      "data_offsets": [
+        750424
+      ]
+    },
+    {
+      "vram": 2147840252,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "data_offsets": [
+        750464
+      ]
+    },
+    {
+      "vram": 2147840336,
+      "origin": "checked-root",
+      "sha256": "fb45157857d9d8c6a062921622aa982e1891fe598255f65433acc0f1064bf28a",
+      "data_offsets": [
+        750472
+      ]
+    },
+    {
+      "vram": 2147840564,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "data_offsets": [
+        750480,
+        750488
+      ]
+    },
+    {
+      "vram": 2147840656,
+      "origin": "checked-root",
+      "sha256": "b1e3816d928bf105bb2c6753020553b128911a15cd258ab136d975ac71b8f05f",
+      "data_offsets": [
+        749664,
+        749672
+      ]
+    },
+    {
+      "vram": 2147840888,
+      "origin": "checked-root",
+      "sha256": "c973c5c97780cec7386a1f21d063d51d572ef4609cc575d9b1be57dc054d9bf5",
+      "data_offsets": [
+        749528,
+        749536,
+        749552,
+        749560
+      ]
+    },
+    {
+      "vram": 2147841448,
+      "origin": "checked-root",
+      "sha256": "95f5d5a81be20a1dc88e92cfa21c86ebd5fdab67dd97eb6bc883924f26a2e2b1",
+      "data_offsets": [
+        749864
+      ]
+    },
+    {
+      "vram": 2147841732,
+      "origin": "checked-root",
+      "sha256": "d13822e114e80a80a56dbe57ef70c8ccfb8051933991724179254c9b6f605162",
+      "data_offsets": [
+        749840,
+        749848
+      ]
+    },
+    {
+      "vram": 2147841928,
+      "origin": "checked-root",
+      "sha256": "33b71305c788002e7a895578c073f1ac8be012bb70158bf53b972b2bac01a7b3",
+      "data_offsets": [
+        749568
+      ]
+    },
+    {
+      "vram": 2147842012,
+      "origin": "checked-root",
+      "sha256": "cbcb13dcd5b245160be2fe5b1dae8fcd8395c96d4ceaf15346474f2691e9b370",
+      "data_offsets": [
+        749576
+      ]
+    },
+    {
+      "vram": 2147842116,
+      "origin": "checked-root",
+      "sha256": "d31057801deab89b3439d6d1ed9db2b545946e722932202c978c3a1b695e9a2c",
+      "data_offsets": [
+        749584
+      ]
+    },
+    {
+      "vram": 2147842300,
+      "origin": "checked-root",
+      "sha256": "cbdebae8f38c1f21e206bd3db1011aba412be1ae2f2f4f705fb8b18a16bea22d",
+      "data_offsets": [
+        749592
+      ]
+    },
+    {
+      "vram": 2147842488,
+      "origin": "checked-root",
+      "sha256": "cbdebae8f38c1f21e206bd3db1011aba412be1ae2f2f4f705fb8b18a16bea22d",
+      "data_offsets": [
+        749544
+      ]
+    },
+    {
+      "vram": 2147842864,
+      "origin": "checked-root",
+      "sha256": "1bf7d5b4fdce4b4773f2b9f9977930c0355cf38fbb2b360287eb3e7b5b7f7bb3",
+      "data_offsets": [
+        749680
+      ]
+    },
+    {
+      "vram": 2147843000,
+      "origin": "checked-root",
+      "sha256": "0bad9694e1eebc5178524764aabc6b542f2740509b9836e90aa59485c511fb83",
+      "data_offsets": [
+        749688
+      ]
+    },
+    {
+      "vram": 2147843092,
+      "origin": "checked-root",
+      "sha256": "cbcb13dcd5b245160be2fe5b1dae8fcd8395c96d4ceaf15346474f2691e9b370",
+      "data_offsets": [
+        749696
+      ]
+    },
+    {
+      "vram": 2147843204,
+      "origin": "checked-root",
+      "sha256": "a4bc7682505af72d37b4da6c4a12204a50de071c966c308838b3639cfc2838c0",
+      "data_offsets": [
+        750392,
+        750400,
+        750408,
+        750528
+      ]
+    },
+    {
+      "vram": 2147843212,
+      "origin": "checked-root",
+      "sha256": "5867d1d28721b20e0276ef6ab2a32af338040fef0f09035d44aedd3d876cf6e4",
+      "data_offsets": [
+        750728
+      ]
+    },
+    {
+      "vram": 2147843516,
+      "origin": "checked-root",
+      "sha256": "1beafcbbff367c00af32d7fc867ee1c4aae84eddbd9b5acef1d4f0af553275b2",
+      "data_offsets": [
+        750736
+      ]
+    },
+    {
+      "vram": 2147843600,
+      "origin": "checked-root",
+      "sha256": "c8ad0bcb720d91b740ff3cee1852cf4d2aeffb0d981edeb7d6c1db0fb0288661",
+      "data_offsets": [
+        750744,
+        750752,
+        750760
+      ]
+    },
+    {
+      "vram": 2147844092,
+      "origin": "checked-root",
+      "sha256": "b2207d1d72e52d3e8d5193976cd83e9a867c1d306e2d6b3d983e6e956165b1d2",
+      "data_offsets": [
+        750776
+      ]
+    },
+    {
+      "vram": 2147844364,
+      "origin": "checked-root",
+      "sha256": "c21ed53a4f54e44ecd2cd2445357d2078a6ab5aa25f4d67e5c5fe687c895d919",
+      "data_offsets": [
+        750784
+      ]
+    },
+    {
+      "vram": 2147844628,
+      "origin": "checked-root",
+      "sha256": "c21ed53a4f54e44ecd2cd2445357d2078a6ab5aa25f4d67e5c5fe687c895d919",
+      "data_offsets": [
+        750792
+      ]
+    },
+    {
+      "vram": 2147844708,
+      "origin": "checked-root",
+      "sha256": "c21ed53a4f54e44ecd2cd2445357d2078a6ab5aa25f4d67e5c5fe687c895d919",
+      "data_offsets": [
+        750808
+      ]
+    },
+    {
+      "vram": 2147844828,
+      "origin": "checked-root",
+      "sha256": "c21ed53a4f54e44ecd2cd2445357d2078a6ab5aa25f4d67e5c5fe687c895d919",
+      "data_offsets": [
+        750800
+      ]
+    },
+    {
+      "vram": 2147844936,
+      "origin": "checked-root",
+      "sha256": "c21ed53a4f54e44ecd2cd2445357d2078a6ab5aa25f4d67e5c5fe687c895d919",
+      "data_offsets": [
+        750816
+      ]
+    },
+    {
+      "vram": 2147845040,
+      "origin": "checked-root",
+      "sha256": "33b71305c788002e7a895578c073f1ac8be012bb70158bf53b972b2bac01a7b3",
+      "data_offsets": [
+        750824
+      ]
+    },
+    {
+      "vram": 2147845152,
+      "origin": "checked-root",
+      "sha256": "c13564a6f595193ccdd40d662c84bf8278a172953869d5175f8f2b635bca40df",
+      "data_offsets": [
+        748256,
+        748272
+      ]
+    },
+    {
+      "vram": 2147846560,
+      "origin": "checked-root",
+      "sha256": "f10e5e336e5fb76e6def91eb6fe9dbb0a6adb09eaa07aced495e21d6525df078",
+      "data_offsets": [
+        751392
+      ]
+    },
+    {
+      "vram": 2147846568,
+      "origin": "checked-root",
+      "sha256": "eed9d37c352b698f2d304cb690a15418ebb689058c94de713fe12e4b17fcad23",
+      "data_offsets": [
+        751380
+      ]
+    },
+    {
+      "vram": 2147846576,
+      "origin": "checked-root",
+      "sha256": "661ebc8edcbca7efbd8118279e4a5d803268dcfea9b987ce189fce497efb14ce",
+      "data_offsets": [
+        751368
+      ]
+    },
+    {
+      "vram": 2147846616,
+      "origin": "checked-root",
+      "sha256": "f397bae50249122d378897acf9584dd3411ed7c0d88651ceb5ab3b7b618f1ad3",
+      "data_offsets": [
+        751356
+      ]
+    },
+    {
+      "vram": 2147846644,
+      "origin": "checked-root",
+      "sha256": "f397bae50249122d378897acf9584dd3411ed7c0d88651ceb5ab3b7b618f1ad3",
+      "data_offsets": [
+        751404
+      ]
+    },
+    {
+      "vram": 2147846780,
+      "origin": "checked-root",
+      "sha256": "f10e5e336e5fb76e6def91eb6fe9dbb0a6adb09eaa07aced495e21d6525df078",
+      "data_offsets": [
+        751388
+      ]
+    },
+    {
+      "vram": 2147846788,
+      "origin": "checked-root",
+      "sha256": "eed9d37c352b698f2d304cb690a15418ebb689058c94de713fe12e4b17fcad23",
+      "data_offsets": [
+        751376
+      ]
+    },
+    {
+      "vram": 2147846796,
+      "origin": "checked-root",
+      "sha256": "661ebc8edcbca7efbd8118279e4a5d803268dcfea9b987ce189fce497efb14ce",
+      "data_offsets": [
+        751364
+      ]
+    },
+    {
+      "vram": 2147846836,
+      "origin": "checked-root",
+      "sha256": "b2bf6c24a7ef5b1151829cf5fdd6125a1970af03ac56f26a8e9842e8555847d1",
+      "data_offsets": [
+        751352
+      ]
+    },
+    {
+      "vram": 2147846876,
+      "origin": "checked-root",
+      "sha256": "b2bf6c24a7ef5b1151829cf5fdd6125a1970af03ac56f26a8e9842e8555847d1",
+      "data_offsets": [
+        751400
+      ]
+    },
+    {
+      "vram": 2147848288,
+      "origin": "checked-root",
+      "sha256": "cf94a4054082a7f27b1f6837d5cf8d36b1190be16e174097e9ecadf4c0213b13",
+      "data_offsets": [
+        748240
+      ]
+    },
+    {
+      "vram": 2147848428,
+      "origin": "checked-root",
+      "sha256": "f327b3d76fe9524f6b4f6f14f23fb59f7bda000ba5347605c2e22a786fc9092b",
+      "data_offsets": [
+        748244
+      ]
+    },
+    {
+      "vram": 2147848552,
+      "origin": "checked-root",
+      "sha256": "236ca7cac6acef12103b493c8546216572ed8f59537f66b6f62e56abcdced6f9",
+      "data_offsets": [
+        748260
+      ]
+    },
+    {
+      "vram": 2147848596,
+      "origin": "checked-root",
+      "sha256": "1b946316d57243d001d0cca6bbe466fbdbb857545dba3e1447fb92936d019f4d",
+      "data_offsets": [
+        748276
+      ]
+    },
+    {
+      "vram": 2147848640,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "data_offsets": [
+        748224
+      ]
+    },
+    {
+      "vram": 2147848728,
+      "origin": "checked-root",
+      "sha256": "46054cf4eb170da9f6c8c2762a4be934d15ca012a2d18db452bc96e43db846d7",
+      "data_offsets": [
+        748228
+      ]
+    },
+    {
+      "vram": 2147860272,
+      "origin": "checked-root",
+      "sha256": "94f8211771683b5c84fb8a7bda38eb1020dbb2e704dd45a76a053636c6074e99",
+      "data_offsets": [
+        749336
+      ]
+    },
+    {
+      "vram": 2147860544,
+      "origin": "checked-root",
+      "sha256": "44084280e3dde32579fe51d34d0e1fd422158cf856249fff2d481d7901227872",
+      "data_offsets": [
+        748312,
+        748320,
+        748328,
+        748336,
+        748344,
+        748352
+      ]
+    },
+    {
+      "vram": 2147861240,
+      "origin": "checked-root",
+      "sha256": "7710fa36ac50fe3c7feac0305a28bf6fdb3246a44833cfed79cbcdcb5abcee34",
+      "data_offsets": [
+        748288,
+        748296,
+        748304
+      ]
+    },
+    {
+      "vram": 2147861524,
+      "origin": "checked-root",
+      "sha256": "2146031bc53a6d7c7d6f5a09633d4e131d8b516dc1f564e4f65ed9accd8aa56e",
+      "data_offsets": [
+        748408,
+        748416,
+        748424
+      ]
+    },
+    {
+      "vram": 2147861712,
+      "origin": "checked-root",
+      "sha256": "9fc06aedbca29f65c2187d5f058d6c1a263762973806186ef99ce680964807af",
+      "data_offsets": [
+        748360,
+        748368
+      ]
+    },
+    {
+      "vram": 2147862000,
+      "origin": "checked-root",
+      "sha256": "a52d09671f2bbcdecd222cade956425e2484bee3e2bc073add46c2ae16a34193",
+      "data_offsets": [
+        748376,
+        748384,
+        748392,
+        748400
+      ]
+    },
+    {
+      "vram": 2147862228,
+      "origin": "checked-root",
+      "sha256": "d1aa4ae316deb02461036fbbb474e96a9e035acb1828eb14b0e9a902c535679e",
+      "data_offsets": [
+        748432
+      ]
+    },
+    {
+      "vram": 2147862356,
+      "origin": "checked-root",
+      "sha256": "2fcbcf7da2d2f751a0dfca5542b5efa3afb88307b43686d6126f16bf4b9e4817",
+      "data_offsets": [
+        748440,
+        748448,
+        748456
+      ]
+    },
+    {
+      "vram": 2147862544,
+      "origin": "checked-root",
+      "sha256": "53db4fe7006a390de9a34d87cb30eede9b176d868f3a414478e81b721af215d8",
+      "data_offsets": [
+        748472,
+        748480,
+        748488,
+        748496,
+        748504,
+        748512
+      ]
+    },
+    {
+      "vram": 2147862980,
+      "origin": "checked-root",
+      "sha256": "8499889ada9a890e8d8555bd05853e38fdaac396d044f940edb1a53af41b637b",
+      "data_offsets": [
+        748464
+      ]
+    },
+    {
+      "vram": 2147863140,
+      "origin": "checked-root",
+      "sha256": "62b9adfa4f3c2faca67e44eed1171124d03632a4b4b98b5b76327012a92f25f7",
+      "data_offsets": [
+        748528,
+        748552
+      ]
+    },
+    {
+      "vram": 2147863384,
+      "origin": "checked-root",
+      "sha256": "07546f86c24da5d790a31b5a75398957f1f043e76dfc818fbc23e4286e3394f2",
+      "data_offsets": [
+        748520
+      ]
+    },
+    {
+      "vram": 2147863736,
+      "origin": "checked-root",
+      "sha256": "ecc914c0583fa5547031c089dcdc5c4bf41212d38a580c42a7238bbaed606aca",
+      "data_offsets": [
+        748568
+      ]
+    },
+    {
+      "vram": 2147863936,
+      "origin": "checked-root",
+      "sha256": "c9277c3ea3a6153510a59d7a9522bafd2b38096670948cd5e31a407453ab93bf",
+      "data_offsets": [
+        748560
+      ]
+    },
+    {
+      "vram": 2147864240,
+      "origin": "checked-root",
+      "sha256": "a52d09671f2bbcdecd222cade956425e2484bee3e2bc073add46c2ae16a34193",
+      "data_offsets": [
+        748544,
+        748584
+      ]
+    },
+    {
+      "vram": 2147864408,
+      "origin": "checked-root",
+      "sha256": "8499889ada9a890e8d8555bd05853e38fdaac396d044f940edb1a53af41b637b",
+      "data_offsets": [
+        748576
+      ]
+    },
+    {
+      "vram": 2147864636,
+      "origin": "checked-root",
+      "sha256": "06f4077f80f6a327d81a6c426798e40b5e79e734d09f959c9ebce8f6a99cd2c2",
+      "data_offsets": [
+        748536
+      ]
+    },
+    {
+      "vram": 2147864736,
+      "origin": "checked-root",
+      "sha256": "788ee6eb86c28197b9f14e278d84b0009d1fe9b83732f52ca6fcb46d846e919f",
+      "data_offsets": [
+        748592
+      ]
+    },
+    {
+      "vram": 2147864792,
+      "origin": "checked-root",
+      "sha256": "788ee6eb86c28197b9f14e278d84b0009d1fe9b83732f52ca6fcb46d846e919f",
+      "data_offsets": [
+        748600
+      ]
+    },
+    {
+      "vram": 2147864848,
+      "origin": "checked-root",
+      "sha256": "f55f125a72fdef2a813cb3fcc9909e48615256f2b8c3fd78e4d8dc9ad60ef4ff",
+      "data_offsets": [
+        748608
+      ]
+    },
+    {
+      "vram": 2147865104,
+      "origin": "checked-root",
+      "sha256": "d91c1b30d0e02925a07a321b78bbedbb9af06b8da510277dd710f47880e585c1",
+      "data_offsets": [
+        751320,
+        751332,
+        751344
+      ]
+    },
+    {
+      "vram": 2147865112,
+      "origin": "checked-root",
+      "sha256": "44816d4a983679692875a0739f6985cd9f3ff0b9da347d80ef8d0ca2d0cf05ae",
+      "data_offsets": [
+        751316
+      ]
+    },
+    {
+      "vram": 2147865164,
+      "origin": "checked-root",
+      "sha256": "8efe540f35b1bb60005e5837cfb37f291e0d8fef240ea2f9e3e25569a5b4dbec",
+      "data_offsets": [
+        751328
+      ]
+    },
+    {
+      "vram": 2147865288,
+      "origin": "checked-root",
+      "sha256": "8efe540f35b1bb60005e5837cfb37f291e0d8fef240ea2f9e3e25569a5b4dbec",
+      "data_offsets": [
+        751340
+      ]
+    },
+    {
+      "vram": 2147908360,
+      "origin": "checked-root",
+      "sha256": "971a4932ac9a68684ed51a4f22faa86100de1607671a879af2b7c9a065495638",
+      "materialized_sources": [
+        2147654552
+      ]
+    },
+    {
+      "vram": 2147913040,
+      "origin": "checked-root",
+      "sha256": "1124f189c25d78bf32e7efd609a80fb09f8bca02d2c9b719cba2c9f3f7f071ac",
+      "materialized_sources": [
+        2147654564
+      ]
+    },
+    {
+      "vram": 2147978560,
+      "origin": "checked-root",
+      "sha256": "9f451a898bb63d7704bde0468cd446b2048d510d180179a88aac083b72d8fd31",
+      "data_offsets": [
+        752064
+      ]
+    },
+    {
+      "vram": 2147978716,
+      "origin": "checked-root",
+      "sha256": "9f451a898bb63d7704bde0468cd446b2048d510d180179a88aac083b72d8fd31",
+      "data_offsets": [
+        752068
+      ]
+    },
+    {
+      "vram": 2147978872,
+      "origin": "checked-root",
+      "sha256": "9af424b9f1149ecc256b0c1dcf2e4fb17b1573ccf0acf15b5e7729de17377af5",
+      "data_offsets": [
+        752072
+      ]
+    },
+    {
+      "vram": 2147978952,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "data_offsets": [
+        752076
+      ]
+    },
+    {
+      "vram": 2147978960,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "data_offsets": [
+        752080
+      ]
+    },
+    {
+      "vram": 2147978968,
+      "origin": "checked-root",
+      "sha256": "206eab6718c3a744583c123cd0a4569b7e273d12c72daaa657efa573e9c16203",
+      "data_offsets": [
+        752084
+      ]
+    },
+    {
+      "vram": 2147978976,
+      "origin": "checked-root",
+      "sha256": "f62a0c1d1e4bbc6f3375bfc4444d914135087f7e1d8e67921dcdb78a67a0a78b",
+      "data_offsets": [
+        752088
+      ]
+    },
+    {
+      "vram": 2147978984,
+      "origin": "checked-root",
+      "sha256": "9ac65f673437e839656463d651ec0732159d74be243037f939b40a3e18a1c2b2",
+      "data_offsets": [
+        752108
+      ]
+    },
+    {
+      "vram": 2147979288,
+      "origin": "checked-root",
+      "sha256": "9ac65f673437e839656463d651ec0732159d74be243037f939b40a3e18a1c2b2",
+      "data_offsets": [
+        752112
+      ]
+    },
+    {
+      "vram": 2147979592,
+      "origin": "checked-root",
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "data_offsets": [
+        752116
+      ]
+    },
+    {
+      "vram": 2147979968,
+      "origin": "checked-root",
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "data_offsets": [
+        752120
+      ]
+    },
+    {
+      "vram": 2147980344,
+      "origin": "checked-root",
+      "sha256": "cbcb48a71cc85469d956155d143b78f38866aa493c94d5533678c35782967a0a",
+      "data_offsets": [
+        752124
+      ]
+    },
+    {
+      "vram": 2147980684,
+      "origin": "checked-root",
+      "sha256": "9ac65f673437e839656463d651ec0732159d74be243037f939b40a3e18a1c2b2",
+      "data_offsets": [
+        752128
+      ]
+    },
+    {
+      "vram": 2147980848,
+      "origin": "checked-root",
+      "sha256": "9ac65f673437e839656463d651ec0732159d74be243037f939b40a3e18a1c2b2",
+      "data_offsets": [
+        752132
+      ]
+    },
+    {
+      "vram": 2147981012,
+      "origin": "checked-root",
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "data_offsets": [
+        752136
+      ]
+    },
+    {
+      "vram": 2147981248,
+      "origin": "checked-root",
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "data_offsets": [
+        752140
+      ]
+    },
+    {
+      "vram": 2147981484,
+      "origin": "checked-root",
+      "sha256": "9ac65f673437e839656463d651ec0732159d74be243037f939b40a3e18a1c2b2",
+      "data_offsets": [
+        752144
+      ]
+    },
+    {
+      "vram": 2147981796,
+      "origin": "checked-root",
+      "sha256": "9ac65f673437e839656463d651ec0732159d74be243037f939b40a3e18a1c2b2",
+      "data_offsets": [
+        752148
+      ]
+    },
+    {
+      "vram": 2147982108,
+      "origin": "checked-root",
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "data_offsets": [
+        752152
+      ]
+    },
+    {
+      "vram": 2147982488,
+      "origin": "checked-root",
+      "sha256": "a9cc8bc07d07994cd00d78db56e10cf37d3049017a318abd507fb9dc8c25ee08",
+      "data_offsets": [
+        752156
+      ]
+    },
+    {
+      "vram": 2147982868,
+      "origin": "checked-root",
+      "sha256": "e85e3d57354a7ade07227f021a8b07a725b7d331bf945f72e67bfeb885889029",
+      "data_offsets": [
+        752092
+      ]
+    },
+    {
+      "vram": 2147982944,
+      "origin": "checked-root",
+      "sha256": "e85e3d57354a7ade07227f021a8b07a725b7d331bf945f72e67bfeb885889029",
+      "data_offsets": [
+        752100
+      ]
+    },
+    {
+      "vram": 2147983020,
+      "origin": "checked-root",
+      "sha256": "e85e3d57354a7ade07227f021a8b07a725b7d331bf945f72e67bfeb885889029",
+      "data_offsets": [
+        752096
+      ]
+    },
+    {
+      "vram": 2147983096,
+      "origin": "checked-root",
+      "sha256": "e85e3d57354a7ade07227f021a8b07a725b7d331bf945f72e67bfeb885889029",
+      "data_offsets": [
+        752104
+      ]
+    },
+    {
+      "vram": 2147983172,
+      "origin": "checked-root",
+      "sha256": "f699f600ef0249ad036ba25699b491c6c287617254ed4787481801727264484f",
+      "data_offsets": [
+        752160
+      ]
+    },
+    {
+      "vram": 2147983360,
+      "origin": "checked-root",
+      "sha256": "d25c5a28ee52e12610625cf9693a0b2c411a39e00782f267898ec33f270eddcf",
+      "data_offsets": [
+        752164
+      ]
+    },
+    {
+      "vram": 2147983520,
+      "origin": "checked-root",
+      "sha256": "d25c5a28ee52e12610625cf9693a0b2c411a39e00782f267898ec33f270eddcf",
+      "data_offsets": [
+        752168
+      ]
+    },
+    {
+      "vram": 2147983680,
+      "origin": "checked-root",
+      "sha256": "d2685c0baa8ce6b96689fd90ee283f744a01c8ce7f13d3f88fc80faad3da401c",
+      "data_offsets": [
+        752172
+      ]
+    },
+    {
+      "vram": 2147983868,
+      "origin": "checked-root",
+      "sha256": "d2685c0baa8ce6b96689fd90ee283f744a01c8ce7f13d3f88fc80faad3da401c",
+      "data_offsets": [
+        752176
+      ]
+    },
+    {
+      "vram": 2148093200,
+      "origin": "checked-root",
+      "sha256": "e0d884fc46547903839d8c69ccafdba30dfcdaaad036a00c537d1d367530162e",
+      "materialized_sources": [
+        2148093140
+      ]
+    },
+    {
+      "vram": 2148093276,
+      "origin": "checked-root",
+      "sha256": "46426748d6617316276102de5218a8630d2669887915bfa43974d4631f7ed1fa",
+      "materialized_sources": [
+        2148093156
+      ]
+    },
+    {
+      "vram": 2148093372,
+      "origin": "checked-root",
+      "sha256": "2415714719d85e4a789acee079f28e4e4c4c2b693ab00b843e8d8d91c8c3882c",
+      "materialized_sources": [
+        2148093172
+      ]
+    },
+    {
+      "vram": 2148153692,
+      "origin": "checked-root",
+      "sha256": "9418b39978cf1a7c23673cb34770933d631b104ec76c6bcf7b2b462ff39fe1ac",
+      "materialized_sources": [
+        2148154704
+      ]
+    },
+    {
+      "vram": 2148154828,
+      "origin": "checked-root",
+      "sha256": "84a3c2ccd9adcaabab342407530e65d8862c831bf102692f05c2e3173b01cd8b",
+      "data_offsets": [
+        771040
+      ]
+    },
+    {
+      "vram": 2148154956,
+      "origin": "checked-root",
+      "sha256": "3292156775dde0f9a25bd60a8ec6c359bed3e99991614ea4c355838c7cfb0ef5",
+      "data_offsets": [
+        771052
+      ]
+    },
+    {
+      "vram": 2148154976,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "data_offsets": [
+        771044
+      ]
+    },
+    {
+      "vram": 2148160356,
+      "origin": "checked-root",
+      "sha256": "10195d20b3a6429ec768bacaffc26ada2edc691652b39c229236d9df3d2ef4f0",
+      "materialized_sources": [
+        2148160384
+      ]
+    },
+    {
+      "name": "audio_dma_callback",
+      "vram": 2148167140,
+      "origin": "checked-root",
+      "sha256": "1b3c85f7638989c858fe840d9215873906714df1b526a6eb758ff2f2168d36d5",
+      "materialized_sources": [
+        2148167608
+      ]
+    },
+    {
+      "name": "audio_dma_factory",
+      "vram": 2148167560,
+      "origin": "checked-root",
+      "sha256": "d288924a1bd96012f11b49960a990665b26099cb941f279f7ee7fa97f165ac6d",
+      "materialized_sources": [
+        2148164536
+      ]
+    },
+    {
+      "vram": 2148174084,
+      "origin": "checked-root",
+      "sha256": "1a942201d4c49171e8e0530bef17936b9c3cdc6beec57e349af80ec0a744158e",
+      "materialized_sources": [
+        2148180780
+      ]
+    },
+    {
+      "vram": 2148174284,
+      "origin": "checked-root",
+      "sha256": "9bdeb6a943ffd8bb21b4f4506cdf31d13f2524deb90e37c8236f769bdb672e09",
+      "materialized_sources": [
+        2148179220,
+        2148180484
+      ]
+    },
+    {
+      "vram": 2148174308,
+      "origin": "checked-root",
+      "sha256": "9d6bda8696e72f2a1e5b46cb65ba0c7d678f848ff6ee6f95949bf412b28964f9",
+      "materialized_sources": [
+        2148175152
+      ]
+    },
+    {
+      "vram": 2148174520,
+      "origin": "checked-root",
+      "sha256": "7107bcfa64322b68f693328f80f4190f141100888e6b61e4586d2e4dc9283c07",
+      "materialized_sources": [
+        2148174496
+      ]
+    },
+    {
+      "vram": 2148174600,
+      "origin": "checked-root",
+      "sha256": "7107bcfa64322b68f693328f80f4190f141100888e6b61e4586d2e4dc9283c07",
+      "materialized_sources": [
+        2148179240,
+        2148179476
+      ]
+    },
+    {
+      "vram": 2148174648,
+      "origin": "checked-root",
+      "sha256": "7107bcfa64322b68f693328f80f4190f141100888e6b61e4586d2e4dc9283c07",
+      "materialized_sources": [
+        2148174252
+      ]
+    },
+    {
+      "vram": 2148174692,
+      "origin": "checked-root",
+      "sha256": "37addb10d2c0088691743deb9addb3594f21185062dcbeac7d8af32be2d4b9a6",
+      "materialized_sources": [
+        2148174580
+      ]
+    },
+    {
+      "vram": 2148175008,
+      "origin": "checked-root",
+      "sha256": "37addb10d2c0088691743deb9addb3594f21185062dcbeac7d8af32be2d4b9a6",
+      "materialized_sources": [
+        2148180944
+      ]
+    },
+    {
+      "vram": 2148175376,
+      "origin": "checked-root",
+      "sha256": "37addb10d2c0088691743deb9addb3594f21185062dcbeac7d8af32be2d4b9a6",
+      "materialized_sources": [
+        2148181056
+      ]
+    },
+    {
+      "vram": 2148175668,
+      "origin": "checked-root",
+      "sha256": "e7d27ffe1244d3cb7d453a45c46a66d6507084ec8a25f45726b77682a69737e0",
+      "materialized_sources": [
+        2148180496
+      ]
+    },
+    {
+      "vram": 2148176700,
+      "origin": "checked-root",
+      "sha256": "61f881cbab2778e443dafc8bf9f749aa731804397b530de99333ea40e7bce689",
+      "materialized_sources": [
+        2148177796
+      ]
+    },
+    {
+      "vram": 2148177840,
+      "origin": "checked-root",
+      "sha256": "7948afbe89946df9b6812b6d80394fdffc7d034223126732a638cc238af057cb",
+      "data_offsets": [
+        770824
+      ]
+    },
+    {
+      "vram": 2148177912,
+      "origin": "checked-root",
+      "sha256": "de1a948be5f0586ce5c41528cd49058c57b901e92b535bf7cbb701c1d85fe43a",
+      "data_offsets": [
+        770836
+      ]
+    },
+    {
+      "vram": 2148179392,
+      "origin": "checked-root",
+      "sha256": "8efe540f35b1bb60005e5837cfb37f291e0d8fef240ea2f9e3e25569a5b4dbec",
+      "data_offsets": [
+        770828
+      ]
+    },
+    {
+      "vram": 2148181492,
+      "origin": "checked-root",
+      "sha256": "fa4dce8e3941de0a0b07985aed33f4a09e02860a5b44f7524b0cb6d3a6f8698c",
+      "materialized_sources": [
+        2148183760
+      ]
+    },
+    {
+      "vram": 2148181604,
+      "origin": "checked-root",
+      "sha256": "0ac6dcf48a7464f2fc6264b2ca88c70c9b546dceb6ea9f32535b3d7f4f837ee6",
+      "materialized_sources": [
+        2148184912
+      ]
+    },
+    {
+      "vram": 2148181672,
+      "origin": "checked-root",
+      "sha256": "0ac6dcf48a7464f2fc6264b2ca88c70c9b546dceb6ea9f32535b3d7f4f837ee6",
+      "materialized_sources": [
+        2148184984
+      ]
+    },
+    {
+      "vram": 2148181736,
+      "origin": "checked-root",
+      "sha256": "0ac6dcf48a7464f2fc6264b2ca88c70c9b546dceb6ea9f32535b3d7f4f837ee6",
+      "materialized_sources": [
+        2148184824
+      ]
+    },
+    {
+      "vram": 2148181800,
+      "origin": "checked-root",
+      "sha256": "0ac6dcf48a7464f2fc6264b2ca88c70c9b546dceb6ea9f32535b3d7f4f837ee6",
+      "materialized_sources": [
+        2148185036
+      ]
+    },
+    {
+      "vram": 2148182272,
+      "origin": "checked-root",
+      "sha256": "33b71305c788002e7a895578c073f1ac8be012bb70158bf53b972b2bac01a7b3",
+      "materialized_sources": [
+        2148183300
+      ]
+    },
+    {
+      "vram": 2148182768,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "materialized_sources": [
+        2148184528,
+        2148184572
+      ]
+    },
+    {
+      "vram": 2148184696,
+      "origin": "checked-root",
+      "sha256": "d48b148cf403263db2e7d708f4042cc119376a228c6b0f279ff938070428c8ba",
+      "materialized_sources": [
+        2148185764
+      ]
+    },
+    {
+      "vram": 2148190620,
+      "origin": "checked-root",
+      "sha256": "74f370ba151b9fe0f7d04d8682b778b75d9338453ae08bf60ccfa1924103b3dc",
+      "data_offsets": [
+        770920
+      ]
+    },
+    {
+      "vram": 2148190692,
+      "origin": "checked-root",
+      "sha256": "76837a485de616d3fb880422a425f15cc632d4f4f6ae52d36b9dd3310711f3f2",
+      "data_offsets": [
+        770932
+      ]
+    },
+    {
+      "vram": 2148190752,
+      "origin": "checked-root",
+      "sha256": "bc3b08934111ece2b6544d361187fc20e12c3b49add6657fef62a7fcf5fb66fa",
+      "data_offsets": [
+        770924
+      ]
+    },
+    {
+      "vram": 2148195320,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "data_offsets": [
+        771016
+      ]
+    },
+    {
+      "vram": 2148195400,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "data_offsets": [
+        771028
+      ]
+    },
+    {
+      "vram": 2148195480,
+      "origin": "checked-root",
+      "sha256": "8efe540f35b1bb60005e5837cfb37f291e0d8fef240ea2f9e3e25569a5b4dbec",
+      "data_offsets": [
+        771020
+      ]
+    },
+    {
+      "vram": 2148198336,
+      "origin": "checked-root",
+      "sha256": "e247c583751dc02419c9b60544846b8e7c213e82b63d0cf1289360db3a08648d",
+      "data_offsets": [
+        770876
+      ]
+    },
+    {
+      "vram": 2148198860,
+      "origin": "checked-root",
+      "sha256": "b7a56601dd34ce22f204c12082e0fa642632da3ed698a3d837b6dcd27c542532",
+      "data_offsets": [
+        770872
+      ]
+    },
+    {
+      "vram": 2148198996,
+      "origin": "checked-root",
+      "sha256": "6049e0b5fafaf36a16bf08a6a83dddf5c19986c983930c7f9141b524a894f729",
+      "data_offsets": [
+        770884
+      ]
+    },
+    {
+      "vram": 2148200824,
+      "origin": "checked-root",
+      "sha256": "e71b58faf9d73a615dc86d9c16effd368882309f3e8c789e1e0c1e2f0e26ca7e",
+      "data_offsets": [
+        770968
+      ]
+    },
+    {
+      "vram": 2148201072,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "data_offsets": [
+        770980
+      ]
+    },
+    {
+      "vram": 2148201172,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "data_offsets": [
+        770972
+      ]
+    },
+    {
+      "vram": 2148204060,
+      "origin": "checked-root",
+      "sha256": "19ef24fd8c2662a59ab9aa6ee65864e1c5a1af5ce6d6048f46a8c914831e624d",
+      "data_offsets": [
+        770800
+      ]
+    },
+    {
+      "vram": 2148204132,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "data_offsets": [
+        770812
+      ]
+    },
+    {
+      "vram": 2148204204,
+      "origin": "checked-root",
+      "sha256": "7a6f0225294d56fe11e2bd1402eafb9e217eee46ecc7c59bcc612cc49d189ea9",
+      "data_offsets": [
+        770804
+      ]
+    },
+    {
+      "vram": 2148491164,
+      "origin": "checked-root",
+      "sha256": "b8c2104ae5da9a1fe4087d21bdf273262177e45350b6a218269afe5aa35876e6",
+      "materialized_sources": [
+        2148490300
+      ]
+    },
+    {
+      "vram": 2148491176,
+      "origin": "checked-root",
+      "sha256": "b8c2104ae5da9a1fe4087d21bdf273262177e45350b6a218269afe5aa35876e6",
+      "materialized_sources": [
+        2148490316
+      ]
+    },
+    {
+      "vram": 2148491188,
+      "origin": "checked-root",
+      "sha256": "b8c2104ae5da9a1fe4087d21bdf273262177e45350b6a218269afe5aa35876e6",
+      "materialized_sources": [
+        2148490332
+      ]
+    },
+    {
+      "vram": 2148491200,
+      "origin": "checked-root",
+      "sha256": "e4504dccb5f305b6c4cc9eb33018f0f57685e9d845e4bfbd488d01b01890594b",
+      "materialized_sources": [
+        2148490348
+      ]
+    },
+    {
+      "vram": 2148491212,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "materialized_sources": [
+        2148490364
+      ]
+    },
+    {
+      "vram": 2148491276,
+      "origin": "checked-root",
+      "sha256": "b8c2104ae5da9a1fe4087d21bdf273262177e45350b6a218269afe5aa35876e6",
+      "materialized_sources": [
+        2148490380
+      ]
+    },
+    {
+      "vram": 2148491288,
+      "origin": "checked-root",
+      "sha256": "b8c2104ae5da9a1fe4087d21bdf273262177e45350b6a218269afe5aa35876e6",
+      "materialized_sources": [
+        2148490396
+      ]
+    },
+    {
+      "vram": 2148491300,
+      "origin": "checked-root",
+      "sha256": "b8c2104ae5da9a1fe4087d21bdf273262177e45350b6a218269afe5aa35876e6",
+      "materialized_sources": [
+        2148490412
+      ]
+    },
+    {
+      "vram": 2148491312,
+      "origin": "checked-root",
+      "sha256": "e4504dccb5f305b6c4cc9eb33018f0f57685e9d845e4bfbd488d01b01890594b",
+      "materialized_sources": [
+        2148490428
+      ]
+    },
+    {
+      "vram": 2148491324,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "materialized_sources": [
+        2148490444
+      ]
+    },
+    {
+      "vram": 2148491388,
+      "origin": "checked-root",
+      "sha256": "62189e1934c3c2dce9d123b44d23376260ce2160fddaf6aa56378bb260050e97",
+      "materialized_sources": [
+        2148490460
+      ]
+    },
+    {
+      "vram": 2148491396,
+      "origin": "checked-root",
+      "sha256": "02f703fbfaa4afe852ec50ee57f2b5716485cd4899c578b0966ac6b15c443d22",
+      "materialized_sources": [
+        2148490476
+      ]
+    },
+    {
+      "vram": 2148491404,
+      "origin": "checked-root",
+      "sha256": "1a8ec5879e38e1dd4148a7059ac0e8f0ef429d4c42b83320009abcb2642bab32",
+      "materialized_sources": [
+        2148490492
+      ]
+    },
+    {
+      "vram": 2148491412,
+      "origin": "checked-root",
+      "sha256": "eed9c845a60225aaceb2bffccc7649100715369b94da5dba529b67f14023fc21",
+      "materialized_sources": [
+        2148490508
+      ]
+    },
+    {
+      "vram": 2148491524,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "materialized_sources": [
+        2148490764
+      ]
+    },
+    {
+      "vram": 2148491608,
+      "origin": "checked-root",
+      "sha256": "ac64505be63d8a911a3f02bc6b4467870059ce66a0e765e17e31528a28345fc9",
+      "materialized_sources": [
+        2148490780
+      ]
+    },
+    {
+      "vram": 2148491688,
+      "origin": "checked-root",
+      "sha256": "719cf07dfb11d21ef7b89748eb77c3181f01589bcf0616965674e2f75ac6dce8",
+      "materialized_sources": [
+        2148490796
+      ]
+    },
+    {
+      "vram": 2148491752,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "materialized_sources": [
+        2148490884
+      ]
+    },
+    {
+      "vram": 2148491828,
+      "origin": "checked-root",
+      "sha256": "f33a97a7f1b8ebc0e29c2bf738d258fe793cb78bfacc8c6a62af51c8d1e76447",
+      "materialized_sources": [
+        2148490524
+      ]
+    },
+    {
+      "vram": 2148491864,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "materialized_sources": [
+        2148490540
+      ]
+    },
+    {
+      "vram": 2148491944,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490556
+      ]
+    },
+    {
+      "vram": 2148491988,
+      "origin": "checked-root",
+      "sha256": "ed70dea52288bbe317b8a43051b19e0f8165ae3c04948d06760fbcfcdd52fc41",
+      "materialized_sources": [
+        2148490572
+      ]
+    },
+    {
+      "vram": 2148492000,
+      "origin": "checked-root",
+      "sha256": "fa3b96cbfc827a7174efd1fadec6607b352e62331f4d4f455839a2640998f639",
+      "materialized_sources": [
+        2148490588
+      ]
+    },
+    {
+      "vram": 2148492008,
+      "origin": "checked-root",
+      "sha256": "11a9bb90033837b7bad439558ed791318a2d1ef718e90d1b9a7eb5ee360834b5",
+      "materialized_sources": [
+        2148490604
+      ]
+    },
+    {
+      "vram": 2148492088,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490620
+      ]
+    },
+    {
+      "vram": 2148492132,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "materialized_sources": [
+        2148490636
+      ]
+    },
+    {
+      "vram": 2148492232,
+      "origin": "checked-root",
+      "sha256": "ed70dea52288bbe317b8a43051b19e0f8165ae3c04948d06760fbcfcdd52fc41",
+      "materialized_sources": [
+        2148490652
+      ]
+    },
+    {
+      "vram": 2148492244,
+      "origin": "checked-root",
+      "sha256": "bb2d7d6f7a79a3988359d4aa2dbacbf145ffa0912f4feeb59d1cefd3b51f90e3",
+      "materialized_sources": [
+        2148490668
+      ]
+    },
+    {
+      "vram": 2148492252,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490684
+      ]
+    },
+    {
+      "vram": 2148492296,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490700
+      ]
+    },
+    {
+      "vram": 2148492340,
+      "origin": "checked-root",
+      "sha256": "8dd01c84882027b648a0c8b91509aac79a58dc71942543805fa022f17aa11ea4",
+      "materialized_sources": [
+        2148490716
+      ]
+    },
+    {
+      "vram": 2148492352,
+      "origin": "checked-root",
+      "sha256": "738eceaa3b2aa212ad699f8f04fb48984e4d9dbc7a5cdd3e5cb7f8c1020e3751",
+      "materialized_sources": [
+        2148490732
+      ]
+    },
+    {
+      "vram": 2148492432,
+      "origin": "checked-root",
+      "sha256": "e4504dccb5f305b6c4cc9eb33018f0f57685e9d845e4bfbd488d01b01890594b",
+      "materialized_sources": [
+        2148490748
+      ]
+    },
+    {
+      "vram": 2148492444,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490812
+      ]
+    },
+    {
+      "vram": 2148492488,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490836
+      ]
+    },
+    {
+      "vram": 2148492532,
+      "origin": "checked-root",
+      "sha256": "5e98512db5818615772a935c77228577caf7dd8f85484e09fe5286e24fe6308c",
+      "materialized_sources": [
+        2148490852
+      ]
+    },
+    {
+      "vram": 2148492540,
+      "origin": "checked-root",
+      "sha256": "e4504dccb5f305b6c4cc9eb33018f0f57685e9d845e4bfbd488d01b01890594b",
+      "materialized_sources": [
+        2148490868
+      ]
+    },
+    {
+      "vram": 2148492552,
+      "origin": "checked-root",
+      "sha256": "634274d8984396000adf263de47b6dfb9559ec509fd57127f3ee897496a8b79b",
+      "materialized_sources": [
+        2148490900
+      ]
+    }
+  ]
+}

@@ -545,6 +545,200 @@ roots = [
   # with its own returns. This verifies the root statically. Runtime execution was not
   # observed.
   {name = "reviewed_8007c2f0", vram = 0x8007c2f0, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011af48; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound. The
+  # pinned ROM reproduces prepared section 1. JALR at 0x8007bd74 loads a word from
+  # 0x8011af48 indexed by the low nibble of the actor halfword at offset 0x1AA. The refresh
+  # path produces indices 0 through 10, but a nonzero timer bypasses it and the cached
+  # selector's range remains unproved. The eleven ROM pointer slots end at 0x8011af70,
+  # followed by a byte lookup at 0x8011af74. Each proposed root has a separate
+  # 31-instruction body with its own stack frame and return. All eleven passed in-memory
+  # discovery and translation checks, and their bodies are disjoint from existing ownership.
+  {name = "table_8007bd9c", vram = 0x8007bd9c, section = ".main"},
+  {name = "table_8007be18", vram = 0x8007be18, section = ".main"},
+  {name = "table_8007be94", vram = 0x8007be94, section = ".main"},
+  {name = "table_8007bf10", vram = 0x8007bf10, section = ".main"},
+  {name = "table_8007bf8c", vram = 0x8007bf8c, section = ".main"},
+  {name = "table_8007c008", vram = 0x8007c008, section = ".main"},
+  {name = "table_8007c084", vram = 0x8007c084, section = ".main"},
+  {name = "table_8007c100", vram = 0x8007c100, section = ".main"},
+  {name = "table_8007c17c", vram = 0x8007c17c, section = ".main"},
+  {name = "table_8007c1f8", vram = 0x8007c1f8, section = ".main"},
+  {name = "table_8007c274", vram = 0x8007c274, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x80111100; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound. The
+  # pinned ROM matches the prepared section 1. The call at 0x80061294 loads a pointer from
+  # 0x80111100 plus four times the unsigned byte at a0+6. The caller gates dispatch on a
+  # different field, and the adjacent dispatch table at 0x80111118 establishes a separate
+  # base but leaves the selector bound unproved. ROM slots 1 and 4 point to separate, closed
+  # bodies with unique ownership. Slot 2 has a computed jump at 0x80061694 without checked
+  # targets in the prepared metadata.
+  {name = "table_800612a8", vram = 0x800612a8, section = ".main"},
+  {name = "table_80061bac", vram = 0x80061bac, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011af80; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Verified 14 individual roots from exact ROM pointer slots; each has a separate closed,
+  # unowned .main body. No bounded table is justified: the consumer at 0x8007bdd0 indexes
+  # with an unchecked unsigned byte, and another dispatch sequence begins at slot 14.
+  {name = "table_8007c724", vram = 0x8007c724, section = ".main"},
+  {name = "table_8007cf98", vram = 0x8007cf98, section = ".main"},
+  {name = "table_8007d4b0", vram = 0x8007d4b0, section = ".main"},
+  {name = "table_8007d748", vram = 0x8007d748, section = ".main"},
+  {name = "table_8007d970", vram = 0x8007d970, section = ".main"},
+  {name = "table_8007dab0", vram = 0x8007dab0, section = ".main"},
+  {name = "table_8007e200", vram = 0x8007e200, section = ".main"},
+  {name = "table_8007e2c0", vram = 0x8007e2c0, section = ".main"},
+  {name = "table_8007e588", vram = 0x8007e588, section = ".main"},
+  {name = "table_8007e924", vram = 0x8007e924, section = ".main"},
+  {name = "table_8007ecc8", vram = 0x8007ecc8, section = ".main"},
+  {name = "table_8007ecd8", vram = 0x8007ecd8, section = ".main"},
+  {name = "table_8007eed0", vram = 0x8007eed0, section = ".main"},
+  {name = "table_8007ef94", vram = 0x8007ef94, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011aff0; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound. The
+  # pinned ROM and prepared section 1 confirm the pointer slots. At 0x8007be4c the consumer
+  # uses an unsigned byte from object offset +5, scales it by four, and dispatches without a
+  # bounds check; slot 14 begins another pointer sequence, so a 14-entry bound is unproved.
+  # The four unregistered targets at indices 0, 1, 2, and 12 have exact matching ROM slots
+  # and separate closed bodies with stack prologues, no reported issues, and no overlap with
+  # owned code or each other. The other ten targets already have function entries. Propose
+  # individual roots only.
+  {name = "table_8007c9b4", vram = 0x8007c9b4, section = ".main"},
+  {name = "table_8007ccec", vram = 0x8007ccec, section = ".main"},
+  {name = "table_8007d300", vram = 0x8007d300, section = ".main"},
+  {name = "table_8007edc8", vram = 0x8007edc8, section = ".main"},
+  # ROM-verified function roots.
+  # Verified as an individual static callback root. The pinned ROM maps the entry to section
+  # 1 (.main), prepared offset 0x4060b2c. Dispatch code loads 0x800795ac from table slot
+  # 0x8011a89c and calls it with JALR. The candidate has its own closed frame and return,
+  # directly calls the separate closed function 0x8007a904, and is bounded by the preceding
+  # return and the checked entry at 0x800795c8. Runtime invocation and selector bounds
+  # remain unverified.
+  {name = "reviewed_800795ac", vram = 0x800795ac, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011b274; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Verified 13 individual roots from the pinned ROM (SHA-1
+  # 62ec19bead748c12d38f6c5a7ab0831edbd3d44); prepared section 1 (.main) matches SHA-256
+  # daabf1d4dac248cf697ab7ed60aa1a6e0a555a26a56a154747fbd46b234c6673. Slots 0–13 at
+  # 0x8011b274 contain these 13 distinct targets, with slot 13 repeating slot 12. All target
+  # bodies are closed, end at explicit returns, and do not overlap registered code or
+  # another candidate. The consumer loads an unchecked unsigned byte from object offset +6
+  # at 0x8007dabc, scales it, indexes from 0x8011b274, and calls through the pointer at
+  # 0x8007dad0; verified incoming paths do not constrain that byte. Therefore no exact table
+  # bound is established, and no table declaration is proposed. The adjacent dispatch base
+  # at 0x8011b2ac is a scan boundary, not a proven selector limit.
+  {name = "table_8007db6c", vram = 0x8007db6c, section = ".main"},
+  {name = "table_8007db74", vram = 0x8007db74, section = ".main"},
+  {name = "table_8007dc7c", vram = 0x8007dc7c, section = ".main"},
+  {name = "table_8007dd40", vram = 0x8007dd40, section = ".main"},
+  {name = "table_8007ddc0", vram = 0x8007ddc0, section = ".main"},
+  {name = "table_8007de78", vram = 0x8007de78, section = ".main"},
+  {name = "table_8007de80", vram = 0x8007de80, section = ".main"},
+  {name = "table_8007e098", vram = 0x8007e098, section = ".main"},
+  {name = "table_8007e0a0", vram = 0x8007e0a0, section = ".main"},
+  {name = "table_8007e10c", vram = 0x8007e10c, section = ".main"},
+  {name = "table_8007e114", vram = 0x8007e114, section = ".main"},
+  {name = "table_8007e168", vram = 0x8007e168, section = ".main"},
+  {name = "table_8007e170", vram = 0x8007e170, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011afb8; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Verified seven individual roots against the pinned ROM and prepared section 1: exact
+  # pointer slots, separate closed bodies, explicit returns, and no ownership overlaps. All
+  # 11 consumers index the table using unchecked object byte +5; adjacent arrays do not
+  # establish selector bounds. No function_tables declaration is justified. Four targets
+  # with unresolved local computed jumps are omitted. No files changed or game execution
+  # performed.
+  {name = "table_8007caec", vram = 0x8007caec, section = ".main"},
+  {name = "table_8007d154", vram = 0x8007d154, section = ".main"},
+  {name = "table_8007d608", vram = 0x8007d608, section = ".main"},
+  {name = "table_8007d814", vram = 0x8007d814, section = ".main"},
+  {name = "table_8007d9e0", vram = 0x8007d9e0, section = ".main"},
+  {name = "table_8007dae4", vram = 0x8007dae4, section = ".main"},
+  {name = "table_8007ecd0", vram = 0x8007ecd0, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011b25c; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Verified individual roots only. The pinned original ROM reproduces the supplied prepared
+  # image. Section 1 pointer slots 2148643420, 2148643424 and 2148643428 contain the three
+  # roots and feed JALR at 2147994244, instruction word 4257801. The selector comes from a
+  # lookup indexed by an unchecked object byte; adjacent dispatch data does not establish a
+  # three-entry bound. All three targets have separate, unambiguously owned, closed bodies
+  # of 50, 88 and 2 instructions. In-memory discovery and C emission passed without
+  # ownership collisions. No files were edited or game executed.
+  {name = "table_8007c3e0", vram = 0x8007c3e0, section = ".main"},
+  {name = "table_8007c5b4", vram = 0x8007c5b4, section = ".main"},
+  {name = "table_8007c71c", vram = 0x8007c71c, section = ".main"},
+  # ROM-verified function roots.
+  # Pinned-ROM evidence supports an individual checked root in section 1. Initializer
+  # 0x8007a754 installs dispatcher 0x80079470 into slots consumed by registered actor
+  # dispatch. That dispatcher indexes 0x8011a894 by object byte 8 minus 0x40; selectors 0x44
+  # and 0x46 load 0x80079664 from 0x8011a8a4 and 0x8011a8ac, then JALR at 0x80079510 passes
+  # the object in a0. The root occupies 0x80079664–0x800796c0, with its own frame and return
+  # after the preceding function’s return delay slot. Its JAL at 0x800796b0 reaches separate
+  # function 0x8007aa2c–0x8007aaa4, whose branch paths close through its own epilogue. Both
+  # bodies are disjoint from baseline ownership. The two discovered entries comprise the
+  # root and one new callee. Runtime invocation and full selector bounds remain unverified.
+  # No files were edited or game executed.
+  {name = "reviewed_80079664", vram = 0x80079664, section = ".main"},
+  # ROM-verified function roots.
+  # Pinned cartridge and prepared-image hashes match the supplied metadata. Initializer
+  # 0x8007a754 installs dispatcher 0x80079470 into actor callback slots consumed by
+  # registered function 0x80065220. For object byte 8 equal to 0x47, the dispatcher loads
+  # 0x80079704 from 0x8011a8b0 (prepared offset 0x4101e30), then JALR at 0x80079510 passes
+  # the object in a0. This establishes callback provenance beyond heuristic discovery. The
+  # root occupies [0x80079704,0x80079720), immediately after a preceding return delay slot,
+  # with its own frame and return. Its JAL reaches separate function
+  # [0x8007aaa8,0x8007ab24), whose conditional paths close through its own epilogue and call
+  # existing function 0x8008794c. Neither new body overlaps existing ownership. The dry run
+  # gains two entries total: root and one callee. Static evidence supports an individual
+  # checked root; runtime invocation and full selector bounds remain unverified. No files
+  # were edited or game executed.
+  {name = "reviewed_80079704", vram = 0x80079704, section = ".main"},
+  # ROM-verified function roots.
+  # Pinned ROM and prepared-image hashes match. Initializer 0x8007a754 installs dispatcher
+  # 0x80079470 into actor slots consumed by registered function 0x80065220. For object byte
+  # 8 equal to 0x49, the dispatcher reads 0x80079720 from slot 0x8011a8b8 and JALR at
+  # 0x80079510 passes the object in a0. This establishes callback provenance beyond
+  # heuristic discovery. The root occupies [0x80079720,0x8007973c), with its own frame and
+  # return following the preceding function’s return delay slot. Its JAL reaches separate
+  # function [0x8007ab24,0x8007ac14), whose conditional paths close through its own
+  # epilogue. Both bodies have no existing ownership overlap and pass in-memory discovery,
+  # instruction analysis and C emission. The two gained entries are the root and one callee.
+  # Sufficient for an individual checked root; runtime invocation and complete table bounds
+  # remain unverified. No files were edited or game executed.
+  {name = "reviewed_80079720", vram = 0x80079720, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011b268; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Verified individual roots against the pinned original ROM and prepared section 1. Exact
+  # pointer slots 2148643432, 2148643436 and 2148643440 contain these targets. Both
+  # consumers, 2147995212 and 2147995288, index through a byte lookup using object byte 8;
+  # its producer does not establish selector bounds. Adjacent dispatch data therefore cannot
+  # justify a three-entry table. The targets have separate closed leaf bodies of 44, 48 and
+  # 2 instructions, with explicit returns and no ownership overlaps. In-memory discovery
+  # added exactly these three entries, preserved existing ownership, and passed instruction
+  # analysis and C emission. No files edited or game executed.
+  {name = "table_8007cb74", vram = 0x8007cb74, section = ".main"},
+  {name = "table_8007cc24", vram = 0x8007cc24, section = ".main"},
+  {name = "table_8007cce4", vram = 0x8007cce4, section = ".main"},
+  # ROM-verified function roots.
+  # Function pointer slots at 0x8011b250; Codex reviewed table provenance; the ROM and
+  # generator checked each closed entry. This root set does not assert a selector bound.
+  # Pinned original ROM reproduces the prepared image. Exact slots 0x8011b254 and 0x8011b258
+  # contain the proposed roots, consumed by JALR at 0x8007c820. Their separate closed bodies
+  # contain 67 and 2 instructions, respectively, with no ownership overlap. In-memory
+  # discovery added exactly these two entries, preserved existing ownership, and passed
+  # instruction analysis and C emission. No table declaration: the unchecked byte lookup
+  # leaves selector bounds unproved, and adjacent dispatch tables do not establish them. No
+  # files edited or game executed.
+  {name = "table_8007c4a8", vram = 0x8007c4a8, section = ".main"},
+  {name = "table_8007c714", vram = 0x8007c714, section = ".main"},
 ]
 
 # Startup 0x80000598 selects record 1 through 0x80001180 and inflates it.
@@ -688,7 +882,13 @@ expected_words = [0x00041025, 0x24420010, 0x0045082b, 0x1420fffd, 0xbc4dfff0, 0x
 [graphics]
 # The first S2DEX task selects the 512x327 depth surface. The guest's VI
 # mode and restored scissor use the 436x383 extent at this boot milestone.
-framebuffers = [{width = 320, height = 240}, {width = 436, height = 383}, {width = 512, height = 327}]
+# A later S2DEX task clears a 508x438 RGBA16 color target.
+framebuffers = [
+  {width = 320, height = 240},
+  {width = 436, height = 383},
+  {width = 508, height = 438},
+  {width = 512, height = 327},
+]
 [[graphics.microcodes]]
 name = "F3DEX.Rej fifo 2.06"
 code = {image = ".main", offset = 0x6d40, size = 0x1000, sha256 = "f98f57261d8e6d9a03c7a5a8e669b375edce80c6e5188a17c2b17471002e1cc3"}

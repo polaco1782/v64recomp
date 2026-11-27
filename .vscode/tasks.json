@@ -1196,6 +1196,74 @@
       }
     },
     {
+      "label": "Configure Debug: Carmageddon 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "carmageddon64-us",
+        "-B",
+        "build/carmageddon64-us-gles-debug",
+        "-DCMAKE_BUILD_TYPE=Debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "carmageddon64-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Configure Debug: Donald Duck Goin' Quackers US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "donald-duck-us",
+        "-B",
+        "build/donald-duck-us-gles-debug",
+        "-DCMAKE_BUILD_TYPE=Debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "donald-duck-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
       "label": "Build Debug: Quake II US",
       "type": "process",
       "command": "cmake",
@@ -1223,6 +1291,84 @@
           "${workspaceFolder}/tools/build_msvc_project.ps1",
           "-Game",
           "quake2-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Build Debug: Carmageddon 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/carmageddon64-us-gles-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Carmageddon 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "carmageddon64-us",
+          "-Configuration",
+          "Debug",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Build Debug: Donald Duck Goin' Quackers US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/donald-duck-us-gles-debug",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug: Donald Duck Goin' Quackers US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "donald-duck-us",
           "-Configuration",
           "Debug",
           "-Action",
@@ -2510,6 +2656,74 @@
       }
     },
     {
+      "label": "Configure Release: Carmageddon 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "carmageddon64-us",
+        "-B",
+        "build/carmageddon64-us-gles-release",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "carmageddon64-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
+      "label": "Configure Release: Donald Duck Goin' Quackers US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "donald-duck-us",
+        "-B",
+        "build/donald-duck-us-gles-release",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "donald-duck-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Configure"
+        ],
+        "problemMatcher": []
+      }
+    },
+    {
       "label": "Build Release: Quake II US",
       "type": "process",
       "command": "cmake",
@@ -2537,6 +2751,84 @@
           "${workspaceFolder}/tools/build_msvc_project.ps1",
           "-Game",
           "quake2-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Build Release: Carmageddon 64 US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/carmageddon64-us-gles-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Carmageddon 64 US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "carmageddon64-us",
+          "-Configuration",
+          "Release",
+          "-Action",
+          "Build"
+        ],
+        "problemMatcher": [
+          "$msCompile"
+        ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Build Release: Donald Duck Goin' Quackers US",
+      "type": "process",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/donald-duck-us-gles-release",
+        "-j",
+        "4"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Release: Donald Duck Goin' Quackers US",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "windows": {
+        "command": "powershell.exe",
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/tools/build_msvc_project.ps1",
+          "-Game",
+          "donald-duck-us",
           "-Configuration",
           "Release",
           "-Action",

@@ -1,0 +1,126 @@
+# These polling branches wait for work performed by another guest thread.
+checkpoints = [
+  {pc = 0x800006a4, expected_word = 0x1450ffff, kind = "yield"}, # mainproc waits for the game thread
+  {pc = 0x80084414, expected_word = 0x1440fffd, kind = "yield"}, # Controller Pak request in flight
+  {pc = 0x80084c24, expected_word = 0x1440fffc, kind = "yield"}, # per-frame graphics handoff
+  {pc = 0x80084c3c, expected_word = 0x1462fff6, kind = "yield"}, # per-frame controller handoff
+  {pc = 0x800f75d0, expected_word = 0x1440fffd, kind = "yield"}, # Controller Pak completion before returning to play
+]
+
+[game]
+name = "Disney's Donald Duck: Goin' Quackers (US)"
+rom = "../../local/donald-duck.us.z64"
+rom_sha1 = "e31a7567d408c890065029ba537f830765b17d94"
+rom_size = 0x1400000
+ram_size = 0x800000
+entry_symbol = "entry_point"
+code_sections = [".boot", ".main", ".support"]
+boot_sections = [".boot"]
+
+[discovery]
+entry_inventory = "startup-entries.json"
+allow_registered_indirect_calls = true
+regions = [
+  {name = ".boot", rom_offset = 0x1000, vram = 0x80000400, size = 0x1cdf0},
+  {name = ".main", rom_offset = 0x1ddf0, vram = 0x80026d80, size = 0xa2d20},
+  {name = ".support", rom_offset = 0xc0b10, vram = 0x800f2900, size = 0xb4f0},
+]
+transfers = [
+  {pc = 0x80000434, expected_word = 0x01400008, kind = "tail", targets = [0x80000450]},
+]
+
+# Unsigned selector bounds and full table bytes checked at each JR.
+jump_tables = [
+  {pc = 0x800012f8, expected_word = 0x00400008, table_vram = 0x8001c728, count = 9, sha256 = "0baee3388bf2733c4be6b72683bcc1f0f748921782524def4de8f740e8e4bf1a"},
+  {pc = 0x800013bc, expected_word = 0x00400008, table_vram = 0x8001c750, count = 9, sha256 = "1045b2b58f168007e6aa16b202d36926ca025dcce777f6e188e2d0429462fe4b"},
+  {pc = 0x80001480, expected_word = 0x00400008, table_vram = 0x8001c778, count = 9, sha256 = "2149996beee8f8e04afe9330fac93584f2caf94861340b5a2eddcf01ac9b2784"},
+  {pc = 0x8001040c, expected_word = 0x00400008, table_vram = 0x8001cd50, count = 8, sha256 = "07ca1494cacec06393f350d78b2ff6fa634a354d85863072938c542717b673a2"},
+  {pc = 0x800050c4, expected_word = 0x00400008, table_vram = 0x8001c9c8, count = 24, sha256 = "3b9ea4a5c8ae9a6b60c03d48985b989f626cc0d8906ab96b29d5b1e3d70ff7e8"},
+  {pc = 0x8000d818, expected_word = 0x00400008, table_vram = 0x8001cbd8, count = 6, sha256 = "5b17acf402235284561efbc81272d4d42a4d139362eb0d6f18c8ba76bfd8ffa1"},
+  {pc = 0x8000ec20, expected_word = 0x00400008, table_vram = 0x8001cc20, count = 17, sha256 = "24dceced1aa8082d2e16f348776bde8a8cd5eda56000f947ae092837528544ab"},
+  {pc = 0x8000ff64, expected_word = 0x00400008, table_vram = 0x8001cd18, count = 9, sha256 = "249698c27a491ff020091854549912f20b1bedb2d654b566f277c7bbdbbec72c"},
+  {pc = 0x80014560, expected_word = 0x00400008, table_vram = 0x8001ce40, count = 84, sha256 = "130448ae648f9947dff65b00393ebd722b6fbab4e69c5d69066d518c2b43b7b3"},
+  {pc = 0x8002ce38, expected_word = 0x00400008, table_vram = 0x800c59e8, count = 10, sha256 = "2bcc595d65216989157a38e24c4eaef6ca2ac6d00ddeb617d9d073a5ffa89ad1"},
+  {pc = 0x8002ec44, expected_word = 0x00400008, table_vram = 0x800c5aa8, count = 6, sha256 = "101183f08d69d98c62fe7795b89a7e0c432509fd6257fbc0adc62a14bf3c1479"},
+  {pc = 0x80030f10, expected_word = 0x00400008, table_vram = 0x800c5be0, count = 6, sha256 = "afe81315e55c0de763917d1756d2e291e511578a1b7e712fbb39d5b098e725e7"},
+  {pc = 0x800334d8, expected_word = 0x00400008, table_vram = 0x800c5cf8, count = 5, sha256 = "61f7bd6070f79d8c123977c2eda4eed1053a9f43d89eadac3b76f4b946bfcae1"},
+  {pc = 0x80035b58, expected_word = 0x00400008, table_vram = 0x800c5e80, count = 6, sha256 = "982bf82b83909c840de9077b390e444b4e8d29a9ab537f8aced6dbc0cdc5382c"},
+  {pc = 0x8004c494, expected_word = 0x00400008, table_vram = 0x800c6b00, count = 6, sha256 = "fa1fed2358f2c65624c9fca96a0fba0609eb8791cca4b12dd62bf3fef295a935"},
+  {pc = 0x80050a20, expected_word = 0x00400008, table_vram = 0x800c6d58, count = 6, sha256 = "4bc38e54ef899f46e38053f47501518483a0a435d98933a26b09926a071323e8"},
+  {pc = 0x80081508, expected_word = 0x00400008, table_vram = 0x800c7e20, count = 8, sha256 = "a8b21c504064f3441111faad51112293b63b480a3410dbfc98765bffe790fc05"},
+  {pc = 0x800847b0, expected_word = 0x00400008, table_vram = 0x800c7f40, count = 7, sha256 = "2cb3189084eb745609373788a71106488515e6654739eb377a55a7fa342a0e5d"},
+  {pc = 0x80085b1c, expected_word = 0x00400008, table_vram = 0x800c8050, count = 221, sha256 = "72c2be5bb6df7f2d8111ee4358a9a546a566cc542e0ba5aaa8d62bcb94fcdc45"},
+  {pc = 0x80099338, expected_word = 0x00400008, table_vram = 0x800c8d50, count = 32, sha256 = "8ec5d0262b0165df7ff3e69a434ed963179fd98644d51c00d1b50f76813ed592"},
+  {pc = 0x800a80d4, expected_word = 0x00400008, table_vram = 0x800c9210, count = 9, sha256 = "c83f79a21e0673d0c756258b02234db6ba0dcb9269d0610010e8f3ef9df080e0"},
+  {pc = 0x800b193c, expected_word = 0x00400008, table_vram = 0x800c9538, count = 7, sha256 = "3f191aa620402eb6ac06a9664de732ee48ceac2972dda4ba3751d90466f04595"},
+  {pc = 0x800f3100, expected_word = 0x00400008, table_vram = 0x800fd488, count = 12, sha256 = "461ce2060704bc8cf8491818f8c1d141875bdeaeceecd8a5ea24b2ccdc8994c7"},
+]
+
+# The two loops visit eleven records, stepping 24 bytes between callbacks.
+function_tables = [
+  {pc = 0x8002b4f0, expected_word = 0x0040f809, table_vram = 0x800bf560, count = 61, indices = [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60], sha256 = "622283d55ca3572cb7133a58fb04d64ca98726a64f26799fa530485f02b75def"},
+  {pc = 0x8002b620, expected_word = 0x0040f809, table_vram = 0x800bf564, count = 61, indices = [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60], sha256 = "c1d8f367f4c23029a6890b3dad51ad90535cfd160261155277054b898572632c"},
+  {pc = 0x8003ead8, expected_word = 0x0040f809, table_vram = 0x800bf558, count = 61, indices = [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60], sha256 = "f092cefeefa106b53baee91acdd86122de273b956459626a79e3f98581483e27"},
+  {pc = 0x8003eb0c, expected_word = 0x0040f809, table_vram = 0x800bf550, count = 61, indices = [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60], sha256 = "d4b4ca07c01c729dfd03dc92ef84b019d82e95e96f84aa57a6ac05dd9d7fda45"},
+  {pc = 0x8003ec3c, expected_word = 0x0040f809, table_vram = 0x800bf560, count = 61, indices = [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60], sha256 = "622283d55ca3572cb7133a58fb04d64ca98726a64f26799fa530485f02b75def"},
+]
+
+[bootstrap]
+# The IPL entry clears 0x8001d1f0..0x80036d80 and switches stacks.
+initial_rom_offset = 0x1000
+initial_load_address = 0x80000400
+initial_load_size = 0x1cdf0
+boot_stack = 0x803fd000
+boot_object = 0x803ff000
+counter_hz = 46875000
+thread_tail = 0x8001a3d0
+run_queue = 0x8001a3d8
+active_queue = 0x8001a3dc
+running_thread = 0x8001a3e0
+clock_rate = 0x8001a3b0
+vi_clock = 0x8001a3b8
+final_rom = 0x8002652c
+global_int_mask = 0x8001a3c0
+cart_handle = 0x80026b40
+cont_init_queue = 0x80026728
+cont_init_message = 0x80021fe4
+main_id = 1
+main_first_call = 0x80002700
+main_first_return = 0x800004d8
+main_load_address = 0x80026d80
+main_rom_offset = 0x1ddf0
+main_text_size = 0x987a0
+support_load_address = 0x800f2900
+support_rom_offset = 0xc0b10
+support_text_size = 0xa720
+
+[bootstrap.parameters]
+0x80000300 = 1
+0x80000304 = 0
+0x80000308 = 0xb0000000
+0x8000030c = 0
+0x80000310 = 0x17d6
+0x80000314 = 1
+0x80000318 = 0x800000
+
+[graphics]
+# The logo uses the 320-wide NTSC VI mode. The game also configures 300 x 224
+# at 0x80090704 and 400 x 300 at 0x80090b44.
+framebuffers = [{width = 320, height = 240}, {width = 300, height = 224}, {width = 400, height = 300}]
+
+[[graphics.microcodes]]
+name = "F3DEX.NoN 1.23"
+code = {rom_offset = 0x19920, size = 0x1000, sha256 = "c7e4e769fc995d7eaddeae79d3f610ce7bb9ece5e88148e6d5d9ad8e35439790"}
+data = {rom_offset = 0x1cb00, size = 0x800, sha256 = "9bad5879304d2768d75e81e77c699a40727ddb8561062c3aa894e60cb7fc3bc1"}
+
+[graphics.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x18a30, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "F3DEX.NoN 1.23 with overlays", rom_offset = 0x19920, size = 0x1430, sha256 = "bcc2c734687e9fc95b9d793965f9679a214152bb783fe69c02237dc51a661c32"},
+]
+
+[audio.rsp]
+images = [
+  {name = "RSP bootstrap", rom_offset = 0x18a30, size = 0xd0, sha256 = "5759e9bb21f2e504bfbb3e5b75173cb81aa50c60b19e77bcee1d0f6fc34e8fa4"},
+  {name = "ASP", rom_offset = 0x18b00, size = 0xe20, dma_size = 0xf80, sha256 = "14e3b245e8cd4e0bdf4cbb864af82d1ccba6d3d3ff33f73cb52c5821a76f30fc"},
+]

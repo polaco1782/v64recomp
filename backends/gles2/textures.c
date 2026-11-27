@@ -96,20 +96,36 @@ static Texture *texture_slot(TextureCache *cache, unsigned ways, uint64_t hash, 
     return oldest;
 }
 
+static unsigned indexed_texel(RecompRDPGles2 *s, const Tile *t, unsigned sample_size, unsigned x, unsigned y) {
+    unsigned offset = (t->tmem * 8 + y * t->line * 8 + ((x << sample_size) >> 1)) ^ ((y & 1) ? 4 : 0);
+    offset &= 2047;
+    if (t->siz)
+        return byte(s, offset);
+    unsigned shift = sample_size == 0 && (x & 1) ? 0 : 4;
+    if ((s->tmem_invalid[offset] >> shift) & 15)
+        recomp_fail("GLES2 drawing consumes an invalid texture DMA", offset);
+    return (s->tmem[offset] >> shift) & 15;
+}
+static unsigned palette_color(RecompRDPGles2 *s, const Tile *t, unsigned index) {
+    unsigned k = 2048 + (index + (t->siz == 0 ? t->palette * 16 : 0)) * 8;
+    return byte(s, k) * 256 + byte(s, k + 1);
+}
+
 static void decode_tile(RecompRDPGles2 *s, const Tile *t, unsigned width, unsigned height, bool indexed, unsigned mask,
                         unsigned sample_size, unsigned tlut, uint8_t *pixels) {
     for (unsigned y = 0; y < height; y++)
         for (unsigned x = 0; x < width; x++) {
-            unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << sample_size) >> 1);
-            o ^= (y & 1) ? 4 : 0;
-            unsigned b0 = byte(s, o & mask), b1 = !indexed && t->siz >= 2 ? byte(s, (o + 1) & mask) : 0,
-                     nibble = (b0 >> ((sample_size == 0 && (x & 1)) ? 0 : 4)) & 15;
             uint8_t *p = pixels + ((size_t)y * width + x) * 4;
             if (indexed) {
-                unsigned index = t->siz == 0 ? t->palette * 16 + nibble : b0;
-                unsigned k = 2048 + index * 8;
-                pixel16(byte(s, k) * 256 + byte(s, k + 1), p, tlut == 3);
-            } else if (t->siz == 0) {
+                unsigned index = indexed_texel(s, t, sample_size, x, y);
+                pixel16(palette_color(s, t, index), p, tlut == 3);
+                continue;
+            }
+            unsigned o = t->tmem * 8 + y * t->line * 8 + ((x << sample_size) >> 1);
+            o ^= (y & 1) ? 4 : 0;
+            unsigned b0 = byte(s, o & mask), b1 = t->siz >= 2 ? byte(s, (o + 1) & mask) : 0,
+                     nibble = (b0 >> ((sample_size == 0 && (x & 1)) ? 0 : 4)) & 15;
+            if (t->siz == 0) {
                 unsigned i = nibble * 17, a = i;
                 if (t->fmt == 3) {
                     i = ((nibble >> 1) * 255) / 7;
@@ -193,6 +209,36 @@ static GLuint find_replacement(RecompRDPGles2 *s, Gles2PackTile key, const Tile 
     return status == GLES2_PACK_FOUND && source != known ? replacement_texture(s, key, source, false, original) : 0;
 }
 #endif
+static uint64_t hash_value(uint64_t hash, unsigned value) {
+    return (hash ^ value) * UINT64_C(1099511628211);
+}
+static uint64_t finish_tile_hash(uint64_t hash, unsigned width, unsigned height, const Tile *tile, unsigned palette,
+                                 unsigned tlut) {
+    unsigned fields[] = {width, height, tile->fmt, tile->siz, palette, tlut};
+    for (unsigned i = 0; i < sizeof(fields) / sizeof(*fields); ++i)
+        hash = hash_value(hash, fields[i]);
+    return hash;
+}
+
+/* Preserve the original IDs for direct-color tiles. Old indexed replacement filenames
+ * used this same byte stream followed by the entire contents and validity of the TLUT. */
+static uint64_t raw_tile_hash(RecompRDPGles2 *s, const Tile *t, unsigned width, unsigned height, bool indexed,
+                              bool split_banks, unsigned mask, unsigned sample_size) {
+    unsigned row_bytes = (width * (4u << sample_size) + 7) / 8;
+    uint64_t hash = UINT64_C(1469598103934665603);
+    for (unsigned y = 0; y < height; y++)
+        for (unsigned bank = 0; bank < (split_banks ? 2u : 1u); bank++)
+            for (unsigned x = 0; x < row_bytes; x += indexed && sample_size == 2 ? 2 : 1) {
+                unsigned offset = (t->tmem * 8 + y * t->line * 8 + x) ^ ((y & 1) ? 4 : 0);
+                offset = (offset & mask) | (bank * 2048);
+                hash = hash_value(hash, indexed ? s->tmem[offset] : byte(s, offset));
+            }
+    if (indexed)
+        for (unsigned i = 2048; i < 4096; i++)
+            hash = hash_value(hash, (unsigned)s->tmem[i] | ((unsigned)s->tmem_invalid[i] << 8));
+    return hash;
+}
+
 GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     unsigned *width = &s->tex_width[unit], *height = &s->tex_height[unit];
     *width = tile_extent(s, 0, t->sl, t->sh, t->ms, t->cs, t->ss);
@@ -205,7 +251,6 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
                 s->mux1, s->other_high);
         recomp_fail("GLES2 unsupported tile dimensions", t->sh);
     }
-    uint64_t hash = UINT64_C(1469598103934665603);
     unsigned tlut = (s->other_high >> 14) & 3;
     /* TEXTLUT enables palette lookup independently of the tile format. Conker
      * uses RGBA-tagged 4- and 8-bit indices as well as ordinary CI tiles. */
@@ -215,29 +260,37 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     unsigned sample_size = t->siz == 3 ? 2 : t->siz;
     if (indexed && t->fmt == 1)
         sample_size = 1; /* YUV addresses index bytes, including 4-bit indices in the high nibble. */
-    unsigned row_bytes = (*width * (4u << sample_size) + 7) / 8;
-    /* Cache the tile's contents, independent of unrelated TMEM loads and of
-     * where the game placed the same texture in TMEM. */
-    for (unsigned y = 0; y < *height; y++)
-        for (unsigned bank = 0; bank < (split_banks ? 2u : 1u); bank++)
-            for (unsigned x = 0; x < row_bytes; x += indexed && sample_size == 2 ? 2 : 1) {
-                unsigned offset = (t->tmem * 8 + y * t->line * 8 + x) ^ ((y & 1) ? 4 : 0);
-                hash ^= byte(s, (offset & mask) | (bank * 2048));
-                hash *= UINT64_C(1099511628211);
+    uint64_t hash;
+    if (indexed) {
+        /* Include the index pattern and exactly the palette words it samples. CI4 padding,
+         * replicated TLUT lanes and the bank containing the palette do not identify the tile. */
+        bool used[256] = {false};
+        hash = UINT64_C(1469598103934665603);
+        for (unsigned y = 0; y < *height; ++y)
+            for (unsigned x = 0; x < *width; ++x) {
+                unsigned index = indexed_texel(s, t, sample_size, x, y);
+                used[index] = true;
+                hash = hash_value(hash, index);
             }
-    if (indexed)
-        for (unsigned i = 2048; i < 4096; i++) {
-            hash ^= (unsigned)s->tmem[i] | ((unsigned)s->tmem_invalid[i] << 8);
-            hash *= UINT64_C(1099511628211);
-        }
-    unsigned key[] = {*width, *height, t->fmt, t->siz, t->palette, tlut};
-    for (unsigned i = 0; i < sizeof(key) / sizeof(*key); i++) {
-        hash ^= key[i];
-        hash *= UINT64_C(1099511628211);
-    }
+        for (unsigned i = 0; i < (t->siz ? 256u : 16u); ++i)
+            if (used[i])
+                hash = hash_value(hash, palette_color(s, t, i));
+    } else
+        hash = raw_tile_hash(s, t, *width, *height, false, split_banks, mask, sample_size);
+    hash = finish_tile_hash(hash, *width, *height, t, indexed ? 0 : t->palette, tlut);
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     s->active_tile_key[unit] = hash;
     bool replace = !s->original_textures && gles2_texture_pack_enabled(s->texture_pack);
+    size_t unidentified = replace ? gles2_texture_pack_unidentified(s->texture_pack) : 0;
+    if (unidentified) {
+        gles2_texture_pack_identify(s->texture_pack, hash, hash);
+        if (indexed && gles2_texture_pack_unidentified(s->texture_pack)) {
+            uint64_t legacy = raw_tile_hash(s, t, *width, *height, true, false, mask, sample_size);
+            legacy = finish_tile_hash(legacy, *width, *height, t, t->palette, tlut);
+            gles2_texture_pack_identify(s->texture_pack, legacy, hash);
+        }
+        unidentified = gles2_texture_pack_unidentified(s->texture_pack);
+    }
     const uint64_t rice_texels = s->rice_active ? s->rice_words[t->tmem].load : 0;
     const uint64_t rice_palette =
         s->rice_active && indexed ? s->rice_words[256 + (t->siz == 0 ? 16 * t->palette : 0)].load : 0;
@@ -257,6 +310,7 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     /* An incomplete Rice lookup can become a match after a fresh TMEM load. */
     bool retry = cached && entry->retry_rice && rice_texels && (rice_texels & 511) == t->tmem &&
                  (entry->rice_texels != rice_texels || entry->rice_palette != rice_palette);
+    retry |= cached && entry->unidentified != unidentified;
     bool incomplete = false;
     if (replace && (!cached || retry)) {
         Gles2PackTile key = {hash, *width, *height};
@@ -278,6 +332,7 @@ GLuint recomp_gles2_texture(RecompRDPGles2 *s, Tile *t, unsigned unit) {
     }
 #ifdef RECOMP_GLES2_TEXTURE_PACKS
     if (!cached || retry) {
+        entry->unidentified = unidentified;
         entry->retry_rice = incomplete;
         entry->rice_texels = rice_texels;
         entry->rice_palette = rice_palette;
@@ -420,16 +475,31 @@ void recomp_gles2_load_tile(RecompRDPGles2 *s, Tile *t, uint32_t w0, uint32_t w1
         unsigned bytes = dma.row_bits / 8;
         uint32_t src = 0;
         bool valid = texture_source(s, dma.first_bit / 8, bytes, &src);
-        for (unsigned i = 0; i < bytes; i++) {
-            unsigned word = i / 8, row = (word * th) >> 11;
-            unsigned offset = t->tmem * 8 + i + row * t->line * 8;
-            if (t->siz == 3) {
-                unsigned pixel = i / 4, part = i & 3;
-                offset = t->tmem * 8 + pixel * 2 + (part & 1) + row * t->line * 8;
-                offset = (offset & 2047) | (part >= 2 ? 2048 : 0);
+        if (t->siz != 3) {
+            /* Each DMA word replaces all eight bytes and their provenance.
+             * Odd rows exchange the two 32-bit halves within that word. */
+            for (unsigned i = 0; i < bytes; i += 8) {
+                unsigned row = ((i / 8) * th) >> 11;
+                unsigned word = (t->tmem + i / 8 + row * t->line) & 511;
+                unsigned swap = (row & 1) * 4;
+                for (unsigned b = 0; b < 8; b++)
+                    s->tmem[word * 8 + (b ^ swap)] = valid ? load(s, src + i + b, 1) : 0;
+                memset(s->tmem_invalid + word * 8, valid ? 0 : 255, 8);
+                s->tmem_source[word] = valid ? (s->image_address & 0x03ffffff) + 1 : 0;
+#ifdef RECOMP_GLES2_TEXTURE_PACKS
+                if (s->rice_active)
+                    s->rice_words[word] = (Gles2RiceWord){.load = s->rice_load, .nibbles = valid ? UINT16_MAX : 0};
+#endif
             }
-            offset ^= (row & 1) ? 4 : 0;
-            tmem_store(s, offset, valid, valid ? load(s, src + i, 1) : 0);
+        } else {
+            for (unsigned i = 0; i < bytes; i++) {
+                unsigned word = i / 8, row = (word * th) >> 11;
+                unsigned pixel = i / 4, part = i & 3;
+                unsigned offset = t->tmem * 8 + pixel * 2 + (part & 1) + row * t->line * 8;
+                offset = (offset & 2047) | (part >= 2 ? 2048 : 0);
+                offset ^= (row & 1) ? 4 : 0;
+                tmem_store(s, offset, valid, valid ? load(s, src + i, 1) : 0);
+            }
         }
     } else {
         for (unsigned y = 0; y < dma.rows; y++)

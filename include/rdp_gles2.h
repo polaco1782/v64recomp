@@ -9,6 +9,7 @@ typedef struct RecompRDPGles2 RecompRDPGles2;
 typedef struct RecompGles2InputConfig {
     bool mouse_enabled, mouse_gameplay, keyboard_c_buttons, gamepad_camera;
     bool separate_mouse_actions, wasd_stick;
+    uint16_t menu_confirm;
     void (*fov_adjust)(int);
     bool (*aspect_update)(void *, float);
     void *aspect_userdata;

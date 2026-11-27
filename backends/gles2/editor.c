@@ -27,10 +27,10 @@ struct Gles2EditorPreview {
     uint8_t pixels[thumb_side * thumb_side * 4];
 };
 typedef struct Thumbnail {
-    uint64_t key, frame;
+    uint64_t key, frame, ai_id, loose_id;
     struct Thumbnail *newer, *older, *next_hash;
     unsigned width, height, gallery_index;
-    bool replaced, ai, loose;
+    bool replaced, ai, loose, selected, queued;
     uint8_t *original;
     Gles2EditorPreview preview;
 } Thumbnail;
@@ -42,7 +42,8 @@ struct Gles2TextureEditor {
     Thumbnail *buckets[bucket_count], *newest, *oldest;
     Thumbnail **items; /* Frozen in draw order while the gallery is open. */
     uint64_t frame;
-    unsigned count, selected;
+    unsigned count, focus, selected_count, page;
+    unsigned queue_cursor, batch_size, saved;
 };
 static void sample(Gles2EditorPreview *t, unsigned width, unsigned height, const uint8_t *rgba) {
     unsigned longest = SDL_max(width, height);
@@ -85,6 +86,7 @@ static const char *install(const char *source, const char *directory, Thumbnail 
         error = "Could not save replacement";
     else {
         sample(&t->preview, image.width, image.height, image.pixels);
+        t->loose_id = t->key;
         t->replaced = t->loose = true;
     }
     SDL_free(target);
@@ -250,36 +252,88 @@ uint8_t *gles2_editor_observe_replacement(Gles2TextureEditor *editor, uint64_t k
         t->preview = *preview;
     return allocate_original(t);
 }
-static const char *remove_replacement(Thumbnail *t, Gles2TextureEditor *editor, const char *zip,
-                                      Gles2TexturePack *pack) {
-    const char *error = t->ai ? gles2_ai_remove(zip, t->key) : gles2_editor_remove_loose(editor->directory, t->key);
+static size_t editable_sources(Thumbnail *t, Gles2TexturePack *pack) {
+    size_t ai = SIZE_MAX, loose = SIZE_MAX;
+    t->ai = gles2_texture_pack_ai(pack, t->key, &ai);
+    t->ai_id = t->ai ? gles2_texture_pack_stored_id(pack, ai) : t->key;
+    t->loose = gles2_texture_pack_local(pack, t->key, &loose);
+    t->loose_id = t->loose ? gles2_texture_pack_stored_id(pack, loose) : t->key;
+    return t->ai ? ai : loose;
+}
+static const char *remove_replacement(Thumbnail *t, Gles2TextureEditor *editor, const char *zip) {
+    const char *error =
+        t->ai ? gles2_ai_remove(zip, t->ai_id) : gles2_editor_remove_loose(editor->directory, t->loose_id);
     if (error)
         return error;
-    if (t->ai)
-        t->ai = false;
-    else
-        t->loose = false;
-    t->replaced = t->loose;
+    /* Removing the winning edit can uncover another legacy edit for the same tile. */
+    Gles2TexturePack *pack = gles2_texture_pack_open(zip, editor->directory, NULL);
+    size_t source = editable_sources(t, pack);
+    t->replaced = source != SIZE_MAX;
     Gles2PackImage image;
-    size_t source;
     Gles2PackTile tile = {t->key, t->width, t->height};
-    if (t->loose && pack && gles2_texture_pack_local(pack, t->key, &source) &&
-        gles2_texture_pack_decode(pack, source, tile, editor->limit, &image)) {
+    if (t->replaced && gles2_texture_pack_decode(pack, source, tile, editor->limit, &image)) {
         sample(&t->preview, image.width, image.height, image.pixels);
         gles2_texture_pack_free_image(&image);
     } else if (t->original)
         sample(&t->preview, t->width, t->height, t->original);
     else
         t->preview.width = 0;
+    gles2_texture_pack_close(pack);
     return NULL;
 }
 
 static const SDL_Rect improve_button = {margin, grid_height + 34, 124, 22};
 static const SDL_Rect remove_button = {margin + 132, grid_height + 34, 144, 22};
 
-static bool can_improve(const Gles2TextureEditor *s, const Thumbnail *t) {
-    return !s->job && t && t->original && t->width <= s->limit / GLES2_AI_SCALE &&
-           t->height <= s->limit / GLES2_AI_SCALE;
+enum SelectionMode { SELECT_ONLY, SELECT_ADD, SELECT_TOGGLE };
+
+static void select_tile(Gles2TextureEditor *s, unsigned index, enum SelectionMode mode) {
+    Thumbnail *t = s->items[index];
+    s->page = index / page_size * page_size;
+    if (mode == SELECT_ONLY) {
+        for (unsigned i = 0; i < s->count; ++i)
+            s->items[i]->selected = false;
+        s->selected_count = 0;
+    }
+    if (mode == SELECT_TOGGLE && t->selected) {
+        t->selected = false;
+        --s->selected_count;
+        if (s->focus == index && s->selected_count)
+            for (unsigned i = 0; i < s->count; ++i)
+                if (s->items[i]->selected) {
+                    s->focus = i;
+                    break;
+                }
+    } else {
+        if (!t->selected)
+            ++s->selected_count;
+        t->selected = true;
+        s->focus = index;
+    }
+}
+
+static bool can_improve(const Gles2TextureEditor *s) {
+    if (s->job || !s->selected_count)
+        return false;
+    for (unsigned i = 0; i < s->count; ++i) {
+        const Thumbnail *t = s->items[i];
+        if (t->selected &&
+            (!t->original || t->width > s->limit / GLES2_AI_SCALE || t->height > s->limit / GLES2_AI_SCALE))
+            return false;
+    }
+    return true;
+}
+
+static void start_next(Gles2TextureEditor *s, const char **error) {
+    while (s->queue_cursor < s->count) {
+        Thumbnail *t = s->items[s->queue_cursor++];
+        if (t->queued) {
+            t->queued = false;
+            s->job_texture = t;
+            s->job = gles2_ai_start(t->original, t->width, t->height, error);
+            return;
+        }
+    }
 }
 
 static void button(SDL_Renderer *r, const SDL_Rect *rect, const char *label, bool enabled) {
@@ -295,12 +349,11 @@ static const char guidance[] = "Esc or F8 to return to the game";
 static void paint(SDL_Renderer *renderer, Gles2TextureEditor *state, const char *message) {
     color(renderer, 25, 27, 31);
     SDL_RenderClear(renderer);
-    const unsigned page = (state->selected / page_size) * page_size;
+    const unsigned page = state->page;
     for (unsigned i = page; i < SDL_min(page + page_size, state->count); i++) {
         const Thumbnail *t = state->items[i];
         SDL_Rect bounds = cell(i - page);
-        color(renderer, i == state->selected ? 110 : 57, i == state->selected ? 228 : (t->replaced ? 136 : 60),
-              i == state->selected ? 255 : 67);
+        color(renderer, t->selected ? 110 : 57, t->selected ? 228 : (t->replaced ? 136 : 60), t->selected ? 255 : 67);
         SDL_RenderFillRect(renderer, &bounds);
         if (!t->preview.width)
             continue;
@@ -329,23 +382,28 @@ static void paint(SDL_Renderer *renderer, Gles2TextureEditor *state, const char 
     char label[100];
     if (!state->count) {
         snprintf(label, sizeof(label), "No editable textures seen yet");
+    } else if (!state->selected_count) {
+        snprintf(label, sizeof(label), "No tiles selected");
     } else {
-        const Thumbnail *t = state->items[state->selected];
-        snprintf(label, sizeof(label), "%016" PRIx64 " / native %u x %u / %u of %u%s", t->key, t->width, t->height,
-                 state->selected + 1, state->count, t->replaced ? " / replacement" : "");
+        const Thumbnail *t = state->items[state->focus];
+        snprintf(label, sizeof(label), "%u selected / %016" PRIx64 " / native %u x %u / %u of %u%s",
+                 state->selected_count, t->key, t->width, t->height, state->focus + 1, state->count,
+                 t->replaced ? " / replacement" : "");
     }
     draw_text(renderer, margin, grid_height + 4, label);
     draw_text(renderer, margin, grid_height + 20,
-              "Click a scene triangle or thumbnail. Shift-click for the second tile. Drop a PNG to replace.");
+              "Shift-click thumbnails to add or remove tiles. Shift-click a triangle for its second texture.");
     color(renderer, 110, 228, 255);
-    Thumbnail *t = state->count ? state->items[state->selected] : NULL;
-    button(renderer, &improve_button, "Improve with AI", can_improve(state, t));
+    Thumbnail *t = state->selected_count == 1 ? state->items[state->focus] : NULL;
+    bool ready = can_improve(state);
+    button(renderer, &improve_button, "Improve with AI", ready);
     button(renderer, &remove_button, t && t->ai ? "Remove AI version" : "Remove replacement",
            !state->job && t && (t->ai || t->loose));
     color(renderer, 110, 228, 255);
     if (state->job)
-        snprintf(label, sizeof(label), "Improving %016" PRIx64 " with Codex... Esc cancels", state->job_texture->key);
-    else if (t && !can_improve(state, t) && message == guidance)
+        snprintf(label, sizeof(label), "Improving %u of %u: %016" PRIx64 " / Esc cancels", state->saved + 1,
+                 state->batch_size, state->job_texture->key);
+    else if (state->selected_count && !ready && message == guidance)
         snprintf(label, sizeof(label), "Native source unavailable or output exceeds the %u px texture limit",
                  state->limit);
     else
@@ -355,8 +413,17 @@ static void paint(SDL_Renderer *renderer, Gles2TextureEditor *state, const char 
 }
 
 static void select_delta(Gles2TextureEditor *state, int delta) {
-    if (state->count)
-        state->selected = (unsigned)(SDL_clamp((int)(state->selected) + delta, 0, (int)(state->count) - 1));
+    if (state->count) {
+        unsigned index = SDL_min(state->count - 1, state->page + state->focus % page_size);
+        select_tile(state, (unsigned)SDL_clamp((int)index + delta, 0, (int)state->count - 1), SELECT_ONLY);
+    }
+}
+
+static void browse_page(Gles2TextureEditor *s, int direction) {
+    if (s->count) {
+        int last = (int)((s->count - 1) / page_size);
+        s->page = (unsigned)SDL_clamp((int)(s->page / page_size) + direction, 0, last) * page_size;
+    }
 }
 
 Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
@@ -364,6 +431,7 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
     SDL_Window *game = gpu->window;
     const char *zip = gpu->texture_zip;
     Gles2TexturePack *pack = gpu->texture_pack;
+    gles2_texture_pack_flush_mappings(pack);
     unsigned max_texture_size = gpu->max_texture_size;
     if (!zip || !editor || !game)
         return GLES2_EDITOR_OPEN_FAILED;
@@ -407,15 +475,18 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
     SDL_bool click_through = SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     editor->limit = SDL_min((unsigned)GLES2_TEXTURE_MAX_SIDE, max_texture_size);
-    editor->selected = 0;
+    editor->page = editor->focus = 0;
+    editor->selected_count = editor->count ? 1 : 0;
     for (unsigned i = 0; i < editor->count; ++i) {
         Thumbnail *t = editor->items[i];
         t->gallery_index = i;
-        size_t source;
-        t->ai = gles2_texture_pack_ai(pack, t->key, &source);
-        t->loose = pack && gles2_texture_pack_local(pack, t->key, &source);
+        t->selected = i == 0;
+        t->queued = false;
+        editable_sources(t, pack);
     }
     const char *message = guidance;
+    char batch_status[160];
+    unsigned shift = SDL_GetModState() & KMOD_SHIFT;
     bool changed = false, quit = false, closed = false;
     unsigned hovered = 0;
     recomp_gles2_editor_display(gpu, true, hovered);
@@ -429,12 +500,18 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
             if (gles2_ai_poll(editor->job, zip, t->key, &image, &error)) {
                 if (!error) {
                     sample(&t->preview, image.width, image.height, image.pixels);
+                    t->ai_id = t->key;
                     t->ai = t->replaced = changed = true;
+                    ++editor->saved;
                 }
                 gles2_texture_pack_free_image(&image);
                 gles2_ai_destroy(editor->job);
                 editor->job = NULL;
-                message = error ? error : "Replacement saved to ZIP";
+                if (!error)
+                    start_next(editor, &error);
+                snprintf(batch_status, sizeof(batch_status), "%u of %u saved to ZIP%s%s", editor->saved,
+                         editor->batch_size, error ? ". " : "", error ? error : "");
+                message = batch_status;
                 SDL_Log("GLES2 texture editor: %s", message);
                 paint(renderer, editor, message);
             }
@@ -444,6 +521,14 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
                 continue;
         } else if (!SDL_WaitEvent(&event))
             break;
+        /* Mouse events have no modifiers. Follow key events in order so a queued
+         * Shift release cannot change the meaning of an earlier click. */
+        if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+            shift = event.key.keysym.mod & KMOD_SHIFT;
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+            shift = 0;
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+            shift = SDL_GetModState() & KMOD_SHIFT;
         if (event.type == SDL_QUIT || (event.type == SDL_WINDOWEVENT && event.window.windowID == game_window &&
                                        event.window.event == SDL_WINDOWEVENT_CLOSE)) {
             quit = closed = true;
@@ -456,17 +541,23 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
         } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.windowID == game_window &&
                    event.button.button == SDL_BUTTON_LEFT) {
             hovered = recomp_gles2_editor_hit(gpu, event.button.x, event.button.y);
-            uint64_t key;
-            bool secondary = (SDL_GetModState() & KMOD_SHIFT) != 0;
-            if (recomp_gles2_pick_key(gpu, hovered, secondary, &key)) {
-                Thumbnail *t = find(editor, key);
-                if (t)
-                    editor->selected = t->gallery_index;
-                message = t ? "Selected the triangle's texture" : "This texture is no longer in the gallery";
+            uint64_t keys[2];
+            unsigned tiles = recomp_gles2_pick_keys(gpu, hovered, keys);
+            if (tiles) {
+                bool secondary = shift && tiles == 2;
+                Thumbnail *t = find(editor, keys[secondary ? 1 : 0]);
+                if (t) {
+                    select_tile(editor, t->gallery_index, shift ? SELECT_ADD : SELECT_ONLY);
+                    message = secondary    ? "Selected this triangle's second texture"
+                              : tiles == 2 ? "Selected first texture. Shift-click for the second"
+                                           : "This triangle uses one distinct texture";
+                } else
+                    message = "This texture is no longer in the gallery";
             } else
                 message = hovered ? "This triangle has no texture" : "No triangle at this point";
             recomp_gles2_editor_display(gpu, true, hovered);
             paint(renderer, editor, message);
+            SDL_RaiseWindow(window);
         } else if (event.type == SDL_WINDOWEVENT && event.window.windowID == game_window &&
                    (event.window.event == SDL_WINDOWEVENT_EXPOSED ||
                     event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
@@ -503,10 +594,10 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
                     select_delta(editor, columns);
                     break;
                 case SDL_SCANCODE_PAGEUP:
-                    select_delta(editor, -(int)(page_size));
+                    browse_page(editor, -1);
                     break;
                 case SDL_SCANCODE_PAGEDOWN:
-                    select_delta(editor, page_size);
+                    browse_page(editor, 1);
                     break;
                 default:
                     continue;
@@ -517,21 +608,24 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
             }
         } else if (event.type == SDL_MOUSEWHEEL && event.wheel.windowID == id && event.wheel.y) {
             bool up = (event.wheel.y > 0) != (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED);
-            select_delta(editor, up ? -(int)(page_size) : (int)(page_size));
+            browse_page(editor, up ? -1 : 1);
             message = guidance;
             paint(renderer, editor, message);
         } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.windowID == id &&
                    event.button.button == SDL_BUTTON_LEFT) {
-            unsigned page = (editor->selected / page_size) * page_size;
+            unsigned page = editor->page;
             SDL_Point point = {event.button.x, event.button.y};
-            Thumbnail *t = editor->count ? editor->items[editor->selected] : NULL;
-            if (SDL_PointInRect(&point, &improve_button) && can_improve(editor, t)) {
-                editor->job_texture = t;
-                editor->job = gles2_ai_start(t->original, t->width, t->height, &message);
+            Thumbnail *t = editor->selected_count == 1 ? editor->items[editor->focus] : NULL;
+            if (SDL_PointInRect(&point, &improve_button) && can_improve(editor)) {
+                editor->queue_cursor = editor->saved = 0;
+                editor->batch_size = editor->selected_count;
+                for (unsigned i = 0; i < editor->count; ++i)
+                    editor->items[i]->queued = editor->items[i]->selected;
+                start_next(editor, &message);
                 paint(renderer, editor, message);
             } else if (SDL_PointInRect(&point, &remove_button) && event.button.clicks <= 1 && !editor->job && t &&
                        (t->ai || t->loose)) {
-                const char *error = remove_replacement(t, editor, zip, pack);
+                const char *error = remove_replacement(t, editor, zip);
                 changed |= !error;
                 message = error ? error : "Removed. Gameplay will reload the underlying texture";
                 paint(renderer, editor, message);
@@ -539,7 +633,7 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
             for (unsigned i = page; i < SDL_min(page + page_size, editor->count); i++) {
                 SDL_Rect bounds = cell(i - page);
                 if (SDL_PointInRect(&point, &bounds)) {
-                    editor->selected = i;
+                    select_tile(editor, i, shift ? SELECT_TOGGLE : SELECT_ONLY);
                     message = guidance;
                     paint(renderer, editor, message);
                     break;
@@ -548,8 +642,9 @@ Gles2EditorResult gles2_editor_run(RecompRDPGles2 *gpu) {
         } else if (event.type == SDL_DROPFILE || event.type == SDL_DROPTEXT) {
             char *path = event.drop.file;
             if (event.type == SDL_DROPFILE && event.drop.windowID == id && editor->count && path) {
-                Thumbnail *t = editor->items[editor->selected];
-                const char *error = editor->job && editor->job_texture == t
+                Thumbnail *t = editor->items[editor->focus];
+                const char *error = editor->selected_count != 1 ? "Select one tile to import a PNG"
+                                    : editor->job && (editor->job_texture == t || t->queued)
                                         ? "Wait for this texture to finish before importing"
                                     : t->ai ? "Remove the AI version before importing a PNG"
                                             : install(path, editor->directory, t, max_texture_size);

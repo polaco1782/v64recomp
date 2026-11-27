@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\carmageddon64-us\CMakeLists.txt">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClInclude Include="$(RecompRoot)games\carmageddon64-us\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <None Include="$(RecompRoot)games\carmageddon64-us\generate.py">
+      <Filter>Source Files</Filter>
+    </None>
+    <ClCompile Include="$(RecompRoot)games\carmageddon64-us\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <None Include="$(RecompRoot)games\carmageddon64-us\profile.toml">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="$(RecompRoot)games\carmageddon64-us\startup-entries.json">
+      <Filter>Configuration</Filter>
+    </None>
+    <ClCompile Include="$(RecompBuildDir)\generated\carmageddon64-us\cpu-*.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RecompBuildDir)\generated\carmageddon64-us\functions.c">
+      <Filter>Generated Code</Filter>
+    </ClCompile>
+    <ClInclude Include="$(RecompBuildDir)\generated\carmageddon64-us\*.h">
+      <Filter>Generated Code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{28F94543-C01A-5837-A348-DF31A37E8706}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Code">
+      <UniqueIdentifier>{3AFCD9CB-A841-5CF7-AB4B-94FA9698EA99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{646E1EBA-8BB7-52A9-B8D7-71CD87A2D4CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{23AB5EC5-1589-5A93-9B85-3E1063D66A26}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -123,6 +123,7 @@ typedef struct Texture {
     Gles2EditorPreview *preview;
     unsigned image_width, image_height;
     uint64_t rice_texels, rice_palette;
+    size_t unidentified;
     bool retry_rice;
 #endif
 } Texture;
@@ -168,6 +169,7 @@ struct RecompRDPGles2 {
     RecompMouseFrame mouse_frame;
     RecompCameraStick camera_stick;
     bool mouse_captured, mouse_released, expanded_aspect;
+    bool menu_confirm_down, menu_confirm_blocked;
     float presentation_aspect;
     struct {
 #define DECLARE(name, type) type name;
@@ -259,7 +261,7 @@ void recomp_gles2_destroy_interpolation(RecompRDPGles2 *);
 void recomp_gles2_begin_interpolation(RecompRDPGles2 *);
 void recomp_gles2_end_interpolation(RecompRDPGles2 *);
 Surface *recomp_gles2_midpoint_target(RecompRDPGles2 *);
-void recomp_gles2_midpoint_triangle(RecompRDPGles2 *, uint32_t flags, unsigned start);
+Vertex *recomp_gles2_midpoint_triangle(RecompRDPGles2 *, uint32_t flags, unsigned start, float decal_bias);
 const Vertex *recomp_gles2_midpoint_batch(RecompRDPGles2 *);
 Surface *recomp_gles2_interpolated_display(RecompRDPGles2 *, Surface *);
 void recomp_gles2_store_reflection(RecompRDPGles2 *, Surface *);
@@ -282,7 +284,7 @@ void recomp_gles2_pick_destroy(RecompRDPGles2 *);
 void recomp_gles2_pick_outline(RecompRDPGles2 *, const Surface *, unsigned hovered);
 void recomp_gles2_editor_display(RecompRDPGles2 *, bool outlines, unsigned hovered);
 unsigned recomp_gles2_editor_hit(RecompRDPGles2 *, int x, int y);
-bool recomp_gles2_pick_key(RecompRDPGles2 *, unsigned id, bool secondary, uint64_t *key);
+unsigned recomp_gles2_pick_keys(RecompRDPGles2 *, unsigned id, uint64_t keys[2]);
 #endif
 
 TextureTransfer recomp_gles2_texture_transfer(unsigned image_width, unsigned image_siz, unsigned tile_siz, uint32_t w0,

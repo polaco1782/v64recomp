@@ -9,32 +9,13 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
 import sys
-import tempfile
 
-from common import RecompError, load_profile, load_rom, write_json
+from analysis.export_analysis_rom import prepared_analysis_rom
+from common import RecompError, write_json
 from discover import discover
-PROJECT = Path(__file__).resolve().parents[2]
-
-
-def prepare(game: str) -> tuple[bytes, dict]:
-    base = PROJECT / 'games' / game
-    profile = load_profile(base / 'profile.toml')
-    rom, _ = load_rom(profile['game']['rom'], profile['game']['rom_sha1'],
-                      profile['game']['rom_size'])
-    sys.path.insert(0, str(base))
-    spec = importlib.util.spec_from_file_location('game_probe', base / 'generate.py')
-    if spec is None or spec.loader is None:
-        raise RecompError('game preparation module is unavailable')
-    generator = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(generator)
-    with tempfile.TemporaryDirectory(prefix='v64-root-probe-') as directory:
-        if hasattr(generator, 'prepare'):
-            rom, profile = generator.prepare(rom, profile, Path(directory))
-    return rom, profile
 
 
 def call_edges(candidates: list[dict]) -> dict[int, set[int]]:
@@ -77,9 +58,13 @@ def ranked_roots(candidates: list[dict], edges: dict[int, set[int]]) -> list[dic
 
 
 def probe(game: str, metadata_path: Path, addresses: list[int], limit: int) -> dict:
+    with prepared_analysis_rom(game) as (rom, profile):
+        return {'game': game, **_probe_prepared(rom, profile, metadata_path, addresses, limit)}
+
+
+def _probe_prepared(rom: bytes, profile: dict, metadata_path: Path, addresses: list[int], limit: int) -> dict:
     metadata = json.loads(metadata_path.read_text())
     report = json.loads(metadata_path.with_name('function-candidates.json').read_text())
-    rom, profile = prepare(game)
     digest = hashlib.sha1(rom).hexdigest()
     if metadata['rom_sha1'] != digest or report['rom_sha1'] != digest:
         raise RecompError('generated metadata or candidate report differs from the prepared ROM')
@@ -126,7 +111,7 @@ def probe(game: str, metadata_path: Path, addresses: list[int], limit: int) -> d
         except (RecompError, ValueError, KeyError) as error:
             result.update(status='unresolved', reason=str(error))
         results.append(result)
-    return {'game': game, 'rom_sha1': digest, 'ranked_roots': ranked,
+    return {'rom_sha1': digest, 'ranked_roots': ranked,
             'probes': results,
             'note': 'A successful dry run checks discovery, not callback provenance or gameplay.'}
 

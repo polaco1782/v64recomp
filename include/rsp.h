@@ -35,7 +35,9 @@ struct RecompRspState {
     uint32_t gpr[32], pc, next_pc, instruction_pc;
     uint16_t v[32][8], vco, vcc;
     uint8_t vce;
-    int64_t accumulator[8];
+    /* 48-bit vector accumulator. Low-only operations preserve the upper lanes. */
+    uint16_t acc_low[8];
+    uint32_t acc_upper[8];
     uint32_t div_input, div_output;
     bool div_pending;
     uint8_t dmem[4096], imem[4096];
@@ -81,9 +83,12 @@ void recomp_rsp_ctc2(RecompRspState *, unsigned reg, uint32_t value);
     X(vmacu)                                                                                                           \
     X(vrndn)                                                                                                           \
     X(vmacq)                                                                                                           \
-    X(vmadl) X(vmadm) X(vmadn) X(vmadh) X(vadd) X(vsub) X(vabs) X(vaddc) X(vsubc) X(vsar) X(vlt) X(veq) X(vne) X(vge)  \
-        X(vcl) X(vch) X(vcr) X(vmrg) X(vand) X(vnand) X(vor) X(vnor) X(vxor) X(vnxor) X(vrcp) X(vrcpl) X(vrcph)        \
-            X(vmov) X(vrsq) X(vrsql) X(vrsqh)
+    X(vmadl)                                                                                                           \
+    X(vmadm)                                                                                                           \
+    X(vmadn)                                                                                                           \
+    X(vmadh)                                                                                                           \
+    X(vadd) X(vsub) X(vabs) X(vaddc) X(vsubc) X(vsar) X(vlt) X(veq) X(vne) X(vge) X(vcl) X(vch) X(vcr) X(vmrg) X(vand) \
+        X(vnand) X(vor) X(vnor) X(vxor) X(vnxor) X(vrcp) X(vrcpl) X(vrcph) X(vmov) X(vrsq) X(vrsql) X(vrsqh)
 #define RECOMP_RSP_DECLARE(name) void recomp_rsp_##name(RecompRspState *, unsigned, unsigned, unsigned, unsigned);
 RECOMP_RSP_VECTOR_OPS(RECOMP_RSP_DECLARE)
 #undef RECOMP_RSP_DECLARE

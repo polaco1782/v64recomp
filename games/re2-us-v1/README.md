@@ -49,8 +49,8 @@ and S2DEX FIFO task code and data to exact spans of the decoded `.main` image.
 Its bootstrap and overlay instructions are checked again during generation.
 The boot depth command uses a 512-pixel stride (including the immediate at
 `0x80025608`), and the guest scissor gives 327 rows. The subsequent 436x383
-settings come from the captured VI mode and restored scissor; they do not
-establish the game's full dynamic-resolution inventory.
+settings come from the captured VI mode and restored scissor. A later S2DEX
+task sets and clears a 508x438 RGBA16 color target at `0x0063e000`.
 
 The video tasks write the movie and other software-generated images directly
 into guest RAM. GLES presents the active VI framebuffer from RAM so that

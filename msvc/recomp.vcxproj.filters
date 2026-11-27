@@ -37,7 +37,7 @@
     <ClInclude Include="$(RecompRoot)backends\gles2\editor.h">
       <Filter>Header Files\backends\gles2</Filter>
     </ClInclude>
-    <ClCompile Include="$(RecompRoot)backends\gles2\editor_ai.cpp">
+    <ClCompile Include="$(RecompRoot)backends\gles2\editor_ai.c">
       <Filter>Source Files\backends\gles2</Filter>
     </ClCompile>
     <ClInclude Include="$(RecompRoot)backends\gles2\editor_ai.h">

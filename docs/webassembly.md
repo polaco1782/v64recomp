@@ -1,7 +1,8 @@
 # Browser build (experimental)
 
-All 22 game profiles and the Bad Apple and Media Player demos have Emscripten
-builds. Games run their compiled graphics RSP programs through WebGL 2.
+Emscripten builds have been checked for 22 game profiles and the Bad Apple
+and Media Player demos. Carmageddon 64 and Donald Duck have desktop Linux
+validation. Games run their compiled graphics RSP programs through WebGL 2.
 Bad Apple submits raw RDP commands. Media Player uses its SDL interface.
 
 ## Build and run

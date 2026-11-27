@@ -3,30 +3,38 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 import sys
 import tempfile
 
 from common import RecompError, load_metadata, load_profile, load_rom
-from generate_game import GAMES, PROJECT
+from generate_game import GAMES, PROJECT, load_generator
 
 
-def load_analysis_rom(game: str, metadata: Path) -> tuple[bytes, dict]:
-    """Prepare and verify the discovery image without changing build outputs."""
+@contextmanager
+def prepared_analysis_rom(game: str) -> Iterator[tuple[bytes, dict]]:
+    """Return the discovery image and resolved profile without changing build outputs."""
     base = PROJECT / 'games' / game
     profile = load_profile(base / 'profile.toml')
     identity = profile['game']
     rom, _ = load_rom(identity['rom'], identity['rom_sha1'], identity['rom_size'])
-    sys.path.insert(0, str(base))
-    spec = importlib.util.spec_from_file_location('game_generate', base / 'generate.py')
-    generator = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(generator)
-    # Some prepare hooks also emit headers. Keep those out of the real build.
-    with tempfile.TemporaryDirectory(prefix='v64-analysis-') as tmp:
-        if hasattr(generator, 'prepare'):
-            rom, _ = generator.prepare(rom, profile, Path(tmp))
-    return rom, load_metadata(metadata, rom)
+    generator = load_generator(game)
+    if hasattr(generator, 'prepare_analysis'):
+        yield generator.prepare_analysis(rom, profile)
+    elif hasattr(generator, 'prepare'):
+        # Some prepare hooks also emit files. Keep those out of the real build.
+        with tempfile.TemporaryDirectory(prefix='v64-analysis-') as tmp:
+            yield generator.prepare(rom, profile, Path(tmp))
+    else:
+        yield rom, profile
+
+
+def load_analysis_rom(game: str, metadata: Path) -> tuple[bytes, dict]:
+    """Prepare and verify the discovery image without changing build outputs."""
+    with prepared_analysis_rom(game) as (rom, _):
+        return rom, load_metadata(metadata, rom)
 
 
 def export_analysis_rom(game: str, metadata: Path, output: Path) -> None:

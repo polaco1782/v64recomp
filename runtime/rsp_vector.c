@@ -8,26 +8,33 @@ static const uint8_t selectors[16][8] = {
     {0, 0, 0, 0, 4, 4, 4, 4}, {1, 1, 1, 1, 5, 5, 5, 5}, {2, 2, 2, 2, 6, 6, 6, 6}, {3, 3, 3, 3, 7, 7, 7, 7},
     {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 1, 1, 1, 1}, {2, 2, 2, 2, 2, 2, 2, 2}, {3, 3, 3, 3, 3, 3, 3, 3},
     {4, 4, 4, 4, 4, 4, 4, 4}, {5, 5, 5, 5, 5, 5, 5, 5}, {6, 6, 6, 6, 6, 6, 6, 6}, {7, 7, 7, 7, 7, 7, 7, 7}};
-static int64_t wrap48(int64_t value) {
-    uint64_t bits = (uint64_t)value & UINT64_C(0xffffffffffff);
-    return (int64_t)bits - ((bits & UINT64_C(0x800000000000)) ? INT64_C(0x1000000000000) : 0);
+static int64_t accumulator(const RecompRspState *s, unsigned lane) {
+    return (int64_t)(int32_t)s->acc_upper[lane] * 65536 + s->acc_low[lane];
+}
+static void write_accumulator(RecompRspState *s, unsigned lane, int64_t value) {
+    s->acc_low[lane] = (uint16_t)value;
+    s->acc_upper[lane] = (uint32_t)((uint64_t)value >> 16);
 }
 static uint16_t saturate(int64_t value) {
     return (uint16_t)(value < -32768 ? -32768 : value > 32767 ? 32767 : value);
 }
-static uint16_t low_saturate(int64_t value) {
-    return value < INT32_MIN ? 0 : value > INT32_MAX ? 65535 : (uint16_t)value;
+static uint16_t low_saturate(int32_t upper, uint16_t low) {
+    return upper < -32768 ? 0 : upper > 32767 ? 65535 : low;
 }
-static uint16_t unsigned_fraction(int64_t value) {
-    return value < 0 ? 0 : value > INT32_MAX ? 65535 : (uint16_t)(value >> 16);
-}
-static void set_low(RecompRspState *s, unsigned lane, uint16_t value) {
-    s->accumulator[lane] = wrap48((int64_t)(((uint64_t)s->accumulator[lane] & UINT64_C(0xffffffff0000)) | value));
+static uint16_t unsigned_fraction(int32_t upper) {
+    return upper < 0 ? 0 : upper > 32767 ? 65535 : (uint16_t)upper;
 }
 static void operands(RecompRspState *s, unsigned vs, unsigned vt, unsigned e, uint16_t a[8], uint16_t b[8]) {
-    for (unsigned i = 0; i < 8; i++) {
-        a[i] = s->v[vs][i];
-        b[i] = s->v[vt][selectors[e][i]];
+    memcpy(a, s->v[vs], sizeof(s->v[vs]));
+    if (e < 2) {
+        memcpy(b, s->v[vt], sizeof(s->v[vt]));
+    } else if (e >= 8) {
+        uint16_t scalar = s->v[vt][e - 8];
+        for (unsigned i = 0; i < 8; i++)
+            b[i] = scalar;
+    } else {
+        for (unsigned i = 0; i < 8; i++)
+            b[i] = s->v[vt][selectors[e][i]];
     }
 }
 static uint8_t vector_byte(const RecompRspState *s, unsigned reg, unsigned byte) {
@@ -67,22 +74,28 @@ void recomp_rsp_ctc2(RecompRspState *s, unsigned reg, uint32_t value) {
         operands(s, vs, vt, e, a, b);                                                                                  \
         for (unsigned i = 0; i < 8; i++) {                                                                             \
             int64_t p = (product);                                                                                     \
-            s->accumulator[i] = wrap48((accumulate) ? s->accumulator[i] + p : p);                                      \
+            uint32_t low = (uint16_t)p, upper = (uint32_t)((uint64_t)p >> 16);                                         \
+            if (accumulate) {                                                                                          \
+                low += s->acc_low[i];                                                                                  \
+                upper += s->acc_upper[i] + (low >> 16);                                                                \
+            }                                                                                                          \
+            s->acc_low[i] = (uint16_t)low;                                                                             \
+            s->acc_upper[i] = upper;                                                                                   \
             s->v[vd][i] = (result);                                                                                    \
         }                                                                                                              \
     }
-MUL(vmulf, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2 + 32768, false, saturate(s->accumulator[i] >> 16))
-MUL(vmulu, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2 + 32768, false, unsigned_fraction(s->accumulator[i]))
-MUL(vmudl, ((uint32_t)a[i] * b[i]) >> 16, false, (uint16_t)s->accumulator[i])
-MUL(vmudm, (int64_t)(int16_t)a[i] * b[i], false, (uint16_t)(s->accumulator[i] >> 16))
-MUL(vmudn, (int64_t)a[i] * (int16_t)b[i], false, (uint16_t)s->accumulator[i])
-MUL(vmudh, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 65536, false, saturate(s->accumulator[i] >> 16))
-MUL(vmacf, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2, true, saturate(s->accumulator[i] >> 16))
-MUL(vmacu, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2, true, unsigned_fraction(s->accumulator[i]))
-MUL(vmadl, ((uint32_t)a[i] * b[i]) >> 16, true, low_saturate(s->accumulator[i]))
-MUL(vmadm, (int64_t)(int16_t)a[i] * b[i], true, saturate(s->accumulator[i] >> 16))
-MUL(vmadn, (int64_t)a[i] * (int16_t)b[i], true, low_saturate(s->accumulator[i]))
-MUL(vmadh, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 65536, true, saturate(s->accumulator[i] >> 16))
+MUL(vmulf, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2 + 32768, false, saturate((int32_t)upper))
+MUL(vmulu, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2 + 32768, false, unsigned_fraction((int32_t)upper))
+MUL(vmudl, ((uint32_t)a[i] * b[i]) >> 16, false, (uint16_t)low)
+MUL(vmudm, (int64_t)(int16_t)a[i] * b[i], false, (uint16_t)upper)
+MUL(vmudn, (int64_t)a[i] * (int16_t)b[i], false, (uint16_t)low)
+MUL(vmudh, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 65536, false, saturate((int32_t)upper))
+MUL(vmacf, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2, true, saturate((int32_t)upper))
+MUL(vmacu, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 2, true, unsigned_fraction((int32_t)upper))
+MUL(vmadl, ((uint32_t)a[i] * b[i]) >> 16, true, low_saturate((int32_t)upper, (uint16_t)low))
+MUL(vmadm, (int64_t)(int16_t)a[i] * b[i], true, saturate((int32_t)upper))
+MUL(vmadn, (int64_t)a[i] * (int16_t)b[i], true, low_saturate((int32_t)upper, (uint16_t)low))
+MUL(vmadh, (int64_t)(int16_t)a[i] * (int16_t)b[i] * 65536, true, saturate((int32_t)upper))
 #undef MUL
 
 static inline void round_accumulator(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, unsigned e,
@@ -93,9 +106,9 @@ static inline void round_accumulator(RecompRspState *s, unsigned vd, unsigned vs
         int64_t value = (int16_t)b[i];
         if (vs & 1)
             value *= 65536;
-        if ((s->accumulator[i] >= 0) == positive)
-            s->accumulator[i] = wrap48(s->accumulator[i] + value);
-        s->v[vd][i] = saturate(s->accumulator[i] >> 16);
+        if (((int32_t)s->acc_upper[i] >= 0) == positive)
+            write_accumulator(s, i, accumulator(s, i) + value);
+        s->v[vd][i] = saturate((int32_t)s->acc_upper[i]);
     }
 }
 void recomp_rsp_vrndp(RecompRspState *s, unsigned d, unsigned a, unsigned b, unsigned e) {
@@ -111,7 +124,7 @@ void recomp_rsp_vmulq(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, 
         int64_t p = (int64_t)(int16_t)a[i] * (int16_t)b[i];
         if (p < 0)
             p += 31;
-        s->accumulator[i] = p * 65536;
+        write_accumulator(s, i, p * 65536);
         s->v[vd][i] = saturate(p >> 1) & 0xfff0;
     }
 }
@@ -120,10 +133,10 @@ void recomp_rsp_vmacq(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, 
     (void)vt;
     (void)e;
     for (unsigned i = 0; i < 8; i++) {
-        int64_t p = s->accumulator[i] >> 16;
+        int64_t p = (int32_t)s->acc_upper[i];
         if (!(p & 32))
             p += p < 0 ? 32 : p >= 32 ? -32 : 0;
-        s->accumulator[i] = wrap48(p * 65536 + (uint16_t)s->accumulator[i]);
+        s->acc_upper[i] = (uint32_t)p;
         s->v[vd][i] = saturate(p >> 1) & 0xfff0;
     }
 }
@@ -139,7 +152,7 @@ void recomp_rsp_vmacq(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, 
             int32_t value = subtract ? left - right : left + right;                                                    \
             if (!carry)                                                                                                \
                 value += subtract ? -(int32_t)((s->vco >> i) & 1) : (int32_t)((s->vco >> i) & 1);                      \
-            set_low(s, i, (uint16_t)value);                                                                            \
+            s->acc_low[i] = (uint16_t)value;                                                                           \
             s->v[vd][i] = carry ? (uint16_t)value : saturate(value);                                                   \
             if (carry && (subtract ? value < 0 : value > 65535))                                                       \
                 flags |= (uint16_t)(1u << i);                                                                          \
@@ -159,7 +172,7 @@ void recomp_rsp_vabs(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, u
     operands(s, vs, vt, e, a, b);
     for (unsigned i = 0; i < 8; i++) {
         int value = (int16_t)a[i] < 0 ? -(int16_t)b[i] : a[i] ? (int16_t)b[i] : 0;
-        set_low(s, i, (uint16_t)value);
+        s->acc_low[i] = (uint16_t)value;
         s->v[vd][i] = saturate(value);
     }
 }
@@ -167,7 +180,7 @@ void recomp_rsp_vsar(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, u
     (void)vs;
     (void)vt;
     for (unsigned i = 0; i < 8; i++)
-        s->v[vd][i] = e >= 8 && e <= 10 ? (uint16_t)((uint64_t)s->accumulator[i] >> ((10 - e) * 16)) : 0;
+        s->v[vd][i] = e >= 8 && e <= 10 ? (uint16_t)((uint64_t)accumulator(s, i) >> ((10 - e) * 16)) : 0;
 }
 #define LOGIC(name, expression)                                                                                        \
     void recomp_rsp_##name(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, unsigned e) {                     \
@@ -175,7 +188,7 @@ void recomp_rsp_vsar(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, u
         operands(s, vs, vt, e, a, b);                                                                                  \
         for (unsigned i = 0; i < 8; i++) {                                                                             \
             uint16_t value = (uint16_t)(expression);                                                                   \
-            set_low(s, i, value);                                                                                      \
+            s->acc_low[i] = value;                                                                                     \
             s->v[vd][i] = value;                                                                                       \
         }                                                                                                              \
     }
@@ -211,7 +224,7 @@ LOGIC(vnxor, ~(a[i] ^ b[i]))
             if (choose)                                                                                                \
                 flags |= (uint16_t)(1u << i);                                                                          \
             uint16_t value = choose ? a[i] : b[i];                                                                     \
-            set_low(s, i, value);                                                                                      \
+            s->acc_low[i] = value;                                                                                     \
             s->v[vd][i] = value;                                                                                       \
         }                                                                                                              \
         s->vcc = flags;                                                                                                \
@@ -228,7 +241,7 @@ void recomp_rsp_vmrg(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, u
     operands(s, vs, vt, e, a, b);
     for (unsigned i = 0; i < 8; i++) {
         uint16_t v = (s->vcc & (1u << i)) ? a[i] : b[i];
-        set_low(s, i, v);
+        s->acc_low[i] = v;
         s->v[vd][i] = v;
     }
     s->vco = 0;
@@ -254,7 +267,7 @@ void recomp_rsp_vch(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, un
         if (opposite && delta == -1)
             s->vce |= (uint8_t)(1u << i);
         uint16_t v = opposite ? (lo ? (uint16_t)-b[i] : a[i]) : (hi ? b[i] : a[i]);
-        set_low(s, i, v);
+        s->acc_low[i] = v;
         s->v[vd][i] = v;
     }
 }
@@ -276,7 +289,7 @@ void recomp_rsp_vcl(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, un
             }
         }
         uint16_t v = sign ? (lo ? (uint16_t)-b[i] : a[i]) : (hi ? b[i] : a[i]);
-        set_low(s, i, v);
+        s->acc_low[i] = v;
         s->v[vd][i] = v;
     }
     s->vco = 0;
@@ -296,7 +309,7 @@ void recomp_rsp_vcr(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, un
         if (hi)
             s->vcc |= (uint16_t)(1u << (i + 8));
         uint16_t v = opposite ? (lo ? (uint16_t)~b[i] : a[i]) : (hi ? b[i] : a[i]);
-        set_low(s, i, v);
+        s->acc_low[i] = v;
         s->v[vd][i] = v;
     }
 }
@@ -327,7 +340,7 @@ static inline void divide_vector(RecompRspState *s, unsigned vd, unsigned vs, un
     uint16_t source = s->v[vt][e & 7], a[8], b[8];
     operands(s, vs, vt, e, a, b);
     for (unsigned i = 0; i < 8; i++)
-        set_low(s, i, b[i]);
+        s->acc_low[i] = b[i];
     if (high) {
         s->v[vd][vs & 7] = (uint16_t)s->div_output;
         s->div_input = source;
@@ -379,7 +392,7 @@ void recomp_rsp_vmov(RecompRspState *s, unsigned vd, unsigned vs, unsigned vt, u
     uint16_t a[8], b[8];
     operands(s, vs, vt, e, a, b);
     for (unsigned i = 0; i < 8; i++)
-        set_low(s, i, b[i]);
+        s->acc_low[i] = b[i];
     s->v[vd][vs & 7] = b[vs & 7];
 }
 

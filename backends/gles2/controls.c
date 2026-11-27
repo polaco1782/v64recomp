@@ -185,6 +185,33 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
     if (!focused || menu_input)
         return true;
     const uint8_t *key = SDL_GetKeyboardState(NULL);
+    uint32_t buttons = capture ? SDL_GetMouseState(NULL, NULL) : 0;
+    s->menu_confirm_down = key[SDL_SCANCODE_RETURN] || key[SDL_SCANCODE_Q] || (buttons & SDL_BUTTON_LMASK);
+    if (!s->menu_confirm_down)
+        s->menu_confirm_blocked = false;
+    if (s->input_config.menu_confirm) {
+        // Native menus compare this digital pad state with the previous tick.
+        if (key[SDL_SCANCODE_W] || key[SDL_SCANCODE_UP])
+            pad->buttons |= 0x0800;
+        if (key[SDL_SCANCODE_S] || key[SDL_SCANCODE_DOWN])
+            pad->buttons |= 0x0400;
+        if (key[SDL_SCANCODE_A] || key[SDL_SCANCODE_LEFT])
+            pad->buttons |= 0x0200;
+        if (key[SDL_SCANCODE_D] || key[SDL_SCANCODE_RIGHT])
+            pad->buttons |= 0x0100;
+        if (s->menu_confirm_down && !s->menu_confirm_blocked)
+            pad->buttons |= s->input_config.menu_confirm;
+        if (key[SDL_SCANCODE_E] || key[SDL_SCANCODE_R])
+            pad->buttons |= 0x4000;
+        if (key[SDL_SCANCODE_TAB] || (buttons & SDL_BUTTON_RMASK))
+            pad->buttons |= 0x1000;
+        if (key[SDL_SCANCODE_J])
+            pad->buttons |= 0x0002;
+        if (key[SDL_SCANCODE_L])
+            pad->buttons |= 0x0001;
+        recomp_input_poll(s->input, pad, s->input_config.gamepad_camera ? &s->camera_stick : NULL);
+        return true;
+    }
     bool keyboard_c = s->input_config.keyboard_c_buttons;
     recomp_input_keyboard_stick(pad, key, keyboard_c, s->input_config.wasd_stick);
     if (keyboard_c) {
@@ -205,7 +232,6 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
         if (key[SDL_SCANCODE_TAB])
             pad->buttons |= 0x1000;
         if (capture) {
-            uint32_t buttons = SDL_GetMouseState(NULL, NULL);
             RecompMouseFrame *m = &s->mouse_frame;
             m->move_x = (int8_t)(key[SDL_SCANCODE_D] - key[SDL_SCANCODE_A]);
             m->move_y = (int8_t)(key[SDL_SCANCODE_W] - key[SDL_SCANCODE_S]);
@@ -268,6 +294,10 @@ bool recomp_rdp_gles2_input(RecompRDPGles2 *s, RecompPad *pad) {
 }
 void recomp_rdp_gles2_set_input_config(RecompRDPGles2 *s, const RecompGles2InputConfig *config) {
     recomp_gles2_require_owner(s);
+    // A held menu selection must not become a new press when the next screen
+    // binds the same host key to a different native button or chord.
+    if (s->input_config.menu_confirm != config->menu_confirm)
+        s->menu_confirm_blocked = s->menu_confirm_down;
     s->input_config = *config;
 }
 RecompMouseFrame recomp_rdp_gles2_mouse_frame(RecompRDPGles2 *s) {

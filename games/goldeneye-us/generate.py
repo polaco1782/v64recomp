@@ -49,6 +49,16 @@ def write_config(profile: dict, metadata: dict, output: Path, startup: bool) -> 
     lines.extend(f'    {{UINT32_C({address}), UINT32_C(0x{value:x})}},'
                  for address, value in boot['parameters'].items())
     lines.extend(['};', ''])
+    # The adapter invokes the ROM's scheduler on its own thread. Bind the
+    # helpers and the callers supplying its queue/member layout to full bodies.
+    library = next(s['id'] for s in metadata['sections'] if s['name'] == '.lib')
+    entries = {f['vram']: f for f in metadata['functions'] if f['section'] == library}
+    for item in profile['graphics_scheduler']['functions']:
+        entry = entries.get(item['vram'])
+        if not entry or (entry['size'], entry['sha256']) != (item['size'], item['sha256']):
+            raise RecompError(f"GoldenEye graphics scheduler body mismatch: {item['name']}")
+        if item['name'] in ('append', 'schedule', 'execute'):
+            lines.append(f'#define GE_SCHED_{item["name"].upper()} UINT32_C(0x{entry["vram"]:x})')
     if 'pager' in profile:
         lines.append('static const GoldenEyePagerConfig ge_pager_config = {')
         lines.extend(f'    .{name}=UINT32_C(0x{value:x}),' for name,value in profile['pager'].items())

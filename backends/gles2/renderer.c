@@ -259,6 +259,11 @@ void recomp_renderer_separate_mouse_actions(RecompRenderer *s, bool enabled) {
     s->input_config.separate_mouse_actions = enabled;
     recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
 }
+void recomp_renderer_menu_confirm(RecompRenderer *s, uint16_t buttons) {
+    wait_draw(s);
+    s->input_config.menu_confirm = buttons;
+    recomp_rdp_gles2_set_input_config(s->gpu, &s->input_config);
+}
 void recomp_renderer_keyboard_c_buttons(RecompRenderer *s, bool enabled) {
     wait_draw(s);
     s->input_config.keyboard_c_buttons = enabled;

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EC7E9280-86A3-5466-A254-E5A9E0826C4E}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>carmageddon64-us</ProjectName>
+    <RecompGame>carmageddon64-us</RecompGame>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\Recomp.props" />
+  <ItemGroup>
+    <None Include="$(RecompRoot)games\carmageddon64-us\CMakeLists.txt" />
+    <ClInclude Include="$(RecompRoot)games\carmageddon64-us\audio.h" />
+    <None Include="$(RecompRoot)games\carmageddon64-us\generate.py" />
+    <ClCompile Include="$(RecompRoot)games\carmageddon64-us\main.c" />
+    <None Include="$(RecompRoot)games\carmageddon64-us\profile.toml" />
+    <None Include="$(RecompRoot)games\carmageddon64-us\startup-entries.json" />
+    <ClCompile Include="$(RecompBuildDir)\generated\carmageddon64-us\cpu-*.c" />
+    <ClCompile Include="$(RecompBuildDir)\generated\carmageddon64-us\functions.c" Condition="Exists('$(RecompBuildDir)\generated\carmageddon64-us\functions.c')" />
+    <ClInclude Include="$(RecompBuildDir)\generated\carmageddon64-us\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recomp.vcxproj">
+      <Project>{05DD4A01-FBCB-5DE5-A6B8-C5920637A2D4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

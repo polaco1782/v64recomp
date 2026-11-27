@@ -103,6 +103,10 @@ def prepare(rom: bytes, profile: dict, output: Path) -> tuple[bytes, dict]:
     ...
 ```
 
+For preparation that uses only ROM bytes and profile data, a game can expose the
+same logic through `prepare_analysis(rom, profile)`. The analysis tools use this
+hook for read-only inspection without allocating a temporary directory.
+
 An explicitly downloadable demo may also export `ensure_rom(profile)` from its
 `generate.py`. The driver calls it before loading the ROM or checking the
 generation cache. Keep the pinned source URL, size and checksums in that game's
@@ -608,12 +612,12 @@ For a compressed/paged port, export the prepared image first:
 ```
 
 Replace that illustrative address with the actual compiled guest address. The
-exporter reruns the registered `prepare()` in a temporary directory and validates
-the result against metadata; it refuses mismatched metadata and different existing
-output bytes. It does not alter the runtime ROM. Coverage beside `symbols.json`
-is loaded automatically; `--coverage` selects another matching report. Keep these
-artifacts from one generation: equal ROM hashes alone cannot establish equal
-profile or generator versions.
+exporter uses the game's in-memory preparation hook where available and provides
+a temporary directory for prepare hooks that emit files. It validates the image
+against metadata and refuses to overwrite a different existing image. Coverage
+beside `symbols.json` is loaded automatically. Use `--coverage` to select another
+matching report. Keep the artifacts from one generation because equal ROM hashes
+alone cannot establish equal profile or generator versions.
 
 Now follow the evidence:
 

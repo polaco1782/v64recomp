@@ -10,6 +10,12 @@ static void rgba(uint32_t bits, float *c) {
     for (unsigned i = 0; i < 4; i++)
         c[i] = (float)((bits >> (24 - i * 8)) & 255) / 255;
 }
+
+/* The final blender cycle packs P, A, M, B in alternating bit pairs. */
+static unsigned blender_cycle(uint32_t mode, unsigned cycle) {
+    return (mode >> (cycle == 1 ? 16 : 18)) & 0x3333;
+}
+
 static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     if (!s->batch_count)
         return;
@@ -77,10 +83,9 @@ static void flush(RecompRDPGles2 *s, const float uv_bounds[4]) {
     s->gl.DepthFunc(compare_depth ? GL_LEQUAL : GL_ALWAYS);
     s->gl.DepthMask(write_depth ? GL_TRUE : GL_FALSE);
     bool force_blend = s->other_low & 0x4000;
-    /* The final blender cycle packs P, A, M, B in alternating bit pairs.
-     * G_RM_PASS weights the incoming color by zero and one. Its RGB write
+    /* G_RM_PASS weights the incoming color by zero and one. Its RGB write
      * is independent of combiner alpha, even when FORCE_BL is set. */
-    unsigned blender = (s->other_low >> (p->cycle == 1 ? 16 : 18)) & 0x3333;
+    unsigned blender = blender_cycle(s->other_low, p->cycle);
     bool alpha_blend = force_blend && !(p->cycle < 2 && blender == 0x0302);
     if (s->screen_effects) {
         bool geometry = s->depth_test && !s->drawing_rectangle && s->color_siz >= 2;
@@ -416,6 +421,54 @@ static bool consume_rdp(RecompRDPGles2 *s, uint32_t w0, uint32_t w1) {
     }
 }
 
+static float plane_offset(float u, float v, float a, float b, float c) {
+    return u * (b - a) + v * (c - a);
+}
+/* GLES samples the output pixel center. Approximate RDP subpixel coverage in
+ * native pixel units and extrapolate varyings on the original triangle plane. */
+static void cover_edges(Vertex *vertices, unsigned count, float sx, float sy, float coverage) {
+    for (unsigned i = 0; i < count; i += 3) {
+        Vertex *v = vertices + i;
+        float ex[3], ey[3], length[3];
+        for (unsigned j = 0; j < 3; j++) {
+            unsigned next = (j + 1) % 3;
+            ex[j] = (v[next].position[0] - v[j].position[0]) * sx;
+            ey[j] = (v[next].position[1] - v[j].position[1]) * sy;
+            length[j] = sqrtf(ex[j] * ex[j] + ey[j] * ey[j]);
+        }
+        float area = ex[0] * ey[1] - ey[0] * ex[1];
+        /* Narrow slivers from the intersection of quantized RDP edges have
+         * no stable interpolation plane. Their adjoining band owns the edge. */
+        if (fabsf(area) < 0.125f || length[0] < 0.125f || length[1] < 0.125f || length[2] < 0.125f)
+            continue;
+        Vertex original[3] = {v[0], v[1], v[2]};
+        for (unsigned j = 0; j < 3; j++) {
+            unsigned prev = (j + 2) % 3;
+            float nx = ey[prev] / length[prev] + ey[j] / length[j];
+            float ny = -ex[prev] / length[prev] - ex[j] / length[j];
+            float norm2 = nx * nx + ny * ny;
+            if (norm2 <= 0)
+                continue;
+            /* Limit the miter at sharp corners to twice the edge offset. */
+            float scale = copysignf(2 * coverage / fmaxf(norm2, sqrtf(norm2)), area);
+            float dx = nx * scale, dy = ny * scale;
+            float u = (-dx * ey[2] + dy * ex[2]) / area;
+            float w = (ex[0] * dy - ey[0] * dx) / area;
+            v[j].position[0] += dx / sx;
+            v[j].position[1] += dy / sy;
+            v[j].position[2] +=
+                plane_offset(u, w, original[0].position[2], original[1].position[2], original[2].position[2]);
+            for (unsigned k = 0; k < 4; k++)
+                v[j].color[k] += plane_offset(u, w, original[0].color[k], original[1].color[k], original[2].color[k]);
+            for (unsigned k = 0; k < 2; k++)
+                v[j].uv[k] += plane_offset(u, w, original[0].uv[k], original[1].uv[k], original[2].uv[k]);
+            v[j].fog += plane_offset(u, w, original[0].fog, original[1].fog, original[2].fog);
+            v[j].reciprocal +=
+                plane_offset(u, w, original[0].reciprocal, original[1].reciprocal, original[2].reciprocal);
+        }
+    }
+}
+
 static bool rdp_triangle_mesh(RecompRDPGles2 *s, const uint32_t *words, size_t count) {
     RecompRdpTriangle mesh;
     if (!recomp_rdp_triangle_decode(words, count, &mesh))
@@ -466,8 +519,26 @@ static bool rdp_triangle_mesh(RecompRDPGles2 *s, const uint32_t *words, size_t c
         v->pick_offset = (float)(first / 3);
 #endif
     }
+    Vertex *midpoint = NULL;
     if (s->interpolation)
-        recomp_gles2_midpoint_triangle(s, words[0] & 0xffff0000u, first);
+        midpoint = recomp_gles2_midpoint_triangle(s, words[0] & 0xffff0000u, first, bias);
+
+    float coverage = 0;
+    /* AA_EN, Z_CMP, Z_UPD, opaque Z mode, full coverage and no forced blend. */
+    if (mesh.depth && (mode & 0x5c3b) == 0x38)
+        coverage = 0.375f;
+    /* TEX_EDGE can replace the color of a native pixel on partial coverage.
+     * In painter-ordered geometry, such as Doom 64's BSP walls, the color
+     * underneath may be sky or clear. Keep the texture alpha mask active. */
+    unsigned cycle = (s->other_high >> 20) & 3;
+    if (!mesh.depth && mesh.texture && (mode & 0x7ff8) == 0x7008 && cycle < 2 && blender_cycle(mode, cycle) == 0x0302)
+        coverage = 1;
+
+    if (coverage && !s->wireframe) {
+        cover_edges(s->batch + first, mesh.count, s->width * 0.5f, s->height * 0.5f, coverage);
+        if (midpoint)
+            cover_edges(midpoint, mesh.count, s->width * 0.5f, s->height * 0.5f, coverage);
+    }
     return true;
 }
 

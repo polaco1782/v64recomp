@@ -8,6 +8,7 @@
 typedef struct TrianglePose {
     uint32_t mux0, mux1, texture, mode, other_high, flags;
     float anchor[3][3], center[2], area;
+    float midpoint[3][3];
     bool used;
 } TrianglePose;
 
@@ -32,7 +33,8 @@ typedef struct Interpolation {
     size_t matched;
     Corner *corners;
     unsigned buckets[CORNER_BUCKETS], corner_count, corner_capacity;
-    bool moved, ineligible, in_frame;
+    bool moved, ineligible, in_frame, decal_conflict;
+    unsigned decal_checks;
     Surface *target;
     GLuint depth;
     uint64_t serial, displayed;
@@ -73,7 +75,8 @@ void recomp_gles2_begin_interpolation(RecompRDPGles2 *s) {
     i->matched = 0;
     i->corner_count = 0;
     memset(i->buckets, 0, sizeof(i->buckets));
-    i->moved = i->ineligible = false;
+    i->moved = i->ineligible = i->decal_conflict = false;
+    i->decal_checks = 0;
     i->target = NULL;
     i->serial++;
 }
@@ -322,16 +325,99 @@ static void weld_motion(Interpolation *i, const TrianglePose *pose, bool matched
     }
 }
 
-void recomp_gles2_midpoint_triangle(RecompRDPGles2 *s, uint32_t flags, unsigned start) {
+/* Store window Z as a plane in clip coordinates. A decal may use completely
+ * different vertices from the opaque wall it covers. */
+static bool depth_plane(const float v[3][3], float plane[3]) {
+    float x1 = v[1][0] - v[0][0], y1 = v[1][1] - v[0][1], z1 = v[1][2] - v[0][2];
+    float x2 = v[2][0] - v[0][0], y2 = v[2][1] - v[0][1], z2 = v[2][2] - v[0][2];
+    float area = cross(x1, y1, x2, y2);
+    if (fabsf(area) < 1e-8f)
+        return false;
+    plane[0] = cross(z1, y1, z2, y2) / area;
+    plane[1] = cross(x1, z1, x2, z2) / area;
+    plane[2] = v[0][2] - plane[0] * v[0][0] - plane[1] * v[0][1];
+    return true;
+}
+static float depth_gap(const float p[3], const float plane[3]) {
+    return p[2] - (p[0] * plane[0] + p[1] * plane[1] + plane[2]);
+}
+/* Clip the decal to the supporting triangle before testing depth. Extending
+ * the wall's plane past its silhouette would reject valid camera motion. */
+static bool hidden_on_wall(const float decal[3][3], const float wall[3][3]) {
+    float plane[3];
+    if (!depth_plane(wall, plane))
+        return false;
+    const float tolerance = 1.0f / 8388608; /* One 24-bit depth step in clip coordinates. */
+    float poly[2][7][3];
+    memcpy(poly[0], decal, 3 * sizeof(poly[0][0]));
+    if (depth_gap(decal[0], plane) <= tolerance && depth_gap(decal[1], plane) <= tolerance &&
+        depth_gap(decal[2], plane) <= tolerance)
+        return false;
+    unsigned count = 3;
+    for (unsigned e = 0; e < 3 && count; e++) {
+        const float *a = wall[e], *b = wall[(e + 1) % 3], *c = wall[(e + 2) % 3];
+        float dx = b[0] - a[0], dy = b[1] - a[1];
+        float sign = copysignf(1, cross(dx, dy, c[0] - a[0], c[1] - a[1]));
+        float (*in)[3] = poly[e % 2], (*out)[3] = poly[(e + 1) % 2];
+        unsigned written = 0;
+        for (unsigned j = 0; j < count; j++) {
+            const float *p = in[j], *q = in[(j + 1) % count];
+            float d = sign * cross(dx, dy, p[0] - a[0], p[1] - a[1]);
+            float next = sign * cross(dx, dy, q[0] - a[0], q[1] - a[1]);
+            if (d >= 0)
+                memcpy(out[written++], p, sizeof(out[0]));
+            if ((d < 0 && next > 0) || (d > 0 && next < 0)) {
+                float t = d / (d - next);
+                for (unsigned axis = 0; axis < 3; axis++)
+                    out[written][axis] = p[axis] + t * (q[axis] - p[axis]);
+                written++;
+            }
+        }
+        count = written;
+    }
+    for (unsigned j = 0; j < count; j++)
+        if (depth_gap(poly[1][j], plane) > tolerance)
+            return true;
+    return false;
+}
+static bool decal_stays_visible(Interpolation *i, const TrianglePose *decal, const float mid[3][3], float bias) {
+    for (size_t j = i->current.count - 1; j > 0; j--) {
+        const TrianglePose *wall = &i->current.poses[j - 1];
+        /* Bound validation work even for a stream containing thousands of decals. */
+        if (++i->decal_checks > MAX_POSES * 4)
+            return false;
+        if (!(wall->flags & 0x01000000u) || !(wall->mode & 0x20) || !isfinite(wall->midpoint[0][0]))
+            continue;
+        bool overlap = true;
+        for (unsigned axis = 0; axis < 2; axis++) {
+            float a = wall->anchor[0][axis], b = wall->anchor[1][axis], c = wall->anchor[2][axis];
+            float x = decal->anchor[0][axis], y = decal->anchor[1][axis], z = decal->anchor[2][axis];
+            overlap &= fmaxf(a, fmaxf(b, c)) >= fminf(x, fminf(y, z)) && fmaxf(x, fmaxf(y, z)) >= fminf(a, fminf(b, c));
+        }
+        float native[3];
+        if (!overlap || !depth_plane(wall->anchor, native))
+            continue;
+        bool coplanar = true, visible = false;
+        for (unsigned k = 0; k < 3; k++) {
+            float gap = depth_gap(decal->anchor[k], native);
+            coplanar &= fabsf(gap + bias) <= bias + 0.00025f;
+            visible |= gap <= 0;
+        }
+        if (coplanar && visible && hidden_on_wall(mid, wall->midpoint))
+            return false;
+    }
+    return true;
+}
+Vertex *recomp_gles2_midpoint_triangle(RecompRDPGles2 *s, uint32_t flags, unsigned start, float decal_bias) {
     Interpolation *i = s->interpolation;
     FramePoses *cur = &i->current;
     unsigned count = s->batch_count - start;
     if (!count || i->ineligible)
-        return;
+        return NULL;
     memcpy(i->batch + start, s->batch + start, count * sizeof(Vertex));
     if (cur->count >= MAX_POSES) {
         i->ineligible = true;
-        return;
+        return NULL;
     }
     if (cur->count == cur->capacity) {
         size_t cap = cur->capacity ? cur->capacity * 2 : 128;
@@ -348,12 +434,13 @@ void recomp_gles2_midpoint_triangle(RecompRDPGles2 *s, uint32_t flags, unsigned 
     p->mode = s->other_low;
     p->other_high = s->other_high;
     p->flags = flags & ~0x00800000u;
+    p->midpoint[0][0] = NAN;
     p->texture = s->texture_enabled ? s->tmem_source[s->tiles[s->texture_tile].tmem] : 0;
     triangle_basis(p, s->batch + start, count, (flags & 0x00800000u) != 0);
     p->used = fabsf(p->area) < 1e-8f;
     size_t n = i->previous.count;
     if (p->used || !n)
-        return;
+        return i->batch + start;
     TrianglePose *old = NULL;
     unsigned order = 0;
     if (slot < n && pose_error(p, &i->previous.poses[slot], &order) == 0) {
@@ -385,6 +472,16 @@ void recomp_gles2_midpoint_triangle(RecompRDPGles2 *s, uint32_t flags, unsigned 
                 motion[k][axis] = old->anchor[permutations[order][k]][axis] - p->anchor[k][axis];
     }
     weld_motion(i, p, old != NULL, motion, s->width * 0.5f, s->height * 0.5f);
+    if (!i->decal_conflict && ((p->mode & 0x20 && s->depth_test) || decal_bias)) {
+        float mid[3][3];
+        for (unsigned k = 0; k < 3; k++)
+            for (unsigned axis = 0; axis < 3; axis++)
+                mid[k][axis] = p->anchor[k][axis] + motion[k][axis] * 0.5f;
+        if (decal_bias)
+            i->decal_conflict = !decal_stays_visible(i, p, mid, 2 * decal_bias);
+        else
+            memcpy(p->midpoint, mid, sizeof(mid));
+    }
     const float *a = p->anchor[0], *b = p->anchor[1], *c = p->anchor[2];
     for (unsigned k = 0; k < count; k++) {
         float *q = i->batch[start + k].position;
@@ -397,6 +494,7 @@ void recomp_gles2_midpoint_triangle(RecompRDPGles2 *s, uint32_t flags, unsigned 
             i->moved |= fabsf(delta) > 0.0001f;
         }
     }
+    return i->batch + start;
 }
 const Vertex *recomp_gles2_midpoint_batch(RecompRDPGles2 *s) {
     return s->interpolation->batch;
@@ -414,7 +512,7 @@ void recomp_gles2_end_interpolation(RecompRDPGles2 *s) {
         return;
     Surface *mid = &s->midpoints[i->target - s->surfaces];
     i->target->has_midpoint = mid->serial == i->serial && i->moved && i->matched * 4 >= i->current.count * 3 &&
-                              i->matched * 4 >= i->previous.count * 3;
+                              i->matched * 4 >= i->previous.count * 3 && !i->decal_conflict;
     mid->lights = i->target->lights;
 }
 Surface *recomp_gles2_interpolated_display(RecompRDPGles2 *s, Surface *f) {

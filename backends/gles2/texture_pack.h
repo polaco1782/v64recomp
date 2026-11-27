@@ -21,10 +21,17 @@ typedef struct Gles2PackImage {
 } Gles2PackImage;
 enum { GLES2_TEXTURE_MAX_SIDE = 2048, GLES2_TEXTURE_MAX_PNG_BYTES = 16 * 1024 * 1024 };
 
+#define GLES2_TILE_ID_ENTRY "v64recomp/ids/%016" PRIx64 ".tile-id"
 #define GLES2_AI_PREFIX "v64recomp/ai/"
 #define GLES2_AI_ENTRY GLES2_AI_PREFIX "%016" PRIx64 ".gles.png"
+/* Legacy full-palette IDs are needed only until each installed override is identified. */
+size_t gles2_texture_pack_unidentified(const Gles2TexturePack *pack);
+void gles2_texture_pack_identify(Gles2TexturePack *pack, uint64_t stored, uint64_t key);
+/* The original filename for a source returned by the AI or loose override lookup. */
+uint64_t gles2_texture_pack_stored_id(const Gles2TexturePack *pack, size_t source);
 bool gles2_texture_pack_ai(Gles2TexturePack *pack, uint64_t hash, size_t *source);
 Gles2TexturePack *gles2_texture_pack_open(const char *zip, const char *overrides, const char *rom_title);
+void gles2_texture_pack_flush_mappings(Gles2TexturePack *pack);
 void gles2_texture_pack_close(Gles2TexturePack *pack);
 bool gles2_texture_pack_enabled(const Gles2TexturePack *pack);
 bool gles2_texture_pack_has_rice(const Gles2TexturePack *pack);

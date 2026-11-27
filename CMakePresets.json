@@ -147,6 +147,20 @@
       }
     },
     {
+      "name": "carmageddon64-us",
+      "inherits": "game",
+      "cacheVariables": {
+        "RECOMP_OPT_LEVEL": "3"
+      }
+    },
+    {
+      "name": "donald-duck-us",
+      "inherits": "game",
+      "cacheVariables": {
+        "RECOMP_OPT_LEVEL": "3"
+      }
+    },
+    {
       "name": "re2-us-v1",
       "inherits": "game",
       "cacheVariables": {
@@ -379,9 +393,29 @@
       "configurePreset": "quake2-us"
     },
     {
+      "name": "carmageddon64-us",
+      "inherits": "compile",
+      "configurePreset": "carmageddon64-us"
+    },
+    {
+      "name": "donald-duck-us",
+      "inherits": "compile",
+      "configurePreset": "donald-duck-us"
+    },
+    {
       "name": "quake2-us-prepare",
       "inherits": "prepare",
       "configurePreset": "quake2-us"
+    },
+    {
+      "name": "carmageddon64-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "carmageddon64-us"
+    },
+    {
+      "name": "donald-duck-us-prepare",
+      "inherits": "prepare",
+      "configurePreset": "donald-duck-us"
     },
     {
       "name": "re2-us-v1",
@@ -727,6 +761,40 @@
         {
           "type": "build",
           "name": "quake2-us"
+        }
+      ]
+    },
+    {
+      "name": "carmageddon64-us",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "carmageddon64-us"
+        },
+        {
+          "type": "build",
+          "name": "carmageddon64-us-prepare"
+        },
+        {
+          "type": "build",
+          "name": "carmageddon64-us"
+        }
+      ]
+    },
+    {
+      "name": "donald-duck-us",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "donald-duck-us"
+        },
+        {
+          "type": "build",
+          "name": "donald-duck-us-prepare"
+        },
+        {
+          "type": "build",
+          "name": "donald-duck-us"
         }
       ]
     },

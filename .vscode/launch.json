@@ -412,6 +412,30 @@
       "preLaunchTask": "Build Debug: Quake II US"
     },
     {
+      "name": "Debug: Carmageddon 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/carmageddon64-us/debug/bin/Debug/carmageddon64-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Carmageddon 64 US"
+    },
+    {
+      "name": "Debug: Donald Duck Goin' Quackers US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/donald-duck-us/debug/bin/Debug/donald-duck-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Debug: Donald Duck Goin' Quackers US"
+    },
+    {
       "name": "Release: Quake II US (Windows)",
       "type": "cppvsdbg",
       "request": "launch",
@@ -422,6 +446,30 @@
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "Build Release: Quake II US"
+    },
+    {
+      "name": "Release: Carmageddon 64 US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/carmageddon64-us/release/bin/Release/carmageddon64-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Carmageddon 64 US"
+    },
+    {
+      "name": "Release: Donald Duck Goin' Quackers US (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc/donald-duck-us/release/bin/Release/donald-duck-us.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build Release: Donald Duck Goin' Quackers US"
     },
     {
       "name": "Debug: Resident Evil 2 US revision 1 (Windows)",
@@ -794,6 +842,48 @@
         }
       ],
       "preLaunchTask": "Build Debug: Quake II US"
+    },
+    {
+      "name": "Debug: Carmageddon 64 US (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/carmageddon64-us-gles-debug/bin/carmageddon64-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Carmageddon 64 US"
+    },
+    {
+      "name": "Debug: Donald Duck Goin' Quackers US (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/donald-duck-us-gles-debug/bin/donald-duck-us",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Debug: Donald Duck Goin' Quackers US"
     },
     {
       "name": "Debug: Resident Evil 2 US revision 1 (Linux)",

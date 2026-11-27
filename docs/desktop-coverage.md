@@ -1,6 +1,6 @@
 # Desktop input, FoV and GLES2 coverage
 
-This covers the exact 22 game profiles in the tree, not the separate Bad Apple
+This covers the 24 game profiles in the tree, not the separate Bad Apple
 and Media Player demos. A feature listed here is implemented, not necessarily
 accepted in gameplay. "Offscreen" uses the software
 GLES2 backend without physical desktop input; a boot or menu check does not
@@ -10,8 +10,10 @@ establish gameplay, camera quality, audio playback, or hardware compatibility.
 | --- | --- | --- | --- |
 | [1080 Snowboarding JU](../games/1080-us/README.md) | WASD and arrows; mouse camera pending | Pending riding camera | Debug/Release build; rendered title/language. Riding not verified; longer Debug replay hit the existing SP completion/yield mismatch. |
 | [Banjo-Kazooie US](../games/banjo-kazooie-us/README.md) | WASD, orbit, first-person look | Yes | Earlier game-local check reached Spiral Mountain on both renderers; climbing camera verification remains open. |
+| [Carmageddon 64 US](../games/carmageddon64-us/README.md) | Shared stick and buttons | Original projection | Linux GLES Debug and Release reached a Quick Start city race with steering, acceleration and stereo audio. |
 | [Conker US](../games/conker-us/README.md) | Opt-in WASD and mouse buttons; camera pending | Pending gameplay | Compiled F3DEXBG with a checked constant data prefix and live task parameters. |
-| [Doom 64 US](../games/doom64-us/README.md) | WASD, mouse turn | Yes | Prior Staging Area replay, shotgun pickup and automap. |
+| [Disney's Donald Duck: Goin' Quackers US](../games/donald-duck-us/README.md) | Shared stick and buttons | Original projection | Linux GLES Debug and Release reopened a Controller Pak save and verified movement and jumping in Forest Edge. |
+| [Doom 64 US](../games/doom64-us/README.md) | WASD, mouse look | Yes | Staging Area replay, shotgun pickup and automap. Both desktop builds reached Watch Your Step. |
 | [Duke Nukem 64 US](../games/duke-us/README.md) | WASD, mouse-look | Yes | Prior textured main-menu check. |
 | [Duke Nukem: Zero Hour US](../games/duke-zero-hour-us/README.md) | WASD and arrows; mouse camera pending | Pending coupled projection/sector traversal | Debug strict ES2 startup/copyright; RT64 Release built. |
 | [GoldenEye US](../games/goldeneye-us/README.md) | WASD, mouse-look, mouse menus | Yes | Prior Debug/Release Dam gameplay replay. |

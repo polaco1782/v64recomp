@@ -320,6 +320,24 @@ weapon zoom and physical Deck control acceptance remain to be tested.
 
 ## Performance investigation
 
+GoldenEye's main loop checks elapsed time and the number of unfinished graphics
+tasks at each retrace. In an eight-second Jungle firefight on desktop GLES
+Release, it skipped 180 refresh decisions. At 147 of those, the clock allowed a
+new update but two graphics tasks were still outstanding. A completed display
+list waited a median 15.4 ms for the RSP to start it.
+
+Submitting a graphics task now wakes the ROM's scheduler to drain its command
+queue between retraces. The scheduler chooses the next task using its original
+audio priority and SP/DP availability checks. The two-task limit and completion
+messages still protect the game's display-list buffers. The shared RSP vector
+operations and GLES texture block loads also take less CPU time.
+
+With the same route, controls and `--ssao --ssr --interpolate`, the median
+display-list wait fell to 0.9 ms. GoldenEye accepted 472 updates in eight
+seconds (59.0/s), up from 299 (37.4/s), with eight refreshes blocked by the
+queue. These counts come from the guest's update decision. Guard actions can
+vary between runs.
+
 On Runway, the exterior exceeded the GLES renderer's former 128-tile cache.
 With HQ2x and `--ssao --ssr --interpolate`, five seconds of outdoor play
 made 44,601 native tile requests. Replaying those exact requests against the

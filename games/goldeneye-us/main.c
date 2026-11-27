@@ -132,6 +132,68 @@ void recomp_ge_set_compare(Runtime *rt, MipsContext *ctx) {
     (void)ctx;
     /* Native osSetTimer owns deadlines; CPU Compare is never scheduled. */
 }
+/* __scMain waits on OSSched.interruptQ. Its retrace handler normally drains
+ * cmdQ before it schedules the RSP. Wake the same thread when a new graphics
+ * task arrives, so an idle RSP can start it between retraces. */
+enum {
+    GE_GFX_WAKE = 0x5771,
+    GE_INTERRUPT_QUEUE = 0x40,
+    GE_COMMAND_QUEUE = 0x78,
+    GE_CURRENT_SP = 0xc8,
+    GE_CURRENT_DP = 0xcc
+};
+static uint32_t graphics_irq_queue;
+
+void goldeneye_gfx_submit_hook(Runtime *rt, MipsContext *ctx, RecompFunction original) {
+    original(rt, ctx);
+    if (graphics_irq_queue)
+        (void)recomp_queue_send(rt, graphics_irq_queue, GE_GFX_WAKE, RECOMP_MESG_NOBLOCK, false);
+}
+
+static void schedule_graphics(Runtime *rt, const MipsContext *ctx, uint32_t queue) {
+    uint32_t sc = queue - GE_INTERRUPT_QUEUE;
+    MipsContext call = *ctx;
+    uint32_t stack = (uint32_t)ctx->gpr[29] - 32;
+    call.gpr[29] = mips_s32(stack);
+    /* Drain cmdQ in FIFO order as __scHandleRetrace does. Audio may already
+     * be queued ahead of this graphics task. __scSchedule gives it priority. */
+    while (recomp_queue_recv(rt, sc + GE_COMMAND_QUEUE, stack + 16, RECOMP_MESG_NOBLOCK) == 0) {
+        call.gpr[4] = mips_s32(sc);
+        call.gpr[5] = mips_s32(recomp_load32(rt, stack + 16));
+        recomp_lookup(rt, GE_SCHED_APPEND)(rt, &call);
+    }
+    uint32_t available =
+        (recomp_load32(rt, sc + GE_CURRENT_SP) == 0 ? 2u : 0u) | (recomp_load32(rt, sc + GE_CURRENT_DP) == 0 ? 1u : 0u);
+    /* __scSchedule takes two guest output pointers after the o32 argument area. */
+    uint32_t sp_task = stack + 16, dp_task = stack + 20;
+    recomp_store32(rt, sp_task, 0);
+    recomp_store32(rt, dp_task, 0);
+    call.gpr[4] = mips_s32(sc);
+    call.gpr[5] = mips_s32(sp_task);
+    call.gpr[6] = mips_s32(dp_task);
+    call.gpr[7] = available;
+    recomp_lookup(rt, GE_SCHED_SCHEDULE)(rt, &call);
+    if ((uint32_t)call.gpr[2] != available) {
+        call.gpr[4] = mips_s32(sc);
+        call.gpr[5] = mips_s32(recomp_load32(rt, sp_task));
+        call.gpr[6] = mips_s32(recomp_load32(rt, dp_task));
+        recomp_lookup(rt, GE_SCHED_EXECUTE)(rt, &call);
+    }
+}
+
+void goldeneye_recv_mesg(Runtime *rt, MipsContext *ctx) {
+    if ((uint32_t)ctx->gpr[31] != 0x70000d48) {
+        recomp_os_recv_mesg(rt, ctx);
+        return;
+    }
+    graphics_irq_queue = (uint32_t)ctx->gpr[4];
+    uint32_t destination = (uint32_t)ctx->gpr[5];
+    recomp_os_recv_mesg(rt, ctx);
+    if ((uint32_t)ctx->gpr[2] == 0 && recomp_load32(rt, destination) == GE_GFX_WAKE)
+        schedule_graphics(rt, ctx, graphics_irq_queue);
+    /* The ROM switch ignores the private wake and resumes its normal wait. */
+}
+
 static void drain(Runtime *rt) {
     /* Retain bounded bootstrap draining. The checked idle-thread object lets
      * the scheduler return without dispatching the empty ROM loop. */
